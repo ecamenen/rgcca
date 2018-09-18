@@ -1,48 +1,47 @@
-	demostab	demoinst	dictator
-Argentina	0	1	0
-Australia	1	0	0
-Austria	0	1	0
-Belgium	1	0	0
-Bolivia	0	0	1
-Brasil	0	1	0
-Canada	1	0	0
-Chile	0	1	0
-Colombia	0	1	0
-CostaRica	0	1	0
-Cuba	0	0	1
-Denmark	1	0	0
-DominicanRepublic	0	0	1
-Ecuador	0	0	1
-Egypt	0	0	1
-Salvador	0	0	1
-Finland	0	1	0
-France	0	1	0
-Guatemala	0	0	1
-Greece	0	1	0
-Honduras	0	0	1
-India	1	0	0
-Irak	0	0	1
-Irland	1	0	0
-Italy	0	1	0
-Japan	0	1	0
-Libia	0	0	1
-Luxemburg	1	0	0
-TheNetherlands	1	0	0
-NewZealand	1	0	0
-Nicaragua	0	0	1
-Norway	1	0	0
-Panama	0	0	1
-Peru	0	0	1
-Philippine	0	0	1
-Poland	0	0	1
-SouthVietnam	0	0	1
-Spain	0	0	1
-Sweden	1	0	0
-Switzerland	1	0	0
-Taiwan	0	0	1
-UK	1	0	0
-USA	1	0	0
-Uruguay	1	0	0
-Venezuela	0	0	1
-WestGermany	0	1	0
-Yugoslavia	0	0	1
+Argentina	demoinst
+Australia	demostab
+Austria	demoinst
+Belgium	demostab
+Bolivia	dictator
+Brasil	demoinst
+Canada	demostab
+Chile	demoinst
+Colombia	demoinst
+CostaRica	demoinst
+Cuba	dictator
+Denmark	demostab
+DominicanRepublic	dictator
+Ecuador	dictator
+Egypt	dictator
+Salvador	dictator
+Finland	demoinst
+France	demoinst
+Guatemala	dictator
+Greece	demoinst
+Honduras	dictator
+India	demostab
+Irak	dictator
+Irland	demostab
+Italy	demoinst
+Japan	demoinst
+Libia	dictator
+Luxemburg	demostab
+TheNetherlands	demostab
+NewZealand	demostab
+Nicaragua	dictator
+Norway	demostab
+Panama	dictator
+Peru	dictator
+Philippine	dictator
+Poland	dictator
+SouthVietnam	dictator
+Spain	dictator
+Sweden	demostab
+Switzerland	demostab
+Taiwan	dictator
+UK	demostab
+USA	demostab
+Uruguay	demostab
+Venezuela	dictator
+WestGermany	demoinst
+Yugoslavia	dictator

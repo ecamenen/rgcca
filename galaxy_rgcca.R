@@ -1,7 +1,6 @@
 #TODO: remove
 #setwd("C:/Users/etienne.camenen/bin/galaxy_rgcca")
 
-
 getFileName = function(fi)
   unlist(strsplit(fi, '[.]'))[1]
 
@@ -77,7 +76,7 @@ SCALE = T
 SEPARATOR = "\t"
 VERBOSE = F
 NB_BLOC = 3
-NCOMP = 1
+NB_COMP = 2
 TAU = "optimal"
 
 #TODO: remove
@@ -99,26 +98,27 @@ for (i in 1:length(BLOCKS)){
 }
 A[["Superblock"]] = Reduce(cbind, datasets)
 
+#Response
+opt$response = "Response.tsv"
+loadData(opt$response, "Response", 1, F)
+if(isTRUE(disjonctif)) factor(apply(opt$response, 1, which.max))
 
 #run
 rgcca = rgcca(A,
               C,
               tau = TAU,
               scheme = scheme,
-              ncomp = NCOMP,
+              ncomp = rep(NB_COMP, length(A)),
               scale = SCALE,
               verbose = VERBOSE)
 #TODO: catch Error in C * h(cov2(Y, bias = bias)) : non-conformable arrays
 
 #Samples common space
-if(isTRUE(disjonctif)) factor(apply(opt$response, 1, which.max))
 
-df1 = data.frame(Response = factor(apply(opt$response, 1, which.max),
-                                           labels = c("demostab", "demoinst", "dictator")), 
-                 rgcca$Y[[length(A)]] )
+df1 = data.frame(Response, rgcca$Y[[length(A)]] )
 
-comp1 = rgcca_B_factorial$Y[[1]][, 1], 
-comp2 = rgcca_B_factorial$Y[[2]][, 1])
+# comp1 = rgcca_B_factorial$Y[[1]][, 1], 
+# comp2 = rgcca_B_factorial$Y[[2]][, 1])
 
 p1 <- ggplot(df1, aes(comp1, comp2)) + 
   geom_vline(xintercept = 0) + 
@@ -127,7 +127,8 @@ p1 <- ggplot(df1, aes(comp1, comp2)) +
   geom_text(aes(colour = Response, label= rownames(df1)), vjust=0, nudge_y = 0.03, size = 3) +
   theme(legend.position="bottom", legend.box = "horizontal", legend.title = element_blank())
 
-p1; pdf(p1)
+p1; 
+pdf(opt$output1); p1; dev.off()
  
  
  # Variables common space
