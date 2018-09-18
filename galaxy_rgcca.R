@@ -1,11 +1,13 @@
 #TODO: remove
 #setwd("C:/Users/etienne.camenen/bin/galaxy_rgcca")
 
-#Loading librairies
-librairies = c("RGCCA")
-for (l in librairies){
-  if (! (l %in% installed.packages()[,"Package"])) install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
-  library(l, character.only = TRUE)
+
+getFileName = function(fi)
+  unlist(strsplit(fi, '[.]'))[1]
+
+loadData = function(fi, fo=fi, row.names=NULL, h=F){
+  data = as.matrix(read.table(fi, sep=SEPARATOR, h=h, row.names = row.names))
+  assign(fo, data, .GlobalEnv)
 }
 
 getArgs = function(){
@@ -25,15 +27,6 @@ getArgs = function(){
     make_option(c("-g", "--scheme"), type="integer", default=, metavar="integer",
                 help="Scheme function g(x) [default: x^2] (1: x, 2: x^2, 3: x^3, 4: |x|")
   )}
-
-
-#Global settings
-SCALE = T
-SEPARATOR = "\t"
-VERBOSE = F
-NB_BLOC = 3
-NCOMP = 1
-TAU = "optimal"
 
 #Check the validity of the arguments 
 #Inputs:
@@ -63,32 +56,49 @@ checkArg = function(a){
   
   #default settings of C matrix
   if(is.null(opt$connection)){
-     C = 1 - diag(1, NB_BLOC+1, NB_BLOC+1)
+     C = 1 - diag(1, length(A), length(A))
      #TODO: 1 - diag(length(A))
   }else{
-    connection = "connection_matrix.txt"
-    C = as.matrix(read.table(connection,
-                             sep=SEPARATOR,
-                             h=F))
+    loadData("connection_matrix.txt", "C", h=F)
   }
   
   return (opt)
 }
 
+#Loading librairies
+librairies = c("RGCCA")
+for (l in librairies){
+  if (! (l %in% installed.packages()[,"Package"])) install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
+  library(l, character.only = TRUE)
+}
+
+#Global settings
+SCALE = T
+SEPARATOR = "\t"
+VERBOSE = F
+NB_BLOC = 3
+NCOMP = 1
+TAU = "optimal"
+
 #TODO: remove
-data(Russett)
-X_agric = as.matrix(Russett[,c("gini","farm","rent")])
-X_ind = as.matrix(Russett[,c("gnpr","labo")])
-X_polit = as.matrix(Russett[ , c("inst", "ecks", "death", "demostab", "dictator")]) 
 opt=list()
-opt$datasets=list(X_agric, X_ind, X_polit)
+opt$datasets = "X_agric.tsv, X_ind.tsv,X_polit.tsv"
 
-#standardization
-A = lapply(opt$datasets,
-           function(x) scale2(x, bias = TRUE))
+#remove white space
+opt$datasets = gsub(" ", "", opt$datasets)
+#split by ,
+BLOCKS = unlist(strsplit(opt$datasets, ","))
 
-#loading data
-A = list(A, Superblock = Reduce(cbind,data))
+#load each dataset
+A = list()
+for (i in 1:length(BLOCKS)){
+  fi = BLOCKS[i]
+  fo = getFileName(fi)
+  loadData(fi, fo, 1, T)
+  A[[fo]] = get(fo)
+}
+A[["Superblock"]] = Reduce(cbind, datasets)
+
 
 #run
 rgcca = rgcca(A,
