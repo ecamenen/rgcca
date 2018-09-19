@@ -81,7 +81,6 @@ SCALE = T
 SEPARATOR = "\t"
 VERBOSE = F
 NB_BLOC = 3
-NB_COMP = 2
 TAU = "optimal"
 DISJONCTIF = F
 
@@ -116,13 +115,20 @@ if(SUPERVISED){
 }
 
 #run
+NB_COMP = sapply(A, NCOL)
+# TODO: Error in rgcca(A, C, tau = TAU, scheme = scheme, ncomp = rep(NB_COMP,  : 
+#                                                                     For each block, choose a number of components smaller than the number of variables!
+
 rgcca = rgcca(A,
               C,
               tau = TAU,
               scheme = scheme,
-              ncomp = rep(NB_COMP, length(A)),
+              ncomp = NB_COMP,
               scale = SCALE,
               verbose = VERBOSE)
+
+
+#ncomp = rep(NB_COMP, length(A)),
 #TODO: catch Error in C * h(cov2(Y, bias = bias)) : non-conformable arrays
 #message: Number of row/column of connection matrix doesn't match with the number of blocks.
 
@@ -143,16 +149,13 @@ savePdf(opt$output1, p1)
  
  # Variables common space
  
- df2 = data.frame(comp1 = cor(Russett, rgcca$Y[[4]])[, 1], comp2 = cor(Russett, rgcca$Y[[4]])[, 2], BLOCK = rep(c("X1", "X2", "X3"), sapply(A[1:3], NCOL)))
- 
  COMP1 = 1
  COMP2 = 2
- df3 =  data.frame( 
+ df2 =  data.frame( 
    sapply ( c(COMP1:COMP2), function(x) cor( A[["Superblock"]], rgcca$Y[[length(A)]][, x] ) ) , 
-   rep( sapply ( 1: 3, function(x) rep(paste("Block", x)) ), sapply(A[1:(length(A)-1)], NCOL)) ,
+   BLOCK = rep( sapply ( 1: 3, function(x) rep(paste("Block", x)) ), sapply(A[1:(length(A)-1)], NCOL)) ,
    row.names = colnames(A[["Superblock"]])
  )
-colnames(df3) = c( paste("Axis", COMP1, sep=""), paste("Axis", COMP2 , sep=""), "BLOCK" )
      
  # Circle 
  circleFun <- function(center = c(0,0), diameter = 2, npoints = 100){
@@ -163,13 +166,16 @@ colnames(df3) = c( paste("Axis", COMP1, sep=""), paste("Axis", COMP2 , sep=""), 
    return(data.frame(x = xx, y = yy))
  }
  
- 
- p2 <- ggplot(df3, aes(df3[,1], df3[,2]), colour = BLOCK) +
+ p2 <- ggplot(df2, aes(df2[,1], df2[,2]), colour = BLOCK) +
    geom_path(aes(x,y), data=circleFun()) + 
    geom_vline(xintercept = 0) + geom_hline(yintercept = 0) + 
    ggtitle("Correlation Circle") + 
+   labs ( x = printAxis(COMP1), y = printAxis(COMP2) ) +
    geom_text(aes(colour = BLOCK, label= rownames(df2)), vjust=0,nudge_y = 0.03,size = 3) + 
    theme(legend.position="bottom", legend.box = "horizontal", legend.title = element_blank())
 
- save(p2)
+ printAxis = function (n)
+   #n: number of the axis
+   paste("Axis ", n, " (", round(rgcca$AVE$AVE_X[[length(A)]][n] * 100 , 1),"%)", sep="")
  
+ save(p2)
