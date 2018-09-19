@@ -1,12 +1,17 @@
 #TODO: remove
-#setwd("C:/Users/etienne.camenen/bin/galaxy_rgcca")
+#setwd("C:/Users/etienne.camenen/bin/rgcca_galaxy")
 
 getFileName = function(fi)
   unlist(strsplit(fi, '[.]'))[1]
 
 loadData = function(fi, fo=fi, row.names=NULL, h=F){
-  data = as.matrix(read.table(fi, sep=SEPARATOR, h=h, row.names = row.names))
+  data = as.matrix(read.table(fi, sep = SEPARATOR, h = h, row.names = row.names))
   assign(fo, data, .GlobalEnv)
+  #TODO: catch warning missing \n at the end of the file
+}
+
+savePdf = function(f, p){
+  pdf(f); p; dev.off()
 }
 
 getArgs = function(){
@@ -65,7 +70,7 @@ checkArg = function(a){
 }
 
 #Loading librairies
-librairies = c("RGCCA")
+librairies = c("RGCCA", "ggplot2")
 for (l in librairies){
   if (! (l %in% installed.packages()[,"Package"])) install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
   library(l, character.only = TRUE)
@@ -78,6 +83,7 @@ VERBOSE = F
 NB_BLOC = 3
 NB_COMP = 2
 TAU = "optimal"
+DISJONCTIF = F
 
 #TODO: remove
 opt=list()
@@ -96,12 +102,18 @@ for (i in 1:length(BLOCKS)){
   loadData(fi, fo, 1, T)
   A[[fo]] = get(fo)
 }
-A[["Superblock"]] = Reduce(cbind, datasets)
+A[["Superblock"]] = Reduce(cbind, A)
 
 #Response
-opt$response = "Response.tsv"
-loadData(opt$response, "Response", 1, F)
-if(isTRUE(disjonctif)) factor(apply(opt$response, 1, which.max))
+if(SUPERVISED){
+  opt$response = "Response.tsv"
+  loadData(opt$response, "Response", 1, F)
+  #TODO: check n1  = n2 = ...
+  if(isTRUE(DISJONCTIF)) Response = factor(apply("Response", 1, which.max))
+  color = Response
+}else{
+  color = rep("black", NROW(A[[1]]))
+}
 
 #run
 rgcca = rgcca(A,
@@ -112,29 +124,36 @@ rgcca = rgcca(A,
               scale = SCALE,
               verbose = VERBOSE)
 #TODO: catch Error in C * h(cov2(Y, bias = bias)) : non-conformable arrays
+#message: Number of row/column of connection matrix doesn't match with the number of blocks.
+
+
+df1 =  data.frame(rgcca$Y[[length(A)]])
 
 #Samples common space
-
-df1 = data.frame(Response, rgcca$Y[[length(A)]] )
-
-# comp1 = rgcca_B_factorial$Y[[1]][, 1], 
-# comp2 = rgcca_B_factorial$Y[[2]][, 1])
-
-p1 <- ggplot(df1, aes(comp1, comp2)) + 
+p1 <- ggplot( df1, aes(comp1, comp2)) + 
   geom_vline(xintercept = 0) + 
   geom_hline(yintercept = 0) + 
-  ggtitle("Factor plot - Common Space") +
-  geom_text(aes(colour = Response, label= rownames(df1)), vjust=0, nudge_y = 0.03, size = 3) +
+  ggtitle("Factor plot") +
+  geom_text(aes(colour = color, label= rownames(df1)), vjust=0, nudge_y = 0.03, size = 3) +
   theme(legend.position="bottom", legend.box = "horizontal", legend.title = element_blank())
 
-p1; 
-pdf(opt$output1); p1; dev.off()
+savePdf(opt$output1, p1) 
  
+
  
  # Variables common space
  
- df2 = data.frame(comp1 = cor(Russett, rgcca.hpca$Y[[4]])[, 1], comp2 = cor(Russett, rgcca.hpca$Y[[4]])[, 2], BLOCK = rep(c("X1", "X2", "X3"), sapply(A[1:3], NCOL)))
+ df2 = data.frame(comp1 = cor(Russett, rgcca$Y[[4]])[, 1], comp2 = cor(Russett, rgcca$Y[[4]])[, 2], BLOCK = rep(c("X1", "X2", "X3"), sapply(A[1:3], NCOL)))
  
+ COMP1 = 1
+ COMP2 = 2
+ df3 =  data.frame( 
+   sapply ( c(COMP1:COMP2), function(x) cor( A[["Superblock"]], rgcca$Y[[length(A)]][, x] ) ) , 
+   rep( sapply ( 1: 3, function(x) rep(paste("Block", x)) ), sapply(A[1:(length(A)-1)], NCOL)) ,
+   row.names = colnames(A[["Superblock"]])
+ )
+colnames(df3) = c( paste("Axis", COMP1, sep=""), paste("Axis", COMP2 , sep=""), "BLOCK" )
+     
  # Circle 
  circleFun <- function(center = c(0,0), diameter = 2, npoints = 100){
    r = diameter / 2
@@ -144,14 +163,13 @@ pdf(opt$output1); p1; dev.off()
    return(data.frame(x = xx, y = yy))
  }
  
- circle <- circleFun(c(0,0),2,npoints = 100)
  
- p2 <- ggplot(df2, aes(comp1, comp2), colour = BLOCK) +
-   geom_path(aes(x,y), data=circle) + 
+ p2 <- ggplot(df3, aes(df3[,1], df3[,2]), colour = BLOCK) +
+   geom_path(aes(x,y), data=circleFun()) + 
    geom_vline(xintercept = 0) + geom_hline(yintercept = 0) + 
-   ggtitle("Correlation Circle (Russett data) - Common Space") + 
+   ggtitle("Correlation Circle") + 
    geom_text(aes(colour = BLOCK, label= rownames(df2)), vjust=0,nudge_y = 0.03,size = 3) + 
    theme(legend.position="bottom", legend.box = "horizontal", legend.title = element_blank())
- 
+
  save(p2)
  
