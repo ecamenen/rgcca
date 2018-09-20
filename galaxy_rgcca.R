@@ -1,3 +1,17 @@
+# Author: Etienne CAMENEN
+# Date: 2018
+# Institute: ICM - Institut du Cerveau et de la Moelle épinière (Paris, FRANCE),
+# Institut Français de Bioinformatique (IFB), Centre national de la recherche scientifique (CNRS)
+# Contact: iconics@icm-institute.org
+# Key-words: omics, RGCCA, multi-bloc
+# EDAM operation: analysis, correlation, visualisation
+# EDAM topic: omics, medecine, mathematics
+#
+# Abstract: A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA)
+# with all default settings predefined. Produce two figures to help clincians to identify biomarkers: 
+# samples and variables projected on the two first component of the multi-block analysis.
+
+rm(list=ls())
 #TODO: remove
 setwd("C:/Users/etienne.camenen/bin/rgcca_galaxy")
 
@@ -6,35 +20,42 @@ setwd("C:/Users/etienne.camenen/bin/rgcca_galaxy")
 ################################
 
 getFileName = function(fi)
+  #get prefix part from a file
   unlist(strsplit(fi, '[.]'))[1]
 
 loadData = function(fi, fo=fi, row.names=NULL, h=F){
+  #create a dataset object from a file loading
+  #fi: input file name
+  #fo: dataset object name
   data = as.matrix(read.table(fi, sep = SEPARATOR, h = h, row.names = row.names))
   assign(fo, data, .GlobalEnv)
   #TODO: catch warning missing \n at the end of the file
 }
 
 setBlocks = function(){
+  #create a list object of blocks from files loading
   
   #remove white space
   opt$datasets = gsub(" ", "", opt$datasets)
   #split by ,
-  BLOCKS = unlist(strsplit(opt$datasets, ","))
+  blocksName = unlist(strsplit(opt$datasets, ","))
   
   #load each dataset
-  A = list()
-  for (i in 1:length(BLOCKS)){
-    fi = BLOCKS[i]
+  blocks = list()
+  for (i in 1:length(blocksName)){
+    fi = blocksName[i]
     fo = getFileName(fi)
     loadData(fi, fo, 1, T)
-    A[[fo]] = get(fo)
+    blocks[[fo]] = get(fo)
   }
-  A[["Superblock"]] = Reduce(cbind, A)
+  blocks[["Superblock"]] = Reduce(cbind, blocks)
   
-  return(A)
+  return(blocks)
 }
 
 setResponse = function(){
+  #create a dataset object from a file loading containg the response
+  
   if("response" %in% names(opt)){
     opt$response = "Response.tsv"
     loadData(opt$response, "response", 1, F)
@@ -42,7 +63,7 @@ setResponse = function(){
     if(isTRUE(DISJONCTIF)) response = factor(apply("Response", 1, which.max))
     return (response)
   }else{
-    return ( rep("black", NROW(A[[1]])) )
+    return ( rep("black", NROW(blocks[[1]])) )
   }
 }
 
@@ -60,7 +81,7 @@ circleFun <- function(center = c(0,0), diameter = 2, npoints = 100){
 
 printAxis = function (n)
   #n: number of the axis
-  paste("Axis ", n, " (", round(rgcca$AVE$AVE_X[[length(A)]][n] * 100 , 1),"%)", sep="")
+  paste("Axis ", n, " (", round(rgcca$AVE$AVE_X[[length(blocks)]][n] * 100 , 1),"%)", sep="")
 
 savePdf = function(f, x){
   pdf(f)
@@ -133,13 +154,13 @@ checkArg = function(a){
   for (o in FILES)
     if(!is.null(opt[[o]])) checkFile(o)
   
-  #default settings of C matrix
+  #default settings of connection_matrix matrix
   if(is.null(opt$connection)){
-     C = matrix(0,length(A),length(A))
-     seq = 1:(length(A)-1)
-     C[length(A), seq] <- 1 -> C[seq, length(A)]
+     connection_matrix = matrix(0,length(blocks),length(blocks))
+     seq = 1:(length(blocks)-1)
+     connection_matrix[length(blocks), seq] <- 1 -> connection_matrix[seq, length(blocks)]
   }else{
-    loadData("connection_matrix.txt", "C", h=F)
+    loadData("connection_matrix.txt", "connection_matrix", h=F)
   }
   
   return (opt)
@@ -175,25 +196,25 @@ tryCatch({
 })
 
 
-A = setBlocks()
-NB_COMP = sapply(A, NCOL)
-# TODO: Error in rgcca(A, C, tau = TAU, scheme = scheme, ncomp = rep(NB_COMP,  : 
+blocks = setBlocks()
+NB_COMP = sapply(blocks, NCOL)
+# TODO: Error in rgcca(blocks, connection_matrix, tau = TAU, scheme = scheme, ncomp = rep(NB_COMP,  : 
 #                                                                     For each block, choose a number of components smaller than the number of variables!
 
-rgcca = rgcca(A,
-              C,
+rgcca = rgcca(blocks,
+              connection_matrix,
               tau = TAU,
               scheme = opt$scheme,
               ncomp = NB_COMP,
               scale = SCALE,
               verbose = VERBOSE)
-#ncomp = rep(NB_COMP, length(A)),
-#TODO: catch Error in C * h(cov2(Y, bias = bias)) : non-conformable arrays
+#ncomp = rep(NB_COMP, length(blocks))
+#TODO: catch Error in connection_matrix * h(cov2(Y, bias = bias)) : non-conformable arrays
 #message: Number of row/column of connection matrix doesn't match with the number of blocks.
 
 
 # Variables common space
-variables = data.frame(rgcca$Y[[length(A)]])
+variables = data.frame(rgcca$Y[[length(blocks)]])
 color = setResponse()
 variableSpace = plotSpace(variables, "Variables", color, COMP1, COMP2)
 savePdf(opt$output1, variableSpace)
@@ -201,11 +222,13 @@ savePdf(opt$output1, variableSpace)
  
 # Samples common space
 samples =  data.frame( 
- sapply ( c(COMP1:COMP2), function(x) cor( A[["Superblock"]], rgcca$Y[[length(A)]][, x] ) ) , 
- BLOCK = rep( sapply ( 1: 3, function(x) rep(paste("Block", x)) ), sapply(A[1:(length(A)-1)], NCOL)) ,
- row.names = colnames(A[["Superblock"]])
+ #correlation matrix with superblock for each variables and each component selected
+ sapply ( c(COMP1:COMP2), function(x) cor( blocks[["Superblock"]], rgcca$Y[[length(blocks)]][, x] ) ) , 
+ #attribution of block ID to each corresponding variable
+ rep( sapply ( 1: 3, function(x) rep(paste("Block", x)) ), sapply(blocks[1:(length(blocks)-1)], NCOL)) ,
+ row.names = colnames(blocks[["Superblock"]])
 )
 
-sampleSpace = plotSpace(samples, "Samples", samples$BLOCK, COMP1, COMP2) + geom_path(aes(x,y), data=circleFun())
+sampleSpace = plotSpace(samples, "Samples", samples[,3], COMP1, COMP2) + geom_path(aes(x,y), data=circleFun())
 
 savePdf(opt$output2, sampleSpace)
