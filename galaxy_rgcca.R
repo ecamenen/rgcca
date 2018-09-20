@@ -3,7 +3,7 @@
 # Institute: ICM - Institut du Cerveau et de la Moelle épinière (Paris, FRANCE),
 # Institut Français de Bioinformatique (IFB), Centre national de la recherche scientifique (CNRS)
 # Contact: iconics@icm-institute.org
-# Key-words: omics, RGCCA, multi-bloc
+# Key-words: omics, RGCCA, multi-block
 # EDAM operation: analysis, correlation, visualisation
 # EDAM topic: omics, medecine, mathematics
 #
@@ -72,6 +72,8 @@ setResponse = function(){
 ################################
 
 circleFun <- function(center = c(0,0), diameter = 2, npoints = 100){
+  #creates x,y coordinates for a circle
+  
   r = diameter / 2
   tt <- seq(0,2*pi,length.out = npoints)
   xx <- center[1] + r * cos(tt)
@@ -83,22 +85,22 @@ printAxis = function (n)
   #n: number of the axis
   paste("Axis ", n, " (", round(rgcca$AVE$AVE_X[[length(blocks)]][n] * 100 , 1),"%)", sep="")
 
-savePdf = function(f, x){
-  pdf(f)
-  x
-  dev.off()
-}
-
 plotSpace = function (df, title, color, comp1, comp2){
+  #plot settings for projection of points in a bi-dimensional space
   
-  ggplot(df, aes(df[,1], df[,2])) + 
-  geom_vline(xintercept = 0) + 
-  geom_hline(yintercept = 0) + 
+  ggplot(df, aes(df[,1], df[,2], colour = color)) + 
+  theme_minimal() +
+  geom_vline(xintercept = 0, col="grey", lty=2, size=1) + 
+  geom_hline(yintercept = 0, col="grey", lty=2, size=1) + 
   ggtitle(paste (title,  "space (in the superbloc)")) +
   labs ( x = printAxis(comp1), y = printAxis(comp2) ) +
-  geom_text(aes(colour = color, label= rownames(df)), vjust=0, nudge_y = 0.03, size = 3) +
-  theme(legend.position="bottom", legend.box = "horizontal", legend.title = element_blank())
-  
+  geom_text_repel(aes(colour = color, label= rownames(df)), size = 3, force=10) +
+  scale_y_continuous(breaks=NULL) +
+  scale_x_continuous(breaks=NULL) +
+  labs(color = "Blocks") +
+  theme(axis.text = element_blank())
+  #+ stat_ellipse()
+  #TODO: if NB_VAR > X
 }
 
 ################################
@@ -112,14 +114,12 @@ getArgs = function(){
                 help="Bloc files name"),
     make_option(c("-c", "--connection"), type="character", metavar="character", default="connection_matrix.txt",
                 help="Connection file name"),
-    make_option(c("-r", "--response"), type="character", metavar="character", default="Response.tsv",
+    make_option(c("-r", "--response"), type="character", metavar="character", default="response.tsv",
                 help="Response file name"),
-    make_option(c( "-o1", "--output1"), type="character", metavar="character", default="variables.pdf", 
+    make_option(c( "-o1", "--output1"), type="character", metavar="character", default="samplesSpace.pdf", 
                 help="Variables space file name [default: %default]"),
-    make_option(c( "-o2", "--output2"), type="character", metavar="character", default="samples.pdf", 
+    make_option(c( "-o2", "--output2"), type="character", metavar="character", default="variablesSpace.pdf", 
                 help="Sample space file name [default: %default]"),
-    make_option(c( "-o3", "--output3"), type="character", metavar="character", default="pca.pdf",
-                help="PCA file name [default: %default]"),
     make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2, 
                 help="Scheme function g(x) [default: x^2] (1: x, 2: x^2, 3: x^3, 4: |x|")
   )
@@ -171,7 +171,7 @@ checkArg = function(a){
 ################################
 
 #Loading librairies
-librairies = c("RGCCA", "ggplot2", "optparse")
+librairies = c("RGCCA", "ggplot2", "ggrepel", "optparse")
 for (l in librairies){
   if (! (l %in% installed.packages()[,"Package"])) install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
   library(l, character.only = TRUE)
@@ -213,22 +213,25 @@ rgcca = rgcca(blocks,
 #message: Number of row/column of connection matrix doesn't match with the number of blocks.
 
 
-# Variables common space
-variables = data.frame(rgcca$Y[[length(blocks)]])
+# Samples common space
+samples = data.frame(rgcca$Y[[length(blocks)]])
 color = setResponse()
-variableSpace = plotSpace(variables, "Variables", color, COMP1, COMP2)
-savePdf(opt$output1, variableSpace)
+samplesSpace = plotSpace(samples, "Samples", color, COMP1, COMP2)
+ggsave(plot=samplesSpace, file=opt$output1, width=14, height =12))
 
  
-# Samples common space
-samples =  data.frame( 
+# Variables common space
+variables =  data.frame( 
  #correlation matrix with superblock for each variables and each component selected
  sapply ( c(COMP1:COMP2), function(x) cor( blocks[["Superblock"]], rgcca$Y[[length(blocks)]][, x] ) ) , 
  #attribution of block ID to each corresponding variable
- rep( sapply ( 1: 3, function(x) rep(paste("Block", x)) ), sapply(blocks[1:(length(blocks)-1)], NCOL)) ,
+ rep( names(blocks)[-length(blocks)] , sapply(blocks[1:(length(blocks)-1)], NCOL)) ,
  row.names = colnames(blocks[["Superblock"]])
 )
+names(blocks)[-length(blocks)]
 
-sampleSpace = plotSpace(samples, "Samples", samples[,3], COMP1, COMP2) + geom_path(aes(x,y), data=circleFun())
-
-savePdf(opt$output2, sampleSpace)
+variablesSpace = plotSpace(variables, "Variables", variables[,3], COMP1, COMP2) + 
+  geom_path(aes(x,y), data=circleFun(), col="grey", size=1) + 
+  geom_path(aes(x,y), data=circleFun()/2, col="grey", size=1)
+variablesSpace
+ggsave(plot=variablesSpace, file=opt$output2, width=14, height =12)
