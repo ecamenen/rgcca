@@ -32,6 +32,8 @@ loadData = function(fi, fo=fi, row.names=NULL, h=F){
   #TODO: catch warning missing \n at the end of the file
 }
 
+save = function(p, f)  ggsave(p, f, width=10, height=8)
+
 setBlocks = function(){
   #create a list object of blocks from files loading
   
@@ -94,11 +96,11 @@ plotSpace = function (df, title, color, comp1, comp2){
   geom_hline(yintercept = 0, col="grey", linetype="dashed", size=1) + 
   labs ( title = title,
          x = printAxis(comp1), 
-         y = printAxis(comp2) ) +
+         y = printAxis(comp2),
+         color = "Blocks") +
   geom_text_repel(aes(colour = color, label= rownames(df)), size = 3, force=2) +
   scale_y_continuous(breaks=NULL) +
   scale_x_continuous(breaks=NULL) +
-  labs(color = "Blocks") +
   theme(
     #panel.border  = element_rect(fill="blue"),
     legend.text = element_text(size = 13),
@@ -110,6 +112,30 @@ plotSpace = function (df, title, color, comp1, comp2){
   #+ stat_ellipse()
   #TODO: if NB_VAR > X
 }
+
+plot_biomarkers = function(df, comp){
+  ggplot(df, mapping=aes(x=order, y=df[,comp], fill = color)) +
+    geom_hline(yintercept = c(-1,1), col="grey", linetype="dashed", size=1) + 
+    geom_hline(yintercept = 0, col="grey", size=1) +
+    geom_bar(stat = "identity") +
+    coord_flip() + 
+    scale_x_continuous(breaks=df$order, labels=rownames(df)) +
+    labs(title= "Variable weights", subtitle=printAxis(comp), x = "", y = "", fill = "Blocks") +
+    theme_classic() +
+    theme(legend.text = element_text(size = 8),
+          legend.title = element_text(face="bold.italic", size=10),
+          axis.text.y = element_text(size = 8, face="italic", labels(rownames(df))),
+          axis.text.x = element_text(size = 8, face="italic", color="darkgrey"),
+          #axis.line.x = element_line(colour = "grey"),
+          axis.line = element_blank(),
+          #axis.ticks.x = element_line(colour = "grey"),
+          axis.ticks = element_blank(),
+          plot.title = element_text(hjust = 0.5, size = 18, face="bold"),
+          plot.subtitle = element_text(hjust = 0.5, size = 12, face="italic"))
+    # scale_fill_manual(values = c("steelblue4", "indianred3")) +
+    # scale_colour_manual(values = c("steelblue4", "indianred3"))
+}
+
 
 ################################
 #          Arguments
@@ -128,6 +154,8 @@ getArgs = function(){
                 help="Variables space file name [default: %default]"),
     make_option(c( "-o2", "--output2"), type="character", metavar="character", default="variablesSpace.pdf", 
                 help="Sample space file name [default: %default]"),
+    make_option(c( "-o2", "--output3"), type="character", metavar="character", default="best_biomarkers.pdf", 
+                help="Best biomarkers file name [default: %default]"),
     make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2, 
                 help="Scheme function g(x) [default: x^2] (1: x, 2: x^2, 3: x^3, 4: |x|")
   )
@@ -225,20 +253,28 @@ rgcca = rgcca(blocks,
 samples = data.frame(rgcca$Y[[length(blocks)]])
 color = setResponse()
 samplesSpace = plotSpace(samples, "Samples", color, COMP1, COMP2)
-ggsave(plot=samplesSpace, file=opt$output1, width=10, height =8)
+save(samplesSpace, opt$output1)
 
- 
+#attribution of block ID to each corresponding variable
+blocks_variables = rep( names(blocks)[-length(blocks)] , sapply(blocks[1:(length(blocks)-1)], NCOL))
+
 # Variables common space
 variables =  data.frame( 
  #correlation matrix with superblock for each variables and each component selected
  sapply ( c(COMP1:COMP2), function(x) cor( blocks[["Superblock"]], rgcca$Y[[length(blocks)]][, x] ) ) , 
- #attribution of block ID to each corresponding variable
- rep( names(blocks)[-length(blocks)] , sapply(blocks[1:(length(blocks)-1)], NCOL)) ,
+ blocks_variables,
  row.names = colnames(blocks[["Superblock"]])
 )
-
 
 variablesSpace = plotSpace(variables, "Variables", variables[,3], COMP1, COMP2) + 
   geom_path(aes(x,y), data=circleFun(), col="grey", size=1) + 
   geom_path(aes(x,y), data=circleFun()/2, col="grey", size=1, lty=2)
-ggsave(plot=variablesSpace, file=opt$output2, width=10, height =8)
+save(variablesSpace, opt$output2)
+
+# Biomarkers plot
+biomarkers = data.frame(rgcca$a[[4]], color=blocks_variables)
+biomarkers_ordered = data.frame(biomarkers[order(abs(biomarkers[,1]), decreasing = TRUE),], order = nrow(biomarkers):1)
+
+best_biomarkers = plot_biomarkers(biomarkers_ordered, 1)
+best_biomarkers
+save(biomarkers, opt$output3)
