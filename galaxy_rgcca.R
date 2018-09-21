@@ -113,9 +113,10 @@ plotSpace = function (df, title, color, comp1, comp2){
   #TODO: if NB_VAR > X
 }
 
-plot_biomarkers = function(df, comp){
+plot_biomarkers = function(df, comp, n){
   df = data.frame(df[order(abs(df[,comp]), decreasing = TRUE),], order = nrow(df):1)
   color2=df$color; levels(color2)=hue_pal()(length(blocks)-1)
+  if(NROW(df) >= n) df = df[1:n,]
   ggplot(df, mapping=aes(x=order, y=df[,comp], fill = color)) +
   geom_hline(yintercept = c(-.5,.5), col="grey", linetype="dotted", size=1) + 
   geom_hline(yintercept = 0, col="grey", size=1) +
@@ -273,5 +274,5 @@ save(variablesSpace, opt$output2)
 
 # Biomarkers plot
 biomarkers = data.frame(rgcca$a[[4]], color=blocks_variables)
-best_biomarkers = plot_biomarkers(biomarkers, 1)
+best_biomarkers = plot_biomarkers(biomarkers, 1, 10)
 save(best_biomarkers, opt$output3)
