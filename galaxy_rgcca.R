@@ -114,28 +114,28 @@ plotSpace = function (df, title, color, comp1, comp2){
 }
 
 plot_biomarkers = function(df, comp){
+  df = data.frame(df[order(abs(df[,comp]), decreasing = TRUE),], order = nrow(df):1)
+  color2=df$color; levels(color2)=hue_pal()(length(blocks)-1)
   ggplot(df, mapping=aes(x=order, y=df[,comp], fill = color)) +
-    geom_hline(yintercept = c(-1,1), col="grey", linetype="dashed", size=1) + 
-    geom_hline(yintercept = 0, col="grey", size=1) +
-    geom_bar(stat = "identity") +
-    coord_flip() + 
-    scale_x_continuous(breaks=df$order, labels=rownames(df)) +
-    labs(title= "Variable weights", subtitle=printAxis(comp), x = "", y = "", fill = "Blocks") +
-    theme_classic() +
-    theme(legend.text = element_text(size = 8),
-          legend.title = element_text(face="bold.italic", size=10),
-          axis.text.y = element_text(size = 8, face="italic", labels(rownames(df))),
-          axis.text.x = element_text(size = 8, face="italic", color="darkgrey"),
-          #axis.line.x = element_line(colour = "grey"),
-          axis.line = element_blank(),
-          #axis.ticks.x = element_line(colour = "grey"),
-          axis.ticks = element_blank(),
-          plot.title = element_text(hjust = 0.5, size = 18, face="bold"),
-          plot.subtitle = element_text(hjust = 0.5, size = 12, face="italic"))
-    # scale_fill_manual(values = c("steelblue4", "indianred3")) +
-    # scale_colour_manual(values = c("steelblue4", "indianred3"))
+  geom_hline(yintercept = c(-.5,.5), col="grey", linetype="dotted", size=1) + 
+  geom_hline(yintercept = 0, col="grey", size=1) +
+  geom_bar(stat = "identity") +
+  coord_flip() + 
+  scale_x_continuous(breaks=df$order, labels=rownames(df)) +
+  scale_y_continuous(breaks=seq(-1,1,.5), limits = c(-1,1)) +
+  labs(title= "Variable weights", subtitle=printAxis(comp), x = "", y = "", fill = "Blocks") +
+  theme_classic() +
+  theme(legend.text = element_text(size = 8),
+        legend.title = element_text(face="bold.italic", size=10),
+        axis.text.y = element_text(size = 8, face="italic", color=as.character(color2)),
+        axis.text.x = element_text(size = 8, face="italic", color="darkgrey"),
+        #axis.line.x = element_line(colour = "grey"),
+        axis.line = element_blank(),
+        #axis.ticks.x = element_line(colour = "grey"),
+        axis.ticks = element_blank(),
+        plot.title = element_text(hjust = 0.5, size = 18, face="bold"),
+        plot.subtitle = element_text(hjust = 0.5, size = 12, face="italic"))
 }
-
 
 ################################
 #          Arguments
@@ -273,8 +273,5 @@ save(variablesSpace, opt$output2)
 
 # Biomarkers plot
 biomarkers = data.frame(rgcca$a[[4]], color=blocks_variables)
-biomarkers_ordered = data.frame(biomarkers[order(abs(biomarkers[,1]), decreasing = TRUE),], order = nrow(biomarkers):1)
-
-best_biomarkers = plot_biomarkers(biomarkers_ordered, 1)
-best_biomarkers
-save(biomarkers, opt$output3)
+best_biomarkers = plot_biomarkers(biomarkers, 1)
+save(best_biomarkers, opt$output3)
