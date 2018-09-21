@@ -89,16 +89,24 @@ plotSpace = function (df, title, color, comp1, comp2){
   #plot settings for projection of points in a bi-dimensional space
   
   ggplot(df, aes(df[,1], df[,2], colour = color)) + 
-  theme_minimal() +
-  geom_vline(xintercept = 0, col="grey", lty=2, size=1) + 
-  geom_hline(yintercept = 0, col="grey", lty=2, size=1) + 
-  ggtitle(paste (title,  "space (in the superbloc)")) +
-  labs ( x = printAxis(comp1), y = printAxis(comp2) ) +
-  geom_text_repel(aes(colour = color, label= rownames(df)), size = 3, force=10) +
+  theme_classic() +
+  geom_vline(xintercept = 0, col="grey", linetype="dashed", size=1) + 
+  geom_hline(yintercept = 0, col="grey", linetype="dashed", size=1) + 
+  labs ( title = title,
+         x = printAxis(comp1), 
+         y = printAxis(comp2) ) +
+  geom_text_repel(aes(colour = color, label= rownames(df)), size = 3, force=2) +
   scale_y_continuous(breaks=NULL) +
   scale_x_continuous(breaks=NULL) +
   labs(color = "Blocks") +
-  theme(axis.text = element_blank())
+  theme(
+    #panel.border  = element_rect(fill="blue"),
+    legend.text = element_text(size = 13),
+    legend.title = element_text(face="bold.italic", size=16),
+    axis.text = element_blank(),
+    axis.title.y = element_text(face="italic", margin = margin(0,20,0,0), size=19),
+    axis.title.x = element_text(face="italic", margin = margin(20,0,0,0), size=19),
+    plot.title = element_text(size = 25, face = "bold", hjust=0.5, margin = margin(0,0,20,0)))
   #+ stat_ellipse()
   #TODO: if NB_VAR > X
 }
@@ -217,7 +225,7 @@ rgcca = rgcca(blocks,
 samples = data.frame(rgcca$Y[[length(blocks)]])
 color = setResponse()
 samplesSpace = plotSpace(samples, "Samples", color, COMP1, COMP2)
-ggsave(plot=samplesSpace, file=opt$output1, width=14, height =12))
+ggsave(plot=samplesSpace, file=opt$output1, width=10, height =8)
 
  
 # Variables common space
@@ -228,10 +236,9 @@ variables =  data.frame(
  rep( names(blocks)[-length(blocks)] , sapply(blocks[1:(length(blocks)-1)], NCOL)) ,
  row.names = colnames(blocks[["Superblock"]])
 )
-names(blocks)[-length(blocks)]
+
 
 variablesSpace = plotSpace(variables, "Variables", variables[,3], COMP1, COMP2) + 
   geom_path(aes(x,y), data=circleFun(), col="grey", size=1) + 
-  geom_path(aes(x,y), data=circleFun()/2, col="grey", size=1)
-variablesSpace
-ggsave(plot=variablesSpace, file=opt$output2, width=14, height =12)
+  geom_path(aes(x,y), data=circleFun()/2, col="grey", size=1, lty=2)
+ggsave(plot=variablesSpace, file=opt$output2, width=10, height =8)
