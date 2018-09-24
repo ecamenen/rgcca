@@ -87,6 +87,14 @@ printAxis = function (n)
   #n: number of the axis
   paste("Axis ", n, " (", round(rgcca$AVE$AVE_X[[length(blocks)]][n] * 100 , 1),"%)", sep="")
 
+theme_perso = function() {
+  theme(
+    legend.text = element_text(size = 13),
+    legend.title = element_text(face="bold.italic", size=16),
+    plot.title = element_text(size = 25, face = "bold", hjust=0.5, margin = margin(0,0,20,0))
+  )
+}
+
 plotSpace = function (df, title, color, comp1, comp2){
   #plot settings for projection of points in a bi-dimensional space
   
@@ -94,49 +102,51 @@ plotSpace = function (df, title, color, comp1, comp2){
   theme_classic() +
   geom_vline(xintercept = 0, col="grey", linetype="dashed", size=1) + 
   geom_hline(yintercept = 0, col="grey", linetype="dashed", size=1) + 
-  labs ( title = title,
+  labs ( title = paste(title, "space"),
          x = printAxis(comp1), 
          y = printAxis(comp2),
          color = "Blocks") +
   geom_text_repel(aes(colour = color, label= rownames(df)), size = 3, force=2) +
   scale_y_continuous(breaks=NULL) +
   scale_x_continuous(breaks=NULL) +
+  theme_perso() +
   theme(
-    #panel.border  = element_rect(fill="blue"),
-    legend.text = element_text(size = 13),
-    legend.title = element_text(face="bold.italic", size=16),
     axis.text = element_blank(),
-    axis.title.y = element_text(face="italic", margin = margin(0,20,0,0), size=19),
-    axis.title.x = element_text(face="italic", margin = margin(20,0,0,0), size=19),
-    plot.title = element_text(size = 25, face = "bold", hjust=0.5, margin = margin(0,0,20,0)))
+    axis.title.y = element_text(face=AXIS_FONT, margin = margin(0,20,0,0), size=AXIS_TITLE_SIZE),
+    axis.title.x = element_text(face=AXIS_FONT, margin = margin(20,0,0,0), size=AXIS_TITLE_SIZE)
+    )
   #+ stat_ellipse()
   #TODO: if NB_VAR > X
 }
 
 #TODO: convert coef into [-1,1]
 plot_biomarkers = function(df, comp, n){
+  
   df = data.frame(df[order(abs(df[,comp]), decreasing = TRUE),], order = nrow(df):1)
   color2=df$color; levels(color2)=hue_pal()(length(blocks)-1)
   if(NROW(df) >= n) df = df[1:n,]
-  ggplot(df, mapping=aes(x=order, y=df[,comp], fill = color)) +
+  
+  ggplot(df, aes(order, df[,comp], fill = color)) +
   geom_hline(yintercept = c(-.5,.5), col="grey", linetype="dotted", size=1) + 
   geom_hline(yintercept = 0, col="grey", size=1) +
   geom_bar(stat = "identity") +
   coord_flip() + 
   scale_x_continuous(breaks=df$order, labels=rownames(df)) +
   scale_y_continuous(breaks=seq(-1,1,.5), limits = c(-1,1)) +
-  labs(title= "Variable weights", subtitle=printAxis(comp), x = "", y = "", fill = "Blocks") +
+  labs(
+    title= "Variable weights", 
+    subtitle=printAxis(comp),
+    x = "", y = "",
+    fill = "Blocks") +
   theme_classic() +
-  theme(legend.text = element_text(size = 8),
-        legend.title = element_text(face="bold.italic", size=10),
-        axis.text.y = element_text(size = 8, face="italic", color=as.character(color2)),
-        axis.text.x = element_text(size = 8, face="italic", color="darkgrey"),
-        #axis.line.x = element_line(colour = "grey"),
+  theme_perso() +
+  theme(
+        axis.text.y = element_text(size = AXIS_TEXT_SIZE, face=AXIS_FONT, color=as.character(color2)),
+        axis.text.x = element_text(size = AXIS_TEXT_SIZE, face=AXIS_FONT, color="darkgrey"),
         axis.line = element_blank(),
-        #axis.ticks.x = element_line(colour = "grey"),
         axis.ticks = element_blank(),
-        plot.title = element_text(hjust = 0.5, size = 18, face="bold"),
-        plot.subtitle = element_text(hjust = 0.5, size = 12, face="italic"))
+        plot.subtitle = element_text(hjust = 0.5, size = 16, face="italic"))
+  
 }
 
 ################################
@@ -223,6 +233,9 @@ TAU = "optimal"
 DISJONCTIF = F
 COMP1 = 1
 COMP2 = 2
+AXIS_TITLE_SIZE = 19
+AXIS_TEXT_SIZE = 10
+AXIS_FONT = "italic"
 
 #Get arguments
 args = getArgs()
@@ -277,5 +290,5 @@ save(opt$output2, variablesSpace)
 # Biomarkers plot
 library(scales)
 biomarkers = data.frame(rgcca$a[[4]], color=blocks_variables)
-best_biomarkers = plot_biomarkers(biomarkers, 1, 100)
+best_biomarkers = plot_biomarkers(biomarkers, 1, 10)
 save(opt$output3, best_biomarkers)
