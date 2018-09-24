@@ -32,7 +32,7 @@ loadData = function(fi, fo=fi, row.names=NULL, h=F){
   #TODO: catch warning missing \n at the end of the file
 }
 
-save = function(p, f)  ggsave(p, f, width=10, height=8)
+save = function(f, p)  ggsave(f, p, width=10, height=8)
 
 setBlocks = function(){
   #create a list object of blocks from files loading
@@ -113,6 +113,7 @@ plotSpace = function (df, title, color, comp1, comp2){
   #TODO: if NB_VAR > X
 }
 
+#TODO: convert coef into [-1,1]
 plot_biomarkers = function(df, comp, n){
   df = data.frame(df[order(abs(df[,comp]), decreasing = TRUE),], order = nrow(df):1)
   color2=df$color; levels(color2)=hue_pal()(length(blocks)-1)
@@ -254,7 +255,8 @@ rgcca = rgcca(blocks,
 samples = data.frame(rgcca$Y[[length(blocks)]])
 color = setResponse()
 samplesSpace = plotSpace(samples, "Samples", color, COMP1, COMP2)
-save(samplesSpace, opt$output1)
+samplesSpace
+save(opt$output1, samplesSpace)
 
 #attribution of block ID to each corresponding variable
 blocks_variables = rep( names(blocks)[-length(blocks)] , sapply(blocks[1:(length(blocks)-1)], NCOL))
@@ -270,9 +272,10 @@ variables =  data.frame(
 variablesSpace = plotSpace(variables, "Variables", variables[,3], COMP1, COMP2) + 
   geom_path(aes(x,y), data=circleFun(), col="grey", size=1) + 
   geom_path(aes(x,y), data=circleFun()/2, col="grey", size=1, lty=2)
-save(variablesSpace, opt$output2)
+save(opt$output2, variablesSpace)
 
 # Biomarkers plot
+library(scales)
 biomarkers = data.frame(rgcca$a[[4]], color=blocks_variables)
-best_biomarkers = plot_biomarkers(biomarkers, 1, 10)
-save(best_biomarkers, opt$output3)
+best_biomarkers = plot_biomarkers(biomarkers, 1, 100)
+save(opt$output3, best_biomarkers)
