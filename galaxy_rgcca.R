@@ -8,7 +8,7 @@
 # EDAM topic: omics, medecine, mathematics
 #
 # Abstract: A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA)
-# with all default settings predefined. Produce two figures to help clincians to identify biomarkers: 
+# with all default settings predefined. Produce two figures to help clinicians to identify biomarkers: 
 # samples and variables projected on the two first component of the multi-block analysis.
 
 rm(list=ls())
@@ -19,9 +19,10 @@ setwd("C:/Users/etienne.camenen/bin/rgcca_galaxy")
 #          File
 ################################
 
-getFileName = function(fi)
+getFileName = function(fi)  {
   #get prefix part from a file
-  unlist(strsplit(fi, '[.]'))[1]
+  fo = unlist(strsplit(fi, '[.]'))[1]
+}
 
 loadData = function(fi, fo=fi, row.names=NULL, h=F){
   #create a dataset object from a file loading
@@ -46,6 +47,7 @@ setBlocks = function(){
   blocks = list()
   for (i in 1:length(blocksName)){
     fi = blocksName[i]
+    checkFile(fi)
     fo = getFileName(fi)
     loadData(fi, fo, 1, T)
     blocks[[fo]] = get(fo)
@@ -59,7 +61,6 @@ setResponse = function(){
   #create a dataset object from a file loading containg the response
   
   if("response" %in% names(opt)){
-    opt$response = "Response.tsv"
     loadData(opt$response, "response", 1, F)
     #TODO: check n1  = n2 = ...
     if(isTRUE(DISJONCTIF)) response = factor(apply("Response", 1, which.max))
@@ -95,10 +96,10 @@ theme_perso = function() {
   )
 }
 
-plotSpace = function (df, title, color, comp1, comp2){
+plotSpace = function (df, title, response, comp1, comp2){
   #plot settings for projection of points in a bi-dimensional space
   
-  ggplot(df, aes(df[,1], df[,2], colour = color)) + 
+  ggplot(df, aes(df[,1], df[,2], colour = response)) + 
   theme_classic() +
   geom_vline(xintercept = 0, col="grey", linetype="dashed", size=1) + 
   geom_hline(yintercept = 0, col="grey", linetype="dashed", size=1) + 
@@ -106,7 +107,7 @@ plotSpace = function (df, title, color, comp1, comp2){
          x = printAxis(comp1), 
          y = printAxis(comp2),
          color = "Blocks") +
-  geom_text_repel(aes(colour = color, label= rownames(df)), size = 3, force=2) +
+  geom_text_repel(aes(colour = response, label= rownames(df)), size = 3, force=2) +
   scale_y_continuous(breaks=NULL) +
   scale_x_continuous(breaks=NULL) +
   theme_perso() +
@@ -156,15 +157,15 @@ plot_biomarkers = function(df, comp, n){
 #TODO: remove default files
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", default="X_agric.tsv,X_ind.tsv,X_polit.tsv",
+    make_option(c("-d", "--datasets"), type="character", metavar="character", default="data/X_agric.tsv,data/X_ind.tsv,data/X_polit.tsv",
                 help="Bloc files name"),
-    make_option(c("-c", "--connection"), type="character", metavar="character", default="connection_matrix.txt",
+    make_option(c("-c", "--connection"), type="character", metavar="character", default="data/connection.tsv",
                 help="Connection file name"),
-    make_option(c("-r", "--response"), type="character", metavar="character", default="response.tsv",
+    make_option(c("-r", "--response"), type="character", metavar="character", default="data/response.tsv",
                 help="Response file name"),
-    make_option(c( "-o1", "--output1"), type="character", metavar="character", default="samplesSpace.pdf", 
+    make_option(c( "-o1", "--output1"), type="character", metavar="character", default="samples_space.pdf", 
                 help="Variables space file name [default: %default]"),
-    make_option(c( "-o2", "--output2"), type="character", metavar="character", default="variablesSpace.pdf", 
+    make_option(c( "-o2", "--output2"), type="character", metavar="character", default="variables_space.pdf", 
                 help="Sample space file name [default: %default]"),
     make_option(c( "-o2", "--output3"), type="character", metavar="character", default="best_biomarkers.pdf", 
                 help="Best biomarkers file name [default: %default]"),
@@ -174,6 +175,13 @@ getArgs = function(){
   args = commandArgs(trailingOnly=T)
   return (OptionParser(option_list=option_list))
   }
+
+checkFile = function (o){
+  # o: one argument from the list of arguments
+  if(!file.exists(o)){
+    stop(paste(o, " file does not exist\n", sep=""), call.=FALSE)
+  }
+}
 
 #Check the validity of the arguments 
 #Inputs:
@@ -192,15 +200,9 @@ checkArg = function(a){
       opt$scheme = schemes[opt$scheme]
   }
   
-  checkFile = function (o){
-    # o: one argument from the list of arguments
-    if(!file.exists(opt[[o]])){
-      stop(paste("--", o, " name does not exist\n", sep=""), call.=FALSE)
-    }
-  }
-  FILES = c("connection", "response", "infile")
+  FILES = c("connection", "response")
   for (o in FILES)
-    if(!is.null(opt[[o]])) checkFile(o)
+    if(!is.null(opt[[o]])) checkFile(opt[[o]])
   
   #default settings of connection_matrix matrix
   if(is.null(opt$connection)){
@@ -208,7 +210,7 @@ checkArg = function(a){
      seq = 1:(length(blocks)-1)
      connection_matrix[length(blocks), seq] <- 1 -> connection_matrix[seq, length(blocks)]
   }else{
-    loadData("connection_matrix.txt", "connection_matrix", h=F)
+    loadData(opt$connection, "connection_matrix", h=F)
   }
   
   return (opt)
@@ -266,9 +268,8 @@ rgcca = rgcca(blocks,
 
 # Samples common space
 samples = data.frame(rgcca$Y[[length(blocks)]])
-color = setResponse()
-samplesSpace = plotSpace(samples, "Samples", color, COMP1, COMP2)
-samplesSpace
+response = setResponse()
+samplesSpace = plotSpace(samples, "Samples", response, COMP1, COMP2)
 save(opt$output1, samplesSpace)
 
 #attribution of block ID to each corresponding variable
