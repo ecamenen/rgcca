@@ -157,20 +157,22 @@ plot_biomarkers = function(df, comp, n){
 #TODO: remove default files
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", default="data/X_agric.tsv,data/X_ind.tsv,data/X_polit.tsv",
+    make_option(c("-d", "--datasets"), type="character", metavar="character", default="data/agriculture.tsv,data/industry.tsv,data/politic.tsv",
                 help="Bloc files name"),
     make_option(c("-c", "--connection"), type="character", metavar="character", default="data/connection.tsv",
                 help="Connection file name"),
     make_option(c("-r", "--response"), type="character", metavar="character", default="data/response.tsv",
                 help="Response file name"),
+    make_option(c("-s", "--separator"), type="integer", metavar="integer", default=1,
+                help="Type of separator [default: tabulation] (1: Tabulation, 2: Semicolon, 3: Comma"),
+    make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2, 
+                help="Scheme function g(x) [default: x^2] (1: x, 2: x^2, 3: x^3, 4: |x|"),
     make_option(c( "-o1", "--output1"), type="character", metavar="character", default="samples_space.pdf", 
                 help="Variables space file name [default: %default]"),
     make_option(c( "-o2", "--output2"), type="character", metavar="character", default="variables_space.pdf", 
                 help="Sample space file name [default: %default]"),
     make_option(c( "-o2", "--output3"), type="character", metavar="character", default="best_biomarkers.pdf", 
-                help="Best biomarkers file name [default: %default]"),
-    make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2, 
-                help="Scheme function g(x) [default: x^2] (1: x, 2: x^2, 3: x^3, 4: |x|")
+                help="Best biomarkers file name [default: %default]")
   )
   args = commandArgs(trailingOnly=T)
   return (OptionParser(option_list=option_list))
@@ -198,6 +200,13 @@ checkArg = function(a){
       opt$scheme = function(x) x^4
     else 
       opt$scheme = schemes[opt$scheme]
+  }
+  
+  if ((opt$separator < 1) || (opt$separator > 3)){
+    stop("--separator must be comprise between 1 and 2 (1: Tabulation, 2: Semicolon, 3: Comma) [by default: 2].\n", call.=FALSE)
+  }else{
+    separators = c('\t', ';', ',')
+    assign("SEPARATOR", separators[opt$separator], .GlobalEnv)
   }
   
   FILES = c("connection", "response")
@@ -229,7 +238,6 @@ for (l in librairies){
 
 #Global settings
 SCALE = T
-SEPARATOR = "\t"
 VERBOSE = F
 TAU = "optimal"
 DISJONCTIF = F
