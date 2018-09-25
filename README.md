@@ -23,7 +23,7 @@ iconics@icm-institute.org
 Performs multi-variate analysis (PCA, CCA, PLS, RGCCA) and projects the variables and samples into a bi-dimensional space.
 
 ## Description
-A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA) with all default settings predefined. Produce two figures to help clinicians to identify biomarkers: samples and variables projected on the two first component of the multi-block analysis.
+A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA) with all default settings predefined [1, 2]. Produce two figures to help clinicians to identify biomarkers: samples and variables projected on the two first component of the multi-block analysis.
 
 ### Input files (see data/ folder for examples)
 - ```blocks``` (.tsv or .txt) : tabulated files containing variables to analyse together. The samples should be in lines and labelled and variables in columns with an header.
@@ -39,13 +39,13 @@ A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correla
 ![best_biomarkers](/img/best_biomarkers.png)
 
 ## Usage Instructions
-For direct usage :
+For direct usage (Example from Russet data from RGCCA package [3]):
 
 ```
-Rscript galaxy_rgcca.R -d <datasets>
+Rscript galaxy_rgcca.R -d data/agriculture.tsv,data/industry.tsv,data/politic.tsv
 ```
 
-With optional parameters :
+With parameters :
 
 ```
 Rscript galaxy_rgcca.R --datasets <datasets> [--help] [--connection <connection_file>] [--response <response_file>] [--scheme <scheme_type>] [--output1 <variables_space_fig_name>] [--output3 <samples_space_fig_name>] [--output3 <biomarkers_fig_name>]
@@ -56,11 +56,11 @@ Rscript galaxy_rgcca.R --datasets <datasets> [--help] [--connection <connection_
 - ```-r (--response)``` (STRING) For a supervised mode, a response file could be added (by default, no response variable).
 - ```-g (--scheme)``` (INTEGER) Scheme function among 1: Horst, 2: Factorial, 3: Centroid, 4: x^4 (by default, factorial scheme).
 - ```-s (--separator)``` (INTEGER) Specify the character used to separate the column in the fingerprint dataset (1: tabulation, 2: semicolon) (by default, tabulation).
-- ```-o1 (--output1)``` (STRING) The path of the output file for the samples space.
-- ```-o2 (--output2)``` (STRING) The path of the output file for the variables space.
-- ```-o3 (--output3)``` (STRING) The path of the output file for the biomarkers.
+- ```--output1``` (STRING) The path of the output file for the samples space.
+- ```--output2``` (STRING) The path of the output file for the variables space.
+- ```--output3``` (STRING) The path of the output file for the biomarkers.
 
 ## References
-- Tenenhaus M, Tenenhaus A, Groenen PJF, (2017) Regularized generalized canonical correlation analysis: A framework for sequential multiblock component methods, Psychometrika, vol. 82, no. 3, 737–777
-- Tenenhaus  A. and Guillemot V. (2017): RGCCA Package. http://cran.project.org/web/packages/RGCCA/index.html
-- Tenenhaus A, Tenenhaus M (2011) Regularized generalized canonical correlation analysis, vol. 76, pp. 257-284, Psychometrika.
+1. Tenenhaus M, Tenenhaus A, Groenen PJF, (2017) Regularized generalized canonical correlation analysis: A framework for sequential multiblock component methods, Psychometrika, vol. 82, no. 3, 737–777
+2. Tenenhaus  A. and Guillemot V. (2017): RGCCA Package. http://cran.project.org/web/packages/RGCCA/index.html
+3. Tenenhaus A, Tenenhaus M (2011) Regularized generalized canonical correlation analysis, vol. 76, pp. 257-284, Psychometrika.

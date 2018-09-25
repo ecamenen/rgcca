@@ -1,7 +1,7 @@
 # Author: Etienne CAMENEN
 # Date: 2018
-# Institute: ICM - Institut du Cerveau et de la Moelle épinière (Paris, FRANCE),
-# Institut Français de Bioinformatique (IFB), Centre national de la recherche scientifique (CNRS)
+# Institute: ICM - Institut du Cerveau et de la Moelle ?pini?re (Paris, FRANCE),
+# Institut Fran?ais de Bioinformatique (IFB), Centre national de la recherche scientifique (CNRS)
 # Contact: iconics@icm-institute.org
 # Key-words: omics, RGCCA, multi-block
 # EDAM operation: analysis, correlation, visualisation
@@ -12,8 +12,6 @@
 # samples and variables projected on the two first component of the multi-block analysis.
 
 rm(list=ls())
-#TODO: remove
-setwd("C:/Users/etienne.camenen/bin/rgcca_galaxy")
 
 ################################
 #          File
@@ -51,10 +49,23 @@ setBlocks = function(){
     fo = getFileName(fi)
     loadData(fi, fo, 1, T)
     blocks[[fo]] = get(fo)
+    if (NCOL(blocks[[fo]]) ==0) stop(paste(fo, "block file has an only-column. Check the --separator [by default: 1 for tabulation].\n"), call.=FALSE)
   }
   blocks[["Superblock"]] = Reduce(cbind, blocks)
   
   return(blocks)
+}
+
+setConnection = function(){
+  #default settings of connection_matrix matrix
+  if(is.null(opt$connection)){
+    seq = 1:(length(blocks)-1)
+    connection_matrix = matrix(0,length(blocks),length(blocks))
+    connection_matrix[length(blocks), seq] <- 1 -> connection_matrix[seq, length(blocks)]
+  }else{
+    loadData(opt$connection, "connection_matrix", h=F)
+  }
+  return(connection_matrix)
 }
 
 setResponse = function(){
@@ -157,21 +168,18 @@ plot_biomarkers = function(df, comp, n){
 #TODO: remove default files
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", default="data/agriculture.tsv,data/industry.tsv,data/politic.tsv",
-                help="Bloc files name"),
-    make_option(c("-c", "--connection"), type="character", metavar="character", default="data/connection.tsv",
-                help="Connection file name"),
-    make_option(c("-r", "--response"), type="character", metavar="character", default="data/response.tsv",
-                help="Response file name"),
-    make_option(c("-s", "--separator"), type="integer", metavar="integer", default=1,
+    make_option(c("-d", "--datasets"), type="character", metavar="character", default = "data/agriculture.tsv,data/industry.tsv,data/politic.tsv", help="Bloc files name"),
+    make_option(c("-c", "--connection"), type="character", metavar="character", help="Connection file name"),
+    make_option(c("-r", "--response"), type="character", metavar="character", help="Response file name"),
+    make_option(c("-s", "--separator"), type="integer", metavar="integer", default=2,
                 help="Type of separator [default: tabulation] (1: Tabulation, 2: Semicolon, 3: Comma"),
-    make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2, 
+    make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2,
                 help="Scheme function g(x) [default: x^2] (1: x, 2: x^2, 3: x^3, 4: |x|"),
-    make_option(c( "-o1", "--output1"), type="character", metavar="character", default="samples_space.pdf", 
+    make_option(c( "--output1"), type="character", metavar="character", default="samples_space.pdf", 
                 help="Variables space file name [default: %default]"),
-    make_option(c( "-o2", "--output2"), type="character", metavar="character", default="variables_space.pdf", 
+    make_option(c( "--output2"), type="character", metavar="character", default="variables_space.pdf", 
                 help="Sample space file name [default: %default]"),
-    make_option(c( "-o2", "--output3"), type="character", metavar="character", default="best_biomarkers.pdf", 
+    make_option(c( "--output3"), type="character", metavar="character", default="best_biomarkers.pdf", 
                 help="Best biomarkers file name [default: %default]")
   )
   args = commandArgs(trailingOnly=T)
@@ -190,6 +198,8 @@ checkFile = function (o){
 # a: arguments (optionParser object)
 checkArg = function(a){
   opt = parse_args(a)
+  
+  if(is.null(opt$datasets)) stop(paste("--datasets is required\n", sep=""), call.=FALSE)
   
   if (is.null(opt$scheme)) opt$scheme = "factorial"
   else if ((opt$scheme < 1) || (opt$scheme > 4)){
@@ -213,15 +223,6 @@ checkArg = function(a){
   for (o in FILES)
     if(!is.null(opt[[o]])) checkFile(opt[[o]])
   
-  #default settings of connection_matrix matrix
-  if(is.null(opt$connection)){
-     connection_matrix = matrix(0,length(blocks),length(blocks))
-     seq = 1:(length(blocks)-1)
-     connection_matrix[length(blocks), seq] <- 1 -> connection_matrix[seq, length(blocks)]
-  }else{
-    loadData(opt$connection, "connection_matrix", h=F)
-  }
-  
   return (opt)
 }
 
@@ -230,7 +231,7 @@ checkArg = function(a){
 ################################
 
 #Loading librairies
-librairies = c("RGCCA", "ggplot2", "ggrepel", "optparse")
+librairies = c("RGCCA", "ggplot2", "ggrepel", "optparse", "scales")
 for (l in librairies){
   if (! (l %in% installed.packages()[,"Package"])) install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
   library(l, character.only = TRUE)
@@ -258,6 +259,8 @@ tryCatch({
 
 
 blocks = setBlocks()
+connection_matrix = setConnection()
+response = setResponse()
 NB_COMP = sapply(blocks, NCOL)
 # TODO: Error in rgcca(blocks, connection_matrix, tau = TAU, scheme = scheme, ncomp = rep(NB_COMP,  : 
 #                                                                     For each block, choose a number of components smaller than the number of variables!
@@ -276,7 +279,6 @@ rgcca = rgcca(blocks,
 
 # Samples common space
 samples = data.frame(rgcca$Y[[length(blocks)]])
-response = setResponse()
 samplesSpace = plotSpace(samples, "Samples", response, COMP1, COMP2)
 save(opt$output1, samplesSpace)
 
@@ -297,7 +299,6 @@ variablesSpace = plotSpace(variables, "Variables", variables[,3], COMP1, COMP2) 
 save(opt$output2, variablesSpace)
 
 # Biomarkers plot
-library(scales)
 biomarkers = data.frame(rgcca$a[[4]], color=blocks_variables)
 best_biomarkers = plot_biomarkers(biomarkers, 1, 10)
 save(opt$output3, best_biomarkers)
