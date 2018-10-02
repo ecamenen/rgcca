@@ -48,13 +48,13 @@ Rscript galaxy_rgcca.R -d data/agriculture.tsv,data/industry.tsv,data/politic.ts
 With parameters :
 
 ```
-Rscript galaxy_rgcca.R --datasets <datasets> [--help] [--connection <connection_file>] [--response <response_file>] [--scheme <scheme_type>] [--output1 <variables_space_fig_name>] [--output3 <samples_space_fig_name>] [--output3 <biomarkers_fig_name>]
+Rscript galaxy_rgcca.R --datasets <list_block_files> [--help] [--names <list_block_names] [--connection <connection_file>] [--response <response_file>] [--scheme <scheme_type>] [--output1 <variables_space_fig_name>] [--output3 <samples_space_fig_name>] [--output3 <biomarkers_fig_name>]
 ```
 
-- ```-d (--datasets)``` (STRING) The list of the path for each block file separated by comma (without space between). Ex: data/X_agric.tsv,data/X_ind.tsv,data/X_polit.tsv
+- ```-d (--datasets)``` (STRING) The list of the paths for each block file separated by comma (without space between). Ex: data/X_agric.tsv,data/X_ind.tsv,data/X_polit.tsv
 - ```-c (--connection)``` (STRING) The path of the file used as a connection matrix. Its dimension should be (NB_BLOCKS + 1) * (NB_BLOCKS + 1). + 1 corresponds for the use of a supplementary block (the "superblock"), a concatenation of all the blocks helpful to interpret the results. By default, the connection matrix is build with 1 values for the last line (and column) except for the diagonal (i.e., the superblock is fully connected with the other blocks) and 0 values for the other cells (the blocks are not connected together). To go further than this null hypothesis, a priori information could be used to tune the matrix (e.g., add 1 value for a connection between two block).  
 - ```-r (--response)``` (STRING) To color samples by group in associated figure, a response file could be added (by default, no response variable).
-- ```-n (--response)``` (STRING) To color samples by group in associated figure, a response file could be added (by default, no response variable).
+- ```-n (--names)``` (STRING) The list of the names for each block file separated by comma (without space between)
 - ```-g (--scheme)``` (INTEGER) Scheme function among 1: Horst, 2: Factorial, 3: Centroid, 4: x^4 (by default, factorial scheme).
 - ```-s (--separator)``` (INTEGER) Specify the character used to separate the column in the fingerprint dataset (1: tabulation, 2: semicolon) (by default, tabulation).
 - ```--output1``` (STRING) The path of the output file for the samples space.
