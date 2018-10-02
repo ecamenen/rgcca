@@ -70,6 +70,19 @@ setBlocks = function(){
   return(blocks)
 }
 
+checkConnection = function(c){
+  #cm: connection matrix
+  #unname to avoid taking account the automatic names of column
+  if( !isSymmetric.matrix(unname(c)) ) stop("The connection file must be a symmetric matrix.\n", call.=FALSE)
+  n = length(blocks)
+  if ( NCOL(c) != n ) stop(paste("The number of rows/columns of the connection matrix file must be equals to the number of files in the dataset + 1 (", n,").\n", sep=""), call.=FALSE)
+  d = unique(diag(c))
+  if ( length(d) !=1 || d != 0 ) stop("The diagonal of the connection matrix file must be 0.\n", call.=FALSE)
+  x = unique(c %in% c(0, 1) )
+  if ( length(x) !=1  || x != T ) stop("The connection file must contains only 0 or 1.\n", call.=FALSE)
+    
+}
+
 setConnection = function(){
   #default settings of connection_matrix matrix
   if(is.null(opt$connection)){
@@ -79,6 +92,7 @@ setConnection = function(){
   }else{
     loadData(opt$connection, "connection_matrix", h=F)
   }
+  checkConnection(connection_matrix)
   return(connection_matrix)
 }
 
@@ -290,9 +304,6 @@ rgcca = rgcca(blocks,
               scale = SCALE,
               verbose = VERBOSE)
 #ncomp = rep(NB_COMP, length(blocks))
-#TODO: catch Error in connection_matrix * h(cov2(Y, bias = bias)) : non-conformable arrays
-#message: Number of row/column of connection matrix doesn't match with the number of blocks.
-
 
 # Samples common space
 samples = data.frame(rgcca$Y[[length(blocks)]])
