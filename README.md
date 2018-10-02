@@ -11,13 +11,7 @@ omics, RGCCA, multi-block
 analysis, correlation, visualisation
 
 #### Contact: 
-iconics@icm-institute.org
-
-#### Institute: 
-- ICM - Institut du Cerveau et de la Moelle épinière (Paris, FRANCE)
-- Institut Français de Bioinformatique (IFB)
-- Centre national de la recherche scientifique (CNRS)
-
+arthur.tenenhaus@l2s.centralesupelec.fr
 
 #### Short description
 Performs multi-variate analysis (PCA, CCA, PLS, RGCCA) and projects the variables and samples into a bi-dimensional space.
@@ -42,13 +36,13 @@ A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correla
 For direct usage (Example from Russet data from RGCCA package [3]):
 
 ```
-Rscript galaxy_rgcca.R -d data/agriculture.tsv,data/industry.tsv,data/politic.tsv
+Rscript rgcca.R -d data/agriculture.tsv,data/industry.tsv,data/politic.tsv
 ```
 
 With parameters :
 
 ```
-Rscript galaxy_rgcca.R --datasets <list_block_files> [--help] [--names <list_block_names] [--connection <connection_file>] [--response <response_file>] [--scheme <scheme_type>] [--output1 <variables_space_fig_name>] [--output3 <samples_space_fig_name>] [--output3 <biomarkers_fig_name>]
+Rscript rgcca.R --datasets <list_block_files> [--help] [--names <list_block_names] [--connection <connection_file>] [--response <response_file>] [--scheme <scheme_type>] [--output1 <variables_space_fig_name>] [--output3 <samples_space_fig_name>] [--output3 <biomarkers_fig_name>]
 ```
 
 - ```-d (--datasets)``` (STRING) The list of the paths for each block file separated by comma (without space between). Ex: data/X_agric.tsv,data/X_ind.tsv,data/X_polit.tsv

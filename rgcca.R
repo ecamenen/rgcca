@@ -181,7 +181,7 @@ plot_biomarkers = function(df, comp, n){
 #TODO: remove default files
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks"),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks", default="data/agriculture.tsv,data/industry.tsv,data/politic.tsv"),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Connection file path"),
     make_option(c("-r", "--response"), type="character", metavar="character", help="Response file path"),
     make_option(c("-n", "--names"), type="character", metavar="character", help="Names of the blocks [default: filename]"),
@@ -297,6 +297,7 @@ rgcca = rgcca(blocks,
 # Samples common space
 samples = data.frame(rgcca$Y[[length(blocks)]])
 samplesSpace = plotSpace(samples, "Samples", response, "Response", COMP1, COMP2)
+if( is.null(opt$response) ) samplesSpace = samplesSpace + theme(legend.position="none")
 save(opt$output1, samplesSpace)
 
 #attribution of block ID to each corresponding variable
