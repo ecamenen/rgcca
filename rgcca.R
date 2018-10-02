@@ -51,6 +51,7 @@ parseList = function(l){
 setBlocks = function(){
   #create a list object of blocks from files loading
   
+  #TODO: check n1  = n2 = ...
   blocksFilename = parseList(opt$datasets)
   if(!is.null(opt$names)) blocksName = parseList(opt$names)
   
@@ -100,14 +101,54 @@ setResponse = function(){
   #create a dataset object from a file loading containg the response
   
   if("response" %in% names(opt)){
-    loadData(opt$response, "response", 1, F)
-    #TODO: check n1  = n2 = ...
-    if(isTRUE(DISJONCTIF)) response = factor(apply("Response", 1, which.max))
+    
+    if(isTRUE(DISJONCTIF)) {
+      loadData(opt$response, "response", 1, HEADER)
+      response = factor(apply("response", 1, which.max))
+      if(HEADER) levels(x) = names(response)
+    }else
+      loadData(opt$response, "response", 1, F)
     return (response)
   }else{
     return ( rep("black", NROW(blocks[[1]])) )
   }
 }
+
+getClusters = function(x){
+  k = length(x)-1
+  if (k > MAX_CLUSTERS) k = 10
+  best_classif(x, k)
+}
+
+best_classif = function(x, k){
+  s_max = 0
+  for (i in 2:k){ 
+    c = classif(x, i)
+    if (c$sil > s_max){
+      s_max = c$sil
+      cl = c$cl
+    }
+  }
+  return (cl)
+}
+
+classif = function(x, k, t=2){
+  #x: univariate quantitative vector
+  #k: number of partition
+  #t: 1, kmeans, 2+, k-medoids
+  if(t==1){
+    cl = kmeans(x, k)$cluster
+    #get mean of silhouette
+    s = mean( silhouette(cl, dist(x) )[,3] )
+  }else{
+    c = pam(x, k)$silinfo
+    cl = c$widths[,1]
+    s = c$avg.width
+    
+  }
+  return(list(cl=cl,sil=s))
+}
+
 
 ################################
 #          Graphic
@@ -261,7 +302,7 @@ checkArg = function(a){
 
 
 #Loading librairies
-librairies = c("RGCCA", "ggplot2", "ggrepel", "optparse", "scales")
+librairies = c("RGCCA", "ggplot2", "ggrepel", "optparse", "scales", "cluster")
 for (l in librairies){
   if (! (l %in% installed.packages()[,"Package"])) install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
   library(l, character.only = TRUE)
@@ -277,6 +318,7 @@ COMP2 = 2
 AXIS_TITLE_SIZE = 19
 AXIS_TEXT_SIZE = 10
 AXIS_FONT = "italic"
+MAX_CLUSTERS = 10
 
 #Get arguments
 args = getArgs()
