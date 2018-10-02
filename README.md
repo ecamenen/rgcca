@@ -26,9 +26,9 @@ Performs multi-variate analysis (PCA, CCA, PLS, RGCCA) and projects the variable
 A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA) with all default settings predefined [1, 2]. Produce two figures to help clinicians to identify biomarkers: samples and variables projected on the two first component of the multi-block analysis.
 
 ### Input files (see data/ folder for examples)
-- ```blocks``` (.tsv or .txt) : tabulated files containing variables to analyse together. The samples should be in lines and labelled and variables in columns with an header.
-- ```connection``` (.tsv or .txt) : tabulated files without header, containing a symmetric matrix with either 0 or 1 for a connection between each blocks.
-- ```response``` (.tsv or .txt) : an only column of a qualitative variable.
+- ```blocks``` (.tsv, .csv or .txt) : table containing variables to analyse together. The samples should be in lines and labelled and variables in columns with an header.
+- ```connection``` (.tsv, .csv or .txt) : table without header, containing a symmetric matrix with either 0 or 1 for a connection between each blocks.
+- ```response``` (.tsv, .csv or .txt) : an only column of a qualitative variable.
 
 ### Output files 
 - ```variables_space``` (.pdf or .png) : samples projected in a space composed by the first two component of the analysis (with the percent of explained variance). By selecting a response, samples are colored according to this criterion.
@@ -53,7 +53,8 @@ Rscript galaxy_rgcca.R --datasets <datasets> [--help] [--connection <connection_
 
 - ```-d (--datasets)``` (STRING) The list of the path for each block file separated by comma (without space between). Ex: data/X_agric.tsv,data/X_ind.tsv,data/X_polit.tsv
 - ```-c (--connection)``` (STRING) The path of the file used as a connection matrix. Its dimension should be (NB_BLOCKS + 1) * (NB_BLOCKS + 1). + 1 corresponds for the use of a supplementary block (the "superblock"), a concatenation of all the blocks helpful to interpret the results. By default, the connection matrix is build with 1 values for the last line (and column) except for the diagonal (i.e., the superblock is fully connected with the other blocks) and 0 values for the other cells (the blocks are not connected together). To go further than this null hypothesis, a priori information could be used to tune the matrix (e.g., add 1 value for a connection between two block).  
-- ```-r (--response)``` (STRING) For a supervised mode, a response file could be added (by default, no response variable).
+- ```-r (--response)``` (STRING) To color samples by group in associated figure, a response file could be added (by default, no response variable).
+- ```-n (--response)``` (STRING) To color samples by group in associated figure, a response file could be added (by default, no response variable).
 - ```-g (--scheme)``` (INTEGER) Scheme function among 1: Horst, 2: Factorial, 3: Centroid, 4: x^4 (by default, factorial scheme).
 - ```-s (--separator)``` (INTEGER) Specify the character used to separate the column in the fingerprint dataset (1: tabulation, 2: semicolon) (by default, tabulation).
 - ```--output1``` (STRING) The path of the output file for the samples space.

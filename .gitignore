@@ -1,7 +1,5 @@
-samplesSpace.pdf
-variablesSpace.pdf
+*.pdf
+*.png
+*.iml
 .Rhistory
-variablesSpace.png
-best_biomarkers.pdf
 .idea/
-rgcca_galaxy.iml

@@ -19,7 +19,9 @@ rm(list=ls())
 
 getFileName = function(fi)  {
   #get prefix part from a file
-  fo = unlist(strsplit(fi, '[.]'))[1]
+  fo = unlist(strsplit(fi, '/'))
+  fo = fo[length(fo)]
+  fo = unlist(strsplit(fo, '[.]'))[1]
 }
 
 loadData = function(fi, fo=fi, row.names=NULL, h=F){
@@ -31,22 +33,34 @@ loadData = function(fi, fo=fi, row.names=NULL, h=F){
   #TODO: catch warning missing \n at the end of the file
 }
 
-save = function(f, p)  ggsave(f, p, width=10, height=8)
+save = function(f, p){
+  pdf(f, width=10, height=8)
+  plot(p)
+  suprLog = dev.off()
+}
 
+parseList = function(l){
+  #l: string of characters separated by ,
+  #out: vector
+  #remove white space
+  l = gsub(" ", "", l)
+  #split by ,
+  unlist(strsplit(l, ","))
+}
+  
 setBlocks = function(){
   #create a list object of blocks from files loading
   
-  #remove white space
-  opt$datasets = gsub(" ", "", opt$datasets)
-  #split by ,
-  blocksName = unlist(strsplit(opt$datasets, ","))
+  blocksFilename = parseList(opt$datasets)
+  if(!is.null(opt$names)) blocksName = parseList(opt$names)
   
   #load each dataset
   blocks = list()
-  for (i in 1:length(blocksName)){
-    fi = blocksName[i]
+  for (i in 1:length(blocksFilename)){
+    fi = blocksFilename[i]
     checkFile(fi)
-    fo = getFileName(fi)
+    if(!is.null(opt$names)) fo = getFileName(blocksName[i])
+    else fo = getFileName(fi)
     loadData(fi, fo, 1, T)
     blocks[[fo]] = get(fo)
     if (NCOL(blocks[[fo]]) ==0) stop(paste(fo, "block file has an only-column. Check the --separator [by default: 1 for tabulation].\n"), call.=FALSE)
@@ -107,9 +121,8 @@ theme_perso = function() {
   )
 }
 
-plotSpace = function (df, title, response, comp1, comp2){
+plotSpace = function (df, title, response, name_group, comp1, comp2){
   #plot settings for projection of points in a bi-dimensional space
-  
   ggplot(df, aes(df[,1], df[,2], colour = response)) + 
   theme_classic() +
   geom_vline(xintercept = 0, col="grey", linetype="dashed", size=1) + 
@@ -117,7 +130,7 @@ plotSpace = function (df, title, response, comp1, comp2){
   labs ( title = paste(title, "space"),
          x = printAxis(comp1), 
          y = printAxis(comp2),
-         color = "Blocks") +
+         color = name_group) +
   geom_text_repel(aes(colour = response, label= rownames(df)), size = 3, force=2) +
   scale_y_continuous(breaks=NULL) +
   scale_x_continuous(breaks=NULL) +
@@ -168,13 +181,14 @@ plot_biomarkers = function(df, comp, n){
 #TODO: remove default files
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", default = "data/agriculture.tsv,data/industry.tsv,data/politic.tsv", help="Bloc files name"),
-    make_option(c("-c", "--connection"), type="character", metavar="character", help="Connection file name"),
-    make_option(c("-r", "--response"), type="character", metavar="character", help="Response file name"),
-    make_option(c("-s", "--separator"), type="integer", metavar="integer", default=2,
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks"),
+    make_option(c("-c", "--connection"), type="character", metavar="character", help="Connection file path"),
+    make_option(c("-r", "--response"), type="character", metavar="character", help="Response file path"),
+    make_option(c("-n", "--names"), type="character", metavar="character", help="Names of the blocks [default: filename]"),
+    make_option(c("-s", "--separator"), type="integer", metavar="integer", default=1,
                 help="Type of separator [default: tabulation] (1: Tabulation, 2: Semicolon, 3: Comma"),
     make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2,
-                help="Scheme function g(x) [default: x^2] (1: x, 2: x^2, 3: x^3, 4: |x|"),
+                help="Scheme function g(x) [default: x^2] (1: x, 2: x^2, 3: |x|, 4: x^4"),
     make_option(c( "--output1"), type="character", metavar="character", default="samples_space.pdf", 
                 help="Variables space file name [default: %default]"),
     make_option(c( "--output2"), type="character", metavar="character", default="variables_space.pdf", 
@@ -230,6 +244,8 @@ checkArg = function(a){
 #            MAIN
 ################################
 
+
+
 #Loading librairies
 librairies = c("RGCCA", "ggplot2", "ggrepel", "optparse", "scales")
 for (l in librairies){
@@ -258,6 +274,7 @@ tryCatch({
 })
 
 
+
 blocks = setBlocks()
 connection_matrix = setConnection()
 response = setResponse()
@@ -279,7 +296,7 @@ rgcca = rgcca(blocks,
 
 # Samples common space
 samples = data.frame(rgcca$Y[[length(blocks)]])
-samplesSpace = plotSpace(samples, "Samples", response, COMP1, COMP2)
+samplesSpace = plotSpace(samples, "Samples", response, "Response", COMP1, COMP2)
 save(opt$output1, samplesSpace)
 
 #attribution of block ID to each corresponding variable
@@ -293,12 +310,12 @@ variables =  data.frame(
  row.names = colnames(blocks[["Superblock"]])
 )
 
-variablesSpace = plotSpace(variables, "Variables", variables[,3], COMP1, COMP2) + 
+variablesSpace = plotSpace(variables, "Variables", variables[,3], "Blocks", COMP1, COMP2) + 
   geom_path(aes(x,y), data=circleFun(), col="grey", size=1) + 
   geom_path(aes(x,y), data=circleFun()/2, col="grey", size=1, lty=2)
 save(opt$output2, variablesSpace)
 
 # Biomarkers plot
-biomarkers = data.frame(rgcca$a[[4]], color=blocks_variables)
+biomarkers = data.frame(rgcca$a[[length(blocks)]], color=blocks_variables)
 best_biomarkers = plot_biomarkers(biomarkers, 1, 10)
 save(opt$output3, best_biomarkers)
