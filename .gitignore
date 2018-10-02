@@ -1,0 +1,5 @@
+*.pdf
+*.png
+*.iml
+.Rhistory
+.idea/
