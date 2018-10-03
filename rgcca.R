@@ -101,26 +101,44 @@ setResponse = function(){
   #create a dataset object from a file loading containg the response
   
   if("response" %in% names(opt)){
-    
-    if(isTRUE(DISJONCTIF)) {
-      loadData(opt$response, "response", 1, HEADER)
-      response = factor(apply("response", 1, which.max))
-      if(HEADER) levels(x) = names(response)
-    }else
-      loadData(opt$response, "response", 1, F)
+    loadData(opt$response, "response", 1, HEADER)
+    assign("QUALITATIVE", unique(isCharacter(response)), .GlobalEnv)
+    if(length(QUALITATIVE) > 1) stop("Please, select a response file with either qualitative data only or quantitative data only.\n", call.=FALSE)
+    if ( NCOL(response) > 1 ){
+      DISJONCTIF = unique(apply(response, 1, sum))
+      if( unique(response %in% c(0, 1) ) && length(DISJONCTIF) == 1 & DISJONCTIF == 1 ) {
+        response2 = factor(apply(response, 1, which.max))
+        if(HEADER){
+          levels(response2) = colnames(response)
+        }
+        assign("QUALITATIVE", T, .GlobalEnv)
+        response = as.character(response2)
+      }else{
+        response = response[,1]
+        warning("There is multiple column in the response file. By default, only the first one was taken in account.\n", call.=FALSE)
+      }
+    }
     return (response)
   }else{
-    return ( rep("black", NROW(blocks[[1]])) )
+    return ( rep(1, NROW(blocks[[1]])) )
   }
+}
+
+isCharacter = function(df){
+  options(warn = -1)
+  test = sapply(1:NCOL(df), function(x) unique(is.na(as.integer(df[,x]) )))
+  options(warn = 0)
+  return(test)
 }
 
 getClusters = function(x){
   k = length(x)-1
-  if (k > MAX_CLUSTERS) k = 10
+  if (k > MAX_CLUSTERS) k = MAX_CLUSTERS
   best_classif(x, k)
 }
 
 best_classif = function(x, k){
+  #get best classif according to the max silhouette average
   s_max = 0
   for (i in 2:k){ 
     c = classif(x, i)
@@ -137,7 +155,8 @@ classif = function(x, k, t=2){
   #k: number of partition
   #t: 1, kmeans, 2+, k-medoids
   if(t==1){
-    cl = kmeans(x, k)$cluster
+    c = kmeans(x, k)
+    cl = c$cluster
     #get mean of silhouette
     s = mean( silhouette(cl, dist(x) )[,3] )
   }else{
@@ -178,15 +197,27 @@ theme_perso = function() {
 
 plotSpace = function (df, title, response, name_group, comp1, comp2){
   #plot settings for projection of points in a bi-dimensional space
-  ggplot(df, aes(df[,1], df[,2], colour = response)) + 
-  theme_classic() +
+  
+  if(QUALITATIVE){
+    p = ggplot(df, aes(df[,1], df[,2], colour = response)) +
+      geom_text_repel(aes(label= rownames(df)), size = 3, force=2)
+  } 
+  else{
+    p = ggplot(df, aes(df[,1], df[,2], alpha=(response - min(response)) / max(response - min(response)))) +
+      scale_alpha_continuous(
+        name = "Response",
+        breaks = seq(0,1,.25),
+        labels = round(quantile(response))
+      ) + geom_text_repel(color=COLOR_SAMPLES_DEF, aes(label= rownames(df)), size = 3, force=2)
+  }
+  
+  p + theme_classic() +
   geom_vline(xintercept = 0, col="grey", linetype="dashed", size=1) + 
   geom_hline(yintercept = 0, col="grey", linetype="dashed", size=1) + 
   labs ( title = paste(title, "space"),
          x = printAxis(comp1), 
          y = printAxis(comp2),
          color = name_group) +
-  geom_text_repel(aes(colour = response, label= rownames(df)), size = 3, force=2) +
   scale_y_continuous(breaks=NULL) +
   scale_x_continuous(breaks=NULL) +
   theme_perso() +
@@ -198,7 +229,7 @@ plotSpace = function (df, title, response, name_group, comp1, comp2){
   #+ stat_ellipse()
   #TODO: if NB_VAR > X
 }
-
+                                
 #TODO: convert coef into [-1,1]
 plot_biomarkers = function(df, comp, n){
   
@@ -226,7 +257,6 @@ plot_biomarkers = function(df, comp, n){
         axis.line = element_blank(),
         axis.ticks = element_blank(),
         plot.subtitle = element_text(hjust = 0.5, size = 16, face="italic"))
-  
 }
 
 ################################
@@ -238,7 +268,7 @@ getArgs = function(){
   option_list = list(
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks", default="data/agriculture.tsv,data/industry.tsv,data/politic.tsv"),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Connection file path"),
-    make_option(c("-r", "--response"), type="character", metavar="character", help="Response file path"),
+    make_option(c("-r", "--response"), type="character", metavar="character", help="Response file path", default="data/response.tsv"),
     make_option(c("-n", "--names"), type="character", metavar="character", help="Names of the blocks [default: filename]"),
     make_option(c("-s", "--separator"), type="integer", metavar="integer", default=1,
                 help="Type of separator [default: tabulation] (1: Tabulation, 2: Semicolon, 3: Comma"),
@@ -319,6 +349,8 @@ AXIS_TITLE_SIZE = 19
 AXIS_TEXT_SIZE = 10
 AXIS_FONT = "italic"
 MAX_CLUSTERS = 10
+COLOR_SAMPLES_DEF = "#000099"
+HEADER=F
 
 #Get arguments
 args = getArgs()
