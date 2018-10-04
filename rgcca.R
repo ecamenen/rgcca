@@ -233,7 +233,6 @@ plotSpace = function (df, title, response, name_group, comp1, comp2){
   #TODO: if NB_VAR > X
 }
                                 
-#TODO: convert coef into [-1,1]
 plot_biomarkers = function(df, comp, n){
   
   df = data.frame(df[order(abs(df[,comp]), decreasing = TRUE),], order = nrow(df):1)
@@ -246,7 +245,6 @@ plot_biomarkers = function(df, comp, n){
   geom_bar(stat = "identity") +
   coord_flip() + 
   scale_x_continuous(breaks=df$order, labels=rownames(df)) +
-  scale_y_continuous(breaks=seq(-1,1,.5), limits = c(-1,1)) +
   labs(
     title= "Variable weights", 
     subtitle=printAxis(comp),
@@ -266,15 +264,14 @@ plot_biomarkers = function(df, comp, n){
 #          Arguments
 ################################
 
-#TODO: remove default files
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks", default="data/agriculture.tsv,data/industry.tsv,data/politic.tsv"),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks"),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Connection file path"),
     make_option(c("-r", "--response"), type="character", metavar="character", help="Response file path"),
     make_option(c("-n", "--names"), type="character", metavar="character", help="Names of the blocks [default: filename]"),
     make_option(c("-H", "--header"), type="logical", action="store_false",
-                help="Consider first row as header of columns"),
+                help="DO NOT consider first row as header of columns"),
     make_option(c("-s", "--separator"), type="integer", metavar="integer", default=1,
                 help="Type of separator [default: tabulation] (1: Tabulation, 2: Semicolon, 3: Comma"),
     make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2,
