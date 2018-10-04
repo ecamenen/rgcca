@@ -34,10 +34,11 @@ loadData = function(fi, fo=fi, row.names=NULL, h=F){
 }
 
 loadExcel = function(fi, fo=fi, row.names=NULL, h=F){
-  print(fi)
   data = read.xlsx2(opt$datasets, fi, header=T)
-  row.names(data) = data[,row.names]
-  assign(fo, data.matrix(data[,-row.names]), .GlobalEnv)
+  checkQuantitative(data[,-row.names])
+  data2 = as.matrix(as.data.frame(lapply(data[-row.names], function(x) as.numeric(as.vector(x)))))
+  row.names(data2) = data[,row.names]
+  assign(fo, data2, .GlobalEnv)
 }
 
 save = function(f, p){
@@ -54,7 +55,12 @@ parseList = function(l){
   #split by ,
   unlist(strsplit(l, ","))
 }
-  
+
+checkQuantitative = function(df){
+  QUALITATIVE = unique(unique(isCharacter(as.matrix(get(df)))))
+  if ( length(QUALITATIVE) > 1 || QUALITATIVE ) stop(paste(df,"file contains qualitative data. Please, transform them in a disjonctive table.\n"), call.=FALSE)
+}
+
 setBlocks = function(){
   #create a list object of blocks from files loading
   
@@ -66,7 +72,6 @@ setBlocks = function(){
     checkFile(opt$datasets)
     wb = loadWorkbook(opt$datasets)
     blocksFilename = names(getSheets(wb))
-    print(blocksFilename)
   }
   
   #load each dataset
@@ -83,6 +88,7 @@ setBlocks = function(){
     } 
     if(!isXls) loadData(fi, fo, 1, T)
     else loadExcel(blocksFilename[i], fo, 1, T)
+    checkQuantitative(fo)
     blocks[[fo]] = get(fo)
     if (NCOL(blocks[[fo]]) ==0) stop(paste(fo, "block file has an only-column. Check the --separator [by default: 1 for tabulation].\n"), call.=FALSE)
   }
@@ -149,7 +155,10 @@ setResponse = function(){
 
 isCharacter = function(df){
   options(warn = -1)
-  test = sapply(1:NCOL(df), function(x) unique(is.na(as.integer(df[,x]) )))
+  # is. character() consider a string with "1.2" as a character, not this function
+  # NA are produced by converting a character into an integer
+  # as.vector, avoid factors of character in integer without NA
+  test = sapply(1:NCOL(df), function(x) unique(is.na(as.integer(as.vector(df[,x])) )))
   options(warn = 0)
   return(test)
 }
@@ -289,7 +298,7 @@ plot_biomarkers = function(df, comp, n){
 #TODO: remove default files
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks", default="data/blocks.xlsx"),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks", default="data/agriculture.tsv,data/industry.tsv,data/politic.tsv"),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Connection file path"),
     make_option(c("-r", "--response"), type="character", metavar="character", help="Response file path", default="data/response.tsv"),
     make_option(c("-n", "--names"), type="character", metavar="character", help="Names of the blocks [default: filename]"),
