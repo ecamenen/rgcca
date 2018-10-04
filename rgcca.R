@@ -33,6 +33,13 @@ loadData = function(fi, fo=fi, row.names=NULL, h=F){
   #TODO: catch warning missing \n at the end of the file
 }
 
+loadExcel = function(fi, fo=fi, row.names=NULL, h=F){
+  print(fi)
+  data = read.xlsx2(opt$datasets, fi, header=T)
+  row.names(data) = data[,row.names]
+  assign(fo, data.matrix(data[,-row.names]), .GlobalEnv)
+}
+
 save = function(f, p){
   pdf(f, width=10, height=8)
   plot(p)
@@ -51,23 +58,37 @@ parseList = function(l){
 setBlocks = function(){
   #create a list object of blocks from files loading
   
-  #TODO: check n1  = n2 = ...
-  blocksFilename = parseList(opt$datasets)
-  if(!is.null(opt$names)) blocksName = parseList(opt$names)
+  isXls <- ( length(grep("xlsx?", opt$datasets)) == 1 )
+  if(!isXls){
+    blocksFilename = parseList(opt$datasets)
+    if(!is.null(opt$names)) blocksName = parseList(opt$names)
+  }else{
+    checkFile(opt$datasets)
+    wb = loadWorkbook(opt$datasets)
+    blocksFilename = names(getSheets(wb))
+    print(blocksFilename)
+  }
   
   #load each dataset
   blocks = list()
   for (i in 1:length(blocksFilename)){
-    fi = blocksFilename[i]
-    checkFile(fi)
+    if(!isXls){
+      fi = blocksFilename[i]
+      checkFile(fi)
+    }
     if(!is.null(opt$names)) fo = getFileName(blocksName[i])
-    else fo = getFileName(fi)
-    loadData(fi, fo, 1, T)
+    else{
+      if(!isXls) fo = getFileName(fi)
+      else fo = blocksFilename[i]
+    } 
+    if(!isXls) loadData(fi, fo, 1, T)
+    else loadExcel(blocksFilename[i], fo, 1, T)
     blocks[[fo]] = get(fo)
     if (NCOL(blocks[[fo]]) ==0) stop(paste(fo, "block file has an only-column. Check the --separator [by default: 1 for tabulation].\n"), call.=FALSE)
   }
+  if( length(unique(sapply(1:length(blocks), function(x) NROW(blocks[[x]])))) > 1 ) 
+    stop("The number of rows of the response file is different among the blocks.\n", call.=FALSE)
   blocks[["Superblock"]] = Reduce(cbind, blocks)
-  
   return(blocks)
 }
 
@@ -102,8 +123,10 @@ setResponse = function(){
   
   if("response" %in% names(opt)){
     loadData(opt$response, "response", 1, HEADER)
+    if (NROW(blocks[[1]]) != NROW(response)) stop("The number of rows of the response file is different from those of the blocks.\n", call.=FALSE)
     assign("QUALITATIVE", unique(isCharacter(response)), .GlobalEnv)
-    if(length(QUALITATIVE) > 1) stop("Please, select a response file with either qualitative data only or quantitative data only.\n", call.=FALSE)
+    if(length(QUALITATIVE) > 1) stop("Please, select a response file with either qualitative data only or quantitative data only. 
+                                     The header must be disabled for quantitative data and activated for disjonctive table.\n", call.=FALSE)
     if ( NCOL(response) > 1 ){
       DISJONCTIF = unique(apply(response, 1, sum))
       if( unique(response %in% c(0, 1) ) && length(DISJONCTIF) == 1 & DISJONCTIF == 1 ) {
@@ -266,7 +289,7 @@ plot_biomarkers = function(df, comp, n){
 #TODO: remove default files
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks", default="data/agriculture.tsv,data/industry.tsv,data/politic.tsv"),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks", default="data/blocks.xlsx"),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Connection file path"),
     make_option(c("-r", "--response"), type="character", metavar="character", help="Response file path", default="data/response.tsv"),
     make_option(c("-n", "--names"), type="character", metavar="character", help="Names of the blocks [default: filename]"),
@@ -329,10 +352,11 @@ checkArg = function(a){
 #            MAIN
 ################################
 
-
+# Pre-requisite: for xlsx inputs, java must be installed
+# Under linux: sudo apt-get install default-jre default-jdk && sudo R CMD javareconf
 
 #Loading librairies
-librairies = c("RGCCA", "ggplot2", "ggrepel", "optparse", "scales", "cluster")
+librairies = c("RGCCA", "ggplot2", "ggrepel", "optparse", "scales", "cluster", "xlsx")
 for (l in librairies){
   if (! (l %in% installed.packages()[,"Package"])) install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
   library(l, character.only = TRUE)
