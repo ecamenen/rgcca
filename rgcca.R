@@ -34,8 +34,9 @@ loadData = function(fi, fo=fi, row.names=NULL, h=F){
 }
 
 loadExcel = function(fi, fo=fi, row.names=NULL, h=F){
-  data = read.xlsx2(opt$datasets, fi, header=T)
-  checkQuantitative(data[,-row.names])
+
+  data = read.xlsx2(opt$datasets, fi, header=h)
+  checkQuantitative(data[,-row.names], opt$datasets)
   data2 = as.matrix(as.data.frame(lapply(data[-row.names], function(x) as.numeric(as.vector(x)))))
   row.names(data2) = data[,row.names]
   assign(fo, data2, .GlobalEnv)
@@ -56,9 +57,13 @@ parseList = function(l){
   unlist(strsplit(l, ","))
 }
 
-checkQuantitative = function(df){
-  QUALITATIVE = unique(unique(isCharacter(as.matrix(get(df)))))
-  if ( length(QUALITATIVE) > 1 || QUALITATIVE ) stop(paste(df,"file contains qualitative data. Please, transform them in a disjonctive table.\n"), call.=FALSE)
+checkQuantitative = function(df, fo){
+  QUALITATIVE = unique(unique(isCharacter(as.matrix(df))))
+  if ( length(QUALITATIVE) > 1 || QUALITATIVE ) {
+    msg=paste(fo,"file contains qualitative data. Please, transform them in a disjonctive table.")
+    if(!HEADER) msg=paste(msg, MSG_HEADER, sep="")
+    stop(paste(msg,"\n"), call.=FALSE)
+  }
 }
 
 setBlocks = function(){
@@ -86,9 +91,9 @@ setBlocks = function(){
       if(!isXls) fo = getFileName(fi)
       else fo = blocksFilename[i]
     } 
-    if(!isXls) loadData(fi, fo, 1, T)
-    else loadExcel(blocksFilename[i], fo, 1, T)
-    checkQuantitative(fo)
+    if(!isXls) loadData(fi, fo, 1, HEADER)
+    else loadExcel(blocksFilename[i], fo, 1, HEADER)
+    checkQuantitative(get(fo),fo)
     blocks[[fo]] = get(fo)
     if (NCOL(blocks[[fo]]) ==0) stop(paste(fo, "block file has an only-column. Check the --separator [by default: 1 for tabulation].\n"), call.=FALSE)
   }
@@ -126,10 +131,13 @@ setConnection = function(){
 
 setResponse = function(){
   #create a dataset object from a file loading containg the response
-  
   if("response" %in% names(opt)){
     loadData(opt$response, "response", 1, HEADER)
-    if (NROW(blocks[[1]]) != NROW(response)) stop("The number of rows of the response file is different from those of the blocks.\n", call.=FALSE)
+    if (NROW(blocks[[1]]) != NROW(response)){
+      msg="The number of rows of the response file is different from those of the blocks."
+      if(HEADER) msg=paste(msg, MSG_HEADER, sep="")
+      stop(paste(msg,"\n"), call.=FALSE)
+    }
     assign("QUALITATIVE", unique(isCharacter(response)), .GlobalEnv)
     if(length(QUALITATIVE) > 1) stop("Please, select a response file with either qualitative data only or quantitative data only. 
                                      The header must be disabled for quantitative data and activated for disjonctive table.\n", call.=FALSE)
@@ -144,11 +152,12 @@ setResponse = function(){
         response = as.character(response2)
       }else{
         response = response[,1]
-        warning("There is multiple column in the response file. By default, only the first one was taken in account.\n", call.=FALSE)
+        warning("There is multiple columns in the response file. By default, only the first one is taken in account.\n", call.=FALSE)
       }
     }
     return (response)
   }else{
+    assign("QUALITATIVE", T, .GlobalEnv)
     return ( rep(1, NROW(blocks[[1]])) )
   }
 }
@@ -162,44 +171,6 @@ isCharacter = function(df){
   options(warn = 0)
   return(test)
 }
-
-getClusters = function(x){
-  k = length(x)-1
-  if (k > MAX_CLUSTERS) k = MAX_CLUSTERS
-  best_classif(x, k)
-}
-
-best_classif = function(x, k){
-  #get best classif according to the max silhouette average
-  s_max = 0
-  for (i in 2:k){ 
-    c = classif(x, i)
-    if (c$sil > s_max){
-      s_max = c$sil
-      cl = c$cl
-    }
-  }
-  return (cl)
-}
-
-classif = function(x, k, t=2){
-  #x: univariate quantitative vector
-  #k: number of partition
-  #t: 1, kmeans, 2+, k-medoids
-  if(t==1){
-    c = kmeans(x, k)
-    cl = c$cluster
-    #get mean of silhouette
-    s = mean( silhouette(cl, dist(x) )[,3] )
-  }else{
-    c = pam(x, k)$silinfo
-    cl = c$widths[,1]
-    s = c$avg.width
-    
-  }
-  return(list(cl=cl,sil=s))
-}
-
 
 ################################
 #          Graphic
@@ -300,8 +271,10 @@ getArgs = function(){
   option_list = list(
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks", default="data/agriculture.tsv,data/industry.tsv,data/politic.tsv"),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Connection file path"),
-    make_option(c("-r", "--response"), type="character", metavar="character", help="Response file path", default="data/response.tsv"),
+    make_option(c("-r", "--response"), type="character", metavar="character", help="Response file path"),
     make_option(c("-n", "--names"), type="character", metavar="character", help="Names of the blocks [default: filename]"),
+    make_option(c("-H", "--header"), type="logical", action="store_false",
+                help="Consider first row as header of columns"),
     make_option(c("-s", "--separator"), type="integer", metavar="integer", default=1,
                 help="Type of separator [default: tabulation] (1: Tabulation, 2: Semicolon, 3: Comma"),
     make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2,
@@ -371,6 +344,15 @@ for (l in librairies){
   library(l, character.only = TRUE)
 }
 
+#Get arguments
+args = getArgs()
+tryCatch({
+  opt = checkArg(args)
+}, error = function(e) {
+  #print_help(args)
+  stop(e[[1]], call.=FALSE)
+})
+
 #Global settings
 SCALE = T
 VERBOSE = F
@@ -383,18 +365,8 @@ AXIS_TEXT_SIZE = 10
 AXIS_FONT = "italic"
 MAX_CLUSTERS = 10
 COLOR_SAMPLES_DEF = "#000099"
-HEADER=F
-
-#Get arguments
-args = getArgs()
-tryCatch({
-  opt = checkArg(args)
-}, error = function(e) {
-  #print_help(args)
-  stop(e[[1]], call.=FALSE)
-})
-
-
+HEADER = !("header" %in% names(opt))
+MSG_HEADER=" Possible mistake: header parameter is disabled, check if the file does'nt have one."
 
 blocks = setBlocks()
 connection_matrix = setConnection()
