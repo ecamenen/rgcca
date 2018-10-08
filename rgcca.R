@@ -34,7 +34,6 @@ loadData = function(fi, fo=fi, row.names=NULL, h=F){
 }
 
 loadExcel = function(fi, fo=fi, row.names=NULL, h=F){
-
   data = read.xlsx2(opt$datasets, fi, header=h)
   checkQuantitative(data[,-row.names], opt$datasets)
   data2 = as.matrix(as.data.frame(lapply(data[-row.names], function(x) as.numeric(as.vector(x)))))
@@ -138,7 +137,7 @@ setResponse = function(){
       if(HEADER) msg=paste(msg, MSG_HEADER, sep="")
       stop(paste(msg,"\n"), call.=FALSE)
     }
-    assign("QUALITATIVE", unique(isCharacter(response)), .GlobalEnv)
+    QUALITATIVE = unique(isCharacter(response))
     if(length(QUALITATIVE) > 1) stop("Please, select a response file with either qualitative data only or quantitative data only. 
                                      The header must be disabled for quantitative data and activated for disjonctive table.\n", call.=FALSE)
     if ( NCOL(response) > 1 ){
@@ -148,7 +147,6 @@ setResponse = function(){
         if(HEADER){
           levels(response2) = colnames(response)
         }
-        assign("QUALITATIVE", T, .GlobalEnv)
         response = as.character(response2)
       }else{
         response = response[,1]
@@ -157,7 +155,6 @@ setResponse = function(){
     }
     return (response)
   }else{
-    assign("QUALITATIVE", T, .GlobalEnv)
     return ( rep(1, NROW(blocks[[1]])) )
   }
 }
@@ -167,7 +164,12 @@ isCharacter = function(df){
   # is. character() consider a string with "1.2" as a character, not this function
   # NA are produced by converting a character into an integer
   # as.vector, avoid factors of character in integer without NA
-  test = sapply(1:NCOL(df), function(x) unique(is.na(as.integer(as.vector(df[,x])) )))
+  
+  if(is.matrix(df)) 
+    test = sapply(1:NCOL(df), function(x) unique(is.na(as.integer(as.vector(df[,x])) )))
+  else
+    test =  unique(is.na(as.integer(as.vector(df)) ))
+  
   options(warn = 0)
   return(test)
 }
@@ -201,7 +203,7 @@ theme_perso = function() {
 plotSpace = function (df, title, response, name_group, comp1, comp2){
   #plot settings for projection of points in a bi-dimensional space
   
-  if(QUALITATIVE){
+  if(unique(isCharacter(as.vector(response)))){
     p = ggplot(df, aes(df[,1], df[,2], colour = response)) +
       geom_text_repel(aes(label= rownames(df)), size = 3, force=2)
   } 
@@ -240,7 +242,7 @@ plot_biomarkers = function(df, comp, n){
   if(NROW(df) >= n) df = df[1:n,]
   
   ggplot(df, aes(order, df[,comp], fill = color)) +
-  geom_hline(yintercept = c(-.5,.5), col="grey", linetype="dotted", size=1) + 
+  #geom_hline(yintercept = c(-.5,.5), col="grey", linetype="dotted", size=1) + 
   geom_hline(yintercept = 0, col="grey", size=1) +
   geom_bar(stat = "identity") +
   coord_flip() + 
@@ -266,9 +268,9 @@ plot_biomarkers = function(df, comp, n){
 
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks"),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks", default="data/agriculture.tsv,data/industry.tsv,data/politic.tsv"),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Connection file path"),
-    make_option(c("-r", "--response"), type="character", metavar="character", help="Response file path"),
+    make_option(c("-r", "--response"), type="character", metavar="character", help="Response file path", default="data/response3.tsv"),
     make_option(c("-n", "--names"), type="character", metavar="character", help="Names of the blocks [default: filename]"),
     make_option(c("-H", "--header"), type="logical", action="store_false",
                 help="DO NOT consider first row as header of columns"),
@@ -304,7 +306,7 @@ checkArg = function(a){
   
   if (is.null(opt$scheme)) opt$scheme = "factorial"
   else if ((opt$scheme < 1) || (opt$scheme > 4)){
-    stop("--scheme must be comprise between 1 and 4 [by default: 3].\n", call.=FALSE)
+    stop("--scheme must be comprise between 1 and 4 [by default: 2].\n", call.=FALSE)
   }else{
     schemes = c("horst", "factorial", "centroid")
     if (opt$scheme == 4)

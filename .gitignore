@@ -3,3 +3,7 @@
 *.iml
 .Rhistory
 .idea/
+.Rproj.user
+resultRuns.log
+
+rgcca_software\.Rproj

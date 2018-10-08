@@ -13,13 +13,14 @@ OUTFILES=( 'samples_space.pdf' 'variables_space.pdf' 'best_biomarkers.pdf' )
 
 #Initialization
 declare -x INFILE FUNC OPAR
-declare -i PARAMETER NBFAIL=0 NBTEST=0 EXIT
+declare -i PARAMETER NBFAIL=0 NBTEST=1 EXIT
 declare -a TESTS
 echo '' > resultRuns.log
 
 setUp(){
     INFILE="data/agriculture.tsv,data/industry.tsv,data/politic.tsv"
     EXIT=0
+    PARAMETER=0
     FUNC=${FUNCNAME[1]}
     TESTS=()
     printf "\n- ${FUNC}: "
@@ -57,7 +58,6 @@ testError(){
     tearDown
 
     [ ${BOOLEAN_ERR} == "true" ] && {
-	    echo $MSG
 	    ERRORS=${ERRORS}"\n***************\n##Test \"${TESTS[$2]}\" in $FUNC: \n$MSG"
 	    return 1
     }
@@ -116,96 +116,62 @@ test(){
 
 testsDefault(){
     setUp
-    TESTS=('')
-    #TESTS=('' '-q' '-v' '-a')
+    TESTS=( '' )
     test
 }
 
 testsSep(){
     setUp
-    TESTS=( '-s 1')
+    TESTS=( '-s 1' )
     test
 }
 
 badTestsSep(){
     setUp
     EXIT=1
-    TESTS=( '-s 4')
+    TESTS=( '-s 4' )
     test
 }
 
-testsAlgo(){
+testsScheme(){
     setUp
-    for i in `seq 1 9`; do
-        TESTS[i]='-t '${i}
+    for i in `seq 0 3`; do
+        let j=${i}+1
+        TESTS[i]='-g '${j}
     done
     test
 }
 
-badTestsAlgo(){
+badTestsScheme(){
     setUp
     EXIT=1
-    TESTS=( '-t 0' '-t 10' )
+    TESTS=( '-g 0' '-g 5' )
     test
 }
 
-testsDist(){
+testsResponse(){
     setUp
-    for i in `seq 1 6`; do
-        TESTS[i]='-d '${i}
-    done
+    TESTS=( '-r data/response.tsv' '-r data/response2.tsv' '-r data/response3.tsv' )
     test
 }
 
-badTestsDist(){
+testsConnection(){
     setUp
-    EXIT=1
-    TESTS=( '-d 0' '-d 7' )
+    TESTS=( '-c data/connection.tsv' )
     test
 }
 
-testsAxis(){
-    setUp
-    for i in `seq 2 4`; do
-        TESTS[i-2]='-N '${i}
-    done
-    test
-}
-
-badTestsAxis(){
+testHeader(){
     setUp
     EXIT=1
-    TESTS=( '-N 0' '-N 1' '-N 5' )
+    TESTS=( '-H' )
     test
 }
 
-testsMaxCl(){
+testExcel(){
     setUp
-    for i in `seq 3 4`; do
-        TESTS[i-3]='-m '${i}
-    done
-    test
-}
-
-badTestsMaxCl(){
-    setUp
-    EXIT=1
-    TESTS=( '-m 0' '-m 1' '-m 2' '-m 200' )
-    test
-}
-
-testsNbCl(){
-    setUp
-    for i in `seq 2 3`; do
-        TESTS[i-2]='-n '${i}
-    done
-    test
-}
-
-badTestsNbCl(){
-    setUp
-    EXIT=1
-    TESTS=( '-n 0' '-n 1' '-n 200' )
+    INFILE="data/blocks.xlsx"
+    TESTS=( '' )
     test
 }
 
@@ -216,22 +182,16 @@ START_TIME=$(date -u -d $(date +"%H:%M:%S") +"%s")
 #[ -d bad ] && rm -rf bad/
 mkdir temp/
 setOutputPar
+
 testsDefault
 testsSep
 badTestsSep
-
-: '
-testsAlgo
-badTestsAlgo
-testsDist
-badTestsDist
-testsAxis
-badTestsAxis
-testsMaxCl
-badTestsMaxCl
-testsNbCl
-badTestsNbCl
-'
+testsScheme
+badTestsScheme
+testsResponse
+testsConnection
+testHeader
+testExcel
 
 rm -r temp/
 printf "\n$NBTEST tests, $NBFAIL failed.$ERRORS\n"
