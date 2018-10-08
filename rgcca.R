@@ -1,6 +1,6 @@
 # Author: Etienne CAMENEN
 # Date: 2018
-# Institute: ICM - Institut du Cerveau et de la Moelle ?pini?re (Paris, FRANCE),
+# Institute: ICM - Institut du Cerveau et de la Moelle epiniere (Paris, FRANCE),
 # Institut Fran?ais de Bioinformatique (IFB), Centre national de la recherche scientifique (CNRS)
 # Contact: iconics@icm-institute.org
 # Key-words: omics, RGCCA, multi-block
@@ -92,12 +92,12 @@ setBlocks = function(){
     } 
     if(!isXls) loadData(fi, fo, 1, HEADER)
     else loadExcel(blocksFilename[i], fo, 1, HEADER)
-    if (NCOL(get(fo)) ==0) stop(paste(fo, "block file has an only-column. Check the --separator [by default: 1 for tabulation].\n"), call.=FALSE)
+    if (NCOL(get(fo)) == 0) stop(paste(fo, "block file has an only-column. Check the --separator [by default: 1 for tabulation].\n"), call.=FALSE)
     checkQuantitative(get(fo),fo)
     blocks[[fo]] = get(fo)
   }
   if( length(unique(sapply(1:length(blocks), function(x) NROW(blocks[[x]])))) > 1 ) 
-    stop("The number of rows of the response file is different among the blocks.\n", call.=FALSE)
+    stop("The number of rows is different among the blocks.\n", call.=FALSE)
   blocks[["Superblock"]] = Reduce(cbind, blocks)
   return(blocks)
 }
@@ -138,8 +138,7 @@ setResponse = function(){
       stop(paste(msg,"\n"), call.=FALSE)
     }
     QUALITATIVE = unique(isCharacter(response))
-    if(length(QUALITATIVE) > 1) stop("Please, select a response file with either qualitative data only or quantitative data only. 
-                                     The header must be disabled for quantitative data and activated for disjunctive table.\n", call.=FALSE)
+    if(length(QUALITATIVE) > 1) stop("Please, select a response file with either qualitative data only or quantitative data only. The header must be disabled for quantitative data and activated for disjunctive table.\n", call.=FALSE)
     if ( NCOL(response) > 1 ){
       DISJUNCTIVE = unique(apply(response, 1, sum))
       if( unique(response %in% c(0, 1) ) && length(DISJUNCTIVE) == 1 & DISJUNCTIVE == 1 ) {

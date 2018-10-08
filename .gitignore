@@ -9,3 +9,5 @@ resultRuns.log
 rgcca_software\.Rproj
 
 temp/
+
+warnings\.log

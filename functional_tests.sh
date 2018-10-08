@@ -14,7 +14,7 @@ OUTFILES=( 'samples_space.pdf' 'variables_space.pdf' 'best_biomarkers.pdf' )
 #Initialization
 declare -x INFILE FUNC OPAR WARN
 declare -i PARAMETER NBFAIL=0 NBTEST=0 EXIT
-declare -a TESTS
+declare -a TESTS WARNS
 echo '' > resultRuns.log
 
 setUp(){
@@ -22,15 +22,16 @@ setUp(){
     EXIT=0
     PARAMETER=0
     WARN="fgHj4yh"
+    WARNS=()
     FUNC=${FUNCNAME[1]}
     TESTS=()
     printf "\n- ${FUNC}: "
 }
 
 tearDown(){
-    rm -r temp/
-    mkdir temp/
-    echo ''
+#    rm -r temp/
+#    mkdir temp/
+    echo''
 }
 
 ########### ERRORS CATCH ###########
@@ -45,7 +46,7 @@ testError(){
         BOOLEAN_ERR="true"
     }
 
-     if [ ${EXIT} -eq 0 ]
+     if [ $1 -eq 0 ]
      then
 
         for i in ${OUTFILES[@]}; do
@@ -61,8 +62,8 @@ testError(){
 
         if [[ ${ACTUAL_OUTPUT} != *"$WARN"* ]]; then
             MSG=${MSG}"Expected warnings not found.\n"
-            echo "Expected: $WARN\n" >> bad/war.log
-            echo "Actual: $ACTUAL_OUTPUT"  >> bad/war.log
+            echo "Expected: $WARN\n" >> warnings.log
+            echo "Actual: $ACTUAL_OUTPUT"  >> warnings.log
             BOOLEAN_ERR="true"
         fi
     fi
@@ -120,8 +121,14 @@ test(){
     for i in `seq 0 $((${#TESTS[@]} -1))`; do
         run "-d $INFILE ${TESTS[i]}" > temp/log 2>&1
         local ACTUAL_EXIT=$?
-        printError ${ACTUAL_EXIT} ${i}
         cat temp/log >> resultRuns.log
+
+        if [ ! -z $1 ]; then
+            WARN="${WARNS[i]}"
+        fi
+
+        printError ${ACTUAL_EXIT} ${i}
+
         tearDown
     done
 }
@@ -132,18 +139,29 @@ testsDefault(){
     test
 }
 
+testsBlocksBad(){
+    cat data/agriculture.tsv | head -n -1 > temp/agriculture2.tsv
+    setUp
+    INFILE="temp/agriculture2.tsv,data/industry.tsv,data/politic.tsv"
+    EXIT=1
+    WARN="The number of rows is different among the blocks."
+    TESTS=( '' )
+    test
+}
+
 testsSep(){
     setUp
     TESTS=( '-s 1')
     test
 }
 
-badTestsSep(){
+testsSepBad(){
     setUp
     EXIT=1
     WARN="--separator must be comprise between 1 and 2 (1: Tabulation, 2: Semicolon, 3: Comma) [by default: 2]."
-    TESTS=( '-s 4' )
-    test
+    WARNS=( "${WARN}" "${WARN}" "agriculture block file has an only-column. Check the --separator [by default: 1 for tabulation]." )
+    TESTS=( '-s 0' '-s 4' '-s 2' )
+    test 1
 }
 
 testsScheme(){
@@ -155,7 +173,7 @@ testsScheme(){
     test
 }
 
-badTestsScheme(){
+testsSchemeBad(){
     setUp
     EXIT=1
     WARN="--scheme must be comprise between 1 and 4 [by default: 2]."
@@ -169,10 +187,33 @@ testsResponse(){
     test
 }
 
+testsResponseBad(){
+    cat data/response.tsv | head -n -1 > temp/response.tsv
+    paste data/agriculture.tsv data/response.tsv > temp/response2.tsv
+    setUp
+    EXIT=1
+    WARNS=( "The number of rows of the response file is different from those of the blocks. Possible mistake: header parameter is disabled, check if the file does'nt have one." "test.tsv file does not exist" "Please, select a response file with either qualitative data only or quantitative data only. The header must be disabled for quantitative data and activated for disjunctive table." "There is multiple columns in the response file. By default, only the first one is taken in account.")
+    TESTS=( '-r temp/response.tsv' '-r test.tsv' "-r temp/response2.tsv" "-r data/agriculture.tsv")
+    test 1
+}
+
 testsConnection(){
     setUp
     TESTS=( '-c data/connection.tsv' )
     test
+}
+
+
+testsConnection(){
+    setUp
+    EXIT=1
+    WARNS=( "The connection file must contains only 0 or 1." "The diagonal of the connection matrix file must be 0." "The connection file must be a symmetric matrix." "The number of rows/columns of the connection matrix file must be equals to the number of files in the dataset + 1 (4)." )
+    cat data/connection.tsv | tr '[1]' '[2]' > temp/connection.tsv
+    cat data/connection.tsv | tr '[0]' '[2]' > temp/connection2.tsv
+    cat data/connection.tsv | head -n -1 > temp/connection3.tsv
+    cat data/connection.tsv | head -n -1 | cut -f -3  > temp/connection4.tsv
+    TESTS=( '-c temp/connection.tsv' '-c temp/connection2.tsv' '-c temp/connection3.tsv' '-c temp/connection4.tsv' )
+    test 1
 }
 
 testHeader(){
@@ -190,25 +231,41 @@ testExcel(){
     test
 }
 
+testFileCharacter(){
+    paste data/agriculture.tsv data/response.tsv > temp/dummyFile.tsv
+    setUp
+    EXIT=1
+    WARN="dummyFile file contains qualitative data. Please, transform them in a disjunctive table."
+    INFILE="temp/dummyFile.tsv"
+    TESTS=( '' )
+    test
+}
+
 ########### MAIN ###########
 
 START_TIME=$(date -u -d $(date +"%H:%M:%S") +"%s")
 #printf "Tests in progress, could take an hour...\n"
-[ -d bad ] && rm -rf bad/
-mkdir temp/ bad/
+mkdir temp/
 setOutputPar
 
+testsResponseBad
+: '
 testsDefault
 testsSep
-badTestsSep
+testsSepBad
 testsScheme
-badTestsScheme
+testsSchemeBad
 testsResponse
 testsConnection
 testHeader
 testExcel
+testFileCharacter
+testsResponseBad
+testsConnection
+testsBlocksBad
+'
 
-rm -r temp/
+#rm -r temp/
 printf "\n$NBTEST tests, $NBFAIL failed.$ERRORS\n"
 getElapsedTime ${START_TIME}
 [[ -z ${ERRORS} ]] || exit 1
