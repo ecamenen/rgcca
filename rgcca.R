@@ -59,7 +59,7 @@ parseList = function(l){
 checkQuantitative = function(df, fo){
   QUALITATIVE = unique(unique(isCharacter(as.matrix(df))))
   if ( length(QUALITATIVE) > 1 || QUALITATIVE ) {
-    msg=paste(fo,"file contains qualitative data. Please, transform them in a disjonctive table.")
+    msg=paste(fo,"file contains qualitative data. Please, transform them in a disjunctive table.")
     if(!HEADER) msg=paste(msg, MSG_HEADER, sep="")
     stop(paste(msg,"\n"), call.=FALSE)
   }
@@ -92,9 +92,9 @@ setBlocks = function(){
     } 
     if(!isXls) loadData(fi, fo, 1, HEADER)
     else loadExcel(blocksFilename[i], fo, 1, HEADER)
+    if (NCOL(get(fo)) ==0) stop(paste(fo, "block file has an only-column. Check the --separator [by default: 1 for tabulation].\n"), call.=FALSE)
     checkQuantitative(get(fo),fo)
     blocks[[fo]] = get(fo)
-    if (NCOL(blocks[[fo]]) ==0) stop(paste(fo, "block file has an only-column. Check the --separator [by default: 1 for tabulation].\n"), call.=FALSE)
   }
   if( length(unique(sapply(1:length(blocks), function(x) NROW(blocks[[x]])))) > 1 ) 
     stop("The number of rows of the response file is different among the blocks.\n", call.=FALSE)
@@ -139,10 +139,10 @@ setResponse = function(){
     }
     QUALITATIVE = unique(isCharacter(response))
     if(length(QUALITATIVE) > 1) stop("Please, select a response file with either qualitative data only or quantitative data only. 
-                                     The header must be disabled for quantitative data and activated for disjonctive table.\n", call.=FALSE)
+                                     The header must be disabled for quantitative data and activated for disjunctive table.\n", call.=FALSE)
     if ( NCOL(response) > 1 ){
-      DISJONCTIF = unique(apply(response, 1, sum))
-      if( unique(response %in% c(0, 1) ) && length(DISJONCTIF) == 1 & DISJONCTIF == 1 ) {
+      DISJUNCTIVE = unique(apply(response, 1, sum))
+      if( unique(response %in% c(0, 1) ) && length(DISJUNCTIVE) == 1 & DISJUNCTIVE == 1 ) {
         response2 = factor(apply(response, 1, which.max))
         if(HEADER){
           levels(response2) = colnames(response)
@@ -356,7 +356,7 @@ tryCatch({
 SCALE = T
 VERBOSE = F
 TAU = "optimal"
-DISJONCTIF = F
+DISJUNCTIVE = F
 COMP1 = 1
 COMP2 = 2
 AXIS_TITLE_SIZE = 19

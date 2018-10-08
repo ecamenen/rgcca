@@ -12,8 +12,8 @@ FILE_ERR="false"
 OUTFILES=( 'samples_space.pdf' 'variables_space.pdf' 'best_biomarkers.pdf' )
 
 #Initialization
-declare -x INFILE FUNC OPAR
-declare -i PARAMETER NBFAIL=0 NBTEST=1 EXIT
+declare -x INFILE FUNC OPAR WARN
+declare -i PARAMETER NBFAIL=0 NBTEST=0 EXIT
 declare -a TESTS
 echo '' > resultRuns.log
 
@@ -21,6 +21,7 @@ setUp(){
     INFILE="data/agriculture.tsv,data/industry.tsv,data/politic.tsv"
     EXIT=0
     PARAMETER=0
+    WARN="fgHj4yh"
     FUNC=${FUNCNAME[1]}
     TESTS=()
     printf "\n- ${FUNC}: "
@@ -29,6 +30,7 @@ setUp(){
 tearDown(){
     rm -r temp/
     mkdir temp/
+    echo ''
 }
 
 ########### ERRORS CATCH ###########
@@ -36,14 +38,15 @@ tearDown(){
 testError(){
     local BOOLEAN_ERR="false"
     local MSG=""
+    local ACTUAL_OUTPUT=$(cat temp/log | tr '\n' ' ' )
 
     [ $1 -ne ${EXIT} ] && {
         MSG=${MSG}"Program exited with bad error code: $1.\n"
         BOOLEAN_ERR="true"
     }
 
-
-     [ ${EXIT} -eq 0 ] && {
+     if [ ${EXIT} -eq 0 ]
+     then
 
         for i in ${OUTFILES[@]}; do
 	    	testFileExist ${i}
@@ -53,9 +56,16 @@ testError(){
            MSG=${MSG}"not created.\n"
            BOOLEAN_ERR="true"
         }
-     }
 
-    tearDown
+     else
+
+        if [[ ${ACTUAL_OUTPUT} != *"$WARN"* ]]; then
+            MSG=${MSG}"Expected warnings not found.\n"
+            echo "Expected: $WARN\n" >> bad/war.log
+            echo "Actual: $ACTUAL_OUTPUT"  >> bad/war.log
+            BOOLEAN_ERR="true"
+        fi
+    fi
 
     [ ${BOOLEAN_ERR} == "true" ] && {
 	    ERRORS=${ERRORS}"\n***************\n##Test \"${TESTS[$2]}\" in $FUNC: \n$MSG"
@@ -84,10 +94,10 @@ printError(){
 ########### RUN PROCESS ###########
 
 run(){
-	printf "\n\n$NBTEST. ${TESTS[$PARAMETER]}\n" >> resultRuns.log 2>&1
     let NBTEST+=1
+	printf "\n\n$NBTEST. ${TESTS[$PARAMETER]}\n" >> resultRuns.log 2>&1
     let PARAMETER+=1
-    Rscript  rgcca.R -d ${INFILE} ${O_PAR} $@ >> resultRuns.log 2>&1
+    Rscript  rgcca.R -d ${INFILE} ${O_PAR} $@ > temp/log 2>&1
 }
 
 getElapsedTime(){
@@ -108,9 +118,11 @@ setOutputPar(){
 
 test(){
     for i in `seq 0 $((${#TESTS[@]} -1))`; do
-        run "-d $INFILE ${TESTS[i]}"
+        run "-d $INFILE ${TESTS[i]}" > temp/log 2>&1
         local ACTUAL_EXIT=$?
         printError ${ACTUAL_EXIT} ${i}
+        cat temp/log >> resultRuns.log
+        tearDown
     done
 }
 
@@ -122,13 +134,14 @@ testsDefault(){
 
 testsSep(){
     setUp
-    TESTS=( '-s 1' )
+    TESTS=( '-s 1')
     test
 }
 
 badTestsSep(){
     setUp
     EXIT=1
+    WARN="--separator must be comprise between 1 and 2 (1: Tabulation, 2: Semicolon, 3: Comma) [by default: 2]."
     TESTS=( '-s 4' )
     test
 }
@@ -145,6 +158,7 @@ testsScheme(){
 badTestsScheme(){
     setUp
     EXIT=1
+    WARN="--scheme must be comprise between 1 and 4 [by default: 2]."
     TESTS=( '-g 0' '-g 5' )
     test
 }
@@ -164,6 +178,7 @@ testsConnection(){
 testHeader(){
     setUp
     EXIT=1
+    WARN="agriculture file contains qualitative data. Please, transform them in a disjunctive table. Possible mistake: header parameter is disabled, check if the file does'nt have one."
     TESTS=( '-H' )
     test
 }
@@ -179,8 +194,8 @@ testExcel(){
 
 START_TIME=$(date -u -d $(date +"%H:%M:%S") +"%s")
 #printf "Tests in progress, could take an hour...\n"
-#[ -d bad ] && rm -rf bad/
-mkdir temp/
+[ -d bad ] && rm -rf bad/
+mkdir temp/ bad/
 setOutputPar
 
 testsDefault
