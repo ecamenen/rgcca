@@ -141,7 +141,7 @@ setResponse = function(){
     if(length(QUALITATIVE) > 1) stop("Please, select a response file with either qualitative data only or quantitative data only. The header must be disabled for quantitative data and activated for disjunctive table.\n", call.=FALSE)
     if ( NCOL(response) > 1 ){
       DISJUNCTIVE = unique(apply(response, 1, sum))
-      if( unique(response %in% c(0, 1) ) && length(DISJUNCTIVE) == 1 & DISJUNCTIVE == 1 ) {
+      if( length(DISJUNCTIVE) == 1 && unique(response %in% c(0, 1) ) &&  DISJUNCTIVE == 1 ) {
         response2 = factor(apply(response, 1, which.max))
         if(HEADER){
           levels(response2) = colnames(response)
@@ -269,7 +269,7 @@ getArgs = function(){
   option_list = list(
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks", default="data/agriculture.tsv,data/industry.tsv,data/politic.tsv"),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Connection file path"),
-    make_option(c("-r", "--response"), type="character", metavar="character", help="Response file path", default="data/response3.tsv"),
+    make_option(c("-r", "--response"), type="character", metavar="character", help="Response file path", default="data/agriculture.tsv"),
     make_option(c("-n", "--names"), type="character", metavar="character", help="Names of the blocks [default: filename]"),
     make_option(c("-H", "--header"), type="logical", action="store_false",
                 help="DO NOT consider first row as header of columns"),

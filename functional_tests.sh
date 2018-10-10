@@ -14,7 +14,7 @@ OUTFILES=( 'samples_space.pdf' 'variables_space.pdf' 'best_biomarkers.pdf' )
 #Initialization
 declare -x INFILE FUNC OPAR WARN
 declare -i PARAMETER NBFAIL=0 NBTEST=0 EXIT
-declare -a TESTS WARNS
+declare -a TESTS WARNS EXITS
 echo '' > resultRuns.log
 
 setUp(){
@@ -25,6 +25,7 @@ setUp(){
     WARNS=()
     FUNC=${FUNCNAME[1]}
     TESTS=()
+    EXITS=()
     printf "\n- ${FUNC}: "
 }
 
@@ -125,6 +126,9 @@ test(){
 
         if [ ! -z $1 ]; then
             WARN="${WARNS[i]}"
+            if [ $1 == "2" ]; then
+                EXIT="${EXITS[i]}"
+            fi
         fi
 
         printError ${ACTUAL_EXIT} ${i}
@@ -191,10 +195,10 @@ testsResponseBad(){
     cat data/response.tsv | head -n -1 > temp/response.tsv
     paste data/agriculture.tsv data/response.tsv > temp/response2.tsv
     setUp
-    EXIT=1
+    EXITS=(1 1 1 0)
     WARNS=( "The number of rows of the response file is different from those of the blocks. Possible mistake: header parameter is disabled, check if the file does'nt have one." "test.tsv file does not exist" "Please, select a response file with either qualitative data only or quantitative data only. The header must be disabled for quantitative data and activated for disjunctive table." "There is multiple columns in the response file. By default, only the first one is taken in account.")
     TESTS=( '-r temp/response.tsv' '-r test.tsv' "-r temp/response2.tsv" "-r data/agriculture.tsv")
-    test 1
+    test 2
 }
 
 testsConnection(){
