@@ -9,10 +9,10 @@ getData = function(){
 }
 
 getDim = function(list_m)
-  sapply(1:length(list_m), function (x) dim(list_m[[x]]) )
+  lapply(list_m, dim )
 
 getRownames = function(list_m)
-  sapply(1:length(list_m), function (x) row.names(list_m[[x]]) )
+  lapply(list_m, row.names)
 
 writeData = function(list_m)
   sapply(1:length(BLOCS), function (x) write.table(BLOCS[[x]], paste(names(BLOCS)[x], ".tsv", sep=""), sep="\t"))
@@ -72,8 +72,10 @@ addNARow = function (df, r){
 }
 
 discardDiffRow = function(list_m){
+  names = names(list_m)
   common_row = commonRow(list_m)
   list_m = sapply(1:length(list_m), function (x) list_m[[x]] = list_m[[x]][common_row,])
+  names(list_m) = names
   return (list_m)
 }
 
@@ -121,7 +123,7 @@ test_discardDiffRow = function(){
 test_diffRow = function (){
   BLOCS = getData()
 
-  all.equal( getMissingRow(BLOCS[c(1,2)], 1), setdiff(row.names(BLOCS[[2]]), row.names(BLOCS[[1]])) )
+  all.equal( getDiffRow(BLOCS[c(1,2)], 1), setdiff(row.names(BLOCS[[2]]), row.names(BLOCS[[1]])) )
 }
 
 test_addNARow = function (){

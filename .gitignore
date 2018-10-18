@@ -13,3 +13,9 @@ temp/
 warnings\.log
 
 rgccaLauncher\.Rproj
+
+connection\.tsv
+
+data3/
+
+data2/

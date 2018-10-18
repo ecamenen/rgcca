@@ -49,8 +49,9 @@ setBlocks = function() {
   # Create a list object of blocks from files loading
   # Output: list of dataframe (blocks)
 
-  # test if extension filename is xls
+  # Parse args containing files path
   isXls <- (length(grep("xlsx?", opt$datasets)) == 1)
+  # test if extension filename is xls
   if (!isXls) {
     # if it is not, parse the name of file from the arg list
     blocksFilename = parseList(opt$datasets)
@@ -63,11 +64,12 @@ setBlocks = function() {
     blocksFilename = names(getSheets(wb))
   }
 
+  # Parse optional names of blocks
   if (!is.null(opt$names))
-    # default name is filename, otherwise, the user could name them
+    # default name is filename, otherwise, the user could name the blocs
     blocksName = parseList(opt$names)
 
-  # load each dataset
+  # Load each dataset
   blocks = list()
   for (i in 1:length(blocksFilename)) {
 
@@ -77,6 +79,7 @@ setBlocks = function() {
       checkFile(fi)
     }
 
+    #Get names of blocs
     if (!is.null(opt$names))
       # names of blocks are those parsed from args
       fo = getFileName(blocksName[i])
@@ -89,10 +92,13 @@ setBlocks = function() {
         fo = blocksFilename[i]
     }
 
+    #load the data
     if (!isXls)
       loadData(fi, fo, 1, HEADER)
-    else loadExcel(blocksFilename[i], fo, 1, HEADER)
+    else
+      loadExcel(blocksFilename[i], fo, 1, HEADER)
 
+    #if one-column file, it is a tabulation error
     if (NCOL(get(fo)) == 0)
       stop(paste(fo, "block file has an only-column. Check the --separator [by default: 1 for tabulation].\n"),
            call. = FALSE)
@@ -104,7 +110,11 @@ setBlocks = function() {
 
   if (length(unique(sapply(1:length(blocks), function(x) NROW(blocks[[x]])))) > 1)
     stop("The number of rows is different among the blocks.\n", call. = FALSE)
+  #print(names(blocks[[3]])[99])
+  #blocks[[3]] = blocks[[3]][, -99]
+
   blocks[["Superblock"]] = Reduce(cbind, blocks)
+  #blocks[["Superblock"]] = blocks[["Superblock"]][, -242]
 
   return(blocks)
 }
@@ -180,6 +190,8 @@ isCharacter = function(df) {
   # function NA are produced by converting a character into an integer
   # as.vector, avoid factors of character in integer without NA
 
+  # NA tolerance :
+  # df = na.omit(df)
   if (is.matrix(df))
     test = sapply(1:NCOL(df), function(x) unique(is.na(as.integer(as.vector(df[, x])))))
   else
@@ -187,11 +199,4 @@ isCharacter = function(df) {
 
   options(warn = 0)
   return(test)
-}
-
-checkFile = function (f){
-  # o: one argument from the list of arguments
-  if(!file.exists(f)){
-    stop(paste(f, " file does not exist\n", sep=""), call.=FALSE)
-  }
 }
