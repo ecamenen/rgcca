@@ -113,7 +113,8 @@ setBlocks = function() {
   #print(names(blocks[[3]])[99])
   #blocks[[3]] = blocks[[3]][, -99]
 
-  blocks[["Superblock"]] = Reduce(cbind, blocks)
+  if( SUPERBLOCK )
+    blocks[["Superblock"]] = Reduce(cbind, blocks)
   #blocks[["Superblock"]] = blocks[["Superblock"]][, -242]
 
   return(blocks)

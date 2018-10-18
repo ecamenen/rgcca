@@ -87,7 +87,8 @@ plotVariablesSpace = function(rgcca, compX, compY, i_block=NULL){
     row.names = colnames(blocks[[i_block]])
   )
 
-  if (  i_block == length(blocks) )
+  # if superblock is selected, color by blocks
+  if (  SUPERBLOCK & ( i_block == length(blocks)) )
     color = getBlocsVariables()
   else
     color = rep(1, NROW(df))
@@ -99,7 +100,7 @@ plotVariablesSpace = function(rgcca, compX, compY, i_block=NULL){
     geom_path(aes(x, y), data = circleFun()/2, col = "grey", size = 1, lty = 2)
 
   # remove legend if not on superblock
-  if (  ! i_block == length(blocks) )
+  if (  !SUPERBLOCK || !( i_block == length(blocks) ) )
       p + theme(legend.position = "none")
     else
       p
@@ -157,9 +158,9 @@ plot_biomarkers = function(rgcca, i_comp, n_mark, i_block=NULL){
   # order by decreasing
   df = data.frame(df[order(abs(df[,i_comp]), decreasing = TRUE),], order = nrow(df):1)
 
-  # if the last one is selected, color the bar according to their belonging to each blocks
+  # if superblock is selected, color the bar according to their belonging to each blocks
   #TODO: change this with a booleean with/without superblock
-  if (  i_block == length(blocks) ){
+  if (  SUPERBLOCK & ( i_block == length(blocks) ) ){
     df = data.frame(df, color = getBlocsVariables() )
     # color for the text axis
     color2 = df$color; levels(color2) = hue_pal()(length(blocks)-1)
@@ -170,7 +171,7 @@ plot_biomarkers = function(rgcca, i_comp, n_mark, i_block=NULL){
   # max threshold for n
   if(NROW(df) >= n_mark) df = df[1:n_mark,]
 
-  if (  i_block == length(blocks) ){
+  if (  SUPERBLOCK & i_block == length(blocks) ){
     p = ggplot(df, aes(order, df[,i_comp], fill = color))
   }else{
     p = ggplot(df, aes(order, df[,i_comp]))

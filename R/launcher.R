@@ -123,6 +123,7 @@ COLOR_SAMPLES_DEF = "#000099"
 HEADER = !("header" %in% names(opt))
 MSG_HEADER = " Possible mistake: header parameter is disabled, check if the file does'nt have one."
 NB_MARK = 100
+SUPERBLOCK = F
 
 setwd(opt$directory)
 source("R/parsing.R")
@@ -149,16 +150,19 @@ rgcca = sgcca(A = blocks,
               verbose = VERBOSE)
 
 # Samples common space
-samplesSpace = plotSamplesSpace(rgcca, COMP1, COMP2, 1)
+( samplesSpace = plotSamplesSpace(rgcca, COMP1, COMP2) )
+plotSamplesSpace(rgcca, COMP1, COMP2, 2)
 save(opt$output1, samplesSpace)
 
 # Variables common space
-variablesSpace = plotVariablesSpace(rgcca, COMP1, COMP2, 1)
+( variablesSpace = plotVariablesSpace(rgcca, COMP1, COMP2) )
+plotVariablesSpace(rgcca, COMP1, COMP2, 2)
 save(opt$output2, variablesSpace)
 
 # Biomarkers plot
-# best_biomarkers = plot_biomarkers(rgcca, 1, NB_MARK, 4)
-best_biomarkers = plot_biomarkers(rgcca, 1, NB_MARK)
+# best_biomarkers = plot_biomarkers(rgcca, COMP1, NB_MARK, 4)
+( best_biomarkers = plot_biomarkers(rgcca, COMP1, NB_MARK) )
+plot_biomarkers(rgcca, COMP1, NB_MARK, 2)
 save(opt$output3, best_biomarkers)
 
-plotAVE(rgcca, 1)
+plotAVE(rgcca, COMP1)
