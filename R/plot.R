@@ -8,7 +8,7 @@ circleFun = function(center = c(0, 0), diameter = 2, npoints = 100) {
   return(data.frame(x = xx, y = yy))
 }
 
-printAxis = function (n, i = NULL){
+printAxis = function (rgcca, n, i = NULL){
   # Prints the % of explained variance for an axis
   # n: number of the axis
   # i: index of the blocks
@@ -128,8 +128,8 @@ plotSpace = function (rgcca, df, title, group, name_group, compX, compY, i_block
     geom_vline(xintercept = 0, col="grey", linetype="dashed", size=1) +
     geom_hline(yintercept = 0, col="grey", linetype="dashed", size=1) +
     labs ( title = paste(title, "space"),
-           x = printAxis(compX, i_block),
-           y = printAxis(compY, i_block),
+           x = printAxis(rgcca, compX, i_block),
+           y = printAxis(rgcca, compY, i_block),
            color = name_group) +
     scale_y_continuous(breaks=NULL) +
     scale_x_continuous(breaks=NULL) +
@@ -156,12 +156,15 @@ plot_biomarkers = function(rgcca, i_comp, n_mark, i_block=NULL){
   # select the weights
   df = rgcca$a[[i_block]]
   # order by decreasing
+
+  if (  SUPERBLOCK & ( i_block == length(blocks) ) )
+    df = data.frame(df, color = getBlocsVariables() )
+
   df = data.frame(df[order(abs(df[,i_comp]), decreasing = TRUE),], order = nrow(df):1)
 
   # if superblock is selected, color the bar according to their belonging to each blocks
   #TODO: change this with a booleean with/without superblock
   if (  SUPERBLOCK & ( i_block == length(blocks) ) ){
-    df = data.frame(df, color = getBlocsVariables() )
     # color for the text axis
     color2 = df$color; levels(color2) = hue_pal()(length(blocks)-1)
   }else{
@@ -178,7 +181,7 @@ plot_biomarkers = function(rgcca, i_comp, n_mark, i_block=NULL){
   }
 
     p = plotHistogram(p, df, "Variable weights", as.character(color2))
-    p + labs (subtitle = printAxis(i_comp, i_block))
+    p + labs (subtitle = printAxis(rgcca, i_comp, i_block))
 }
 
 plotAVE = function(rgcca, i_comp){

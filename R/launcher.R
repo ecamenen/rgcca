@@ -75,7 +75,6 @@ checkArg = function(a){
   return (opt)
 }
 
-
 checkFile = function (f){
   # o: one argument from the list of arguments
   if(!file.exists(f)){
@@ -123,7 +122,7 @@ COLOR_SAMPLES_DEF = "#000099"
 HEADER = !("header" %in% names(opt))
 MSG_HEADER = " Possible mistake: header parameter is disabled, check if the file does'nt have one."
 NB_MARK = 100
-SUPERBLOCK = F
+SUPERBLOCK = T
 
 setwd(opt$directory)
 source("R/parsing.R")
@@ -142,7 +141,7 @@ getColumnSameVal = function(list_m)
   lapply(1:length(list_m), function (x) which( apply(list_m[[x]], 2, sd ) == 0 ))
 #getColumnSameVal(blocks)
 
-rgcca = sgcca(A = blocks,
+rsgcca.res = sgcca(A = blocks,
               C = connection_matrix,
               scheme = opt$scheme,
               ncomp = ncomp,
@@ -150,19 +149,18 @@ rgcca = sgcca(A = blocks,
               verbose = VERBOSE)
 
 # Samples common space
-( samplesSpace = plotSamplesSpace(rgcca, COMP1, COMP2) )
-plotSamplesSpace(rgcca, COMP1, COMP2, 2)
+( samplesSpace = plotSamplesSpace(rsgcca.res, COMP1, COMP2) )
+plotSamplesSpace(rsgcca.res, COMP1, COMP2, 1)
 save(opt$output1, samplesSpace)
 
 # Variables common space
-( variablesSpace = plotVariablesSpace(rgcca, COMP1, COMP2) )
-plotVariablesSpace(rgcca, COMP1, COMP2, 2)
+( variablesSpace = plotVariablesSpace(rsgcca.res, COMP1, COMP2) )
+plotVariablesSpace(rsgcca.res, COMP1, COMP2, 2)
 save(opt$output2, variablesSpace)
 
 # Biomarkers plot
-# best_biomarkers = plot_biomarkers(rgcca, COMP1, NB_MARK, 4)
-( best_biomarkers = plot_biomarkers(rgcca, COMP1, NB_MARK) )
-plot_biomarkers(rgcca, COMP1, NB_MARK, 2)
+( best_biomarkers = plot_biomarkers(rsgcca.res, COMP1, NB_MARK) )
+plot_biomarkers(rsgcca.res, COMP1, NB_MARK, 2)
 save(opt$output3, best_biomarkers)
 
-plotAVE(rgcca, COMP1)
+plotAVE(rsgcca.res, COMP1)
