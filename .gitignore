@@ -1,21 +1,17 @@
 *.pdf
 *.png
 *.iml
-.Rhistory
-.idea/
-.Rproj.user
+*.log
 resultRuns.log
-
-rgcca_software\.Rproj
-
-temp/
-
-warnings\.log
-
+.Rhistory
+.Rproj.user
+.RData
+.Ruserdata
 rgccaLauncher\.Rproj
 
-connection\.tsv
-
+temp/
+\.idea/
 data3/
+results/
 
-data2/
+

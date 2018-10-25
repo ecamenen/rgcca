@@ -1,3 +1,5 @@
+#Global settings
+MSG_HEADER = " Possible mistake: header parameter is disabled, check if the file does'nt have one."
 
 getFileName = function(fi) {
   # get prefix part from a file
@@ -6,24 +8,34 @@ getFileName = function(fi) {
   fo = unlist(strsplit(fo, "[.]"))[1]
 }
 
-loadData = function(fi, fo = fi, row.names = NULL, h = F) {
+loadData = function(fi, sep, fo = fi, row.names = NULL, h = F) {
   # create a dataset object from a file loading fi: input file name fo:
   # dataset object name
-  data = as.matrix(read.table(fi, sep = SEPARATOR, h = h, row.names = row.names, na.strings = "NA"))
+
+  data = as.matrix(read.table(fi, sep = sep, h = h, row.names = row.names, na.strings = "NA"))
   assign(fo, data, .GlobalEnv)
   # TODO: catch warning missing \n at the end of the file
 }
 
 loadExcel = function(fi, fo = fi, row.names = NULL, h = F) {
   data = read.xlsx2(opt$datasets, fi, header = h)
-  checkQuantitative(data[, -row.names], opt$datasets)
+  checkQuantitative(data[, -row.names], opt$datasets, h)
   data2 = as.matrix(as.data.frame(lapply(data[-row.names], function(x) as.numeric(as.vector(x)))))
   row.names(data2) = data[, row.names]
   assign(fo, data2, .GlobalEnv)
 }
 
-save = function(f, p) {
-  pdf(f, width = 10, height = 8)
+savePlot = function(f, p) {
+  # get suffixe of filename
+  format = unlist(strsplit(f, '.', fixed="T"))
+  format = format[length(format)]
+  # dynamic loading of function depending of the extension
+  func = get(format)
+
+  # save
+  func(f, width = 10, height = 8)
+  if (format != "pdf") func(f, width = 10, height = 8, units="in", res=200)
+
   plot(p)
   suprLog = dev.off()
 }
@@ -35,17 +47,24 @@ parseList = function(l) {
   unlist(strsplit(l, ","))
 }
 
-checkQuantitative = function(df, fo) {
-  QUALITATIVE = unique(unique(isCharacter(as.matrix(df))))
-  if (length(QUALITATIVE) > 1 || QUALITATIVE) {
+checkQuantitative = function(df, fo, h) {
+  qualitative = unique(unique(isCharacter(as.matrix(df))))
+  if (length(qualitative) > 1 || qualitative) {
     msg = paste(fo, "file contains qualitative data. Please, transform them in a disjunctive table.")
-    if (!HEADER)
+    if (!h)
       msg = paste(msg, MSG_HEADER, sep = "")
     stop(paste(msg, "\n"), call. = FALSE)
   }
 }
 
-setBlocks = function() {
+checkFile = function (f){
+  # o: one argument from the list of arguments
+  if(!file.exists(f)){
+    stop(paste(f, " file does not exist\n", sep=""), call.=FALSE)
+  }
+}
+
+setBlocks = function(opt, superblock) {
   # Create a list object of blocks from files loading
   # Output: list of dataframe (blocks)
 
@@ -94,16 +113,16 @@ setBlocks = function() {
 
     #load the data
     if (!isXls)
-      loadData(fi, fo, 1, HEADER)
+      loadData(fi, opt$separator, fo, 1, opt$header)
     else
-      loadExcel(blocksFilename[i], fo, 1, HEADER)
+      loadExcel(blocksFilename[i], fo, 1, opt$header)
 
     #if one-column file, it is a tabulation error
     if (NCOL(get(fo)) == 0)
       stop(paste(fo, "block file has an only-column. Check the --separator [by default: 1 for tabulation].\n"),
            call. = FALSE)
 
-    checkQuantitative(get(fo), fo)
+    checkQuantitative(get(fo), fo, opt$header)
 
     blocks[[fo]] = get(fo)
   }
@@ -113,21 +132,23 @@ setBlocks = function() {
   #print(names(blocks[[3]])[99])
   #blocks[[3]] = blocks[[3]][, -99]
 
-  if( SUPERBLOCK )
+  if( superblock )
     blocks[["Superblock"]] = Reduce(cbind, blocks)
   #blocks[["Superblock"]] = blocks[["Superblock"]][, -242]
 
   return(blocks)
 }
 
-checkConnection = function(c) {
-  # cm: connection matrix unname to avoid taking account the automatic
-  # names of column
+checkConnection = function(c, blocks) {
+  # Check the validity of the connection matrix
+  # c: a symmetric matrix containing 1 and 0
+
   if (!isSymmetric.matrix(unname(c)))
     stop("The connection file must be a symmetric matrix.\n", call. = FALSE)
   n = length(blocks)
   if (NCOL(c) != n)
-    stop(paste("The number of rows/columns of the connection matrix file must be equals to the number of files in the dataset + 1 (",
+    stop(paste("The number of rows/columns of the connection matrix file must
+               be equals to the number of files in the dataset + 1 (",
                n, ").\n", sep = ""), call. = FALSE)
   d = unique(diag(c))
   if (length(d) != 1 || d != 0)
@@ -138,38 +159,38 @@ checkConnection = function(c) {
 
 }
 
-setConnection = function() {
+setConnection = function(opt, blocks) {
   # default settings of connection_matrix matrix
   if (is.null(opt$connection)) {
     seq = 1:(length(blocks) - 1)
     connection_matrix = matrix(0, length(blocks), length(blocks))
     connection_matrix[length(blocks), seq] <- connection_matrix[seq, length(blocks)] <- 1
   } else {
-    loadData(opt$connection, "connection_matrix", h = F)
+    loadData(opt$connection, opt$separator, "connection_matrix", h = F)
   }
-  checkConnection(connection_matrix)
+  checkConnection(connection_matrix, blocks)
   return(connection_matrix)
 }
 
-setResponse = function() {
+setResponse = function(opt, blocks) {
   # create a dataset object from a file loading containg the response
   if ("response" %in% names(opt)) {
-    loadData(opt$response, "response", 1, HEADER)
+    loadData(opt$response, opt$separator, "response", 1, opt$header)
     if (NROW(blocks[[1]]) != NROW(response)) {
       msg = "The number of rows of the response file is different from those of the blocks."
-      if (HEADER)
+      if (opt$header)
         msg = paste(msg, MSG_HEADER, sep = "")
       stop(paste(msg, "\n"), call. = FALSE)
     }
-    QUALITATIVE = unique(isCharacter(response))
-    if (length(QUALITATIVE) > 1)
+    qualitative = unique(isCharacter(response))
+    if (length(qualitative) > 1)
       stop("Please, select a response file with either qualitative data only or quantitative data only. The header must be disabled for quantitative data and activated for disjunctive table.\n",
            call. = FALSE)
     if (NCOL(response) > 1) {
-      DISJUNCTIVE = unique(apply(response, 1, sum))
-      if (length(DISJUNCTIVE) == 1 && unique(response %in% c(0, 1)) && DISJUNCTIVE == 1) {
+      disjunctive = unique(apply(response, 1, sum))
+      if (length(disjunctive) == 1 && unique(response %in% c(0, 1)) && disjunctive == 1) {
         response2 = factor(apply(response, 1, which.max))
-        if (HEADER) {
+        if (opt$header) {
           levels(response2) = colnames(response)
         }
         response = as.character(response2)

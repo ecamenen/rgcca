@@ -19,8 +19,8 @@ rm(list=ls())
 
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks", default = "data2/Clinique.tsv,data2/Lipidomique.tsv,data2/Transcriptomique.tsv,data2/Imagerie.tsv,data2/Metabolomique.tsv"),
-    make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default="."),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks", default = opt[7]),
+    make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Connection file path"),
     make_option(c("-r", "--response"), type="character", metavar="character", help="Response file path"),
     make_option(c("-n", "--names"), type="character", metavar="character", help="Names of the blocks [default: filename]"),
@@ -29,11 +29,11 @@ getArgs = function(){
                 help="Type of separator [default: tabulation] (1: Tabulation, 2: Semicolon, 3: Comma"),
     make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2,
                 help="Scheme function g(x) [default: x^2] (1: x, 2: x^2, 3: |x|, 4: x^4"),
-    make_option(c( "--output1"), type="character", metavar="character", default="samples_space.pdf",
+    make_option(c( "--output1"), type="character", metavar="character", default=opt[4],
                 help="Variables space file name [default: %default]"),
-    make_option(c( "--output2"), type="character", metavar="character", default="variables_space.pdf",
+    make_option(c( "--output2"), type="character", metavar="character", default=opt[5],
                 help="Sample space file name [default: %default]"),
-    make_option(c( "--output3"), type="character", metavar="character", default="best_biomarkers.pdf",
+    make_option(c( "--output3"), type="character", metavar="character", default=opt[6],
                 help="Best biomarkers file name [default: %default]")
   )
   args = commandArgs(trailingOnly=T)
@@ -41,11 +41,11 @@ getArgs = function(){
 }
 
 
-
 #Check the validity of the arguments
 #Inputs:
 # a: arguments (optionParser object)
 checkArg = function(a){
+
   opt = parse_args(a)
 
   if(is.null(opt$datasets)) stop(paste("--datasets is required\n", sep=""), call.=FALSE)
@@ -65,7 +65,7 @@ checkArg = function(a){
     stop("--separator must be comprise between 1 and 2 (1: Tabulation, 2: Semicolon, 3: Comma) [by default: 2].\n", call.=FALSE)
   }else{
     separators = c('\t', ';', ',')
-    assign("SEPARATOR", separators[opt$separator], .GlobalEnv)
+    opt$separator = separators[opt$separator]
   }
 
   FILES = c("connection", "response")
@@ -73,13 +73,6 @@ checkArg = function(a){
     if(!is.null(opt[[o]])) checkFile(opt[[o]])
 
   return (opt)
-}
-
-checkFile = function (f){
-  # o: one argument from the list of arguments
-  if(!file.exists(f)){
-    stop(paste(f, " file does not exist\n", sep=""), call.=FALSE)
-  }
 }
 
 ##################
@@ -97,40 +90,34 @@ for (l in librairies) {
   library(l, character.only = TRUE)
 }
 
+source("R/parsing.R")
+source("R/plot.R")
+
 #Get arguments
+opt = list(directory = ".", separator = "\t", scheme = "factorial", output1 = "samples_space.pdf", output2 = "variables_space.pdf", output3 = "best_biomarkers.pdf", datasets="data2/Clinique.tsv,data2/Lipidomique.tsv,data2/Transcriptomique.tsv,data2/Imagerie.tsv,data2/Metabolomique.tsv")
 args = getArgs()
 tryCatch({
   opt = checkArg(args)
 }, error = function(e) {
-  #print_help(args)
-  stop(e[[1]], call.=FALSE)
+  if (length(grep("nextArg", e[[1]])) != 1)
+    stop(e[[1]], call.=FALSE)
 })
 
 #Global settings
+opt$header = !("header" %in% names(opt))
 SCALE = T
 VERBOSE = F
-TAU = "optimal"
-DISJUNCTIVE = F
+#TAU = "optimal"
 COMP1 = 1
 COMP2 = 2
-AXIS_TITLE_SIZE = 19
-AXIS_TEXT_SIZE = 8
-PCH_TEXT_SIZE = 2
-AXIS_FONT = "italic"
-MAX_CLUSTERS = 10
-COLOR_SAMPLES_DEF = "#000099"
-HEADER = !("header" %in% names(opt))
-MSG_HEADER = " Possible mistake: header parameter is disabled, check if the file does'nt have one."
 NB_MARK = 100
 SUPERBLOCK = T
 
 setwd(opt$directory)
-source("R/parsing.R")
-source("R/plot.R")
 
-blocks = setBlocks()
-connection_matrix = setConnection()
-response = setResponse()
+blocks = setBlocks(opt, SUPERBLOCK)
+connection_matrix = setConnection(opt, blocks)
+response = setResponse(opt, blocks)
 NB_COMP = 2
 ncomp = rep(NB_COMP, length(blocks))
 #sapply(blocks, NCOL)
@@ -141,26 +128,29 @@ getColumnSameVal = function(list_m)
   lapply(1:length(list_m), function (x) which( apply(list_m[[x]], 2, sd ) == 0 ))
 #getColumnSameVal(blocks)
 
-rsgcca.res = sgcca(A = blocks,
+sgcca.res = sgcca(A = blocks,
               C = connection_matrix,
               scheme = opt$scheme,
               ncomp = ncomp,
               scale = SCALE,
               verbose = VERBOSE)
 
+names(sgcca.res$a) = names(blocks)
+
 # Samples common space
-( samplesSpace = plotSamplesSpace(rsgcca.res, COMP1, COMP2) )
-plotSamplesSpace(rsgcca.res, COMP1, COMP2, 1)
-save(opt$output1, samplesSpace)
+( samplesSpace = plotSamplesSpace(sgcca.res, response, COMP1, COMP2) )
+plotSamplesSpace(sgcca.res, response, COMP1, COMP2, 1)
+savePlot(opt$output1, samplesSpace)
 
 # Variables common space
-( variablesSpace = plotVariablesSpace(rsgcca.res, COMP1, COMP2) )
-plotVariablesSpace(rsgcca.res, COMP1, COMP2, 2)
-save(opt$output2, variablesSpace)
+( variablesSpace = plotVariablesSpace(sgcca.res, blocks, COMP1, COMP2, SUPERBLOCK) )
+plotVariablesSpace(sgcca.res, blocks, COMP1, COMP2, SUPERBLOCK, 1)
+
+savePlot(opt$output2, variablesSpace)
 
 # Biomarkers plot
-( best_biomarkers = plot_biomarkers(rsgcca.res, COMP1, NB_MARK) )
-plot_biomarkers(rsgcca.res, COMP1, NB_MARK, 2)
-save(opt$output3, best_biomarkers)
+( best_biomarkers = plot_biomarkers(sgcca.res, COMP1, NB_MARK, SUPERBLOCK) )
+plot_biomarkers(sgcca.res, COMP1, NB_MARK, SUPERBLOCK, 2)
+savePlot(opt$output3, best_biomarkers)
 
-plotAVE(rsgcca.res, COMP1)
+plotAVE(sgcca.res, COMP1)

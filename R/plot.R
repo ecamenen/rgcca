@@ -1,3 +1,11 @@
+#Global settings
+MAX_CLUSTERS = 10
+AXIS_TITLE_SIZE = 19
+AXIS_TEXT_SIZE = 8
+PCH_TEXT_SIZE = 2
+AXIS_FONT = "italic"
+COLOR_SAMPLES_DEF = "#000099"
+
 circleFun = function(center = c(0, 0), diameter = 2, npoints = 100) {
   # Creates x, y coordinates for a circle
 
@@ -14,7 +22,7 @@ printAxis = function (rgcca, n, i = NULL){
   # i: index of the blocks
 
   if ( is.null(i) )
-    i = length(blocks)
+    i = length(rgcca$ncomp)
   paste("Axis ", n, " (", round(rgcca$AVE$AVE_X[[i]][n] * 100 , 1),"%)", sep="")
 }
 
@@ -28,7 +36,7 @@ theme_perso = function() {
   )
 }
 
-plotSamplesSpace = function (rgcca, compX, compY, i_block=NULL, group=NULL){
+plotSamplesSpace = function (rgcca, response, compX, compY, i_block=NULL, group=NULL){
   # Projectes coordinates of samples in a bi-dimensional space
   # compX: component used for the x-axis
   # compY: component used for the y-axis
@@ -36,7 +44,7 @@ plotSamplesSpace = function (rgcca, compX, compY, i_block=NULL, group=NULL){
   # group : color the points with a vector
 
   if ( is.null(i_block) )
-    i_block = length(blocks)
+    i_block = length(rgcca$ncomp)
 
   df = data.frame(rgcca$Y[[i_block]])
 
@@ -65,14 +73,14 @@ plotSamplesSpace = function (rgcca, compX, compY, i_block=NULL, group=NULL){
     p
 }
 
-getBlocsVariables = function(){
+getBlocsVariables = function(rgcca){
   # Get a vector of block name for each corresponding variable
 
-  rep( names(blocks)[-length(blocks)],
-       sapply(blocks[1:(length(blocks)-1)], NCOL))
+  rep( names(rgcca$a)[-length(rgcca$a)],
+       sapply(rgcca$a[1:(length(rgcca$a)-1)], NROW))
 }
 
-plotVariablesSpace = function(rgcca, compX, compY, i_block=NULL){
+plotVariablesSpace = function(rgcca, blocks, compX, compY, superblock=null, i_block=NULL){
   # Projectes a correlation circle in a bi-dimensional space between the coordinates of each variables and its initial value
   # compX: component used for the x-axis
   # compY: component used for the y-axis
@@ -88,8 +96,8 @@ plotVariablesSpace = function(rgcca, compX, compY, i_block=NULL){
   )
 
   # if superblock is selected, color by blocks
-  if (  SUPERBLOCK & ( i_block == length(blocks)) )
-    color = getBlocsVariables()
+  if (  superblock & ( i_block == length(blocks)) )
+    color = getBlocsVariables(rgcca)
   else
     color = rep(1, NROW(df))
 
@@ -100,7 +108,7 @@ plotVariablesSpace = function(rgcca, compX, compY, i_block=NULL){
     geom_path(aes(x, y), data = circleFun()/2, col = "grey", size = 1, lty = 2)
 
   # remove legend if not on superblock
-  if (  !SUPERBLOCK || !( i_block == length(blocks) ) )
+  if (  !superblock || !( i_block == length(blocks) ) )
       p + theme(legend.position = "none")
     else
       p
@@ -143,30 +151,30 @@ plotSpace = function (rgcca, df, title, group, name_group, compX, compY, i_block
   #TODO: if NB_VAR > X
 }
 
-plot_biomarkers = function(rgcca, i_comp, n_mark, i_block=NULL){
-  # Histogram plot of the n best biomarkers (according to rgcca$a) on the ieme block
+plot_biomarkers = function(rgcca, i_comp, n_mark, superblock=null, i_block=NULL){
+  # Histogram plot of the n best biomarkers (according to blocks) on the ieme block
   # i_comp : index of the component
   # n_mark : number of best biomarkers to select
   # i_block : index of the block
 
   # if no specific block is selected, by default, the superblock is selected (or the last one)
   if ( is.null(i_block) )
-    i_block = length(blocks)
+    i_block = length(rgcca$ncomp)
 
   # select the weights
   df = rgcca$a[[i_block]]
   # order by decreasing
 
-  if (  SUPERBLOCK & ( i_block == length(blocks) ) )
-    df = data.frame(df, color = getBlocsVariables() )
+  if (  superblock & ( i_block == length(rgcca$ncomp) ) )
+    df = data.frame(df, color = getBlocsVariables(rgcca) )
 
   df = data.frame(df[order(abs(df[,i_comp]), decreasing = TRUE),], order = nrow(df):1)
 
   # if superblock is selected, color the bar according to their belonging to each blocks
   #TODO: change this with a booleean with/without superblock
-  if (  SUPERBLOCK & ( i_block == length(blocks) ) ){
+  if (  superblock & ( i_block == length(rgcca$ncomp) ) ){
     # color for the text axis
-    color2 = df$color; levels(color2) = hue_pal()(length(blocks)-1)
+    color2 = df$color; levels(color2) = hue_pal()(length(rgcca$ncomp)-1)
   }else{
     color2 = "black"
   }
@@ -174,7 +182,7 @@ plot_biomarkers = function(rgcca, i_comp, n_mark, i_block=NULL){
   # max threshold for n
   if(NROW(df) >= n_mark) df = df[1:n_mark,]
 
-  if (  SUPERBLOCK & i_block == length(blocks) ){
+  if (  superblock & i_block == length(rgcca$ncomp) ){
     p = ggplot(df, aes(order, df[,i_comp], fill = color))
   }else{
     p = ggplot(df, aes(order, df[,i_comp]))
@@ -189,7 +197,7 @@ plotAVE = function(rgcca, i_comp){
   # i_comp : index of the component
 
   df = Reduce(rbind, rgcca$AVE$AVE_X)
-  rownames(df) = names(blocks)
+  rownames(df) = names(rgcca$a)
 
   # order by decreasing
   df = data.frame(df[order(abs(df[,i_comp]), decreasing = TRUE),], order = nrow(df):1)
