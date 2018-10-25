@@ -1,11 +1,14 @@
 Package: rgccaLauncher
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: Launcher for Regularized and Sparse Generalized Canonical Correlation Analysis
+Version: 1.0
+Authors@R: c(
+    person("Etienne", "Camenen", role = "aut"),
+    person("Arthur", "Tenenhaus", email = "arthur.tenenhaus@centralesupelec.fr", role = c("aut", "cre")),
+    person("Vincent", "Guillemot", role = "aut"))
+Description: A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA) with all default settings predefined.
+    Produce several plots to help clinicians to identify fingerprint: samples and variables projected on the two first component of the multi-block analysis, the 100 best predictors and the AVE of each blocks.
+License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 6.1.0

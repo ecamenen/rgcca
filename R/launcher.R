@@ -115,6 +115,9 @@ SUPERBLOCK = T
 
 setwd(opt$directory)
 
+source("R/parsing.R")
+source("R/plot.R")
+
 blocks = setBlocks(opt, SUPERBLOCK)
 connection_matrix = setConnection(opt, blocks)
 response = setResponse(opt, blocks)

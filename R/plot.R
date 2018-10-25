@@ -206,17 +206,22 @@ plotAVE = function(rgcca, i_comp){
   plotHistogram(p, df, "Average Variance Explained", "black")
 }
 
+#' Plot Histograms
+#'
+#' Default font for a vertical barplot.
+#'
+#' @param p A ggplot object.
+#' @param df A dataframe with a column named "order"
+#' @param title A character string giving a graphic title.
+#' @param color A vector of character giving the colors for the rows.
+#' @seealso \code{\link[RGCCA]{rgcca}}
+#' @export
 plotHistogram = function(p, df, title, color){
-  # Default font for a vertical barplot
-  # p: ggplot object
-  # df : dataframe
-  # title: graphic title
-  # color: vector of character corresponding to colors for the rows
 
     p +
     #TODO: if NB_ROW > X, uncomment this
     #geom_hline(yintercept = c(-.5,.5), col="grey", linetype="dotted", size=1) +
-    geom_hline(yintercept = 0, col="grey", size=1) +
+    geom_hline(yintercept = 0, col = "grey", size = 1) +
     geom_bar(stat = "identity") +
     coord_flip() +
     scale_x_continuous(breaks = df$order, labels = rownames(df)) +
