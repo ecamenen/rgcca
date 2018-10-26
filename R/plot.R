@@ -80,7 +80,7 @@ getBlocsVariables = function(rgcca){
        sapply(rgcca$a[1:(length(rgcca$a)-1)], NROW))
 }
 
-plotVariablesSpace = function(rgcca, blocks, compX, compY, superblock=null, i_block=NULL){
+plotVariablesSpace = function(rgcca, blocks, compX, compY, superblock=NULL, i_block=NULL){
   # Projectes a correlation circle in a bi-dimensional space between the coordinates of each variables and its initial value
   # compX: component used for the x-axis
   # compY: component used for the y-axis
@@ -151,7 +151,7 @@ plotSpace = function (rgcca, df, title, group, name_group, compX, compY, i_block
   #TODO: if NB_VAR > X
 }
 
-plot_biomarkers = function(rgcca, i_comp, n_mark, superblock=null, i_block=NULL){
+plot_biomarkers = function(rgcca, i_comp, n_mark, superblock=NULL, i_block=NULL){
   # Histogram plot of the n best biomarkers (according to blocks) on the ieme block
   # i_comp : index of the component
   # n_mark : number of best biomarkers to select
