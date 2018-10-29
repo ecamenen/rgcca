@@ -4,7 +4,7 @@
 \alias{plotAVE}
 \title{Plot Average Variance Explained}
 \usage{
-plotAVE(rgcca, i_comp)
+plotAVE(rgcca, i_comp = 1)
 }
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}
@@ -12,11 +12,12 @@ plotAVE(rgcca, i_comp)
 \item{i_comp}{An integer giving the index of the analysis component}
 }
 \description{
-Histogram of the Average Variance Explained for each blocks and ordered deacreasingly
+Histogram of the model quality (base on Average Variance Explained) for each blocks and sort in decreasing order
 }
 \examples{
-AVE = lapply(1:4, function(x) runif(1))
-rgcca.res$AVE$AVE_X = AVE
+random_val = function() lapply(1:4, function(x) runif(1))
+rgcca.res = list(AVE = list(AVE_X = random_val()), a = random_val())
+names(rgcca.res$a) = letters[1:4]
 plotAVE(rgcca.res, 1)
 }
 \seealso{

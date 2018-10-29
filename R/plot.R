@@ -33,6 +33,7 @@ circleFun = function(center = c(0, 0), diameter = 2, npoints = 100) {
 #' # For the first block
 #' printAxis(rgcca.res, 2, 1)
 #' # "Axis 2 (50%)"
+#' @export printAxis
 printAxis = function (rgcca, n, i = NULL){
 
   # by default, take the last block
@@ -100,6 +101,7 @@ plotSamplesSpace = function (rgcca, response, compX, compY, i_block=NULL, group=
 #' names(rgcca.res$a) = letters[1:4]
 #' getBlocsVariables(rgcca.res)
 #' # a, b, c
+#' @export getBlocsVariables
 getBlocsVariables = function(rgcca){
 
   rep( names(rgcca$a)[-length(rgcca$a)],
@@ -148,12 +150,13 @@ plotVariablesSpace = function(rgcca, blocks, compX, compY, superblock=NULL, i_bl
 #' Projects coordinates of points in a bi-dimensional space
 #'
 #' @param df A dataframe
-#' @param title type of space (variables or samples)
-#' @param group color the points with a vector
+#' @param title A character with the name of the space (either "variables" or "samples")
+#' @param group A vector color the points with a vector
 #' @param name_group type of groups (Blocs/Response)
 #' @param compX component used for the x-axis
 #' @param compY component used for the y-axis
 #' @param i_block index of the block
+#' @export plotSpace
 plotSpace = function (rgcca, df, title, group, name_group, compX, compY, i_block, p=NULL){
 
   #if (compX > NB_COMP) compX = 1
@@ -198,9 +201,10 @@ plotSpace = function (rgcca, df, title, group, name_group, compX, compY, i_block
 #' rgcca.res = list(a = weights)
 #' names(rgcca.res$a) = letters[1:4]
 #' # For the 1rst component of the superblock
-#' plotFingerprint(rgcca.res, 1, T)
+#' plotFingerprint(rgcca.res, 1, TRUE)
 #' # For the 2nd component of the 1rst block by selecting the 5 higher weights
-#' plotFingerprint(rgcca.res, 2, F, 10, 1)
+#' plotFingerprint(rgcca.res, 2, FALSE, 10, 1)
+#' @export plotFingerprint
 plotFingerprint = function(rgcca, i_comp = 1, superblock = T, n_mark = 100, i_block = NULL){
 
   color = NULL
@@ -249,9 +253,10 @@ plotFingerprint = function(rgcca, i_comp = 1, superblock = T, n_mark = 100, i_bl
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' random_val = function() lapply(1:4, function(x) runif(1))
-#' rgcca.res = list(AVE = list(AVE_X = random_val), a = random_val)
+#' rgcca.res = list(AVE = list(AVE_X = random_val()), a = random_val())
 #' names(rgcca.res$a) = letters[1:4]
 #' plotAVE(rgcca.res, 1)
+#' @export plotAVE
 plotAVE = function(rgcca, i_comp = 1){
 
   df = Reduce(rbind, rgcca$AVE$AVE_X)
@@ -274,13 +279,14 @@ plotAVE = function(rgcca, i_comp = 1){
 #' @param color A vector of character giving the colors for the rows.
 #' @examples
 #' df = data.frame(x = runif(30), order = 30:1)
+#' library("ggplot2")
 #' p = ggplot(df, aes(order, x))
 #' plotHistogram(p, df, "This is my title", "red")
 #' # Add colors per levels of a variable
 #' df$color = rep(c(1,2,3), each=10)
 #' p = ggplot(df, aes(order, x, fill = color))
 #' plotHistogram(p, df, "Histogram", as.character(df$color))
-#' @export
+#' @export plotHistogram
 plotHistogram = function(p, df, title = "", color = "black"){
 
     p +

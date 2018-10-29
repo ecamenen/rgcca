@@ -9,15 +9,16 @@ printAxis(rgcca, n, i = NULL)
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}
 
-\item{n}{An integer giving the index of the component of a R/SGCCA analysis}
+\item{n}{An integer giving the index of the analysis component}
 
 \item{i}{An integer giving the index of a list of blocks}
 }
 \description{
-Prints the percent of explained variance for a component of a R/SGCCA analysis
+Prints the percent of explained variance for a component of a block (by default, the superblock or the last one) analysed by R/SGCCA
 }
 \examples{
-rgcca.res$AVE$AVE_X = list(c(0.6, 0.5), c(0.7, 0.45))
+AVE = list(c(0.6, 0.5), c(0.7, 0.45))
+rgcca.res = list(AVE = list(AVE_X = AVE))
 # For the superblock (or the last block)
 printAxis(rgcca.res, 1)
 # "Axis 1 (70\%)"
