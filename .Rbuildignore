@@ -1,6 +1,6 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^README
+^README\.Rmd$
 \.png$
 \.pdf$
 ^temp$

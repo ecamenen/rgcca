@@ -8,7 +8,7 @@
 # EDAM topic: omics, medecine, mathematics
 #
 # Abstract: A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA)
-# with all default settings predefined. Produce two figures to help clinicians to identify biomarkers:
+# with all default settings predefined. Produce two figures to help clinicians to identify fingerprint:
 # samples and variables projected on the two first component of the multi-block analysis.
 
 rm(list=ls())
@@ -34,7 +34,7 @@ getArgs = function(){
     make_option(c( "--output2"), type="character", metavar="character", default=opt[5],
                 help="Sample space file name [default: %default]"),
     make_option(c( "--output3"), type="character", metavar="character", default=opt[6],
-                help="Best biomarkers file name [default: %default]")
+                help="Best fingerprint file name [default: %default]")
   )
   args = commandArgs(trailingOnly=T)
   return (OptionParser(option_list=option_list))
@@ -83,7 +83,7 @@ checkArg = function(a){
 # Under linux: sudo apt-get install default-jre default-jdk && sudo R CMD javareconf
 
 #Loading librairies
-librairies = c("RGCCA", "ggplot2", "ggrepel", "optparse", "scales", "cluster", "xlsx")
+librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
     install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
@@ -94,7 +94,7 @@ source("R/parsing.R")
 source("R/plot.R")
 
 #Get arguments
-opt = list(directory = ".", separator = "\t", scheme = "factorial", output1 = "samples_space.pdf", output2 = "variables_space.pdf", output3 = "best_biomarkers.pdf", datasets="data2/Clinique.tsv,data2/Lipidomique.tsv,data2/Transcriptomique.tsv,data2/Imagerie.tsv,data2/Metabolomique.tsv")
+opt = list(directory = ".", separator = "\t", scheme = "factorial", output1 = "samples_space.pdf", output2 = "variables_space.pdf", output3 = "best_fingerprint.pdf", datasets="data2/Clinique.tsv,data2/Lipidomique.tsv,data2/Transcriptomique.tsv,data2/Imagerie.tsv,data2/Metabolomique.tsv")
 args = getArgs()
 tryCatch({
   opt = checkArg(args)
@@ -151,9 +151,9 @@ plotVariablesSpace(sgcca.res, blocks, COMP1, COMP2, SUPERBLOCK, 1)
 
 savePlot(opt$output2, variablesSpace)
 
-# Biomarkers plot
-( best_biomarkers = plot_biomarkers(sgcca.res, COMP1, NB_MARK, SUPERBLOCK) )
-plot_biomarkers(sgcca.res, COMP1, NB_MARK, SUPERBLOCK, 2)
-savePlot(opt$output3, best_biomarkers)
+# fingerprint plot
+( best_fingerprint = plotFingerprint(sgcca.res, COMP1, SUPERBLOCK, NB_MARK) )
+plotFingerprint(sgcca.res, COMP1, SUPERBLOCK, NB_MARK, 2)
+savePlot(opt$output3, best_fingerprint)
 
 plotAVE(sgcca.res, COMP1)

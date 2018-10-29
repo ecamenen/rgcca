@@ -12,7 +12,7 @@ loadData = function(fi, sep, fo = fi, row.names = NULL, h = F) {
   # create a dataset object from a file loading fi: input file name fo:
   # dataset object name
 
-  data = as.matrix(read.table(fi, sep = sep, h = h, row.names = row.names, na.strings = "NA"))
+  data = as.matrix(read.table(fi, sep = sep, header = h, row.names = row.names, na.strings = "NA"))
   assign(fo, data, .GlobalEnv)
   # TODO: catch warning missing \n at the end of the file
 }

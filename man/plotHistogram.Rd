@@ -18,6 +18,12 @@ plotHistogram(p, df, title, color)
 \description{
 Default font for a vertical barplot.
 }
-\seealso{
-\code{\link[RGCCA]{rgcca}}
+\examples{
+df = data.frame(x = runif(30), order = 30:1)
+p = ggplot(df, aes(order, x))
+plotHistogram(p, df, "This is my title", "red")
+# Add colors per levels of a variable
+df$color = rep(c(1,2,3), each=10)
+p = ggplot(df, aes(order, x, fill = color))
+plotHistogram(p, df, "This is my title", as.character(df$color))
 }
