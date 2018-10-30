@@ -6,8 +6,8 @@ PCH_TEXT_SIZE = 2
 AXIS_FONT = "italic"
 COLOR_SAMPLES_DEF = "#000099"
 
+# Creates a circle
 circleFun = function(center = c(0, 0), diameter = 2, npoints = 100) {
-  # Creates x, y coordinates for a circle
 
   r = diameter/2
   tt = seq(0, 2 * pi, length.out = npoints)
@@ -16,7 +16,7 @@ circleFun = function(center = c(0, 0), diameter = 2, npoints = 100) {
   return(data.frame(x = xx, y = yy))
 }
 
-#' Print axis
+#' Print the variance of a component
 #'
 #' Prints the percent of explained variance for a component of a block (by default, the superblock or the last one) analysed by R/SGCCA
 #'
@@ -53,44 +53,59 @@ theme_perso = function() {
   )
 }
 
-plotSamplesSpace = function (rgcca, response, compX, compY, i_block=NULL, group=NULL){
-  # Projectes coordinates of samples in a bi-dimensional space
-  # compX: component used for the x-axis
-  # compY: component used for the y-axis
-  # i_block : index of the block
-  # group : color the points with a vector
+#' Plot of samples space
+#'
+#' Plots samples on two components of a RGCCA
+#'
+#' @param rgcca A list giving the results of a R/SGCCA
+#' @param response A vector of characters corresponding either to a qualitative variable with levels or a continuous variable
+#' @param compX An integer giving the index of the analysis component used for the x-axis
+#' @param compY An integer giving the index of the analysis component used for the y-axis
+#' @param i_block An integer giving the index of a list of blocks
+#' @examples
+#' coord = lapply(1:3, function(x) matrix(runif(15 * 2, min = -1), 15, 2))
+#' AVE_X = lapply(1:3, function(x) runif(2))
+#' rgcca.res = list(Y = coord, AVE = list(AVE_X = AVE_X))
+#' # Using a superblock
+#' plotSamplesSpace(rgcca.res, rep(LETTERS[1:3], each = 5))
+#' # Using the first block
+#' plotSamplesSpace(rgcca.res, runif(15, min=-15, max = 15), 1, 2, 1)
+#' @export plotSamplesSpace
+plotSamplesSpace = function (rgcca, response, compX = 1, compY = 2, i_block = NULL){
+  # response : color the points with a vector
 
   if ( is.null(i_block) )
-    i_block = length(rgcca$ncomp)
+    i_block = length(rgcca$Y)
 
   df = data.frame(rgcca$Y[[i_block]])
 
-  # if the group is numeric
-  if ( ! is.null(group) ){
-    if( ! unique(isCharacter(as.vector(group)))){
+  # if the response is numeric
+  if ( ! is.null(response) ){
+    if( ! unique(isCharacter(as.vector(response)))){
       # add some transparency
-      p = ggplot(df, aes(df[,compX], df[,compY], alpha = (group - min(group)) / max(group - min(group)))) +
+      p = ggplot(df, aes(df[,compX], df[,compY], alpha = (response - min(response)) / max(response - min(response)))) +
         # get a color scale by quantile
             scale_alpha_continuous(
-            name = "group",
-            breaks = seq(0,1,.25),
-            labels = round(quantile(group))
+            name = "response",
+            breaks = seq(0, 1, .25),
+            labels = round(quantile(response))
         ) + geom_text(color = COLOR_SAMPLES_DEF, aes(label = rownames(df)), size = PCH_TEXT_SIZE)
         #+ geom_text_repel(color=COLOR_SAMPLES_DEF, aes(label= rownames(df)), size = PCH_TEXT_SIZE, force=2)
-    }else{
+    }else
       p = NULL
-    }
-  }
+  }else
+    p = NULL
+
   p = plotSpace(rgcca, df, "Samples", response, "Response", compX, compY, i_block, p)
 
   # remove legend if missing
-  if (is.null(group)){
+  if (is.null(response)){
     p + theme(legend.position = "none")
   }else
     p
 }
 
-#' Get Blocs Variables
+#' Get the blocs of each variables
 #'
 #' Get a vector of block name for each corresponding variable. The last block is considered as the superblock and ignored.
 #'
@@ -98,7 +113,7 @@ plotSamplesSpace = function (rgcca, response, compX, compY, i_block=NULL, group=
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' rgcca.res = list(a = rep(NA, 4))
-#' names(rgcca.res$a) = letters[1:4]
+#' names(rgcca.res$a) = LETTERS[1:4]
 #' getBlocsVariables(rgcca.res)
 #' # a, b, c
 #' @export getBlocsVariables
@@ -108,11 +123,33 @@ getBlocsVariables = function(rgcca){
        sapply(rgcca$a[1:(length(rgcca$a)-1)], NROW))
 }
 
-plotVariablesSpace = function(rgcca, blocks, compX, compY, superblock=NULL, i_block=NULL){
-  # Projectes a correlation circle in a bi-dimensional space between the coordinates of each variables and its initial value
-  # compX: component used for the x-axis
-  # compY: component used for the y-axis
-  # i_block : index of the block
+#' Plot of variables space
+#'
+#' Correlation circle highlighting the contribution of each variables to the construction of the RGCCA components
+#' @param rgcca A list giving the results of a R/SGCCA
+#' @param blocks A list of matrix
+#' @param compX An integer giving the index of the analysis component used for the x-axis
+#' @param compY An integer giving the index of the analysis component used for the y-axis
+#' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
+#' @param i_block An integer giving the index of a list of blocks
+#' @examples
+#' setMatrix = function(nrow, ncol, iter = 3) lapply(1:iter, function(x) matrix(runif(nrow * ncol), nrow, ncol))
+#' blocks = setMatrix(10, 5)
+#' blocks[[4]] = Reduce(cbind, blocks)
+#' for (i in 1:4)
+#'     colnames(blocks[[i]]) = paste( LETTERS[i], as.character(1:NCOL(blocks[[i]])), sep="" )
+#' coord = setMatrix(10, 2, 4)
+#' a = setMatrix(5, 2)
+#' a[[4]] = matrix(runif(15 * 2), 15, 2)
+#' AVE_X = lapply(1:4, function(x) runif(2))
+#' rgcca.res = list(Y = coord, a = a, AVE = list(AVE_X = AVE_X))
+#' names(rgcca.res$a) = LETTERS[1:4]
+#' # Using a superblock
+#' plotVariablesSpace(rgcca.res, blocks, 1, 2, TRUE)
+#' # Using the first block
+#' plotVariablesSpace(rgcca.res, blocks, 1, 2, FALSE, 1)
+#' @export plotVariablesSpace
+plotVariablesSpace = function(rgcca, blocks, compX = 1, compY = 2, superblock = NULL, i_block = NULL){
 
   x = y = NULL
 
@@ -120,51 +157,59 @@ plotVariablesSpace = function(rgcca, blocks, compX, compY, superblock=NULL, i_bl
     i_block = length(blocks)
 
   df =  data.frame(
-    #correlation matrix with superblock for each variables and each component selected
-    sapply ( c(compX:compY), function(x) cor( blocks[[i_block]], rgcca$Y[[i_block]][, x] ) ) ,
+    #correlation matrix within a block for each variables and each component selected
+    sapply ( c(compX, compY), function(x) cor( blocks[[i_block]], rgcca$Y[[i_block]][, x] ) ) ,
     row.names = colnames(blocks[[i_block]])
   )
 
   # if superblock is selected, color by blocks
-  if (  superblock & ( i_block == length(blocks)) )
+  if ( superblock & ( i_block == length(blocks)) )
     color = getBlocsVariables(rgcca)
   else
     color = rep(1, NROW(df))
 
-  df = data.frame(df, color )
+  df = data.frame(df, color)
 
   p = plotSpace(rgcca, df, "Variables", color, "Blocks", compX, compY, i_block) +
     geom_path(aes(x, y), data = circleFun(), col = "grey", size = 1) +
     geom_path(aes(x, y), data = circleFun()/2, col = "grey", size = 1, lty = 2)
 
   # remove legend if not on superblock
-  if (  !superblock || !( i_block == length(blocks) ) )
+  if ( !superblock || !( i_block == length(blocks) ) )
       p + theme(legend.position = "none")
     else
       p
 
 }
 
-#' Plot bi-dimensional space
+#' Plot of components space
 #'
-#' Projects coordinates of points in a bi-dimensional space
+#' Plots RGCCA components in a bi-dimensional space
 #'
+#' @param rgcca A list giving the results of a R/SGCCA
 #' @param df A dataframe
-#' @param title A character with the name of the space (either "variables" or "samples")
-#' @param group A vector color the points with a vector
-#' @param name_group type of groups (Blocs/Response)
-#' @param compX component used for the x-axis
-#' @param compY component used for the y-axis
-#' @param i_block index of the block
+#' @param title A character with the name of the space (either "Variables" or "Samples")
+#' @param group A vector of character with levels used to color the points
+#' @param name_group A character giving the type of groups (either "Blocs"  or "Response")
+#' @param compX An integer giving the index of the analysis component used for the x-axis
+#' @param compY An integer giving the index of the analysis component used for the y-axis
+#' @param i_block An integer giving the index of a list of blocks
+#' @param p A ggplot object
+#' @examples
+#' df = as.data.frame(matrix(runif(20*2, min = -1), 20, 2))
+#' AVE =  lapply(1:4, function(x) runif(2))
+#' rgcca.res = list(AVE = list(AVE_X = AVE))
+#' plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
 #' @export plotSpace
-plotSpace = function (rgcca, df, title, group, name_group, compX, compY, i_block, p=NULL){
+plotSpace = function (rgcca, df, title, group, name_group, compX = 1, compY = 2, i_block = 1, p = NULL){
 
   #if (compX > NB_COMP) compX = 1
   #if (compY > NB_COMP) compY = 2
 
-  p = ggplot(df, aes(df[,compX], df[,compY], colour = group)) +
-    geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE)
-    #geom_text_repel(aes(label= rownames(df)), size = PCH_TEXT_SIZE, force=2)
+  if (is.null(p))
+    p = ggplot(df, aes(df[,compX], df[,compY], colour = group)) +
+      geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE)
+      #geom_text_repel(aes(label= rownames(df)), size = PCH_TEXT_SIZE, force=2)
 
   p + theme_classic() +
     geom_vline(xintercept = 0, col="grey", linetype="dashed", size=1) +
@@ -185,24 +230,24 @@ plotSpace = function (rgcca, df, title, group, name_group, compX, compY, i_block
   #TODO: if NB_VAR > X
 }
 
-#' Plot a fingerprint
+#' Histogram of a fingerprint
 #'
 #' Histogram of the higher outer weight vectors for a component of a block (by default, the superblock or the last one) analysed by R/SGCCA
 #'
 #' @param rgcca A list giving the results of a R/SGCCA
 #' @param i_comp An integer giving the index of the analysis component
 #' @param n_mark An integer giving the number of best fingerprint to select
-#' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of a superblock connection
+#' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
 #' @param i_block An integer giving the index of a list of blocks
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' weights = lapply(1:3, function(x) matrix(runif(10*2), 10, 2))
 #' weights[[4]] = Reduce(rbind, weights)
 #' rgcca.res = list(a = weights)
-#' names(rgcca.res$a) = letters[1:4]
-#' # For the 1rst component of the superblock
+#' names(rgcca.res$a) = LETTERS[1:4]
+#' # With the 1rst component of the superblock
 #' plotFingerprint(rgcca.res, 1, TRUE)
-#' # For the 2nd component of the 1rst block by selecting the 5 higher weights
+#' # With the 2nd component of the 1rst block by selecting the 5 higher weights
 #' plotFingerprint(rgcca.res, 2, FALSE, 10, 1)
 #' @export plotFingerprint
 plotFingerprint = function(rgcca, i_comp = 1, superblock = T, n_mark = 100, i_block = NULL){
@@ -244,7 +289,7 @@ plotFingerprint = function(rgcca, i_comp = 1, superblock = T, n_mark = 100, i_bl
     p + labs (subtitle = printAxis(rgcca, i_comp, i_block))
 }
 
-#' Plot Average Variance Explained
+#' Histogram of Average Variance Explained
 #'
 #' Histogram of the model quality (base on Average Variance Explained) for each blocks and sort in decreasing order
 #'
@@ -254,7 +299,7 @@ plotFingerprint = function(rgcca, i_comp = 1, superblock = T, n_mark = 100, i_bl
 #' @examples
 #' random_val = function() lapply(1:4, function(x) runif(1))
 #' rgcca.res = list(AVE = list(AVE_X = random_val()), a = random_val())
-#' names(rgcca.res$a) = letters[1:4]
+#' names(rgcca.res$a) = LETTERS[1:4]
 #' plotAVE(rgcca.res, 1)
 #' @export plotAVE
 plotAVE = function(rgcca, i_comp = 1){
@@ -269,14 +314,14 @@ plotAVE = function(rgcca, i_comp = 1){
   plotHistogram(p, df, "Average Variance Explained", "black")
 }
 
-#' Plot Histograms
+#' Histogram settings
 #'
 #' Default font for a vertical barplot.
 #'
 #' @param p A ggplot object.
 #' @param df A dataframe with a column named "order"
-#' @param title A character string giving a graphic title.
-#' @param color A vector of character giving the colors for the rows.
+#' @param title A character string giving a graphic title
+#' @param color A vector of character giving the colors for the rows
 #' @examples
 #' df = data.frame(x = runif(30), order = 30:1)
 #' library("ggplot2")

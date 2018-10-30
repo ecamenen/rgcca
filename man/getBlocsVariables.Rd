@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{getBlocsVariables}
 \alias{getBlocsVariables}
-\title{Get Blocs Variables}
+\title{Get the blocs of each variables}
 \usage{
 getBlocsVariables(rgcca)
 }
@@ -14,7 +14,7 @@ Get a vector of block name for each corresponding variable. The last block is co
 }
 \examples{
 rgcca.res = list(a = rep(NA, 4))
-names(rgcca.res$a) = letters[1:4]
+names(rgcca.res$a) = LETTERS[1:4]
 getBlocsVariables(rgcca.res)
 # a, b, c
 }

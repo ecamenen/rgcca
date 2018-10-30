@@ -25,7 +25,20 @@ loadExcel = function(fi, fo = fi, row.names = NULL, h = F) {
   assign(fo, data2, .GlobalEnv)
 }
 
+#' Save a ggplot object
+#'
+#' Save a ggplot in various output formats
+#'
+#' @param f A character giving the name of a file
+#' @param p A ggplot object
+#' @examples
+#' library("ggplot2")
+#' df = as.data.frame(matrix(runif(20), 10, 2))
+#' p = ggplot(df, aes(df[, 1], df[, 2]))
+#' savePlot("Rplot.png", p)
+#' @export savePlot
 savePlot = function(f, p) {
+
   # get suffixe of filename
   format = unlist(strsplit(f, '.', fixed="T"))
   format = format[length(format)]
@@ -40,14 +53,36 @@ savePlot = function(f, p) {
   suprLog = dev.off()
 }
 
-parseList = function(l) {
-  # l: string of characters separated by , out: vector remove white space
-  l = gsub(" ", "", l)
-  # split by ,
-  unlist(strsplit(l, ","))
+#' Convert a character in a vector
+#'
+#' @param s A character separated by comma
+#' @return A vector of characters whitout spaces
+#' @examples
+#' s = "1,2, 3"
+#' parseList(s)
+#' @export parseList
+parseList = function(s) {
+
+  s = gsub(" ", "", s)
+  # split by comma
+  unlist(strsplit(s, ","))
 }
 
-checkQuantitative = function(df, fo, h) {
+#' Check if a dataframe contains no quanlitative variables
+#'
+#' @param df A dataframe or a matrix
+#' @param fo A character giving the name of the tested file
+#' @param h A bolean giving either the presence (TRUE) or absence (FALSE) of a header
+#' @examples
+#' df = matrix(runif(20), 10, 2)
+#' checkQuantitative(df, "data")
+#' \dontrun{
+#' df[,2] = LETTERS[1:10]
+#' checkQuantitative(df, "data", TRUE)
+#' # Error
+#' }
+#' @export checkQuantitative
+checkQuantitative = function(df, fo, h = FALSE) {
   qualitative = unique(unique(isCharacter(as.matrix(df))))
   if (length(qualitative) > 1 || qualitative) {
     msg = paste(fo, "file contains qualitative data. Please, transform them in a disjunctive table.")
@@ -58,15 +93,16 @@ checkQuantitative = function(df, fo, h) {
 }
 
 checkFile = function (f){
-  # o: one argument from the list of arguments
+  # f: A character giving the path of a file
+
   if(!file.exists(f)){
     stop(paste(f, " file does not exist\n", sep=""), call.=FALSE)
   }
 }
 
 setBlocks = function(opt, superblock) {
-  # Create a list object of blocks from files loading
-  # Output: list of dataframe (blocks)
+  # Creates a list of blocks after loading files
+  # Output: a list of dataframe (blocks)
 
   # Parse args containing files path
   isXls <- (length(grep("xlsx?", opt$datasets)) == 1)
@@ -206,18 +242,32 @@ setResponse = function(opt, blocks) {
   }
 }
 
-isCharacter = function(df) {
+#' Test for character vector
+#'
+#' Tests if a dataframe is composed only by qualitative variables
+#'
+#' @param x A matrix or a vector
+#' @return A bolean for the presence (FALSE) or the absence (TRUE) of at least one quantitative variable
+#' @examples
+#' x = matrix(c(runif(10), LETTERS[1:10]), 10, 2)
+#' isCharacter(x)
+#' # FALSE TRUE
+#' isCharacter(LETTERS[1:10])
+#' # TRUE
+#' @export isCharacter
+isCharacter = function(x) {
+
   options(warn = -1)
   # is. character() consider a string with '1.2' as a character, not this
   # function NA are produced by converting a character into an integer
   # as.vector, avoid factors of character in integer without NA
 
   # NA tolerance :
-  # df = na.omit(df)
-  if (is.matrix(df))
-    test = sapply(1:NCOL(df), function(x) unique(is.na(as.integer(as.vector(df[, x])))))
+  # x = na.omit(x)
+  if (is.matrix(x))
+    test = sapply(1:NCOL(x), function(i) unique(is.na(as.integer(as.vector(x[, i])))))
   else
-    test = unique(is.na(as.integer(as.vector(df))))
+    test = unique(is.na(as.integer(as.vector(x))))
 
   options(warn = 0)
   return(test)

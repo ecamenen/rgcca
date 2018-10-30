@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{plotFingerprint}
 \alias{plotFingerprint}
-\title{Plot a fingerprint}
+\title{Histogram of a fingerprint}
 \usage{
 plotFingerprint(rgcca, i_comp = 1, superblock = T, n_mark = 100,
   i_block = NULL)
@@ -12,7 +12,7 @@ plotFingerprint(rgcca, i_comp = 1, superblock = T, n_mark = 100,
 
 \item{i_comp}{An integer giving the index of the analysis component}
 
-\item{superblock}{A boolean giving the presence (TRUE) / absence (FALSE) of a superblock connection}
+\item{superblock}{A boolean giving the presence (TRUE) / absence (FALSE) of a superblock}
 
 \item{n_mark}{An integer giving the number of best fingerprint to select}
 
@@ -25,10 +25,10 @@ Histogram of the higher outer weight vectors for a component of a block (by defa
 weights = lapply(1:3, function(x) matrix(runif(10*2), 10, 2))
 weights[[4]] = Reduce(rbind, weights)
 rgcca.res = list(a = weights)
-names(rgcca.res$a) = letters[1:4]
-# For the 1rst component of the superblock
+names(rgcca.res$a) = LETTERS[1:4]
+# With the 1rst component of the superblock
 plotFingerprint(rgcca.res, 1, TRUE)
-# For the 2nd component of the 1rst block by selecting the 5 higher weights
+# With the 2nd component of the 1rst block by selecting the 5 higher weights
 plotFingerprint(rgcca.res, 2, FALSE, 10, 1)
 }
 \seealso{

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{plotHistogram}
 \alias{plotHistogram}
-\title{Plot Histograms}
+\title{Histogram settings}
 \usage{
 plotHistogram(p, df, title = "", color = "black")
 }
@@ -11,9 +11,9 @@ plotHistogram(p, df, title = "", color = "black")
 
 \item{df}{A dataframe with a column named "order"}
 
-\item{title}{A character string giving a graphic title.}
+\item{title}{A character string giving a graphic title}
 
-\item{color}{A vector of character giving the colors for the rows.}
+\item{color}{A vector of character giving the colors for the rows}
 }
 \description{
 Default font for a vertical barplot.

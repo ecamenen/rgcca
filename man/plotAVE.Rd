@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{plotAVE}
 \alias{plotAVE}
-\title{Plot Average Variance Explained}
+\title{Histogram of Average Variance Explained}
 \usage{
 plotAVE(rgcca, i_comp = 1)
 }
@@ -17,7 +17,7 @@ Histogram of the model quality (base on Average Variance Explained) for each blo
 \examples{
 random_val = function() lapply(1:4, function(x) runif(1))
 rgcca.res = list(AVE = list(AVE_X = random_val()), a = random_val())
-names(rgcca.res$a) = letters[1:4]
+names(rgcca.res$a) = LETTERS[1:4]
 plotAVE(rgcca.res, 1)
 }
 \seealso{

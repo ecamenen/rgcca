@@ -2,26 +2,36 @@
 % Please edit documentation in R/plot.R
 \name{plotSpace}
 \alias{plotSpace}
-\title{Plot bi-dimensional space}
+\title{Plot of components space}
 \usage{
-plotSpace(rgcca, df, title, group, name_group, compX, compY, i_block,
-  p = NULL)
+plotSpace(rgcca, df, title, group, name_group, compX = 1, compY = 2,
+  i_block = 1, p = NULL)
 }
 \arguments{
+\item{rgcca}{A list giving the results of a R/SGCCA}
+
 \item{df}{A dataframe}
 
-\item{title}{A character with the name of the space (either "variables" or "samples")}
+\item{title}{A character with the name of the space (either "Variables" or "Samples")}
 
-\item{group}{A vector color the points with a vector}
+\item{group}{A vector of character with levels used to color the points}
 
-\item{name_group}{type of groups (Blocs/Response)}
+\item{name_group}{A character giving the type of groups (either "Blocs"  or "Response")}
 
-\item{compX}{component used for the x-axis}
+\item{compX}{An integer giving the index of the analysis component used for the x-axis}
 
-\item{compY}{component used for the y-axis}
+\item{compY}{An integer giving the index of the analysis component used for the y-axis}
 
-\item{i_block}{index of the block}
+\item{i_block}{An integer giving the index of a list of blocks}
+
+\item{p}{A ggplot object}
 }
 \description{
-Projects coordinates of points in a bi-dimensional space
+Plots RGCCA components in a bi-dimensional space
+}
+\examples{
+df = as.data.frame(matrix(runif(20*2, min = -1), 20, 2))
+AVE =  lapply(1:4, function(x) runif(2))
+rgcca.res = list(AVE = list(AVE_X = AVE))
+plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
 }

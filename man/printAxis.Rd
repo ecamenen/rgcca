@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{printAxis}
 \alias{printAxis}
-\title{Print axis}
+\title{Print the variance of a component}
 \usage{
 printAxis(rgcca, n, i = NULL)
 }
