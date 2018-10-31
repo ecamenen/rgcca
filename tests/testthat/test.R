@@ -14,9 +14,6 @@ getDim = function(list_m)
 getRownames = function(list_m)
   lapply(list_m, row.names)
 
-writeData = function(list_m)
-  sapply(1:length(BLOCS), function (x) write.table(BLOCS[[x]], paste(names(BLOCS)[x], ".tsv", sep=""), sep="\t"))
-
 createMatrix = function(nrow, ncol){
   #output: matrix with  random values and random row.names in integer format
 
@@ -95,38 +92,35 @@ filledRowInDiff = function (list_m){
 
 ### TESTS ###
 
-test_commonRow = function (){
+test_that( "test_commonRow", {
   BLOCS = getData()
 
   test = unique( intersect(row.names(BLOCS[[1]]), row.names(BLOCS[[2]])) == commonRow(BLOCS[1:2]) )
-  if (  length(test) == 1 && test )
-    return (TRUE)
-  else
-    return (FALSE)
-}
+  expect_true (  length(test) == 1 && test )
+})
 
 
-test_discardDiffRow = function(){
+test_that( "test_discardDiffRow" ,{
   BLOCS = getData()
 
   dim_list_before = sapply(1:length(BLOCS), function (x) dim(BLOCS[[x]])[1] )
   # tests if any block if their row number is equals to the maximum number of rows
-  any ( sapply(1:length(BLOCS), function (x) dim(BLOCS[[x]])[1] == max(dim_list_before)) == F)
+  expect_true ( any ( sapply(1:length(BLOCS), function (x) dim(BLOCS[[x]])[1] == max(dim_list_before)) == F) )
 
   BLOCS = discardDiffRow(BLOCS)
 
   # tests if all blocks have the same row.names (and at the same time, the same row number)
-  all ( sapply(1:length(BLOCS), function (x) row.names(BLOCS[[x]]) == row.names(BLOCS[[1]])) == T)
-}
+  expect_true ( all ( sapply(1:length(BLOCS), function (x) row.names(BLOCS[[x]]) == row.names(BLOCS[[1]])) == T) )
+})
 
 
-test_diffRow = function (){
+test_that( "test_diffRow", {
   BLOCS = getData()
 
-  all.equal( getDiffRow(BLOCS[c(1,2)], 1), setdiff(row.names(BLOCS[[2]]), row.names(BLOCS[[1]])) )
-}
+  expect_true ( all.equal( getDiffRow(BLOCS[c(1,2)], 1), setdiff(row.names(BLOCS[[2]]), row.names(BLOCS[[1]])) ) )
+})
 
-test_addNARow = function (){
+test_that( "test_addNARow", {
   BLOCS = getData()
 
   # get row in difference
@@ -134,24 +128,18 @@ test_addNARow = function (){
   # add them to a df
   actual = addNARow(BLOCS[[1]], row_diff )
   # test if all rows get by getDiffRow have been added to the df with NA
-  all ( is.na ( actual[row_diff,] ) )
-}
+  expect_true (  all ( is.na ( actual[row_diff,] ) ) )
+})
 
-test_filledRowInDiff = function(){
+test_that( "test_filledRowInDiff", {
   BLOCS = getData()
 
   dim_list_before = sapply(1:length(BLOCS), function (x) dim(BLOCS[[x]])[1] )
   # tests if any block if their row number is equals to the maximum number of rows
-  any ( sapply(1:length(BLOCS), function (x) dim(BLOCS[[x]])[1] == max(dim_list_before)) == F)
+  expect_true (  any ( sapply(1:length(BLOCS), function (x) dim(BLOCS[[x]])[1] == max(dim_list_before)) == F) )
 
   BLOCS = filledRowInDiff(BLOCS)
 
   dim_list_after = sapply(1:length(BLOCS), function (x) dim(BLOCS[[x]])[1] )
-  all ( sapply(1:length(BLOCS), function (x) dim(BLOCS[[x]])[1] == max(dim_list_after)) == T)
-}
-
-test_commonRow()
-test_discardDiffRow()
-test_diffRow()
-test_addNARow()
-test_filledRowInDiff()
+  expect_true ( all ( sapply(1:length(BLOCS), function (x) dim(BLOCS[[x]])[1] == max(dim_list_after)) == T) )
+})

@@ -11,6 +11,16 @@
 # with all default settings predefined. Produce two figures to help clinicians to identify fingerprint:
 # samples and variables projected on the two first component of the multi-block analysis.
 
+
+#' @import ggplot2
+#' @importFrom grDevices dev.off
+#' @importFrom graphics plot
+#' @importFrom stats cor quantile runif sd
+#' @importFrom utils read.table write.table
+#' @importFrom scales hue_pal
+#' @importFrom optparse OptionParser make_option parse_args
+#' @importFrom xlsx loadWorkbook read.xlsx2 getSheet
+
 rm(list=ls())
 
 ##################

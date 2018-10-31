@@ -13,6 +13,6 @@ RoxygenNote: 6.1.0
 Imports: ggplot2,
     optparse,
     xlsx,
-    scales,
-    testthat
+    scales
 Depends: RGCCA
+Suggests: testthat
