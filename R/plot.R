@@ -110,6 +110,7 @@ plotSamplesSpace = function (rgcca, response, compX = 1, compY = 2, i_block = NU
 #' Get a vector of block name for each corresponding variable. The last block is considered as the superblock and ignored.
 #'
 #' @param rgcca A list giving the results of a R/SGCCA
+#' @return A vector of character giving block name for each corresponding variable.
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' rgcca.res = list(a = rep(NA, 4))

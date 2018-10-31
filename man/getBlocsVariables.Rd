@@ -9,6 +9,9 @@ getBlocsVariables(rgcca)
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}
 }
+\value{
+A vector of character giving block name for each corresponding variable.
+}
 \description{
 Get a vector of block name for each corresponding variable. The last block is considered as the superblock and ignored.
 }

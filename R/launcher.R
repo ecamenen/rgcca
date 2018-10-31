@@ -118,9 +118,9 @@ setwd(opt$directory)
 source("R/parsing.R")
 source("R/plot.R")
 
-blocks = setBlocks(opt, SUPERBLOCK)
-connection_matrix = setConnection(opt, blocks)
-response = setResponse(opt, blocks)
+blocks = setBlocks(SUPERBLOCK, opt$datasets, opt$names, opt$separator, opt$header)
+connection = setConnection(blocks, opt$connection, opt$separator)
+response = setResponse(blocks, opt$response, opt$separator, opt$header)
 NB_COMP = 2
 ncomp = rep(NB_COMP, length(blocks))
 #sapply(blocks, NCOL)
@@ -132,7 +132,7 @@ getColumnSameVal = function(list_m)
 #getColumnSameVal(blocks)
 
 sgcca.res = sgcca(A = blocks,
-              C = connection_matrix,
+              C = connection,
               scheme = opt$scheme,
               ncomp = ncomp,
               scale = SCALE,
