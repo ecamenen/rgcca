@@ -4,7 +4,7 @@
 \alias{plotSpace}
 \title{Plot of components space}
 \usage{
-plotSpace(rgcca, df, title, group, name_group, compX = 1, compY = 2,
+plotSpace(rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2,
   i_block = 1, p = NULL)
 }
 \arguments{
@@ -18,9 +18,9 @@ plotSpace(rgcca, df, title, group, name_group, compX = 1, compY = 2,
 
 \item{name_group}{A character giving the type of groups (either "Blocs"  or "Response")}
 
-\item{compX}{An integer giving the index of the analysis component used for the x-axis}
+\item{comp_x}{An integer giving the index of the analysis component used for the x-axis}
 
-\item{compY}{An integer giving the index of the analysis component used for the y-axis}
+\item{comp_y}{An integer giving the index of the analysis component used for the y-axis}
 
 \item{i_block}{An integer giving the index of a list of blocks}
 

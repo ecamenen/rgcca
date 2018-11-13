@@ -4,7 +4,7 @@
 \alias{setConnection}
 \title{Create a matrix from loading a file corresponding to a connection between the blocks}
 \usage{
-setConnection(blocks, file, sep = "\\t")
+setConnection(blocks, file = NULL, sep = "\\t")
 }
 \arguments{
 \item{blocks}{A list of matrix}

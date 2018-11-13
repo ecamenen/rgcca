@@ -4,17 +4,16 @@
 \alias{plotSamplesSpace}
 \title{Plot of samples space}
 \usage{
-plotSamplesSpace(rgcca, response, compX = 1, compY = 2,
-  i_block = NULL)
+plotSamplesSpace(rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL)
 }
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}
 
-\item{response}{A vector of characters corresponding either to a qualitative variable with levels or a continuous variable}
+\item{resp}{A vector of characters corresponding either to a qualitative variable with levels or a continuous variable}
 
-\item{compX}{An integer giving the index of the analysis component used for the x-axis}
+\item{comp_x}{An integer giving the index of the analysis component used for the x-axis}
 
-\item{compY}{An integer giving the index of the analysis component used for the y-axis}
+\item{comp_y}{An integer giving the index of the analysis component used for the y-axis}
 
 \item{i_block}{An integer giving the index of a list of blocks}
 }

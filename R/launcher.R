@@ -12,15 +12,6 @@
 # samples and variables projected on the two first component of the multi-block analysis.
 
 
-#' @import ggplot2
-#' @importFrom grDevices dev.off
-#' @importFrom graphics plot
-#' @importFrom stats cor quantile runif sd
-#' @importFrom utils read.table write.table
-#' @importFrom scales hue_pal
-#' @importFrom optparse OptionParser make_option parse_args
-#' @importFrom xlsx loadWorkbook read.xlsx2 getSheet
-
 rm(list=ls())
 
 ##################
@@ -100,8 +91,6 @@ for (l in librairies) {
   library(l, character.only = TRUE)
 }
 
-source("R/parsing.R")
-source("R/plot.R")
 
 #Get arguments
 opt = list(directory = ".", separator = "\t", scheme = "factorial", output1 = "samples_space.pdf", output2 = "variables_space.pdf", output3 = "best_fingerprint.pdf", datasets="data2/Clinique.tsv,data2/Lipidomique.tsv,data2/Transcriptomique.tsv,data2/Imagerie.tsv,data2/Metabolomique.tsv")

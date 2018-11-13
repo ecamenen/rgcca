@@ -4,17 +4,17 @@
 \alias{plotVariablesSpace}
 \title{Plot of variables space}
 \usage{
-plotVariablesSpace(rgcca, blocks, compX = 1, compY = 2,
-  superblock = NULL, i_block = NULL)
+plotVariablesSpace(rgcca, blocks, comp_x = 1, comp_y = 2,
+  superblock = TRUE, i_block = NULL)
 }
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}
 
 \item{blocks}{A list of matrix}
 
-\item{compX}{An integer giving the index of the analysis component used for the x-axis}
+\item{comp_x}{An integer giving the index of the analysis component used for the x-axis}
 
-\item{compY}{An integer giving the index of the analysis component used for the y-axis}
+\item{comp_y}{An integer giving the index of the analysis component used for the y-axis}
 
 \item{superblock}{A boolean giving the presence (TRUE) / absence (FALSE) of a superblock}
 

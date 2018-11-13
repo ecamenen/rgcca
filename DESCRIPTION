@@ -15,4 +15,7 @@ Imports: ggplot2,
     xlsx,
     scales
 Depends: RGCCA
-Suggests: testthat
+Suggests: testthat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

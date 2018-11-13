@@ -258,7 +258,7 @@ checkConnection = function(c, blocks) {
 #' setConnection (blocks, "data/connection.tsv")
 #' }
 #' @export setConnection
-setConnection = function(blocks, file, sep = "\t") {
+setConnection = function(blocks, file = NULL, sep = "\t") {
 
   if (is.null(file)) {
 
@@ -289,7 +289,7 @@ setConnection = function(blocks, file, sep = "\t") {
 #' setResponse (blocks, "data/response3.tsv")
 #' }
 #' @export setResponse
-setResponse = function(blocks, file, sep = "\t", header = TRUE) {
+setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE) {
 
   if (!is.null(file)) {
     response = loadData(file, sep, ROW_NAMES, header)

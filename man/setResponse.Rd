@@ -4,7 +4,7 @@
 \alias{setResponse}
 \title{Create a matrix from loading a file corresponding to the response}
 \usage{
-setResponse(blocks, file, sep = "\\t", header = TRUE)
+setResponse(blocks, file = NULL, sep = "\\t", header = TRUE)
 }
 \arguments{
 \item{blocks}{A list of matrix}

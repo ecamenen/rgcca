@@ -4,12 +4,12 @@
 \alias{plotAVE}
 \title{Histogram of Average Variance Explained}
 \usage{
-plotAVE(rgcca, i_comp = 1)
+plotAVE(rgcca, comp = 1)
 }
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}
 
-\item{i_comp}{An integer giving the index of the analysis component}
+\item{comp}{An integer giving the index of the analysis component}
 }
 \description{
 Histogram of the model quality (base on Average Variance Explained) for each blocks and sort in decreasing order

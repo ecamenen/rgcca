@@ -4,13 +4,13 @@
 \alias{plotFingerprint}
 \title{Histogram of a fingerprint}
 \usage{
-plotFingerprint(rgcca, i_comp = 1, superblock = T, n_mark = 100,
+plotFingerprint(rgcca, comp = 1, superblock = TRUE, n_mark = 100,
   i_block = NULL)
 }
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}
 
-\item{i_comp}{An integer giving the index of the analysis component}
+\item{comp}{An integer giving the index of the analysis component}
 
 \item{superblock}{A boolean giving the presence (TRUE) / absence (FALSE) of a superblock}
 
