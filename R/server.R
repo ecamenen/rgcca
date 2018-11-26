@@ -40,25 +40,41 @@ server <- function(input, output) {
 
 
   output$samplesPlot <- renderPlot({
-    setVariables()
-    plotSamplesSpace(sgcca.res, response, input$axis1, input$axis2, input$id_block)
+    if(!is.null(input$blocks$datapath)){
+      setVariables()
+      samples = function() plotSamplesSpace(sgcca.res, response, input$axis1, input$axis2, input$id_block)
+      observeEvent(input$samples_save, savePlot("samples_plot.pdf", samples()))
+      samples()
+    }
   })
 
   output$corcirclePlot <- renderPlot({
-    setVariables()
-    names(sgcca.res$a) = names(blocks)
-    plotVariablesSpace(sgcca.res, blocks, input$axis1, input$axis2, input$superblock, input$id_block)
+    if(!is.null(input$blocks$datapath)){
+      setVariables()
+      names(sgcca.res$a) = names(blocks)
+      corcircle = function() plotVariablesSpace(sgcca.res, blocks, input$axis1, input$axis2, input$superblock, input$id_block)
+      observeEvent(input$corcircle_save, savePlot("corcircle.pdf", corcircle()))
+      corcircle()
+    }
   })
 
   output$fingerprintPlot <- renderPlot({
-    setVariables()
-    names(sgcca.res$a) = names(blocks)
-    plotFingerprint(sgcca.res, input$axis1, input$superblock, input$nb_mark, input$id_block)
+    if(!is.null(input$blocks$datapath)){
+      setVariables()
+      names(sgcca.res$a) = names(blocks)
+      fingerprint = function() plotFingerprint(sgcca.res, input$axis1, input$superblock, input$nb_mark, input$id_block)
+      observeEvent(input$fingerprint_save, savePlot("fingerprint.pdf", fingerprint()))
+      fingerprint()
+    }
   })
 
   output$AVEPlot <- renderPlot({
-    setVariables()
-    plotAVE(sgcca.res, input$axis1)
+    if(!is.null(input$blocks$datapath)){
+      setVariables()
+      ave = function() plotAVE(sgcca.res, input$axis1)
+      observeEvent(input$ave_save, savePlot("AVE.pdf", ave()))
+      ave()
+    }
   })
 
 }
