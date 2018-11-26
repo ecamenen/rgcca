@@ -62,7 +62,8 @@ sapply(1:length(files), function (x) {
 
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.path = "images/"
 )
 
 ```

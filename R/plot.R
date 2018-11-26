@@ -305,14 +305,14 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
 #' @export plotAVE
 plotAVE = function(rgcca, comp = 1){
 
-  df = Reduce(rbind, rgcca$AVE$AVE_X)
+  df = as.matrix ( sapply(rgcca$AVE$AVE_X, function(x) x[comp]) )
   row.names(df) = names(rgcca$a)
 
   # order by decreasing
   df = data.frame(df[order(abs(df[,comp]), decreasing = TRUE),], order = nrow(df):1)
 
   p = ggplot(df, aes(order, df[,comp]))
-  plotHistogram(p, df, "Average Variance Explained", "black")
+  plotHistogram(p, df, "Average Variance Explained")
 }
 
 #' Histogram settings

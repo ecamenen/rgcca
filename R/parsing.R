@@ -82,8 +82,8 @@ savePlot = function(f, p) {
   func = get(format)
 
   # save
-  func(f, width = 10, height = 8)
-  if (format != "pdf") func(f, width = 10, height = 8, units="in", res=200)
+  if (format != "pdf") func(f, width = 10, height = 8, units = "in", res = 200)
+  else func(f, width = 10, height = 8)
 
   plot(p)
   suprLog = dev.off()

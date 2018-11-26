@@ -91,9 +91,8 @@ for (l in librairies) {
   library(l, character.only = TRUE)
 }
 
-
 #Get arguments
-opt = list(directory = ".", separator = "\t", scheme = "factorial", output1 = "samples_space.pdf", output2 = "variables_space.pdf", output3 = "best_fingerprint.pdf", datasets="data2/Clinique.tsv,data2/Lipidomique.tsv,data2/Transcriptomique.tsv,data2/Imagerie.tsv,data2/Metabolomique.tsv")
+opt = list(directory = ".", separator = "\t", scheme = "factorial", output1 = "samples_plot.pdf", output2 = "corcircle.pdf", output3 = "fingerprint.pdf", datasets="data2/Clinique.tsv,data2/Lipidomique.tsv,data2/Transcriptomique.tsv,data2/Imagerie.tsv,data2/Metabolomique.tsv")
 args = getArgs()
 tryCatch({
   opt = checkArg(args)
@@ -126,9 +125,9 @@ ncomp = rep(NB_COMP, length(blocks))
 # TODO: Error in rgcca(blocks, connection_matrix, tau = TAU, scheme = scheme, ncomp = rep(NB_COMP,  :
 #                                                                     For each block, choose a number of components smaller than the number of variables!
 
-getColumnSameVal = function(list_m)
-  lapply(1:length(list_m), function (x) which( apply(list_m[[x]], 2, sd ) == 0 ))
-#getColumnSameVal(blocks)
+getColumnSdNull = function(list_m)
+  lapply(list_m, function (x) which( apply(x, 2, sd ) == 0 ))
+#getColumnSdNull(blocks)
 
 sgcca.res = sgcca(A = blocks,
               C = connection,
@@ -140,19 +139,18 @@ sgcca.res = sgcca(A = blocks,
 names(sgcca.res$a) = names(blocks)
 
 # Samples common space
-( samplesSpace = plotSamplesSpace(sgcca.res, response, COMP1, COMP2) )
+( samples_plot = plotSamplesSpace(sgcca.res, response, COMP1, COMP2) )
 plotSamplesSpace(sgcca.res, response, COMP1, COMP2, 1)
-savePlot(opt$output1, samplesSpace)
+savePlot(opt$output1, samples_plot)
 
 # Variables common space
-( variablesSpace = plotVariablesSpace(sgcca.res, blocks, COMP1, COMP2, SUPERBLOCK) )
+( corcircle = plotVariablesSpace(sgcca.res, blocks, COMP1, COMP2, SUPERBLOCK) )
 plotVariablesSpace(sgcca.res, blocks, COMP1, COMP2, SUPERBLOCK, 1)
-
-savePlot(opt$output2, variablesSpace)
+savePlot(opt$output2, corcircle)
 
 # fingerprint plot
-( best_fingerprint = plotFingerprint(sgcca.res, COMP1, SUPERBLOCK, NB_MARK) )
+( fingerprint = plotFingerprint(sgcca.res, COMP1, SUPERBLOCK, NB_MARK) )
 plotFingerprint(sgcca.res, COMP1, SUPERBLOCK, NB_MARK, 2)
-savePlot(opt$output3, best_fingerprint)
+savePlot(opt$output3, fingerprint)
 
 plotAVE(sgcca.res, COMP1)
