@@ -50,7 +50,9 @@ ui <- fluidPage(
                  min = 2, max = 4, value = 2),
       sliderInput("nb_mark",
                   h5("Number of top potential biomarkers: "),
-                  min = 10, max = 500, value = 100)
+                  min = 10, max = 500, value = 100),
+      actionButton("save_all",
+                   "Save all")
 
     ),
 
