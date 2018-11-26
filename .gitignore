@@ -1,0 +1,16 @@
+*.pdf
+*.png
+*.iml
+*.log
+resultRuns.log
+.Rhistory
+.Rproj.user
+.RData
+.Ruserdata
+rgccaLauncher\.Rproj
+
+temp/
+\.idea/
+data3/
+results/
+inst/doc
