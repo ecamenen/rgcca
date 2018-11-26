@@ -1,0 +1,13 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^README\.Rmd$
+\.png$
+\.pdf$
+^temp$
+^img$
+^data
+^\.git$
+^\.idea$
+^results$
+^tests$
+^functional_tests\.sh$

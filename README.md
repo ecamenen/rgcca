@@ -42,7 +42,7 @@ Rscript rgcca.R -d data/agriculture.tsv,data/industry.tsv,data/politic.tsv
 With parameters :
 
 ```
-Rscript rgcca.R --datasets <list_block_files> [--help] [--names <list_block_names] [--connection <connection_file>] [--response <response_file>] [--scheme <scheme_type>] [--output1 <variables_space_fig_name>] [--output3 <samples_space_fig_name>] [--output3 <biomarkers_fig_name>]
+Rscript rgcca.R --datasets <list_block_files> [--help] [--names <list_block_names] [--connection <connection_file>] [--response <response_file>] [--scheme <scheme_type>] [--output1 <variables_space_fig_name>] [--output3 <samples_space_fig_name>] [--output3 <biomarkers_fig_name>] [--header] [--separator <separator_type>]
 ```
 
 - ```-d (--datasets)``` (STRING) The list of the paths for each block file separated by comma (without space between). Ex: data/X_agric.tsv,data/X_ind.tsv,data/X_polit.tsv
@@ -50,10 +50,11 @@ Rscript rgcca.R --datasets <list_block_files> [--help] [--names <list_block_name
 - ```-r (--response)``` (STRING) To color samples by group in associated figure, a response file could be added (by default, no response variable).
 - ```-n (--names)``` (STRING) The list of the names for each block file separated by comma (without space between)
 - ```-g (--scheme)``` (INTEGER) Scheme function among 1: Horst, 2: Factorial, 3: Centroid, 4: x^4 (by default, factorial scheme).
-- ```-s (--separator)``` (INTEGER) Specify the character used to separate the column in the fingerprint dataset (1: tabulation, 2: semicolon) (by default, tabulation).
 - ```--output1``` (STRING) The path of the output file for the samples space.
 - ```--output2``` (STRING) The path of the output file for the variables space.
 - ```--output3``` (STRING) The path of the output file for the biomarkers.
+- ```-H (--header)```DO NOT consider first row as header of the columns.
+- ```-s (--separator)``` (INTEGER) Specify the character used to separate the column in the fingerprint dataset (1: tabulation, 2: semicolon) (by default, tabulation).
 
 ## References
 1. Tenenhaus M, Tenenhaus A, Groenen PJF, (2017) Regularized generalized canonical correlation analysis: A framework for sequential multiblock component methods, Psychometrika, vol. 82, no. 3, 737–777
