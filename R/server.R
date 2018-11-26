@@ -10,8 +10,11 @@ server <- function(input, output) {
   }
 
   setVariables = reactive({
+
+    paths = paste(input$blocks$datapath, collapse = ',')
+
     assign("blocks",
-           setBlocks (input$superblock, "../data/agriculture.tsv,../data/industry.tsv,../data/politic.tsv", "agric,ind,polit", input$sep, input$header),
+           setBlocks (input$superblock, paths, "agric,ind,polit", input$sep, input$header),
            .GlobalEnv)
     assign("response",
            setResponse (blocks, input$response$datapath, input$sep, input$header),
@@ -38,19 +41,19 @@ server <- function(input, output) {
 
   output$samplesPlot <- renderPlot({
     setVariables()
-    plotSamplesSpace(sgcca.res, response, input$axis1, input$axis2, input$blocks)
+    plotSamplesSpace(sgcca.res, response, input$axis1, input$axis2, input$id_block)
   })
 
   output$corcirclePlot <- renderPlot({
     setVariables()
     names(sgcca.res$a) = names(blocks)
-    plotVariablesSpace(sgcca.res, blocks, input$axis1, input$axis2, input$superblock, input$blocks)
+    plotVariablesSpace(sgcca.res, blocks, input$axis1, input$axis2, input$superblock, input$id_block)
   })
 
   output$fingerprintPlot <- renderPlot({
     setVariables()
     names(sgcca.res$a) = names(blocks)
-    plotFingerprint(sgcca.res, input$axis1, input$superblock, input$nb_mark, input$blocks)
+    plotFingerprint(sgcca.res, input$axis1, input$superblock, input$nb_mark, input$id_block)
   })
 
   output$AVEPlot <- renderPlot({

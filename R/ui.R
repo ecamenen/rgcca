@@ -8,6 +8,10 @@ ui <- fluidPage(
   sidebarLayout(
 
     sidebarPanel(
+      fileInput(inputId="blocks",
+                label=h5("Choose a blocks file: "),
+                multiple = TRUE
+      ),
       fileInput(inputId="connection",
                 label=h5("Choose a connection file: ")
       ),
@@ -35,7 +39,7 @@ ui <- fluidPage(
                                Semicolon = ";",
                                Tabulation = "\t"),
                    selected = "\t"),
-      sliderInput("blocks",
+      sliderInput("id_block",
                   h5("Number of the block: "),
                   min = 1, max = 4, value = 4),
       sliderInput("axis1",
