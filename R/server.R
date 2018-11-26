@@ -1,4 +1,3 @@
-# Define server logic required to draw a histogram ----
 server <- function(input, output) {
   source("parsing.R")
   source("plot.R")
@@ -11,40 +10,52 @@ server <- function(input, output) {
   }
 
   setVariables = reactive({
-    assign("blocks",setBlocks (TRUE, "../data/agriculture.tsv,../data/industry.tsv,../data/politic.tsv", "agric,ind,polit"),
+    assign("blocks",
+           setBlocks (input$superblock, "../data/agriculture.tsv,../data/industry.tsv,../data/politic.tsv", "agric,ind,polit", input$sep, input$header),
            .GlobalEnv)
-    assign("response",setResponse (blocks, "../data/response.tsv"),
+    assign("response",
+           setResponse (blocks, input$response$datapath, input$sep, input$header),
            .GlobalEnv)
-           assign("connection", setConnection (blocks, "../data/connection.tsv"),
+    assign("connection",
+           setConnection (blocks, input$connection$datapath, input$sep),
            .GlobalEnv)
-    assign("NB_COMP",max(c(input$axis1, input$axis2)),
-                  .GlobalEnv)
-                  assign("ncomp", rep(NB_COMP, length(blocks)),
+    assign("ncomp",
+           rep(max(c(input$axis1, input$axis2)), length(blocks)),
            .GlobalEnv)
-    assign("scheme","factorial",
-                         .GlobalEnv)
-    assign("sgcca.res",sgcca(A = blocks,
+    assign("scheme",
+           "factorial",
+            .GlobalEnv)
+    assign("sgcca.res",
+           sgcca(A = blocks,
                       C = connection,
-                      scheme = scheme,
+                      scheme = input$scheme,
                       ncomp = ncomp,
-                      scale = TRUE,
+                      scale = input$scale,
                       verbose = FALSE),
            .GlobalEnv)
-    names(sgcca.res$a) = names(blocks)
   })
 
-  # Histogram of the Old Faithful Geyser Data ----
-  # with requested number of bins
-  # This expression that generates a histogram is wrapped in a call
-  # to renderPlot to indicate that:
-  #
-  # 1. It is "reactive" and therefore should be automatically
-  #    re-executed when inputs (input$bins) change
-  # 2. Its output type is a plot
-  output$samplePlot <- renderPlot({
-    setVariables()
-    plotSamplesSpace(sgcca.res, response, input$axis1, input$axis2)
 
+  output$samplesPlot <- renderPlot({
+    setVariables()
+    plotSamplesSpace(sgcca.res, response, input$axis1, input$axis2, input$blocks)
+  })
+
+  output$corcirclePlot <- renderPlot({
+    setVariables()
+    names(sgcca.res$a) = names(blocks)
+    plotVariablesSpace(sgcca.res, blocks, input$axis1, input$axis2, input$superblock, input$blocks)
+  })
+
+  output$fingerprintPlot <- renderPlot({
+    setVariables()
+    names(sgcca.res$a) = names(blocks)
+    plotFingerprint(sgcca.res, input$axis1, input$superblock, input$nb_mark, input$blocks)
+  })
+
+  output$AVEPlot <- renderPlot({
+    setVariables()
+    plotAVE(sgcca.res, input$axis1)
   })
 
 }
