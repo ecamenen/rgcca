@@ -9,12 +9,15 @@ server <- function(input, output) {
     library(l, character.only = TRUE)
   }
 
-  setVariables = reactive({
+  # assign("blocks", NULL, .GlobalEnv)
+
+  setData = reactive({
 
     paths = paste(input$blocks$datapath, collapse = ',')
+    names = paste(input$blocks$name, collapse = ',')
 
     assign("blocks",
-           setBlocks (input$superblock, paths, "agric,ind,polit", input$sep, input$header),
+           setBlocks (input$superblock, paths, names, sep = input$sep, header = input$header),
            .GlobalEnv)
     assign("response",
            setResponse (blocks, input$response$datapath, input$sep, input$header),
@@ -22,24 +25,26 @@ server <- function(input, output) {
     assign("connection",
            setConnection (blocks, input$connection$datapath, input$sep),
            .GlobalEnv)
+  })
+
+  setAnalysis = reactive({
+    setData()
     assign("ncomp",
            rep(max(c(input$axis1, input$axis2)), length(blocks)),
            .GlobalEnv)
-    assign("scheme",
-           "factorial",
-            .GlobalEnv)
     assign("sgcca.res",
            sgcca(A = blocks,
-                      C = connection,
-                      scheme = input$scheme,
-                      ncomp = ncomp,
-                      scale = input$scale,
-                      verbose = FALSE),
+                 C = connection,
+                 scheme = input$scheme,
+                 ncomp = ncomp,
+                 scale = input$scale,
+                 verbose = FALSE),
            .GlobalEnv)
   })
 
   setFuncs = reactive({
-    setVariables()
+
+    setAnalysis()
     names(sgcca.res$a) = names(blocks)
     assign("samples",
            function() plotSamplesSpace(sgcca.res, response, input$axis1, input$axis2, input$id_block),
@@ -54,6 +59,12 @@ server <- function(input, output) {
            function() plotAVE(sgcca.res, input$axis1),
            .GlobalEnv)
   })
+
+  # observeEvent(input$sep, {
+  #   setFuncs()
+  # })
+
+#TODO : Duplicates rows are not allowed
 
   observeEvent(input$save_all, {
     if(!is.null(input$blocks$datapath)){

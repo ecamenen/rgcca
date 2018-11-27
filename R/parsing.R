@@ -155,10 +155,10 @@ setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE) 
   # Parse args containing files path
   isXls <- (length(grep("xlsx?", file)) == 1)
   # test if extension filename is xls
-  if (!isXls) {
+  if (!isXls)
     # if it is not, parse the name of file from the arg list
     blocksFilename = parseList(file)
-  } else {
+  else {
     # if xls, check file exists
     checkFile(file)
     # load the xls

@@ -306,14 +306,17 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
 plotAVE = function(rgcca, comp = 1){
 
   df = as.matrix ( sapply(rgcca$AVE$AVE_X, function(x) x[comp]) )
+
   row.names(df) = names(rgcca$a)
 
   # order by decreasing
+  #TODO: catch : Error in data.frame: row names contain missing values : the length of the header is not the same of the row number
   df = data.frame(df[order(abs(df[,comp]), decreasing = TRUE),], order = nrow(df):1)
 
   p = ggplot(df, aes(order, df[,comp]))
   plotHistogram(p, df, "Average Variance Explained")
 }
+
 
 #' Histogram settings
 #'
