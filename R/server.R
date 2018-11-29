@@ -29,9 +29,12 @@ server <- function(input, output) {
   # assign("blocks", NULL, .GlobalEnv)
 
 
-  output$id_block_custom = renderUI({
-    names = paste(input$blocks$name, collapse = ',')
-    n = length(names)
+  output$id_block_custom <- renderUI({
+    names <- paste(input$blocks$name, collapse = ',')
+    n <- round(length(input$blocks))
+    if (isTRUE(input$superblock)){
+      n <- n + 1
+    }
     sliderInput(inputId = "id_block",
                 label = h5("Block selected: "),
                 min = 1, max = n, value = n)
@@ -133,6 +136,9 @@ server <- function(input, output) {
     # the header, the path for the blocks and the presence of a superblock)
 
     if(!is.null(input$blocks$datapath)){
+      if(!input$superblock && input$id_block == round(length(input$blocks)) )
+        input$id_block <- input$id_block - 1
+
       setData()
       setAnalysis()
       setFuncs()

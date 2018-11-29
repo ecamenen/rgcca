@@ -71,9 +71,7 @@ ui <- fluidPage(
 
       # Graphical parameters
       #uiOutput("id_block_custom"),
-      sliderInput(inputId = "id_block",
-                  label = h5("Block selected: "),
-                  min = 1, max = 4, value = 4),
+      uiOutput("id_block_custom"),
       sliderInput(inputId = "axis1",
                   label = h5("Component X-axis: "),
                  min = 1, max = 4, value = 1),
