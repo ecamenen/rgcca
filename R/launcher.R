@@ -8,8 +8,9 @@
 # EDAM topic: omics, medecine, mathematics
 #
 # Abstract: A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA)
-# with all default settings predefined. Produce two figures to help clinicians to identify fingerprint:
-# samples and variables projected on the two first component of the multi-block analysis.
+# with all default settings predefined. Produce four figures to help clinicians to identify fingerprint:
+# the samples and the variables projected on the two first component of the multi-block analysis, the histograms
+# of the most explicative variables and the explained variance for each blocks.
 
 
 rm(list=ls())
