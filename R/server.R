@@ -26,19 +26,46 @@ server <- function(input, output) {
     library(l, character.only = TRUE)
   }
 
-  # assign("blocks", NULL, .GlobalEnv)
+  assign("i_block", reactiveVal(), .GlobalEnv)
 
-
+  # #TODO: remove blocks, superblock from observeEvent
   output$id_block_custom <- renderUI({
-    names <- paste(input$blocks$name, collapse = ',')
-    n <- round(length(input$blocks))
-    if (isTRUE(input$superblock)){
-      n <- n + 1
+    if(!is.null(input$blocks)){
+      blocks = getInfile()
+      refesh = input$superblock
+      names = names(blocks)
+      n <- round(length(blocks))
+    }else{
+      n <- 1
     }
+
     sliderInput(inputId = "id_block",
                 label = h5("Block selected: "),
                 min = 1, max = n, value = n)
+
+    # TODO: pas plusieurs sliderInput, découper en modules
   })
+
+  # output$id_block_custom <- renderUI({
+  #   if(!is.null(input$blocks)){
+  #     minCol = min(unlist(lapply(blocks, NCOL)))
+  #     print(min)
+  #   }else{
+  #     minCol <- 1
+  #   }
+  #   if (isTRUE(input$superblock)){
+  #     minCol <- n + 1
+  #   }
+  #   sliderInput(inputId = "id_block",
+  #               label = h5("Block selected: "),
+  #               min = 1, max = n, value = n)
+  #
+  #   # TODO: pas plusieurs sliderInput, découper en modules
+  # })
+
+
+
+
 
   ################################################ Set variables ################################################
 
@@ -49,7 +76,7 @@ server <- function(input, output) {
                 input$connection)
   })
 
-  setInfile <- reactive({
+  getInfile <- eventReactive(c(input$blocks, input$superblock), {
     # Load the blocks
 
     paths = paste(input$blocks$datapath, collapse = ',')
@@ -61,12 +88,12 @@ server <- function(input, output) {
                       sep = input$sep,
                       header = input$header),
           .GlobalEnv)
+    return(blocks)
   })
 
   setData <- reactive({
     # Load the blocks, the response and the connection matrix
 
-    setInfile()
     assign("response", setResponse (blocks = blocks,
                         file = input$response$datapath,
                         sep = input$sep,
@@ -99,21 +126,20 @@ server <- function(input, output) {
                                          resp = response,
                                          comp_x = input$axis1,
                                          comp_y = input$axis2,
-                                         i_block = input$id_block)
+                                         i_block = id_block)
 
   corcircle <- function() plotVariablesSpace(rgcca = sgcca.res,
                                              blocks = blocks,
                                              comp_x = input$axis1,
                                              comp_y = input$axis2,
                                              superblock = input$superblock,
-                                             i_block = input$id_block)
+                                             i_block = id_block)
 
   fingerprint <- function() plotFingerprint(rgcca = sgcca.res,
                                             comp = input$axis1,
                                             superblock = input$superblock,
                                             n_mark = input$nb_mark,
-                                            i_block = input$id_block)
-
+                                            i_block = id_block)
   ave <- function() plotAVE(rgcca = sgcca.res,
                             comp = input$axis1)
 
@@ -131,13 +157,18 @@ server <- function(input, output) {
   ################################################ Observe events ################################################
 
 
-  observeEvent(c(input$sep, input$header, input$blocks, input$superblock), {
+  observeEvent(c(input$sep, input$header, input$superblock, input$blocks), {
     # Observe the changes for parsing functionnalities (column separator,
     # the header, the path for the blocks and the presence of a superblock)
 
-    if(!is.null(input$blocks$datapath)){
-      if(!input$superblock && input$id_block == round(length(input$blocks)) )
-        input$id_block <- input$id_block - 1
+    if(!is.null(input$blocks)){
+
+      if(!input$superblock && input$id_block > round(length(blocks)) ){
+        i_block(input$id_block)
+        assign("id_block", i_block() - 1, .GlobalEnv)
+      }else{
+        assign("id_block", length(blocks), .GlobalEnv)
+      }
 
       setData()
       setAnalysis()
@@ -182,6 +213,8 @@ server <- function(input, output) {
   observeEvent(c(input$id_block, input$nb_mark), {
     # Observe if graphical parameters are changed
     if(!is.null(input$blocks$datapath)){
+      i_block(input$id_block)
+      assign("id_block", i_block(), .GlobalEnv)
       setFuncs()
     }
   })
