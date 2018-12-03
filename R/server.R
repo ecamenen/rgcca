@@ -82,12 +82,11 @@ server <- function(input, output) {
     }
   }
 
-
   getDynamicVariables <- reactive({
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme,
                  input$scale, input$bias, input$init, input$axis1, input$axis2, input$id_block, input$response,
-                input$connection, input$adv_pars, input$adv_ana, input$adv_graph)
+                input$connection, input$nb_comp, input$adv_pars, input$adv_ana, input$adv_graph)
   })
 
   getInfile <- eventReactive(c(input$blocks, input$superblock), {
@@ -171,28 +170,6 @@ server <- function(input, output) {
 
   ################################################ Observe events ################################################
 
-  observeEvent(input$adv_pars, {
-    toggle(id="header")
-    toggle(id="sep")
-  })
-
-  observeEvent(input$adv_ana, {
-    toggle(id="nb_comp_custom")
-    toggle(id="superblock")
-    toggle(id="scale")
-    toggle(id="bias")
-    toggle(id="scheme")
-    toggle(id="init")
-  })
-
-  observeEvent(input$adv_graph, {
-    toggle(id="id_block_custom")
-    toggle(id="axis1_custom")
-    toggle(id="axis2_custom")
-    toggle(id="nb_mark")
-  })
-
-
   observeEvent(c(input$sep, input$header, input$superblock, input$blocks), {
     # Observe the changes for parsing functionnalities (column separator,
     # the header, the path for the blocks and the presence of a superblock)
@@ -203,10 +180,9 @@ server <- function(input, output) {
         i_block(input$id_block)
         assign("id_block", i_block() - 1, .GlobalEnv)
       }else{
-        assign("id_block", length(blocks), .GlobalEnv)
+        assign("id_block", length(getInfile()), .GlobalEnv)
       }
 
-      print(input$axis1)
       setData()
       setAnalysis()
       setFuncs()
@@ -240,7 +216,6 @@ server <- function(input, output) {
   observeEvent(c(input$nb_comp, input$scheme, input$scale, input$bias, input$init), {
     # Observe if analysis parameters are changed
     if(!is.null(input$blocks$datapath)){
-      getDynamicVariables()
       setAnalysis()
       setFuncs()
       print(sgcca.res$AVE$AVE_X[[1]])
