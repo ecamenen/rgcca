@@ -315,7 +315,7 @@ plotAVE = function(rgcca, comp = 1){
 
 
 
-  p = ggplot(df, aes(order, df))
+  p = ggplot(df, aes(order, df[,1]))
   plotHistogram(p, df, "Average Variance Explained")
 }
 

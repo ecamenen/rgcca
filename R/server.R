@@ -53,7 +53,7 @@ server <- function(input, output) {
 
     sliderInput(inputId = "nb_comp",
                 label = h5("Number of Component: "),
-                min = 1, max = getMinComp(), value = getMinComp(), step = 1)
+                min = 1, max = getMinComp(), value = 2, step = 1)
 
     # TODO: pas plusieurs sliderInput, découper en modules
   })
@@ -80,9 +80,6 @@ server <- function(input, output) {
     }else{
       return(2)
     }
-    # if (isTRUE(input$superblock)){
-    #   # minCol <- n + 1
-    # }
   }
 
 
@@ -90,7 +87,7 @@ server <- function(input, output) {
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme,
                  input$scale, input$bias, input$init, input$axis1, input$axis2, input$id_block, input$response,
-                input$connection)
+                input$connection, input$adv_pars, input$adv_ana, input$adv_graph)
   })
 
   getInfile <- eventReactive(c(input$blocks, input$superblock), {
