@@ -311,9 +311,11 @@ plotAVE = function(rgcca, comp = 1){
 
   # order by decreasing
   #TODO: catch : Error in data.frame: row names contain missing values : the length of the header is not the same of the row number
-  df = data.frame(df[order(abs(df[,comp]), decreasing = TRUE),], order = nrow(df):1)
+  df = data.frame(df[order(abs(df), decreasing = TRUE),], order = nrow(df):1)
 
-  p = ggplot(df, aes(order, df[,comp]))
+
+
+  p = ggplot(df, aes(order, df))
   plotHistogram(p, df, "Average Variance Explained")
 }
 

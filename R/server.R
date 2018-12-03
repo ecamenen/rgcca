@@ -27,6 +27,7 @@ server <- function(input, output) {
   }
 
   assign("i_block", reactiveVal(), .GlobalEnv)
+  assign("n_comp", reactiveVal(), .GlobalEnv)
 
   # #TODO: remove blocks, superblock from observeEvent
   output$id_block_custom <- renderUI({
@@ -46,28 +47,44 @@ server <- function(input, output) {
     # TODO: pas plusieurs sliderInput, découper en modules
   })
 
-  # output$id_block_custom <- renderUI({
-  #   if(!is.null(input$blocks)){
-  #     minCol = min(unlist(lapply(blocks, NCOL)))
-  #     print(min)
-  #   }else{
-  #     minCol <- 1
-  #   }
-  #   if (isTRUE(input$superblock)){
-  #     minCol <- n + 1
-  #   }
-  #   sliderInput(inputId = "id_block",
-  #               label = h5("Block selected: "),
-  #               min = 1, max = n, value = n)
-  #
-  #   # TODO: pas plusieurs sliderInput, découper en modules
-  # })
+  output$nb_comp_custom <- renderUI({
+    n_comp(getMinComp())
+    assign("nb_comp", n_comp(), .GlobalEnv)
 
+    sliderInput(inputId = "nb_comp",
+                label = h5("Number of Component: "),
+                min = 1, max = getMinComp(), value = getMinComp(), step = 1)
 
+    # TODO: pas plusieurs sliderInput, découper en modules
+  })
 
+  output$axis1_custom <- renderUI({
+    sliderInput(inputId = "axis1",
+                label = h5("Component X-axis: "),
+                min = 1, max = getMinComp(), value = 1, step = 1)
+  })
+
+  output$axis2_custom <- renderUI({
+    sliderInput(inputId = "axis2",
+                label = h5("Component Y-axis: "),
+                min = 1, max = getMinComp(), value = 2, step = 1)
+  })
 
 
   ################################################ Set variables ################################################
+
+  getMinComp = function(){
+    if(!is.null(input$blocks)){
+      blocks = getInfile()
+      return( min(unlist(lapply(blocks, NCOL))) )
+    }else{
+      return(2)
+    }
+    # if (isTRUE(input$superblock)){
+    #   # minCol <- n + 1
+    # }
+  }
+
 
   getDynamicVariables <- reactive({
 
@@ -78,7 +95,7 @@ server <- function(input, output) {
 
   getInfile <- eventReactive(c(input$blocks, input$superblock), {
     # Load the blocks
-
+    print("FILE")
     paths = paste(input$blocks$datapath, collapse = ',')
     names = paste(input$blocks$name, collapse = ',')
 
@@ -107,8 +124,8 @@ server <- function(input, output) {
 
   setAnalysis <- reactive({
     # Load the analysis
-
-    ncomp = rep(max(c(input$axis1, input$axis2)), length(blocks))
+    print(paste("ANALYSIS", nb_comp))
+    ncomp = rep(nb_comp, length(blocks))
     sgcca.res = sgcca(A = blocks,
                  C = connection,
                  scheme = input$scheme,
@@ -117,6 +134,7 @@ server <- function(input, output) {
                  bias = input$bias,
                  init = input$init,
                  verbose = FALSE)
+
     names(sgcca.res$a)  = names(blocks)
 
     assign("sgcca.res", sgcca.res, .GlobalEnv)
@@ -170,6 +188,7 @@ server <- function(input, output) {
         assign("id_block", length(blocks), .GlobalEnv)
       }
 
+      print(input$axis1)
       setData()
       setAnalysis()
       setFuncs()

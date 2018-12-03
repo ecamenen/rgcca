@@ -71,15 +71,9 @@ ui <- fluidPage(
 
       # Graphical parameters
       uiOutput("id_block_custom"),
-      # sliderInput(inputId = "id_block",
-      #             label = h5("Block selected2: "),
-      #             min = 1, max = 4, value = 4),
-      sliderInput(inputId = "axis1",
-                  label = h5("Component X-axis: "),
-                  min = 1, max = 4, value = 1),
-      sliderInput(inputId = "axis2",
-                  label = h5("Component Y-axis: "),
-                  min = 2, max = 4, value = 2),
+      uiOutput("nb_comp_custom"),
+      uiOutput("axis1_custom"),
+      uiOutput("axis2_custom"),
       sliderInput(inputId = "nb_mark",
                   label = h5("Number of potential biomarkers: "),
                   min = 10, max = 500, value = 100),
