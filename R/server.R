@@ -19,7 +19,7 @@ server <- function(input, output) {
   source("plot.R")
 
   # Libraries loading
-  librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx")
+  librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "shinyjs")
   for (l in librairies) {
     if (!(l %in% installed.packages()[, "Package"]))
       install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
@@ -171,6 +171,27 @@ server <- function(input, output) {
 
   ################################################ Observe events ################################################
 
+  observeEvent(input$adv_pars, {
+    toggle(id="header")
+    toggle(id="sep")
+  })
+
+  observeEvent(input$adv_ana, {
+    toggle(id="nb_comp_custom")
+    toggle(id="superblock")
+    toggle(id="scale")
+    toggle(id="bias")
+    toggle(id="scheme")
+    toggle(id="init")
+  })
+
+  observeEvent(input$adv_graph, {
+    toggle(id="id_block_custom")
+    toggle(id="axis1_custom")
+    toggle(id="axis2_custom")
+    toggle(id="nb_mark")
+  })
+
 
   observeEvent(c(input$sep, input$header, input$superblock, input$blocks), {
     # Observe the changes for parsing functionnalities (column separator,
@@ -216,7 +237,7 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(c(input$scheme, input$scale, input$bias, input$init, input$axis1, input$axis2), {
+  observeEvent(c(input$nb_comp, input$scheme, input$scale, input$bias, input$init), {
     # Observe if analysis parameters are changed
     if(!is.null(input$blocks$datapath)){
       getDynamicVariables()
@@ -226,7 +247,7 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(c(input$id_block, input$nb_mark), {
+  observeEvent(c(input$id_block, input$nb_mark, input$axis1, input$axis2), {
     # Observe if graphical parameters are changed
     if(!is.null(input$blocks$datapath)){
       i_block(input$id_block)
