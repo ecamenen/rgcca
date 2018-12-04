@@ -36,6 +36,7 @@ ui <- fluidPage(
       fileInput(inputId = "response",
                 label = h5("Choose a response : ")
       ),
+      uiOutput("blocks_names_custom"),
 
       # File parsing
       checkboxInput("adv_pars",

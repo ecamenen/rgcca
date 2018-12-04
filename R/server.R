@@ -75,6 +75,12 @@ server <- function(input, output) {
                 min = 10, max = getMaxCol(), value = getDefaultCol(), step = 1)
   })
 
+  output$blocks_names_custom <- renderUI({
+    selectInput(inputId = "blocks_names",
+                 label = "Blocks names",
+                 choices = getNames())
+  })
+
   ################################################ Set variables ################################################
 
   getMinComp = function(){
@@ -86,12 +92,21 @@ server <- function(input, output) {
     }
   }
 
+  getNames = function(){
+    if(!is.null(input$blocks)){
+      blocks = getInfile()
+      return( names(blocks) )
+    }else{
+      return("")
+    }
+  }
+
   getMaxCol = function(){
     if(!is.null(input$blocks)){
       blocks = getInfile()
       return( max(unlist(lapply(blocks, NCOL))) )
     }else{
-      return(10)
+      return(100)
     }
   }
 
