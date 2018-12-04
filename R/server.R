@@ -52,7 +52,7 @@ server <- function(input, output) {
 
     sliderInput(inputId = "nb_comp",
                 label = h5("Number of Component: "),
-                min = 2, max = getMinComp(), value = 2, step = 1)
+                min = 2, max = getDefaultComp(), value = 2, step = 1)
 
     # TODO: pas plusieurs sliderInput, découper en modules
   })
@@ -72,7 +72,7 @@ server <- function(input, output) {
   output$nb_mark_custom <- renderUI({
     sliderInput(inputId = "nb_mark",
                 label = h5("Number of potential biomarkers: "),
-                min = 10, max = getMaxCol(), value = getMachin(), step = 1)
+                min = 10, max = getMaxCol(), value = getDefaultCol(), step = 1)
   })
 
   ################################################ Set variables ################################################
@@ -95,7 +95,14 @@ server <- function(input, output) {
     }
   }
 
-  getMachin = function(){
+  getDefaultComp = function(){
+    if (getMinComp() < 5)
+      return (getMinComp())
+    else
+      return (5)
+  }
+
+  getDefaultCol = function(){
   if (getMaxCol() < 100)
     return (getMaxCol())
   else
