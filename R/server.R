@@ -12,8 +12,6 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
-rm(list=ls())
-
 server <- function(input, output) {
   source("parsing.R")
   source("plot.R")
@@ -49,7 +47,7 @@ server <- function(input, output) {
 
   output$nb_comp_custom <- renderUI({
     n_comp(getMinComp())
-    assign("nb_comp", n_comp(), .GlobalEnv)
+    assign("nb_comp", 2, .GlobalEnv)
 
     sliderInput(inputId = "nb_comp",
                 label = h5("Number of Component: "),
@@ -80,6 +78,10 @@ server <- function(input, output) {
     }else{
       return(2)
     }
+  }
+
+  getNbComp = function(){
+    return(nb_comp)
   }
 
   getDynamicVariables <- reactive({
@@ -121,7 +123,7 @@ server <- function(input, output) {
   setAnalysis <- eventReactive(c(nb_comp, input$nb_comp, input$scheme, input$scale, input$bias, input$init, input$connection), {
     # Load the analysis
     ncomp = rep(nb_comp, length(blocks))
-    print(sgcca.res$AVE$AVE_X[[1]])
+
     sgcca.res = sgcca(A = blocks,
                  C = connection,
                  scheme = input$scheme,
@@ -132,7 +134,7 @@ server <- function(input, output) {
                  verbose = FALSE)
 
     names(sgcca.res$a)  = names(blocks)
-
+    print(sgcca.res$AVE$AVE_X[[1]])
     assign("sgcca.res", sgcca.res, .GlobalEnv)
   })
 
@@ -209,13 +211,16 @@ server <- function(input, output) {
       assign("connection", connection,
             .GlobalEnv)
       setAnalysis()
+      setFuncs()
     }
   })
 
   observeEvent(c(input$nb_comp, input$scheme, input$scale, input$bias, input$init), {
     # Observe if analysis parameters are changed
     if(!is.null(input$blocks)){
+      assign("nb_comp", input$nb_comp, .GlobalEnv)
       setAnalysis()
+      setFuncs()
     }
   })
 
