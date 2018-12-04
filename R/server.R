@@ -118,10 +118,10 @@ server <- function(input, output) {
           .GlobalEnv)
   })
 
-  setAnalysis <- eventReactive(c(nb_comp, input$nb_comp, input$scheme, input$scale, input$bias, input$init), {
+  setAnalysis <- eventReactive(c(nb_comp, input$nb_comp, input$scheme, input$scale, input$bias, input$init, input$connection), {
     # Load the analysis
     ncomp = rep(nb_comp, length(blocks))
-    print(paste("ANALYSIS", ncomp))
+    print(sgcca.res$AVE$AVE_X[[1]])
     sgcca.res = sgcca(A = blocks,
                  C = connection,
                  scheme = input$scheme,
@@ -197,7 +197,6 @@ server <- function(input, output) {
                           sep = input$sep,
                           header = input$header),
              .GlobalEnv)
-      setFuncs()
     }
   })
 
@@ -210,17 +209,13 @@ server <- function(input, output) {
       assign("connection", connection,
             .GlobalEnv)
       setAnalysis()
-      setFuncs()
     }
   })
 
   observeEvent(c(input$nb_comp, input$scheme, input$scale, input$bias, input$init), {
     # Observe if analysis parameters are changed
     if(!is.null(input$blocks)){
-      assign("nb_comp", input$nb_comp, .GlobalEnv)
       setAnalysis()
-      setFuncs()
-      print(sgcca.res$AVE$AVE_X[[1]])
     }
   })
 
