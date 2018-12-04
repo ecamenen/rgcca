@@ -108,6 +108,8 @@ server <- function(input, output) {
     }, error = function(e) {
       if(click)
         message(e$message)
+      else
+        message(e$message)
     })
     assign("click", FALSE, .GlobalEnv)
     return(blocks)
@@ -117,7 +119,7 @@ server <- function(input, output) {
 
   setData <- reactive({
     # Load the blocks, the response and the connection matrix
-
+    refresh = input$superblock
     assign("response", setResponse (blocks = blocks,
                         file = input$response$datapath,
                         sep = input$sep,
@@ -127,12 +129,14 @@ server <- function(input, output) {
                           file = input$connection$datapath,
                           sep = input$sep),
           .GlobalEnv)
+    print(paste("CONNECTION", dim(connection)))
   })
 
-  setAnalysis <- eventReactive(c(nb_comp, input$nb_comp, input$scheme, input$scale, input$bias, input$init, input$connection), {
+  setAnalysis <- eventReactive(c(nb_comp, input$nb_comp, input$scheme, input$scale, input$bias, input$init, input$connection, input$superblock), {
     # Load the analysis
+    refresh = input$superblock
     ncomp = rep(nb_comp, length(blocks))
-
+    print(ncomp)
     sgcca.res = sgcca(A = blocks,
                  C = connection,
                  scheme = input$scheme,
@@ -193,15 +197,10 @@ server <- function(input, output) {
       }else{
         assign("id_block", length(getInfile()), .GlobalEnv)
       }
-      tryCatch({
-        setData()
-      }, warning = function(w) {
 
-      },error = function(e) {
-        print(e)
-        #onclick("sep", function(x) {print(paste("COU", e))})
-      })
+      setData()
       setAnalysis()
+      print("HERE")
       setFuncs()
     }
   })
