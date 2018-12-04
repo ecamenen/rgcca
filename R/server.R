@@ -119,7 +119,7 @@ server <- function(input, output) {
 
   setData <- reactive({
     # Load the blocks, the response and the connection matrix
-    refresh = input$superblock
+    refresh = c(input$superblock, input$blocks)
     assign("response", setResponse (blocks = blocks,
                         file = input$response$datapath,
                         sep = input$sep,
@@ -132,9 +132,10 @@ server <- function(input, output) {
     print(paste("CONNECTION", dim(connection)))
   })
 
-  setAnalysis <- eventReactive(c(nb_comp, input$nb_comp, input$scheme, input$scale, input$bias, input$init, input$connection, input$superblock), {
+  setAnalysis <- eventReactive(c(nb_comp, input$nb_comp, input$scheme, input$scale, input$bias, input$init,
+                                 input$connection, input$superblock, input$blocks), {
     # Load the analysis
-    refresh = input$superblock
+    refresh = c(input$superblock, input$blocks)
     ncomp = rep(nb_comp, length(blocks))
     print(ncomp)
     sgcca.res = sgcca(A = blocks,
