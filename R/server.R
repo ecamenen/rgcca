@@ -143,12 +143,12 @@ server <- function(input, output) {
     # Load the blocks, the response and the connection matrix
     refresh = c(input$superblock, input$blocks)
     assign("response", setResponse (blocks = blocks,
-                        file = input$response$datapath,
+                        file = NULL,
                         sep = input$sep,
                         header = input$header),
           .GlobalEnv)
     assign("connection", setConnection (blocks = blocks,
-                          file = input$connection$datapath,
+                          file = NULL,
                           sep = input$sep),
           .GlobalEnv)
     print(paste("CONNECTION", dim(connection)))
