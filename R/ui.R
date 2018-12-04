@@ -14,7 +14,7 @@
 
 rm(list=ls())
 library(shiny)
-
+library(shinyjs)
 
 ui <- fluidPage(
 
@@ -24,7 +24,7 @@ ui <- fluidPage(
   sidebarLayout(
 
     sidebarPanel(
-
+      useShinyjs(),
       # Data loading
       fileInput(inputId = "blocks",
                 label = h5("Choose blocks : "),

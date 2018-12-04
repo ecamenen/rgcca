@@ -17,7 +17,7 @@ server <- function(input, output) {
   source("plot.R")
 
   # Libraries loading
-  librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx")
+  librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "shinyjs")
   for (l in librairies) {
     if (!(l %in% installed.packages()[, "Package"]))
       install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
@@ -92,18 +92,21 @@ server <- function(input, output) {
                 input$connection, input$nb_comp, input$adv_pars, input$adv_ana, input$adv_graph)
   })
 
-  getInfile <- eventReactive(c(input$blocks, input$superblock), {
+  getInfile <- eventReactive(c(input$blocks, input$superblock, input$sep), {
     # Load the blocks
     print("FILE")
     paths = paste(input$blocks$datapath, collapse = ',')
     names = paste(input$blocks$name, collapse = ',')
-
+    tryCatch({
     assign("blocks", setBlocks (superblock = input$superblock,
                       file = paths,
                       names = names,
                       sep = input$sep,
-                      header = input$header),
+                      header = TRUE),
           .GlobalEnv)
+    }, error = function(e) {
+      message(e$message)
+    })
     return(blocks)
   })
 
@@ -163,7 +166,7 @@ server <- function(input, output) {
 
   setFuncs <- reactive({
     # Set plotting functions
-    print("COUCOU")
+    print("SET_FUNC")
     samples()
     corcircle()
     fingerprint()
@@ -173,7 +176,7 @@ server <- function(input, output) {
 
   ################################################ Observe events ################################################
 
-  observeEvent(c(input$sep, input$header, input$superblock, input$blocks), {
+  observeEvent(c(input$superblock, input$blocks, input$sep), {
     # Observe the changes for parsing functionnalities (column separator,
     # the header, the path for the blocks and the presence of a superblock)
 
@@ -185,12 +188,20 @@ server <- function(input, output) {
       }else{
         assign("id_block", length(getInfile()), .GlobalEnv)
       }
+      tryCatch({
+        setData()
+      }, warning = function(w) {
 
-      setData()
+      },error = function(e) {
+        print(e)
+        #onclick("sep", function(x) {print(paste("COU", e))})
+      })
       setAnalysis()
       setFuncs()
     }
   })
+
+
 
   observeEvent(input$response, {
     # Observe if a response is fixed

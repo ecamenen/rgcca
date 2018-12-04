@@ -203,7 +203,7 @@ setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE) 
 
     #if one-column file, it is a tabulation error
     if (NCOL(df) == 0)
-      stop(paste(fo, "block file has an only-column. Check the --separator [by default: 1 for tabulation].\n"),
+      stop(paste(fo, "block file has an only-column. Check the separator [by default: 1 for tabulation].\n"),
            call. = FALSE)
 
     checkQuantitative(df, fo, header)
