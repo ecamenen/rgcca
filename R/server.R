@@ -69,6 +69,11 @@ server <- function(input, output) {
                 min = 1, max = getNbComp(), value = 2, step = 1)
   })
 
+  output$nb_mark_custom <- renderUI({
+    sliderInput(inputId = "nb_mark",
+                label = h5("Number of potential biomarkers: "),
+                min = 10, max = getMaxCol(), value = getMachin(), step = 1)
+  })
 
   ################################################ Set variables ################################################
 
@@ -80,6 +85,23 @@ server <- function(input, output) {
       return(2)
     }
   }
+
+  getMaxCol = function(){
+    if(!is.null(input$blocks)){
+      blocks = getInfile()
+      return( max(unlist(lapply(blocks, NCOL))) )
+    }else{
+      return(10)
+    }
+  }
+
+  getMachin = function(){
+  if (getMaxCol() < 100)
+    return (getMaxCol())
+  else
+    return (100)
+  }
+
 
   getNbComp = function(){
     refresh <- input$nb_comp

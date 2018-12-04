@@ -90,9 +90,7 @@ ui <- fluidPage(
         uiOutput("id_block_custom"),
         uiOutput("axis1_custom"),
         uiOutput("axis2_custom"),
-        sliderInput(inputId = "nb_mark",
-                    label = h5("Number of potential biomarkers: "),
-                    min = 10, max = 500, value = 100)),
+        uiOutput("nb_mark_custom")),
 
       actionButton(inputId = "save_all",
                    label = "Save all")
