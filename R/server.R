@@ -59,13 +59,13 @@ server <- function(input, output) {
   output$axis1_custom <- renderUI({
     sliderInput(inputId = "axis1",
                 label = h5("Component X-axis: "),
-                min = 1, max = getMinComp(), value = 1, step = 1)
+                min = 1, max = getNbComp(), value = 1, step = 1)
   })
 
   output$axis2_custom <- renderUI({
     sliderInput(inputId = "axis2",
                 label = h5("Component Y-axis: "),
-                min = 1, max = getMinComp(), value = 2, step = 1)
+                min = 1, max = getNbComp(), value = 2, step = 1)
   })
 
 
@@ -81,6 +81,7 @@ server <- function(input, output) {
   }
 
   getNbComp = function(){
+    refresh <- input$nb_comp
     return(nb_comp)
   }
 
