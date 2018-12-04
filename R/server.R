@@ -26,6 +26,7 @@ server <- function(input, output) {
 
   assign("i_block", reactiveVal(), .GlobalEnv)
   assign("n_comp", reactiveVal(), .GlobalEnv)
+  assign("click", FALSE, .GlobalEnv)
 
   # #TODO: remove blocks, superblock from observeEvent
   output$id_block_custom <- renderUI({
@@ -105,10 +106,14 @@ server <- function(input, output) {
                       header = TRUE),
           .GlobalEnv)
     }, error = function(e) {
-      message(e$message)
+      if(click)
+        message(e$message)
     })
+    assign("click", FALSE, .GlobalEnv)
     return(blocks)
   })
+
+  onclick("sep", function(e) assign("click", TRUE, .GlobalEnv))
 
   setData <- reactive({
     # Load the blocks, the response and the connection matrix
