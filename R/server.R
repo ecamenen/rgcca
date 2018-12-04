@@ -19,7 +19,7 @@ server <- function(input, output) {
   source("plot.R")
 
   # Libraries loading
-  librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "shinyjs")
+  librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx")
   for (l in librairies) {
     if (!(l %in% installed.packages()[, "Package"]))
       install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
@@ -53,7 +53,7 @@ server <- function(input, output) {
 
     sliderInput(inputId = "nb_comp",
                 label = h5("Number of Component: "),
-                min = 1, max = getMinComp(), value = 2, step = 1)
+                min = 2, max = getMinComp(), value = 2, step = 1)
 
     # TODO: pas plusieurs sliderInput, découper en modules
   })
@@ -118,10 +118,10 @@ server <- function(input, output) {
           .GlobalEnv)
   })
 
-  setAnalysis <- reactive({
+  setAnalysis <- eventReactive(c(nb_comp, input$nb_comp, input$scheme, input$scale, input$bias, input$init), {
     # Load the analysis
-    print(paste("ANALYSIS", nb_comp))
     ncomp = rep(nb_comp, length(blocks))
+    print(paste("ANALYSIS", ncomp))
     sgcca.res = sgcca(A = blocks,
                  C = connection,
                  scheme = input$scheme,
@@ -160,7 +160,7 @@ server <- function(input, output) {
 
   setFuncs <- reactive({
     # Set plotting functions
-
+    print("COUCOU")
     samples()
     corcircle()
     fingerprint()
@@ -191,7 +191,7 @@ server <- function(input, output) {
 
   observeEvent(input$response, {
     # Observe if a response is fixed
-    if(!is.null(input$blocks$datapath)){
+    if(!is.null(input$blocks)){
       assign("response", setResponse (blocks = blocks,
                           file = input$response$datapath,
                           sep = input$sep,
@@ -203,10 +203,11 @@ server <- function(input, output) {
 
   observeEvent(input$connection, {
     # Observe if a connection is fixed
-    if(!is.null(input$blocks$datapath)){
-      assign("connection", setConnection (blocks = blocks,
-                            file = input$connection$datapath,
-                            sep = input$sep),
+    if(!is.null(input$blocks)){
+      connection = setConnection (blocks = blocks,
+                                          file = input$connection$datapath,
+                                          sep = input$sep)
+      assign("connection", connection,
             .GlobalEnv)
       setAnalysis()
       setFuncs()
@@ -215,7 +216,8 @@ server <- function(input, output) {
 
   observeEvent(c(input$nb_comp, input$scheme, input$scale, input$bias, input$init), {
     # Observe if analysis parameters are changed
-    if(!is.null(input$blocks$datapath)){
+    if(!is.null(input$blocks)){
+      assign("nb_comp", input$nb_comp, .GlobalEnv)
       setAnalysis()
       setFuncs()
       print(sgcca.res$AVE$AVE_X[[1]])
@@ -224,7 +226,7 @@ server <- function(input, output) {
 
   observeEvent(c(input$id_block, input$nb_mark, input$axis1, input$axis2), {
     # Observe if graphical parameters are changed
-    if(!is.null(input$blocks$datapath)){
+    if(!is.null(input$blocks)){
       i_block(input$id_block)
       assign("id_block", i_block(), .GlobalEnv)
       setFuncs()
@@ -247,7 +249,7 @@ server <- function(input, output) {
 
   output$samplesPlot <- renderPlot({
     getDynamicVariables()
-    if(!is.null(input$blocks$datapath)){
+    if(!is.null(input$blocks)){
       observeEvent(input$samples_save, savePlot("samples_plot.pdf", samples()))
       samples()
     }
@@ -255,7 +257,7 @@ server <- function(input, output) {
 
   output$corcirclePlot <- renderPlot({
     getDynamicVariables()
-    if(!is.null(input$blocks$datapath)){
+    if(!is.null(input$blocks)){
       observeEvent(input$corcircle_save, savePlot("corcircle.pdf", corcircle()))
       corcircle()
     }
@@ -263,7 +265,7 @@ server <- function(input, output) {
 
   output$fingerprintPlot <- renderPlot({
     getDynamicVariables()
-    if(!is.null(input$blocks$datapath)){
+    if(!is.null(input$blocks)){
       observeEvent(input$fingerprint_save, savePlot("fingerprint.pdf", fingerprint()))
       fingerprint()
     }
@@ -271,7 +273,7 @@ server <- function(input, output) {
 
   output$AVEPlot <- renderPlot({
     getDynamicVariables()
-    if(!is.null(input$blocks$datapath)){
+    if(!is.null(input$blocks)){
       observeEvent(input$ave_save, savePlot("AVE.pdf", ave()))
       ave()
     }
