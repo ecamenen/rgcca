@@ -28,28 +28,36 @@ server <- function(input, output) {
   assign("n_comp", reactiveVal(), .GlobalEnv)
   assign("click", FALSE, .GlobalEnv)
 
-  # #TODO: remove blocks, superblock from observeEvent
-  output$id_block_custom <- renderUI({
+  #TODO: remove blocks, superblock from observeEvent
+  # output$id_block_custom <- renderUI({
+  #   if(!is.null(input$blocks)){
+  #     blocks = getInfile()
+  #     refesh = input$superblock
+  #     names = names(blocks)
+  #     n <- round(length(blocks))
+  #   }else{
+  #     n <- 1
+  #   }
+  #
+  #   sliderInput(inputId = "id_block",
+  #               label = h5("Block selected: "),
+  #               min = 1, max = n, value = n)
+  #
+  #   # TODO: pas plusieurs sliderInput, découper en modules
+  # })
+
+  output$blocks_names_custom <- renderUI({
     if(!is.null(input$blocks)){
-      blocks = getInfile()
       refesh = input$superblock
-      names = names(blocks)
+      blocks = getInfile()
       n <- round(length(blocks))
     }else{
       n <- 1
     }
 
-    sliderInput(inputId = "id_block",
-                label = h5("Block selected: "),
-                min = 1, max = n, value = n)
-
-    # TODO: pas plusieurs sliderInput, découper en modules
-  })
-
-  output$blocks_names_custom <- renderUI({
     selectInput(inputId = "names_block",
                 label = h5("Block selected: "),
-                choices = getNames())
+                choices = getNames(), selected = n)
   })
 
 
@@ -100,7 +108,7 @@ server <- function(input, output) {
       blocks = getInfile()
       return( as.list(sapply(names(blocks), function(i) as.integer(which(names(blocks) == i)), USE.NAMES = TRUE)) )
     }else{
-      return("")
+      return(list(" " = 0))
     }
   }
 
@@ -137,7 +145,7 @@ server <- function(input, output) {
   getDynamicVariables <- reactive({
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme,
-                 input$scale, input$bias, input$init, input$axis1, input$axis2, input$id_block, input$response,
+                 input$scale, input$bias, input$init, input$axis1, input$axis2, input$response,
                 input$connection, input$nb_comp, input$adv_pars, input$adv_ana, input$adv_graph, input$names_block)
   })
 
@@ -240,8 +248,8 @@ server <- function(input, output) {
 
     if(!is.null(input$blocks)){
 
-      if(!input$superblock && input$id_block > round(length(blocks)) ){
-        i_block(input$id_block)
+      if(!input$superblock && as.integer(input$names_block) > round(length(blocks)) ){
+        i_block(as.integer(input$names_block))
         assign("id_block", i_block() - 1, .GlobalEnv)
       }else{
         assign("id_block", length(getInfile()), .GlobalEnv)
@@ -256,7 +264,7 @@ server <- function(input, output) {
   })
 
   observeEvent(input$names_block, {
-  print(input$names_block)
+    print(as.integer(input$names_block))
   })
 
 
@@ -293,10 +301,10 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(c(input$id_block, input$nb_mark, input$axis1, input$axis2), {
+  observeEvent(c(input$names_block, input$nb_mark, input$axis1, input$axis2), {
     # Observe if graphical parameters are changed
     if(!is.null(input$blocks)){
-      i_block(input$id_block)
+      i_block(as.integer(input$names_block))
       assign("id_block", i_block(), .GlobalEnv)
       setFuncs()
     }

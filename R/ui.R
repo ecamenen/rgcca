@@ -18,7 +18,7 @@ library(shinyjs)
 
 ui <- fluidPage(
 
-  titlePanel("RGCCA - graphical interface"),
+  titlePanel("SGCCA - graphical interface"),
 
 
   sidebarLayout(
@@ -36,7 +36,6 @@ ui <- fluidPage(
       fileInput(inputId = "response",
                 label = h5("Choose a response : ")
       ),
-      uiOutput("blocks_names_custom"),
 
       # File parsing
       checkboxInput("adv_pars",
@@ -88,7 +87,7 @@ ui <- fluidPage(
                     value = FALSE),
       conditionalPanel(
         condition = "input.adv_graph == true",
-        uiOutput("id_block_custom"),
+        uiOutput("blocks_names_custom"),
         uiOutput("axis1_custom"),
         uiOutput("axis2_custom"),
         uiOutput("nb_mark_custom")),

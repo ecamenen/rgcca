@@ -1,16 +1,89 @@
 ---
-title: "Regularized and Sparse Generalized Canonical Correlation Analysis : user manual"
-date: "`r Sys.Date()`"
-output:
-  rmarkdown::html_vignette:
-   fig_align: 'center'
+title: "The RGCCA package for Regularized/Sparse Generalized Canonical Correlation Analysis"
+date: '`r Sys.Date()`'
+output: 
+  pdf_document:
+   number_sections: yes
+   toc: yes
+   fig_height: 6
    fig_width: 6
-   fig_height: 5
 vignette: >
-  %\VignetteIndexEntry{Regularized and Sparse Generalized Canonical Correlation Analysis : user manual}
+  %\VignetteIndexEntry{The RGCCA package for Regularized/Sparse Generalized Canonical Correlation Analysis} 
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  \usepackage[utf8]{inputenc}
+header-includes:
+- \usepackage{amsfonts}
+- \usepackage{algorithm2e}
+- \usepackage{times}
+- \usepackage{bm}
+- \usepackage{soul}
+- \usepackage{epsfig}
+- \usepackage{amssymb}
+- \usepackage{natbib}
+- \usepackage{lscape}
+- \usepackage{graphicx}
+- \usepackage{tikz}
+- \usetikzlibrary{arrows}
+- \usepackage{amsmath}
+- \usepackage{color}
+- \usepackage{float}
+- \usepackage{amsfonts}
+- \usepackage{latexsym}
+- \usepackage{graphicx,psfrag,color}
+- \usepackage{amsmath,amssymb}
+- \usepackage{multirow}
+- \usepackage{amsthm}
+- \usepackage{enumerate}
+- \usepackage{enumitem}
+- \usepackage{setspace}
+- \usepackage{subfigure}
+- \usepackage{longtable}
+- \usepackage{etoolbox}
+- \usepackage{pdfpages}
+- \usepackage[mathscr]{euscript}
+- \usepackage[T1]{fontenc}
+- \usepackage[english]{babel}
+- \usepackage[misc]{ifsym}
+- \usepackage{wasysym}
+- \usepackage{hyperref}
+- \usepackage{breakurl}
+- \usepackage{pgfplots}
+- \usepackage{microtype}
+bibliography: biblio.bib
 ---
+
+\newcommand{\ma}[1]{\ensuremath{\mathbf{#1}}}
+\newcommand{\sign}{\ensuremath{\mathrm{sign}}}
+\newcommand{\cov}{\ensuremath{\text{cov}}}
+\newcommand{\X}{\mathbf{X}}
+\newcommand{\A}{\mathbf{A}}
+\newcommand{\Q}{\mathbf{Q}}
+\newcommand{\M}{\mathbf{M}}
+\newcommand{\mbc}{\mathbf{c}}
+\newcommand{\I}{\mathbf{I}}
+\newcommand{\mbP}{\mathbf{P}}
+\newcommand{\mba}{\mathbf{a}}
+\newcommand{\z}{\mathbf{z}}
+\newcommand{\w}{\mathbf{w}}
+\newcommand{\y}{\mathbf{y}}
+\newcommand{\mbb}{\mathbf{b}}
+\newcommand{\Xu}{\underline{\mathbf{X}}}
+\newcommand{\Pu}{\underline{\mathbf{P}}}
+\newcommand{\x}{\mathbf{x}}
+\newcommand{\K}{\mathbf{K}}
+\newcommand{\mcH}{\mathcal{H}}
+\newcommand{\bsx}{\boldsymbol{x}}
+\newcommand{\bsxi}{\boldsymbol{\xi}}
+\newcommand{\bsa}{\boldsymbol{\alpha}}
+\bibliographystyle{apalike}
+\bibliography{biblio}
+
+
+# Multiblock data analysis with the RGCCA package
+
+For the sake of comprehension of the use of the RGCCA package, the theoretical fundations of RGCCA and variations - that were previously published [@Tenenhaus2011 ; @Tenenhaus2014 ; @Tenenhaus2015 ; @Tenenhaus2017] - are described. 
+
+We consider $J$ data matrices $\X_1, \ldots, \X_J$. Each $n \times p_j$ data matrix $\X_j = [\ma x_{j1}, \ldots, \ma x_{jp_j}]$ is called a block and represents a set of $p_j$ variables observed on $n$ individuals. The number and the nature of the variables may differ from one block to another, but the individuals must be the same across blocks. We assume that all variables are centered. The objective of RGCCA is to find, for each block, a weighted composite of variables (called block component) $\y_j= \X_j \ma a_j,j=1, \ldots,J$ (where $\ma a_j$ is a column-vector with  $p_j$ elements) summarizing the relevant information between and within the blocks. The block components are obtained such that (i) block components explain well their own block and/or (ii) block components that are assumed to be connected are highly correlated. In addition, RGCCA integrates a variable selection procedure, called SGCCA, allowing the identification of the most relevant features. Finally, as a component-based method, RGCCA/SGCCA can provide users with graphical representations to visualize the sources of variability within blocks and the amount of correlation between blocks.
 
 ```{r setup, include = FALSE, echo = FALSE, warning = FALSE, message = FALSE}
 
@@ -69,8 +142,8 @@ knitr::opts_chunk$set(
 ```
 
 
-## 1.  Load the inputs
-### Load the blocks
+# Load the inputs
+## Load the blocks
 
 The blocks are loaded with the function ```setBlocks```. The first argument of this function (```superblock```) required a bolean giving the presence (TRUE) / absence (FALSE) of a superblock. The second one corresponds to a character giving the list of the file path separated by a comma (argument ```file```). By default, the name of the blocks correspond to those of the files (```names``` argument) adn could be set. By default, the tabulation is used as a column separator (```sep``` argument) and the first row is considered as a header (```header``` parameter).
 
@@ -82,7 +155,7 @@ blocks = setBlocks(superblock = SUPERBLOCK,
                    file = "data/agriculture.tsv,data/industry.tsv,data/politic.tsv")
 ```
 
-### Load the groups of response and the connection between blocks
+## Load the groups of response and the connection between blocks
 
 The connection between the blocks will be used by the RGCCA and must be set by ```setConnection``` function. A group of samples will be used to color them in the samples plot and must be set by ```setResponse``` function. For both functions, the ```blocks``` parameter, set at the previous step, is required. The other parameters are optionals. The user could import a file containing either (```file``` parameter) : (i) a symmetric matrix with 1 giving a connection between two blocs, or 0 otherwise; (ii) a univariate vector (qualtitative or quantitative) or a disjonctive table for the response. By default, the column separator is the tabulation and could be set (```sep``` argument). For the ```setResponse```, a header could be specified (```header``` parameter).
 
@@ -100,7 +173,7 @@ connection = setConnection(blocks = blocks,
 ```
 
 
-### View the inputs
+## View the inputs
 
 ```{r views, echo=FALSE, results = "asis"}
 
@@ -115,7 +188,7 @@ for (x in 1:length(files)) {
 ```
 
 
-## 2.  Run S/RGCCA
+# Run S/RGCCA
 
 SGCCA is run from the RGCCA package by using two component for a biplot vizualisation. The S/RGCCA function doesn't names the blocks in their outputs. This step is required to generate biplots.
 
@@ -132,7 +205,7 @@ names(sgcca.res$a) = names(blocks)
 ```
 
 
-## 3.  Vizualise the analysis
+# Vizualise the analysis
 
 Both the samples and the variables could be vizualized by using biplots functions (respectively ```plotSamplesSpace``` and ```plotVariablesSpace```). Histograms are used to vizualized in decreasing order the variables with the higher weights and the blocks with the higher Average Variance Explained (AVE).
 
@@ -144,37 +217,37 @@ COMP2 = 3
 NB_MARK = 100
 ```
 
-### With the superblock, by default on the first and the second components
+## With the superblock, by default on the first and the second components
 
-##### Samples plot
+### Samples plot
 ```{r}
 plotSamplesSpace(rgcca = sgcca.res, 
                  resp = response)
 ```
 
-##### Corcircle plot
+### Corcircle plot
 ```{r}
 plotVariablesSpace(rgcca = sgcca.res,
                    block = blocks,
                    superblock = SUPERBLOCK)
 ```
 
-##### Fingerprint plot
+### Fingerprint plot
 ```{r}
 plotFingerprint(rgcca = sgcca.res,
                 superblock = SUPERBLOCK,
                 n_mark = NB_MARK)
 ```
 
-##### Best explained blocks
+### Best explained blocks
 ```{r}
 plotAVE(rgcca = sgcca.res)
 
 ```
 
-### With the politic block, on the 2nd and the 3rd components
+## With the politic block, on the 2nd and the 3rd components
 
-##### Samples plot
+### Samples plot
 ```{r}
 plotSamplesSpace(rgcca = sgcca.res, 
                  resp = response, 
@@ -183,7 +256,7 @@ plotSamplesSpace(rgcca = sgcca.res,
                  i_block = 3)
 ```
 
-##### Corcircle plot
+### Corcircle plot
 ```{r}
 plotVariablesSpace(rgcca = sgcca.res,
                    block = blocks,
@@ -192,17 +265,19 @@ plotVariablesSpace(rgcca = sgcca.res,
                    i_block = 3)
 ```
 
-##### Fingerprint plot
+### Fingerprint plot
 ```{r}
 plotFingerprint(rgcca = sgcca.res,
                 comp = COMP1,
                 n_mark = NB_MARK, 
                 i_block = 3)
-
 ```
 
+
+# References
 
 ```{r, echo = FALSE}
 # Remove the temp/ folder
 unlink("data", recursive = TRUE)
 ```
+
