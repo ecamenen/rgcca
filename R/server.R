@@ -29,23 +29,6 @@ server <- function(input, output) {
   assign("click", FALSE, .GlobalEnv)
 
   #TODO: remove blocks, superblock from observeEvent
-  # output$id_block_custom <- renderUI({
-  #   if(!is.null(input$blocks)){
-  #     blocks = getInfile()
-  #     refesh = input$superblock
-  #     names = names(blocks)
-  #     n <- round(length(blocks))
-  #   }else{
-  #     n <- 1
-  #   }
-  #
-  #   sliderInput(inputId = "id_block",
-  #               label = h5("Block selected: "),
-  #               min = 1, max = n, value = n)
-  #
-  #   # TODO: pas plusieurs sliderInput, découper en modules
-  # })
-
   output$blocks_names_custom <- renderUI({
     if(!is.null(input$blocks)){
       refesh = input$superblock
@@ -145,7 +128,7 @@ server <- function(input, output) {
   getDynamicVariables <- reactive({
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme,
-                 input$scale, input$bias, input$init, input$axis1, input$axis2, input$response,
+                 input$scale, input$bias, input$init, input$axis1, input$axis2, input$response, input$tau,
                 input$connection, input$nb_comp, input$adv_pars, input$adv_ana, input$adv_graph, input$names_block)
   })
 
@@ -189,13 +172,14 @@ server <- function(input, output) {
   })
 
   setAnalysis <- eventReactive(c(nb_comp, input$nb_comp, input$scheme, input$scale, input$bias, input$init,
-                                 input$connection, input$superblock, input$blocks), {
+                                 input$connection, input$superblock, input$blocks, input$tau), {
     # Load the analysis
     refresh = c(input$superblock, input$blocks)
     ncomp = rep(nb_comp, length(blocks))
     print(ncomp)
-    sgcca.res = sgcca(A = blocks,
+    rgcca.res = rgcca(A = blocks,
                  C = connection,
+                 tau = rep(input$tau, length(blocks)),
                  scheme = input$scheme,
                  ncomp = ncomp,
                  scale = input$scale,
@@ -203,30 +187,30 @@ server <- function(input, output) {
                  init = input$init,
                  verbose = FALSE)
 
-    names(sgcca.res$a)  = names(blocks)
-    print(sgcca.res$AVE$AVE_X[[1]])
-    assign("sgcca.res", sgcca.res, .GlobalEnv)
+    names(rgcca.res$a)  = names(blocks)
+    print(rgcca.res$AVE$AVE_X[[1]])
+    assign("rgcca.res", rgcca.res, .GlobalEnv)
   })
 
-  samples <- function() plotSamplesSpace(rgcca = sgcca.res,
+  samples <- function() plotSamplesSpace(rgcca = rgcca.res,
                                          resp = response,
                                          comp_x = input$axis1,
                                          comp_y = input$axis2,
                                          i_block = id_block)
 
-  corcircle <- function() plotVariablesSpace(rgcca = sgcca.res,
+  corcircle <- function() plotVariablesSpace(rgcca = rgcca.res,
                                              blocks = blocks,
                                              comp_x = input$axis1,
                                              comp_y = input$axis2,
                                              superblock = input$superblock,
                                              i_block = id_block)
 
-  fingerprint <- function() plotFingerprint(rgcca = sgcca.res,
+  fingerprint <- function() plotFingerprint(rgcca = rgcca.res,
                                             comp = input$axis1,
                                             superblock = input$superblock,
                                             n_mark = input$nb_mark,
                                             i_block = id_block)
-  ave <- function() plotAVE(rgcca = sgcca.res,
+  ave <- function() plotAVE(rgcca = rgcca.res,
                             comp = input$axis1)
 
 
@@ -292,7 +276,7 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(c(input$nb_comp, input$scheme, input$scale, input$bias, input$init), {
+  observeEvent(c(input$nb_comp, input$scheme, input$scale, input$bias, input$init, input$tau), {
     # Observe if analysis parameters are changed
     if(!is.null(input$blocks)){
       assign("nb_comp", input$nb_comp, .GlobalEnv)
