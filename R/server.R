@@ -128,13 +128,12 @@ server <- function(input, output) {
   getDynamicVariables <- reactive({
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme,
-                 input$scale, input$bias, input$init, input$axis1, input$axis2, input$response, input$tau,
+                 input$scale, input$bias, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt,
                 input$connection, input$nb_comp, input$adv_pars, input$adv_ana, input$adv_graph, input$names_block)
   })
 
   getInfile <- eventReactive(c(input$blocks, input$superblock, input$sep), {
     # Load the blocks
-    print("FILE")
     paths = paste(input$blocks$datapath, collapse = ',')
     names = paste(input$blocks$name, collapse = ',')
     tryCatch({
@@ -168,18 +167,22 @@ server <- function(input, output) {
                           file = NULL,
                           sep = input$sep),
           .GlobalEnv)
-    print(paste("CONNECTION", dim(connection)))
   })
 
   setAnalysis <- eventReactive(c(nb_comp, input$nb_comp, input$scheme, input$scale, input$bias, input$init,
-                                 input$connection, input$superblock, input$blocks, input$tau), {
+                                 input$connection, input$superblock, input$blocks, input$tau, input$tau_opt), {
     # Load the analysis
     refresh = c(input$superblock, input$blocks)
+
+    if (input$tau_opt)
+      tau = input$tau_opt
+    else
+      tau = input$tau
+
     ncomp = rep(nb_comp, length(blocks))
-    print(ncomp)
     rgcca.res = rgcca(A = blocks,
                  C = connection,
-                 tau = rep(input$tau, length(blocks)),
+                 tau = rep(tau, length(blocks)),
                  scheme = input$scheme,
                  ncomp = ncomp,
                  scale = input$scale,
@@ -188,7 +191,6 @@ server <- function(input, output) {
                  verbose = FALSE)
 
     names(rgcca.res$a)  = names(blocks)
-    print(rgcca.res$AVE$AVE_X[[1]])
     assign("rgcca.res", rgcca.res, .GlobalEnv)
   })
 
@@ -216,7 +218,6 @@ server <- function(input, output) {
 
   setFuncs <- reactive({
     # Set plotting functions
-    print("SET_FUNC")
     samples()
     corcircle()
     fingerprint()
@@ -242,15 +243,9 @@ server <- function(input, output) {
       setData()
       assign("nb_comp", 2, .GlobalEnv)
       setAnalysis()
-      print("HERE")
       setFuncs()
     }
   })
-
-  observeEvent(input$names_block, {
-    print(as.integer(input$names_block))
-  })
-
 
   observeEvent(input$response, {
     # Observe if a response is fixed
@@ -276,7 +271,7 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(c(input$nb_comp, input$scheme, input$scale, input$bias, input$init, input$tau), {
+  observeEvent(c(input$nb_comp, input$scheme, input$scale, input$bias, input$init, input$tau, input$tau_opt), {
     # Observe if analysis parameters are changed
     if(!is.null(input$blocks)){
       assign("nb_comp", input$nb_comp, .GlobalEnv)
