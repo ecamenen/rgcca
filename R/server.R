@@ -46,6 +46,13 @@ server <- function(input, output) {
     # TODO: pas plusieurs sliderInput, découper en modules
   })
 
+  output$blocks_names_custom <- renderUI({
+    selectInput(inputId = "names_block",
+                label = h5("Block selected: "),
+                choices = getNames())
+  })
+
+
   output$nb_comp_custom <- renderUI({
     n_comp(getMinComp())
     assign("nb_comp", 2, .GlobalEnv)
@@ -75,11 +82,7 @@ server <- function(input, output) {
                 min = 10, max = getMaxCol(), value = getDefaultCol(), step = 1)
   })
 
-  output$blocks_names_custom <- renderUI({
-    selectInput(inputId = "blocks_names",
-                 label = "Blocks names",
-                 choices = getNames())
-  })
+
 
   ################################################ Set variables ################################################
 
@@ -95,11 +98,12 @@ server <- function(input, output) {
   getNames = function(){
     if(!is.null(input$blocks)){
       blocks = getInfile()
-      return( names(blocks) )
+      return( as.list(sapply(names(blocks), function(i) as.integer(which(names(blocks) == i)), USE.NAMES = TRUE)) )
     }else{
       return("")
     }
   }
+
 
   getMaxCol = function(){
     if(!is.null(input$blocks)){
@@ -134,7 +138,7 @@ server <- function(input, output) {
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme,
                  input$scale, input$bias, input$init, input$axis1, input$axis2, input$id_block, input$response,
-                input$connection, input$nb_comp, input$adv_pars, input$adv_ana, input$adv_graph)
+                input$connection, input$nb_comp, input$adv_pars, input$adv_ana, input$adv_graph, input$names_block)
   })
 
   getInfile <- eventReactive(c(input$blocks, input$superblock, input$sep), {
@@ -143,7 +147,7 @@ server <- function(input, output) {
     paths = paste(input$blocks$datapath, collapse = ',')
     names = paste(input$blocks$name, collapse = ',')
     tryCatch({
-    assign("blocks", setBlocks (superblock = input$superblock,
+      assign("blocks", setBlocks (superblock = input$superblock,
                       file = paths,
                       names = names,
                       sep = input$sep,
@@ -244,12 +248,16 @@ server <- function(input, output) {
       }
 
       setData()
+      assign("nb_comp", 2, .GlobalEnv)
       setAnalysis()
       print("HERE")
       setFuncs()
     }
   })
 
+  observeEvent(input$names_block, {
+  print(input$names_block)
+  })
 
 
   observeEvent(input$response, {
