@@ -144,10 +144,11 @@ server <- function(input, output) {
                       header = TRUE),
           .GlobalEnv)
     }, error = function(e) {
+      assign("blocks", NULL, .GlobalEnv)
       if(click)
         message(e$message)
       else
-        message(e$message)
+        message(paste("COUCOU", e$message))
     })
     assign("click", FALSE, .GlobalEnv)
     return(blocks)
@@ -224,6 +225,12 @@ server <- function(input, output) {
     ave()
   })
 
+  blocksExists = function(){
+    if(!is.null(input$blocks))
+      if(!is.null(getInfile()))
+        return(TRUE)
+    return(FALSE)
+  }
 
   ################################################ Observe events ################################################
 
@@ -231,9 +238,9 @@ server <- function(input, output) {
     # Observe the changes for parsing functionnalities (column separator,
     # the header, the path for the blocks and the presence of a superblock)
 
-    if(!is.null(input$blocks)){
+    if(blocksExists()){
 
-      if(!input$superblock && as.integer(input$names_block) > round(length(blocks)) ){
+      if(!input$superblock && as.integer(input$names_block) > round(length(getInfile())) ){
         i_block(as.integer(input$names_block))
         assign("id_block", i_block() - 1, .GlobalEnv)
       }else{
@@ -249,18 +256,18 @@ server <- function(input, output) {
 
   observeEvent(input$response, {
     # Observe if a response is fixed
-    if(!is.null(input$blocks)){
-      assign("response", setResponse (blocks = blocks,
-                          file = input$response$datapath,
-                          sep = input$sep,
-                          header = input$header),
-             .GlobalEnv)
+    if(blocksExists()){
+        assign("response", setResponse (blocks = blocks,
+                            file = input$response$datapath,
+                            sep = input$sep,
+                            header = input$header),
+               .GlobalEnv)
     }
   })
 
   observeEvent(input$connection, {
     # Observe if a connection is fixed
-    if(!is.null(input$blocks)){
+    if(blocksExists()){
       connection = setConnection (blocks = blocks,
                                           file = input$connection$datapath,
                                           sep = input$sep)
@@ -273,7 +280,7 @@ server <- function(input, output) {
 
   observeEvent(c(input$nb_comp, input$scheme, input$scale, input$bias, input$init, input$tau, input$tau_opt), {
     # Observe if analysis parameters are changed
-    if(!is.null(input$blocks)){
+    if(blocksExists()){
       assign("nb_comp", input$nb_comp, .GlobalEnv)
       setAnalysis()
       setFuncs()
@@ -282,7 +289,7 @@ server <- function(input, output) {
 
   observeEvent(c(input$names_block, input$nb_mark, input$axis1, input$axis2), {
     # Observe if graphical parameters are changed
-    if(!is.null(input$blocks)){
+    if(blocksExists()){
       i_block(as.integer(input$names_block))
       assign("id_block", i_block(), .GlobalEnv)
       setFuncs()
@@ -292,7 +299,7 @@ server <- function(input, output) {
 #TODO : Duplicates rows are not allowed
 
   observeEvent(input$save_all, {
-    if(!is.null(input$blocks$datapath)){
+    if(blocksExists()){
       savePlot("samples_plot.pdf", samples())
       savePlot("corcircle.pdf", corcircle())
       savePlot("fingerprint.pdf", fingerprint())
@@ -305,7 +312,7 @@ server <- function(input, output) {
 
   output$samplesPlot <- renderPlot({
     getDynamicVariables()
-    if(!is.null(input$blocks)){
+    if(blocksExists()){
       observeEvent(input$samples_save, savePlot("samples_plot.pdf", samples()))
       samples()
     }
@@ -313,7 +320,7 @@ server <- function(input, output) {
 
   output$corcirclePlot <- renderPlot({
     getDynamicVariables()
-    if(!is.null(input$blocks)){
+    if(blocksExists()){
       observeEvent(input$corcircle_save, savePlot("corcircle.pdf", corcircle()))
       corcircle()
     }
@@ -321,7 +328,7 @@ server <- function(input, output) {
 
   output$fingerprintPlot <- renderPlot({
     getDynamicVariables()
-    if(!is.null(input$blocks)){
+    if(blocksExists()){
       observeEvent(input$fingerprint_save, savePlot("fingerprint.pdf", fingerprint()))
       fingerprint()
     }
@@ -329,7 +336,7 @@ server <- function(input, output) {
 
   output$AVEPlot <- renderPlot({
     getDynamicVariables()
-    if(!is.null(input$blocks)){
+    if(blocksExists()){
       observeEvent(input$ave_save, savePlot("AVE.pdf", ave()))
       ave()
     }
