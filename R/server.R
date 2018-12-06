@@ -254,20 +254,28 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(input$response, {
+  observeEvent(c(input$response, input$header), {
     # Observe if a response is fixed
     if(blocksExists()){
+      tryCatch({
         assign("response", setResponse (blocks = blocks,
                             file = input$response$datapath,
                             sep = input$sep,
                             header = input$header),
                .GlobalEnv)
+      }, error = function(e) {
+        if(e$message == "la ligne 1 n'avait pas 2 éléments")
+          message ("The first line does not have a row name")
+        else
+          message(e$message)
+      })
     }
   })
 
   observeEvent(input$connection, {
     # Observe if a connection is fixed
     if(blocksExists()){
+      tryCatch({
       connection = setConnection (blocks = blocks,
                                           file = input$connection$datapath,
                                           sep = input$sep)
@@ -275,6 +283,9 @@ server <- function(input, output) {
             .GlobalEnv)
       setAnalysis()
       setFuncs()
+      }, error = function(e) {
+        message(e$message)
+      })
     }
   })
 
