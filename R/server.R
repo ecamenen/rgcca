@@ -24,17 +24,24 @@ server <- function(input, output) {
     library(l, character.only = TRUE)
   }
 
+  # Assign reactive variables
   assign("i_block", reactiveVal(), .GlobalEnv)
   assign("n_comp", reactiveVal(), .GlobalEnv)
   assign("click", FALSE, .GlobalEnv)
 
   #TODO: remove blocks, superblock from observeEvent
   output$blocks_names_custom <- renderUI({
+    # Define the names of the blocks and set by default on the last block
+
     if(!is.null(input$blocks)){
+      # Refresh the function when superblock option is changed
       refesh = input$superblock
+      # Get the blocks dynamically
       blocks = getInfile()
+      # Set selected value on the last block
       n <- round(length(blocks))
     }else{
+      # If any dataset is selected
       n <- 1
     }
 
@@ -45,7 +52,11 @@ server <- function(input, output) {
 
 
   output$nb_comp_custom <- renderUI({
+    # Set dynamicly the maximum number of component that should be used in the analysis
+
+    # Get the number minimum of columns among the whole blocks
     n_comp(getMinComp())
+    # Dynamically assign this number of component
     assign("nb_comp", 2, .GlobalEnv)
 
     sliderInput(inputId = "nb_comp",
@@ -78,6 +89,9 @@ server <- function(input, output) {
   ################################################ Set variables ################################################
 
   getMinComp = function(){
+    # Get the maximum number of component allowed in an analysis based on the minimum
+    # number of column among the blocks
+
     if(!is.null(input$blocks)){
       blocks = getInfile()
       return( min(unlist(lapply(blocks, NCOL))) )
@@ -87,8 +101,11 @@ server <- function(input, output) {
   }
 
   getNames = function(){
+    # Get the names of the blocks
+
     if(!is.null(input$blocks)){
       blocks = getInfile()
+      # Creates a list of nb_blocks dimension, each one containing a id from 1 to nb_blocks and having the same names as the blocks
       return( as.list(sapply(names(blocks), function(i) as.integer(which(names(blocks) == i)), USE.NAMES = TRUE)) )
     }else{
       return(list(" " = 0))
@@ -97,6 +114,8 @@ server <- function(input, output) {
 
 
   getMaxCol = function(){
+    # Get the maximum number of columns among the blocks
+
     if(!is.null(input$blocks)){
       blocks = getInfile()
       return( max(unlist(lapply(blocks, NCOL))) )
@@ -106,6 +125,9 @@ server <- function(input, output) {
   }
 
   getDefaultComp = function(){
+    # Set the maximum of component to the minimum
+    # number of column among the blocks but not higher than 5
+
     if (getMinComp() < 5)
       return (getMinComp())
     else
@@ -113,6 +135,9 @@ server <- function(input, output) {
   }
 
   getDefaultCol = function(){
+    # Set the maximum of biomarkers to the maximum
+    # number of column among the blocks but not lower than 100
+
   if (getMaxCol() < 100)
     return (getMaxCol())
   else
@@ -126,6 +151,7 @@ server <- function(input, output) {
   }
 
   getDynamicVariables <- reactive({
+    # Refresh all the plots when any input is changed
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme,
                  input$scale, input$bias, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt,
@@ -133,9 +159,12 @@ server <- function(input, output) {
   })
 
   getInfile <- eventReactive(c(input$blocks, input$superblock, input$sep), {
+    # Return the list of blocks
+
     # Load the blocks
     paths = paste(input$blocks$datapath, collapse = ',')
     names = paste(input$blocks$name, collapse = ',')
+
     tryCatch({
       assign("blocks", setBlocks (superblock = input$superblock,
                       file = paths,
@@ -159,6 +188,8 @@ server <- function(input, output) {
   setData <- reactive({
     # Load the blocks, the response and the connection matrix
     refresh = c(input$superblock, input$blocks)
+    # This function activated only when a new dataset is loaded, set the reponse
+    # and connection of the previous dataset to NULL
     assign("response", setResponse (blocks = blocks,
                         file = NULL,
                         sep = input$sep,
@@ -175,9 +206,11 @@ server <- function(input, output) {
     # Load the analysis
     refresh = c(input$superblock, input$blocks)
 
+    # Tau is set to optimal by default
     if (input$tau_opt)
       tau = input$tau_opt
     else
+      # otherwise the tau value fixed by the user is used
       tau = input$tau
 
     ncomp = rep(nb_comp, length(blocks))
@@ -226,6 +259,8 @@ server <- function(input, output) {
   })
 
   blocksExists = function(){
+    # Test if the blocks are loaded and contain any errors
+
     if(!is.null(input$blocks))
       if(!is.null(getInfile()))
         return(TRUE)
@@ -240,14 +275,17 @@ server <- function(input, output) {
 
     if(blocksExists()){
 
+      # Update the id_block (the block used for visualization) when superblock option is disabled
       if(!input$superblock && as.integer(input$names_block) > round(length(getInfile())) ){
         i_block(as.integer(input$names_block))
         assign("id_block", i_block() - 1, .GlobalEnv)
       }else{
+        # By default, when a new dataset is loaded, the selected block is the last
         assign("id_block", length(getInfile()), .GlobalEnv)
       }
 
       setData()
+      # By default, the number of component is set to 2
       assign("nb_comp", 2, .GlobalEnv)
       setAnalysis()
       setFuncs()
@@ -264,8 +302,10 @@ server <- function(input, output) {
                             header = input$header),
                .GlobalEnv)
       }, error = function(e) {
-        if(e$message == "la ligne 1 n'avait pas 2 éléments")
+        #TODO: catch and english error also
+        if(e$message == "la ligne 1 n'avait pas 2 éléments"){
           message ("The first line does not have a row name")
+        }
         else
           message(e$message)
       })
@@ -293,6 +333,7 @@ server <- function(input, output) {
     # Observe if analysis parameters are changed
     if(blocksExists()){
       assign("nb_comp", input$nb_comp, .GlobalEnv)
+      print(paste("NBCOMP", nb_comp))
       setAnalysis()
       setFuncs()
     }
