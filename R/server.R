@@ -333,7 +333,6 @@ server <- function(input, output) {
     # Observe if analysis parameters are changed
     if(blocksExists()){
       assign("nb_comp", input$nb_comp, .GlobalEnv)
-      print(paste("NBCOMP", nb_comp))
       setAnalysis()
       setFuncs()
     }

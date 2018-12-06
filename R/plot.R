@@ -171,15 +171,15 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 
   df = data.frame(df, color)
 
-  p = plotSpace(rgcca, df, "Variables", color, "Blocks", comp_x, comp_y, i_block) +
+  p = plotSpace(rgcca, df, "Variables", color, "Blocks", 1, 2, i_block) +
     geom_path(aes(x, y), data = circleFun(), col = "grey", size = 1) +
     geom_path(aes(x, y), data = circleFun()/2, col = "grey", size = 1, lty = 2)
 
   # remove legend if not on superblock
   if ( !superblock || !( i_block == length(blocks) ) )
-      p + theme(legend.position = "none")
-    else
-      p
+    p + theme(legend.position = "none")
+  else
+    p
 
 }
 
