@@ -26,6 +26,7 @@ server <- function(input, output) {
 
   # Assign reactive variables
   assign("i_block", reactiveVal(), .GlobalEnv)
+  assign("id_block", NULL, .GlobalEnv)
   assign("n_comp", reactiveVal(), .GlobalEnv)
   assign("click", FALSE, .GlobalEnv)
 
@@ -153,9 +154,9 @@ server <- function(input, output) {
   getDynamicVariables <- reactive({
     # Refresh all the plots when any input is changed
 
-    refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme,
+    refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
                  input$scale, input$bias, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt,
-                input$connection, input$nb_comp, input$adv_pars, input$adv_ana, input$adv_graph, input$names_block)
+                input$connection, input$nb_comp, input$adv_pars, input$adv_ana, input$adv_graph, input$names_block )
   })
 
   getInfile <- eventReactive(c(input$blocks, input$superblock, input$sep), {
@@ -252,6 +253,7 @@ server <- function(input, output) {
 
   setFuncs <- reactive({
     # Set plotting functions
+
     samples()
     corcircle()
     fingerprint()
@@ -338,7 +340,7 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(c(input$names_block, input$nb_mark, input$axis1, input$axis2), {
+  observeEvent(c(input$names_block, input$nb_mark, input$axis1, input$axis2, id_block), {
     # Observe if graphical parameters are changed
     if(blocksExists()){
       i_block(as.integer(input$names_block))
