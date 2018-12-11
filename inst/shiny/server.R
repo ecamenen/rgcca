@@ -13,8 +13,8 @@
 # of the most explicative variables and the explained variance for each blocks.
 
 server <- function(input, output) {
-  source("parsing.R")
-  source("plot.R")
+  source("../../R/parsing.R")
+  source("../../R/plot.R")
 
   # Libraries loading
   librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "shinyjs")

@@ -17,5 +17,8 @@ Imports: ggplot2,
 Depends: RGCCA
 Suggests: testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    pander,
+    shiny,
+    shinyjs
 VignetteBuilder: knitr
