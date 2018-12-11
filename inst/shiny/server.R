@@ -16,14 +16,6 @@ server <- function(input, output) {
   source("../../R/parsing.R")
   source("../../R/plot.R")
 
-  # Libraries loading
-  librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "shinyjs")
-  for (l in librairies) {
-    if (!(l %in% installed.packages()[, "Package"]))
-      install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
-    library(l, character.only = TRUE)
-  }
-
   # Assign reactive variables
   assign("i_block", reactiveVal(), .GlobalEnv)
   assign("id_block", NULL, .GlobalEnv)

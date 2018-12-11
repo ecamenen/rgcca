@@ -19,6 +19,7 @@ rm(list=ls())
 #     Arguments
 ##################
 
+# Parse the arguments from a command line launch
 getArgs = function(){
   option_list = list(
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks", default = opt[7]),
@@ -43,9 +44,8 @@ getArgs = function(){
 }
 
 
-#Check the validity of the arguments
-#Inputs:
-# a: arguments (optionParser object)
+# Check the validity of the arguments
+# a : an optionParser object
 checkArg = function(a){
 
   opt = parse_args(a)
@@ -77,6 +77,11 @@ checkArg = function(a){
   return (opt)
 }
 
+#' Launch a Shiny application for S/RGCCA
+#' @export
+runShiny <- function()
+  shiny::runApp("inst/shiny")
+
 ##################
 #     Main
 ##################
@@ -92,7 +97,7 @@ for (l in librairies) {
   library(l, character.only = TRUE)
 }
 
-#Get arguments
+# Get arguments
 opt = list(directory = ".", separator = "\t", scheme = "factorial", output1 = "samples_plot.pdf", output2 = "corcircle.pdf", output3 = "fingerprint.pdf", datasets="data2/Clinique.tsv,data2/Lipidomique.tsv,data2/Transcriptomique.tsv,data2/Imagerie.tsv,data2/Metabolomique.tsv")
 args = getArgs()
 tryCatch({
@@ -102,7 +107,7 @@ tryCatch({
     stop(e[[1]], call.=FALSE)
 })
 
-#Global settings
+# Global settings
 opt$header = !("header" %in% names(opt))
 SCALE = T
 VERBOSE = F
@@ -122,7 +127,7 @@ connection = setConnection(blocks, opt$connection, opt$separator)
 response = setResponse(blocks, opt$response, opt$separator, opt$header)
 NB_COMP = 2
 ncomp = rep(NB_COMP, length(blocks))
-#sapply(blocks, NCOL)
+# ncomp = sapply(blocks, NCOL)
 # TODO: Error in rgcca(blocks, connection_matrix, tau = TAU, scheme = scheme, ncomp = rep(NB_COMP,  :
 #                                                                     For each block, choose a number of components smaller than the number of variables!
 
@@ -149,9 +154,10 @@ savePlot(opt$output1, samples_plot)
 plotVariablesSpace(sgcca.res, blocks, COMP1, COMP2, SUPERBLOCK, 1)
 savePlot(opt$output2, corcircle)
 
-# fingerprint plot
+# Fingerprint plot
 ( fingerprint = plotFingerprint(sgcca.res, COMP1, SUPERBLOCK, NB_MARK) )
 plotFingerprint(sgcca.res, COMP1, SUPERBLOCK, NB_MARK, 2)
 savePlot(opt$output3, fingerprint)
 
+# Average Variance Explained
 plotAVE(sgcca.res, COMP1)

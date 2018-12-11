@@ -13,13 +13,17 @@
 # of the most explicative variables and the explained variance for each blocks.
 
 rm(list=ls())
-library(shiny)
-library(shinyjs)
+# Libraries loading
+librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "shiny", "shinyjs")
+for (l in librairies) {
+  if (!(l %in% installed.packages()[, "Package"]))
+    install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
+  library(l, character.only = TRUE)
+}
 
 ui <- fluidPage(
 
-  titlePanel("SGCCA - graphical interface"),
-
+  titlePanel("RGCCA - graphical interface"),
 
   sidebarLayout(
 
