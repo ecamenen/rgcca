@@ -234,9 +234,10 @@ checkConnection = function(c, blocks) {
     stop("The connection file must be a symmetric matrix.\n", call. = FALSE)
   n = length(blocks)
   if (NCOL(c) != n)
-    stop(paste("The number of rows/columns of the connection matrix file must
-               be equals to the number of files in the dataset + 1 (",
-               n, ").\n", sep = ""), call. = FALSE)
+    stop(paste("The number of rows/columns of the connection matrix file must be equals to ",
+               n,
+               " (the number of files in the dataset + 1).\n", sep = ""),
+         call. = FALSE)
   d = unique(diag(c))
   if (length(d) != 1 || d != 0)
     stop("The diagonal of the connection matrix file must be 0.\n", call. = FALSE)

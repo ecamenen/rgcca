@@ -86,6 +86,9 @@ runShiny <- function()
 #     Main
 ##################
 
+source("R/parsing.R")
+source("R/plot.R")
+
 # Pre-requisite: for xlsx inputs, java must be installed
 # Under linux: sudo apt-get install default-jre default-jdk && sudo R CMD javareconf
 
@@ -118,9 +121,6 @@ NB_MARK = 100
 SUPERBLOCK = T
 
 setwd(opt$directory)
-
-source("R/parsing.R")
-source("R/plot.R")
 
 blocks = setBlocks(SUPERBLOCK, opt$datasets, opt$names, opt$separator, opt$header)
 connection = setConnection(blocks, opt$connection, opt$separator)
