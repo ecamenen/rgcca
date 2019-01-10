@@ -22,22 +22,42 @@ rm(list=ls())
 # Parse the arguments from a command line launch
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the blocks", default = opt[7]),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the block files", default = opt[7]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
-    make_option(c("-c", "--connection"), type="character", metavar="character", help="Connection file path"),
-    make_option(c("-r", "--response"), type="character", metavar="character", help="Response file path"),
-    make_option(c("-n", "--names"), type="character", metavar="character", help="Names of the blocks [default: filename]"),
+    make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
+    make_option(c("-r", "--response"), type="character", metavar="character", help="Path of the response file"),
+    make_option(c("--names"), type="character", metavar="character", help="Names of the blocks [default: filename]"),
     make_option(c("-H", "--header"), type="logical", action="store_false", help="DO NOT consider first row as header of columns"),
-    make_option(c("-s", "--separator"), type="integer", metavar="integer", default=1,
-                help="Type of separator [default: tabulation] (1: Tabulation, 2: Semicolon, 3: Comma"),
+    make_option(c("--separator"), type="integer", metavar="integer", default=1,
+                help="Type of separator (1: Tabulation, 2: Semicolon, 3: Comma) [default: tabulation]"),
+    make_option(c("-t", "--tau"), type="character", metavar="character/double", default="optimal",
+                help="Tau parameter for RGCCA (eihter a double between 0 and 1 or the character 'optimal' for an automatic setting)"),
     make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2,
-                help="Scheme function g(x) [default: x^2] (1: x, 2: x^2, 3: |x|, 4: x^4"),
+                help="Scheme function g(x) (1: x, 2: x^2, 3: |x|, 4: x^4) [default: x^2]"),
+    make_option(c("--scale"),  type="logical", action="store_false",
+                help="DO NOT scale the blocks"),
+    make_option(c("--superblock"),  type="logical", action="store_false",
+                help="DO NOT use a superblock"),
+    make_option(c("--init"),  type="integer", metavar="integer", default=1,
+                help="Initialization mode (1: Singular Value Decompostion , 2: random) [default: SVD]"),
+    make_option(c("--bias"),  type="logical", action="store_false",
+                help="Unbiased estimator of the var/conv"),
+    make_option(c("--ncomp"),  type="integer", metavar="integer", default=2,
+                help="Number of components in the analysis"),
+    make_option(c("--compx"),  type="integer", metavar="integer", default=1,
+                help="X-axis for biplots and component for histograms"),
+    make_option(c("--compy"),  type="integer", metavar="integer", default=2,
+                help="Y-axis for biplots"),
+    make_option(c("--nmark"),  type="integer", metavar="integer", default=100,
+                help="Number maximum of bioimarkers in the fingerprint"),
     make_option(c( "--output1"), type="character", metavar="character", default=opt[4],
                 help="Variables space file name [default: %default]"),
     make_option(c( "--output2"), type="character", metavar="character", default=opt[5],
                 help="Sample space file name [default: %default]"),
     make_option(c( "--output3"), type="character", metavar="character", default=opt[6],
-                help="Best fingerprint file name [default: %default]")
+                help="Best fingerprint file name [default: %default]"),
+    make_option(c( "--output4"), type="character", metavar="character", default=opt[7],
+                help="AVE plot file name [default: %default]")
   )
   args = commandArgs(trailingOnly=T)
   return (OptionParser(option_list=option_list))
@@ -76,9 +96,20 @@ checkArg = function(opt){
     opt$separator = separators[opt$separator]
   }
 
+  if ((opt$init < 1) || (opt$init > 2)){
+    stop("--init must be comprise between 1 and 2  (1: Singular Value Decompostion , 2: random) [by default: SVD].\n", call.=FALSE)
+  }else{
+    (opt$init == 1)
+
+  }
+
   FILES = c("connection", "response")
   for (o in FILES)
     if(!is.null(opt[[o]])) checkFile(opt[[o]])
+
+  if ((opt$tau != "optimal") && ((opt$tau < 0) || (opt$tau > 1))){
+    stop("--tau must be comprise between 0 and 1 or must corresponds to the character 'optimal' for automatic setting.\n", call.=FALSE)
+  }
 
   return (opt)
 }
@@ -104,7 +135,14 @@ for (l in librairies) {
 }
 
 # Get arguments
-opt = list(directory = ".", separator = "\t", scheme = "factorial", output1 = "samples_plot.pdf", output2 = "corcircle.pdf", output3 = "fingerprint.pdf", datasets="data2/Clinique.tsv,data2/Lipidomique.tsv,data2/Transcriptomique.tsv,data2/Imagerie.tsv,data2/Metabolomique.tsv")
+opt = list(directory = ".",
+           separator = "\t",
+           scheme = "factorial",
+           output1 = "samples_plot.pdf",
+           output2 = "corcircle.pdf",
+           output3 = "fingerprint.pdf",
+           output4 = "ave.pdf",
+           datasets="data2/Clinique.tsv,data2/Lipidomique.tsv,data2/Transcriptomique.tsv,data2/Imagerie.tsv,data2/Metabolomique.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -120,50 +158,50 @@ source("R/plot.R")
 
 # Global settings
 opt$header = !("header" %in% names(opt))
-SCALE = T
+opt$superblock = !("superblock" %in% names(opt))
+opt$scale = !("scale" %in% names(opt))
+opt$bias = !("bias" %in% names(opt))
+opt$scale = !("scale" %in% names(opt))
 VERBOSE = F
-#TAU = "optimal"
-COMP1 = 1
-COMP2 = 2
-NB_MARK = 100
-SUPERBLOCK = T
 
-blocks = setBlocks(SUPERBLOCK, opt$datasets, opt$names, opt$separator, opt$header)
+blocks = setBlocks(opt$superblock, opt$datasets, opt$names, opt$separator, opt$header)
 connection = setConnection(blocks, opt$connection, opt$separator)
 response = setResponse(blocks, opt$response, opt$separator, opt$header)
-NB_COMP = 2
-ncomp = rep(NB_COMP, length(blocks))
 # ncomp = sapply(blocks, NCOL)
 # TODO: Error in rgcca(blocks, connection_matrix, tau = TAU, scheme = scheme, ncomp = rep(NB_COMP,  :
 #                                                                     For each block, choose a number of components smaller than the number of variables!
 
 getColumnSdNull = function(list_m)
   lapply(list_m, function (x) which( apply(x, 2, sd ) == 0 ))
-#getColumnSdNull(blocks)
+# TODO: getColumnSdNull(blocks)
 
-sgcca.res = sgcca(A = blocks,
+sgcca.res = rgcca(A = blocks,
               C = connection,
               scheme = opt$scheme,
-              ncomp = ncomp,
-              scale = SCALE,
-              verbose = VERBOSE)
+              ncomp = rep(opt$ncomp, length(blocks)),
+              scale = opt$scale,
+              tau = opt$tau,
+              verbose = VERBOSE,
+              init = opt$init,
+              bias = opt$bias)
 
 names(sgcca.res$a) = names(blocks)
 
 # Samples common space
-( samples_plot = plotSamplesSpace(sgcca.res, response, COMP1, COMP2) )
-plotSamplesSpace(sgcca.res, response, COMP1, COMP2, 1)
+( samples_plot = plotSamplesSpace(sgcca.res, response, opt$compx, opt$compy) )
+plotSamplesSpace(sgcca.res, response, opt$compx, opt$compy, 1)
 savePlot(opt$output1, samples_plot)
 
 # Variables common space
-( corcircle = plotVariablesSpace(sgcca.res, blocks, COMP1, COMP2, SUPERBLOCK) )
-plotVariablesSpace(sgcca.res, blocks, COMP1, COMP2, SUPERBLOCK, 1)
+( corcircle = plotVariablesSpace(sgcca.res, blocks, opt$compx, opt$compy, opt$superblock) )
+plotVariablesSpace(sgcca.res, blocks, opt$compx, opt$compy, opt$superblock, 1)
 savePlot(opt$output2, corcircle)
 
 # Fingerprint plot
-( fingerprint = plotFingerprint(sgcca.res, COMP1, SUPERBLOCK, NB_MARK) )
-plotFingerprint(sgcca.res, COMP1, SUPERBLOCK, NB_MARK, 2)
+( fingerprint = plotFingerprint(sgcca.res, opt$compx, opt$superblock, opt$nmark) )
+plotFingerprint(sgcca.res, opt$compx, opt$superblock, opt$nmark, 2)
 savePlot(opt$output3, fingerprint)
 
 # Average Variance Explained
-plotAVE(sgcca.res, COMP1)
+ave = plotAVE(sgcca.res, opt$compx)
+savePlot(opt$output4, ave)

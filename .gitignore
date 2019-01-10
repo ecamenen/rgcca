@@ -13,3 +13,5 @@ temp/
 \.idea/
 data3/
 results/
+
+functional_tests\.sh
