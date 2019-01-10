@@ -43,12 +43,18 @@ getArgs = function(){
   return (OptionParser(option_list=option_list))
 }
 
+checkFile = function (f){
+  # Check the existence of a path
+  # f: A character giving the path of a file
+
+  if(!file.exists(f)){
+    stop(paste(f, " file does not exist\n", sep=""), call.=FALSE)
+  }
+}
 
 # Check the validity of the arguments
-# a : an optionParser object
-checkArg = function(a){
-
-  opt = parse_args(a)
+# opt : an optionParser object
+checkArg = function(opt){
 
   if(is.null(opt$datasets)) stop(paste("--datasets is required\n", sep=""), call.=FALSE)
 
@@ -86,9 +92,6 @@ runShiny <- function()
 #     Main
 ##################
 
-source("R/parsing.R")
-source("R/plot.R")
-
 # Pre-requisite: for xlsx inputs, java must be installed
 # Under linux: sudo apt-get install default-jre default-jdk && sudo R CMD javareconf
 
@@ -102,13 +105,18 @@ for (l in librairies) {
 
 # Get arguments
 opt = list(directory = ".", separator = "\t", scheme = "factorial", output1 = "samples_plot.pdf", output2 = "corcircle.pdf", output3 = "fingerprint.pdf", datasets="data2/Clinique.tsv,data2/Lipidomique.tsv,data2/Transcriptomique.tsv,data2/Imagerie.tsv,data2/Metabolomique.tsv")
-args = getArgs()
+
 tryCatch({
-  opt = checkArg(args)
+  opt = parse_args(getArgs())
+  opt = checkArg(opt)
 }, error = function(e) {
   if (length(grep("nextArg", e[[1]])) != 1)
     stop(e[[1]], call.=FALSE)
 })
+
+setwd(opt$directory)
+source("R/parsing.R")
+source("R/plot.R")
 
 # Global settings
 opt$header = !("header" %in% names(opt))
@@ -119,8 +127,6 @@ COMP1 = 1
 COMP2 = 2
 NB_MARK = 100
 SUPERBLOCK = T
-
-setwd(opt$directory)
 
 blocks = setBlocks(SUPERBLOCK, opt$datasets, opt$names, opt$separator, opt$header)
 connection = setConnection(blocks, opt$connection, opt$separator)

@@ -78,12 +78,16 @@ savePlot = function(f, p) {
   # get suffixe of filename
   format = unlist(strsplit(f, '.', fixed="T"))
   format = format[length(format)]
+
   # dynamic loading of function depending of the extension
-  func = get(format)
+  if (format == "dat")
+    func = pdf
+  else
+    func = get(format)
 
   # save
-  if (format != "pdf") func(f, width = 10, height = 8, units = "in", res = 200)
-  else func(f, width = 10, height = 8)
+  if (format %in% c("pdf", "dat") ) func(f, width = 10, height = 8)
+  else func(f, width = 10, height = 8, units = "in", res = 200)
 
   plot(p)
   suprLog = dev.off()
