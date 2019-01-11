@@ -22,7 +22,7 @@ rm(list=ls())
 # Parse the arguments from a command line launch
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the block files", default = opt[7]),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the block files", default = opt[14]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
     make_option(c("-r", "--response"), type="character", metavar="character", help="Path of the response file"),
@@ -30,7 +30,7 @@ getArgs = function(){
     make_option(c("-H", "--header"), type="logical", action="store_false", help="DO NOT consider first row as header of columns"),
     make_option(c("--separator"), type="integer", metavar="integer", default=1,
                 help="Type of separator (1: Tabulation, 2: Semicolon, 3: Comma) [default: tabulation]"),
-    make_option(c("-t", "--tau"), type="character", metavar="character/double", default="optimal",
+    make_option(c("-t", "--tau"), type="character", metavar="character/double", default=opt[4],
                 help="Tau parameter for RGCCA (eihter a double between 0 and 1 or the character 'optimal' for an automatic setting)"),
     make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2,
                 help="Scheme function g(x) (1: x, 2: x^2, 3: |x|, 4: x^4) [default: x^2]"),
@@ -42,21 +42,21 @@ getArgs = function(){
                 help="Initialization mode (1: Singular Value Decompostion , 2: random) [default: SVD]"),
     make_option(c("--bias"),  type="logical", action="store_false",
                 help="Unbiased estimator of the var/conv"),
-    make_option(c("--ncomp"),  type="integer", metavar="integer", default=2,
+    make_option(c("--ncomp"),  type="integer", metavar="integer", default=opt[6],
                 help="Number of components in the analysis"),
-    make_option(c("--compx"),  type="integer", metavar="integer", default=1,
+    make_option(c("--compx"),  type="integer", metavar="integer", default=opt[7],
                 help="X-axis for biplots and component for histograms"),
-    make_option(c("--compy"),  type="integer", metavar="integer", default=2,
+    make_option(c("--compy"),  type="integer", metavar="integer", default=opt[8],
                 help="Y-axis for biplots"),
-    make_option(c("--nmark"),  type="integer", metavar="integer", default=100,
+    make_option(c("--nmark"),  type="integer", metavar="integer", default=opt[9],
                 help="Number maximum of bioimarkers in the fingerprint"),
-    make_option(c( "--output1"), type="character", metavar="character", default=opt[4],
+    make_option(c( "--output1"), type="character", metavar="character", default=opt[10],
                 help="Variables space file name [default: %default]"),
-    make_option(c( "--output2"), type="character", metavar="character", default=opt[5],
+    make_option(c( "--output2"), type="character", metavar="character", default=opt[11],
                 help="Sample space file name [default: %default]"),
-    make_option(c( "--output3"), type="character", metavar="character", default=opt[6],
+    make_option(c( "--output3"), type="character", metavar="character", default=opt[12],
                 help="Best fingerprint file name [default: %default]"),
-    make_option(c( "--output4"), type="character", metavar="character", default=opt[7],
+    make_option(c( "--output4"), type="character", metavar="character", default=opt[13],
                 help="AVE plot file name [default: %default]")
   )
   args = commandArgs(trailingOnly=T)
@@ -76,9 +76,11 @@ checkFile = function (f){
 # opt : an optionParser object
 checkArg = function(opt){
 
-  if(is.null(opt$datasets)) stop(paste("--datasets is required\n", sep=""), call.=FALSE)
+  if(is.null(opt$datasets))
+    stop(paste("--datasets is required\n", sep=""), call.=FALSE)
 
-  if (is.null(opt$scheme)) opt$scheme = "factorial"
+  if (is.null(opt$scheme))
+    opt$scheme = "factorial"
   else if ((opt$scheme < 1) || (opt$scheme > 4)){
     stop("--scheme must be comprise between 1 and 4 [by default: 2].\n", call.=FALSE)
   }else{
@@ -99,16 +101,44 @@ checkArg = function(opt){
   if ((opt$init < 1) || (opt$init > 2)){
     stop("--init must be comprise between 1 and 2  (1: Singular Value Decompostion , 2: random) [by default: SVD].\n", call.=FALSE)
   }else{
-    (opt$init == 1)
-
+    opt$init = ifelse(opt$init == 1, "svd", "random")
   }
 
   FILES = c("connection", "response")
   for (o in FILES)
-    if(!is.null(opt[[o]])) checkFile(opt[[o]])
+    if(!is.null(opt[[o]]))
+      checkFile(opt[[o]])
 
-  if ((opt$tau != "optimal") && ((opt$tau < 0) || (opt$tau > 1))){
-    stop("--tau must be comprise between 0 and 1 or must corresponds to the character 'optimal' for automatic setting.\n", call.=FALSE)
+  return (opt)
+}
+
+# Check the validity of the arguments after loading the blocks
+# opt : an optionParser object
+# blocks : a list of matrix
+postCheckArg = function(opt, blocks){
+  if ((opt$ncomp < 2) || (opt$ncomp > min(sapply(blocks, NCOL)))){
+    stop("--ncomp must be comprise between 2 and the minimum number of variables among the whole blocks.\n", call.=FALSE)
+  }
+
+  checkComp = function (x){
+    if ((opt[[x]] < 1) || (opt[[x]] > opt$ncomp )){
+      stop(paste("--", x, " must be comprise between 2 and the minimum of component selected.\n ", sep=""), call.=FALSE)
+    }
+  }
+  out = sapply(c("compx", "compy"), function(x) checkComp (x))
+
+
+  MSG = "--tau must be comprise between 0 and 1 or must corresponds to the character 'optimal' for automatic setting.\n"
+  if (opt$tau != "optimal"){
+    tryCatch({
+      opt$tau = as.double(gsub(",", ".",  opt$tau))
+      if((opt$tau < 0) || (opt$tau > 1))
+        stop(MSG, call.=FALSE)
+      else
+        opt$tau = rep(opt$tau, length(blocks))
+    }, warning = function(w) {
+      stop(MSG, call.=FALSE)
+    })
   }
 
   return (opt)
@@ -134,10 +164,16 @@ for (l in librairies) {
   library(l, character.only = TRUE)
 }
 
-# Get arguments
+# Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
            scheme = "factorial",
+           tau = "optimal",
+           init = "svd",
+           ncomp = 2,
+           compx = 1,
+           compy = 2,
+           nmark=  100,
            output1 = "samples_plot.pdf",
            output2 = "corcircle.pdf",
            output3 = "fingerprint.pdf",
@@ -159,12 +195,12 @@ source("R/plot.R")
 # Global settings
 opt$header = !("header" %in% names(opt))
 opt$superblock = !("superblock" %in% names(opt))
-opt$scale = !("scale" %in% names(opt))
 opt$bias = !("bias" %in% names(opt))
 opt$scale = !("scale" %in% names(opt))
 VERBOSE = F
 
 blocks = setBlocks(opt$superblock, opt$datasets, opt$names, opt$separator, opt$header)
+opt = postCheckArg(opt, blocks)
 connection = setConnection(blocks, opt$connection, opt$separator)
 response = setResponse(blocks, opt$response, opt$separator, opt$header)
 # ncomp = sapply(blocks, NCOL)
@@ -175,7 +211,7 @@ getColumnSdNull = function(list_m)
   lapply(list_m, function (x) which( apply(x, 2, sd ) == 0 ))
 # TODO: getColumnSdNull(blocks)
 
-sgcca.res = rgcca(A = blocks,
+rgcca.res = rgcca(A = blocks,
               C = connection,
               scheme = opt$scheme,
               ncomp = rep(opt$ncomp, length(blocks)),
@@ -185,23 +221,23 @@ sgcca.res = rgcca(A = blocks,
               init = opt$init,
               bias = opt$bias)
 
-names(sgcca.res$a) = names(blocks)
+names(rgcca.res$a) = names(blocks)
 
 # Samples common space
-( samples_plot = plotSamplesSpace(sgcca.res, response, opt$compx, opt$compy) )
-plotSamplesSpace(sgcca.res, response, opt$compx, opt$compy, 1)
+( samples_plot = plotSamplesSpace(rgcca.res, response, opt$compx, opt$compy) )
+plotSamplesSpace(rgcca.res, response, opt$compx, opt$compy, 1)
 savePlot(opt$output1, samples_plot)
 
 # Variables common space
-( corcircle = plotVariablesSpace(sgcca.res, blocks, opt$compx, opt$compy, opt$superblock) )
-plotVariablesSpace(sgcca.res, blocks, opt$compx, opt$compy, opt$superblock, 1)
+( corcircle = plotVariablesSpace(rgcca.res, blocks, opt$compx, opt$compy, opt$superblock) )
+plotVariablesSpace(rgcca.res, blocks, opt$compx, opt$compy, opt$superblock, 1)
 savePlot(opt$output2, corcircle)
 
 # Fingerprint plot
-( fingerprint = plotFingerprint(sgcca.res, opt$compx, opt$superblock, opt$nmark) )
-plotFingerprint(sgcca.res, opt$compx, opt$superblock, opt$nmark, 2)
+( fingerprint = plotFingerprint(rgcca.res, opt$compx, opt$superblock, opt$nmark) )
+plotFingerprint(rgcca.res, opt$compx, opt$superblock, opt$nmark, 2)
 savePlot(opt$output3, fingerprint)
 
 # Average Variance Explained
-ave = plotAVE(sgcca.res, opt$compx)
+ave = plotAVE(rgcca.res, opt$compx)
 savePlot(opt$output4, ave)

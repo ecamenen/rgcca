@@ -308,6 +308,7 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
 #' random_val = function() lapply(1:4, function(x) runif(1))
 #' rgcca.res = list(AVE = list(AVE_X = random_val()), a = random_val())
 #' names(rgcca.res$a) = LETTERS[1:4]
+#' library("ggplot2")
 #' plotAVE(rgcca.res, 1)
 #' @export plotAVE
 plotAVE = function(rgcca, comp = 1){

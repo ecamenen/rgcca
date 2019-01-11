@@ -18,6 +18,7 @@ Histogram of the model quality (base on Average Variance Explained) for each blo
 random_val = function() lapply(1:4, function(x) runif(1))
 rgcca.res = list(AVE = list(AVE_X = random_val()), a = random_val())
 names(rgcca.res$a) = LETTERS[1:4]
+library("ggplot2")
 plotAVE(rgcca.res, 1)
 }
 \seealso{
