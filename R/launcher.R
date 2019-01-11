@@ -22,7 +22,7 @@ rm(list=ls())
 # Parse the arguments from a command line launch
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the block files", default = opt[14]),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="Path of the block files", default = opt[15]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
     make_option(c("-r", "--response"), type="character", metavar="character", help="Path of the response file"),
@@ -44,19 +44,21 @@ getArgs = function(){
                 help="Unbiased estimator of the var/conv"),
     make_option(c("--ncomp"),  type="integer", metavar="integer", default=opt[6],
                 help="Number of components in the analysis"),
-    make_option(c("--compx"),  type="integer", metavar="integer", default=opt[7],
+    make_option(c("--block"),  type="integer", metavar="integer", default=opt[7],
+                help="Number of the block shown in the graphics (0: the superblock or, if not, the last, 1: the fist one, 2: the 2nd, etc.) [default: the last one]"),
+    make_option(c("--compx"),  type="integer", metavar="integer", default=opt[8],
                 help="X-axis for biplots and component for histograms"),
-    make_option(c("--compy"),  type="integer", metavar="integer", default=opt[8],
+    make_option(c("--compy"),  type="integer", metavar="integer", default=opt[9],
                 help="Y-axis for biplots"),
-    make_option(c("--nmark"),  type="integer", metavar="integer", default=opt[9],
+    make_option(c("--nmark"),  type="integer", metavar="integer", default=opt[10],
                 help="Number maximum of bioimarkers in the fingerprint"),
-    make_option(c( "--output1"), type="character", metavar="character", default=opt[10],
+    make_option(c( "--output1"), type="character", metavar="character", default=opt[11],
                 help="Variables space file name [default: %default]"),
-    make_option(c( "--output2"), type="character", metavar="character", default=opt[11],
+    make_option(c( "--output2"), type="character", metavar="character", default=opt[12],
                 help="Sample space file name [default: %default]"),
-    make_option(c( "--output3"), type="character", metavar="character", default=opt[12],
+    make_option(c( "--output3"), type="character", metavar="character", default=opt[13],
                 help="Best fingerprint file name [default: %default]"),
-    make_option(c( "--output4"), type="character", metavar="character", default=opt[13],
+    make_option(c( "--output4"), type="character", metavar="character", default=opt[14],
                 help="AVE plot file name [default: %default]")
   )
   args = commandArgs(trailingOnly=T)
@@ -99,7 +101,7 @@ checkArg = function(opt){
   }
 
   if ((opt$init < 1) || (opt$init > 2)){
-    stop("--init must be comprise between 1 and 2  (1: Singular Value Decompostion , 2: random) [by default: SVD].\n", call.=FALSE)
+    stop("--init must be comprise between 1 and 2 (1: Singular Value Decompostion , 2: random) [by default: SVD].\n", call.=FALSE)
   }else{
     opt$init = ifelse(opt$init == 1, "svd", "random")
   }
@@ -117,16 +119,15 @@ checkArg = function(opt){
 # blocks : a list of matrix
 postCheckArg = function(opt, blocks){
   if ((opt$ncomp < 2) || (opt$ncomp > min(sapply(blocks, NCOL)))){
-    stop("--ncomp must be comprise between 2 and the minimum number of variables among the whole blocks.\n", call.=FALSE)
+    stop("--ncomp must be comprise between 2 and ", min(sapply(blocks, NCOL)) ," (the minimum number of variables among the whole blocks).\n", call.=FALSE)
   }
 
   checkComp = function (x){
     if ((opt[[x]] < 1) || (opt[[x]] > opt$ncomp )){
-      stop(paste("--", x, " must be comprise between 2 and the minimum of component selected.\n ", sep=""), call.=FALSE)
+      stop(paste("--", x, " must be comprise between 2 and ", opt$ncomp ," (the number of component selected).\n ", sep=""), call.=FALSE)
     }
   }
   out = sapply(c("compx", "compy"), function(x) checkComp (x))
-
 
   MSG = "--tau must be comprise between 0 and 1 or must corresponds to the character 'optimal' for automatic setting.\n"
   if (opt$tau != "optimal"){
@@ -140,6 +141,15 @@ postCheckArg = function(opt, blocks){
       stop(MSG, call.=FALSE)
     })
   }
+
+  if(opt$block > length(blocks))
+    stop(paste("--block must be lower than ", length(blocks), " (the maximum number of blocks).\n", sep=""), call.=FALSE)
+  else if(opt$block == 0)
+    opt$block = length(blocks)
+
+  # if (opt$nmark > NCOL(blocks[[opt$block]])){
+  #   stop(paste("--nmark must be lower than ", NCOL(blocks[[opt$block]]) ," (the maximum number of columns among the block selected).\n", sep=""), call.=FALSE)
+  # }
 
   return (opt)
 }
@@ -171,9 +181,10 @@ opt = list(directory = ".",
            tau = "optimal",
            init = "svd",
            ncomp = 2,
+           block = 0,
            compx = 1,
            compy = 2,
-           nmark=  100,
+           nmark = 100,
            output1 = "samples_plot.pdf",
            output2 = "corcircle.pdf",
            output3 = "fingerprint.pdf",
@@ -224,17 +235,17 @@ rgcca.res = rgcca(A = blocks,
 names(rgcca.res$a) = names(blocks)
 
 # Samples common space
-( samples_plot = plotSamplesSpace(rgcca.res, response, opt$compx, opt$compy) )
+( samples_plot = plotSamplesSpace(rgcca.res, response, opt$compx, opt$compy, opt$block) )
 plotSamplesSpace(rgcca.res, response, opt$compx, opt$compy, 1)
 savePlot(opt$output1, samples_plot)
 
 # Variables common space
-( corcircle = plotVariablesSpace(rgcca.res, blocks, opt$compx, opt$compy, opt$superblock) )
+( corcircle = plotVariablesSpace(rgcca.res, blocks, opt$compx, opt$compy, opt$superblock, opt$block) )
 plotVariablesSpace(rgcca.res, blocks, opt$compx, opt$compy, opt$superblock, 1)
 savePlot(opt$output2, corcircle)
 
 # Fingerprint plot
-( fingerprint = plotFingerprint(rgcca.res, opt$compx, opt$superblock, opt$nmark) )
+( fingerprint = plotFingerprint(rgcca.res, opt$compx, opt$superblock, opt$nmark, opt$block) )
 plotFingerprint(rgcca.res, opt$compx, opt$superblock, opt$nmark, 2)
 savePlot(opt$output3, fingerprint)
 

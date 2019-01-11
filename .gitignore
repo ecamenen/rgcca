@@ -15,3 +15,9 @@ data3/
 results/
 
 functional_tests\.sh
+
+data/blocks\.xlsx
+
+data/response2\.tsv
+
+data/response3\.tsv
