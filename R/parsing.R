@@ -240,7 +240,7 @@ checkConnection = function(c, blocks) {
   if (NCOL(c) != n)
     stop(paste("The number of rows/columns of the connection matrix file must be equals to ",
                n,
-               " (the number of files in the dataset + 1).\n", sep = ""),
+               " (the number of blocks in the dataset, +1 with a superblock by default).\n", sep = ""),
          call. = FALSE)
   d = unique(diag(c))
   if (length(d) != 1 || d != 0)
