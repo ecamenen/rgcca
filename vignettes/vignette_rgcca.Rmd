@@ -145,7 +145,7 @@ knitr::opts_chunk$set(
 # Load the inputs
 ## Load the blocks
 
-The blocks are loaded with the function ```setBlocks```. The first argument of this function (```superblock```) required a bolean giving the presence (TRUE) / absence (FALSE) of a superblock. The second one corresponds to a character giving the list of the file path separated by a comma (argument ```file```). By default, the name of the blocks correspond to those of the files (```names``` argument) adn could be set. By default, the tabulation is used as a column separator (```sep``` argument) and the first row is considered as a header (```header``` parameter).
+The blocks are loaded with the function ```setBlocks```. The first argument of this function (```superblock```) required a bolean giving the presence (TRUE) / absence (FALSE) of a superblock. The second one corresponds to a character giving the list of the file path separated by a comma (argument ```file```). By default, the name of the blocks corresponds to those of the files (```names``` argument) and could be set. By default, the tabulation is used as a column separator (```sep``` argument) and the first row is considered as a header (```header``` parameter).
 
 ```{r blocks}
 # A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
@@ -157,13 +157,13 @@ blocks = setBlocks(superblock = SUPERBLOCK,
 
 ## Load the groups of response and the connection between blocks
 
-The connection between the blocks will be used by the RGCCA and must be set by ```setConnection``` function. A group of samples will be used to color them in the samples plot and must be set by ```setResponse``` function. For both functions, the ```blocks``` parameter, set at the previous step, is required. The other parameters are optionals. The user could import a file containing either (```file``` parameter) : (i) a symmetric matrix with 1 giving a connection between two blocs, or 0 otherwise; (ii) a univariate vector (qualtitative or quantitative) or a disjonctive table for the response. By default, the column separator is the tabulation and could be set (```sep``` argument). For the ```setResponse```, a header could be specified (```header``` parameter).
+The connection between the blocks will be used by the RGCCA and must be set by ```setConnection``` function. A group of samples will be used to color them in the samples plot and must be set by ```setResponse``` function. For both functions, the ```blocks``` parameter, set at the previous step, is required. The other parameters are optional. The user could import a file containing either (```file``` parameter) : (i) a symmetric matrix with 1 giving a connection between two blocs, or 0 otherwise; (ii) a univariate vector (qualitative or quantitative) or a disjunctive table for the response. By default, the column separator is the tabulation and could be set (```sep``` argument). For the ```setResponse```, a header could be specified (```header``` parameter).
 
 ```{r connection}
 # Optional parameters
 RESPONSE = "data/response.tsv"
 CONNECTION = "data/connection.tsv"
-# uncomment the parameters below to try without default settings
+# Uncomment the parameters below to try without default settings
 # RESPONSE <- CONNECTION <- NULL
 
 response = setResponse(blocks = blocks, 
@@ -190,10 +190,10 @@ for (x in 1:length(files)) {
 
 # Run S/RGCCA
 
-SGCCA is run from the RGCCA package by using two component for a biplot vizualisation. The S/RGCCA function doesn't names the blocks in their outputs. This step is required to generate biplots.
+SGCCA is run from the RGCCA package by using two components for a biplot visualization. The S/RGCCA function doesn't names the blocks in their outputs. This step is required to generate biplots.
 
 ```{r rgcca}
-# Use two component in RGCCA to plot in a bidimensionnal space
+# Use two components in RGCCA to plot in a bidimensionnal space
 NB_COMP = c(2, 2, 3, 3)
 
 sgcca.res = sgcca(A = blocks,
@@ -207,9 +207,9 @@ names(sgcca.res$a) = names(blocks)
 
 # Vizualise the analysis
 
-Both the samples and the variables could be vizualized by using biplots functions (respectively ```plotSamplesSpace``` and ```plotVariablesSpace```). Histograms are used to vizualized in decreasing order the variables with the higher weights and the blocks with the higher Average Variance Explained (AVE).
+Both the samples and the variables could be visualized by using biplots functions (respectively ```plotSamplesSpace``` and ```plotVariablesSpace```). Histograms are used to visualized in decreasing order the variables with the higher weights and the blocks with the higher Average Variance Explained (AVE).
 
-These functions take the results of a sgcca or a rgcca (```rgcca``` parameter) and the components to vizualize : either ```comp_x``` and ```comp_y``` for biplots or  ```comp``` for histograms. By default, ```comp_x``` = ```comp``` = 1 and ```comp_y``` = 2. The presence or the absence of a superblock among the analysis could be specified for ```plotVariablesSpace``` and ```plotFingerprint``` to color the variables according to their blocks. By default, the last block is plotted, corresponding to the superblock if selected (```i_block``` parameter). ```plotVariablesSpace```, which is a corcircle plot, required the ```blocks``` for the correlation with the selected component. ```plotVariablesSpace``` could use the response variable to color the samples by groups. By default, the first 100th higher weights are used for the ```plotFingerprint``` and could be set by using the ```n_mark``` argument.
+These functions take the results of a sgcca or a rgcca (```rgcca``` parameter) and the components to visualize : either ```comp_x``` and ```comp_y``` for biplots or  ```comp``` for histograms. By default, ```comp_x``` = ```comp``` = 1 and ```comp_y``` = 2. The presence or the absence of a superblock among the analysis could be specified for ```plotVariablesSpace``` and ```plotFingerprint``` to color the variables according to their blocks. By default, the last block is plotted, corresponding to the superblock if selected (```i_block``` parameter). ```plotVariablesSpace```, which is a corcircle plot, required the ```blocks``` for the correlation with the selected component. ```plotVariablesSpace``` could use the response variable to color the samples by groups. By default, the first 100th higher weights are used for the ```plotFingerprint``` and could be set by using the ```n_mark``` argument.
 
 ```{r}
 COMP1 = 2

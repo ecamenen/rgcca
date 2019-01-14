@@ -38,14 +38,14 @@ loadData = function(f, sep = "\t", row.names = 1, h = TRUE) {
   # TODO: catch warning missing \n at the end of the file
 }
 
-#' Creates a data frame from loading a file
+#' Creates a data frame from an Excel file loading
 #'
 #' @param f A character giving the file name
 #' @param sheet A character giving the sheet name
 #' @param row.names A vector of characters giving the names of the rows
 #' @param h A bolean giving the presence or the absence of the header
 #' @return A matrix containing the loaded file
-#' @examples
+#' @examples.
 #' \dontrun{
 #' loadExcel("data/blocks.xlsx", "industry")
 #' }
@@ -108,7 +108,7 @@ parseList = function(s) {
   unlist(strsplit(s, ","))
 }
 
-#' Check if a dataframe contains no quanlitative variables
+#' Check if a dataframe contains no qualitative variables
 #'
 #' @param df A dataframe or a matrix
 #' @param fo A character giving the name of the tested file
