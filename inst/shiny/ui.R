@@ -1,11 +1,8 @@
 # Author: Etienne CAMENEN
 # Date: 2018
-# Institute: ICM - Institut du Cerveau et de la Moelle epiniere (Paris, FRANCE),
-# Institut Francais de Bioinformatique (IFB), Centre national de la recherche scientifique (CNRS)
-# Contact: iconics@icm-institute.org
+# Contact: arthur.tenenhaus@l2s.centralesupelec.fr
 # Key-words: omics, RGCCA, multi-block
 # EDAM operation: analysis, correlation, visualisation
-# EDAM topic: omics, medecine, mathematics
 #
 # Abstract: A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA)
 # with all default settings predefined. Produce four figures to help clinicians to identify fingerprint:

@@ -1,5 +1,6 @@
 ---
 title: "The RGCCA package for Regularized/Sparse Generalized Canonical Correlation Analysis"
+author: "Etienne CAMENEN"
 date: '`r Sys.Date()`'
 output: 
   pdf_document:

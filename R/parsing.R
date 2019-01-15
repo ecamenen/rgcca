@@ -1,3 +1,14 @@
+# Author: Etienne CAMENEN
+# Date: 2018
+# Contact: arthur.tenenhaus@l2s.centralesupelec.fr
+# Key-words: omics, RGCCA, multi-block
+# EDAM operation: analysis, correlation, visualisation
+#
+# Abstract: A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA)
+# with all default settings predefined. Produce four figures to help clinicians to identify fingerprint:
+# the samples and the variables projected on the two first component of the multi-block analysis, the histograms
+# of the most explicative variables and the explained variance for each blocks.
+
 #Global settings
 MSG_HEADER = " Possible mistake: header parameter is disabled, check if the file doesn't have one."
 ROW_NAMES = 1 # column of row names

@@ -1,11 +1,8 @@
 # Author: Etienne CAMENEN
 # Date: 2018
-# Institute: ICM - Institut du Cerveau et de la Moelle epiniere (Paris, FRANCE),
-# Institut Francais de Bioinformatique (IFB), Centre national de la recherche scientifique (CNRS)
-# Contact: iconics@icm-institute.org
+# Contact: arthur.tenenhaus@l2s.centralesupelec.fr
 # Key-words: omics, RGCCA, multi-block
 # EDAM operation: analysis, correlation, visualisation
-# EDAM topic: omics, medecine, mathematics
 #
 # Abstract: A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA)
 # with all default settings predefined. Produce four figures to help clinicians to identify fingerprint:
@@ -35,13 +32,13 @@ getArgs = function(){
     make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2,
                 help="Scheme function g(x) for RGCCA (1: x, 2: x^2, 3: |x|, 4: x^4) [default: x^2]"),
     make_option(c("--scale"),  type="logical", action="store_false",
-                help="DO NOT scale the blocks (i.e., standardize each block to zero means and unit variances and then divide by the square root of its number of variables)"),
+                help="DO NOT scale the blocks (i.e., standardize each block to zero means and unit variances and then divide them by the square root of its number of variables)"),
     make_option(c("--superblock"),  type="logical", action="store_false",
                 help="DO NOT use a superblock (a concatenation of all the blocks to better interpret the results)"),
     make_option(c("--init"),  type="integer", metavar="integer", default=1,
                 help="Initialization mode for RGCCA (1: Singular Value Decompostion , 2: random) [default: SVD]"),
     make_option(c("--bias"),  type="logical", action="store_false",
-                help="Unbiased estimator of the variance and covariance"),
+                help="Unbiased estimator of the variance"),
     make_option(c("--ncomp"),  type="integer", metavar="integer", default=opt[6],
                 help="Number of components in the analysis for each block (should be greater than 1 and lower than the minimum number of variable among the blocks)"),
     make_option(c("--block"),  type="integer", metavar="integer", default=opt[7],

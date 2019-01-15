@@ -1,53 +1,55 @@
-# multiOmics Toolbox
+# RGCCA Command-line and Shiny 
 
-#### Version: 1.0
+##### Version: 1.0
 
-#### Author: Etienne CAMENEN
+##### Author: Etienne CAMENEN
 
-#### Key-words: 
+##### Key-words: 
 omics, RGCCA, multi-block
 
-#### EDAM operation: 
+##### EDAM operation: 
 analysis, correlation, visualisation
 
-#### Contact: 
+##### Contact: 
 arthur.tenenhaus@l2s.centralesupelec.fr
 
-#### Short description
+##### Short description
 Performs multi-variate analysis (PCA, CCA, PLS, RGCCA) and projects the variables and samples into a bi-dimensional space.
+
+---
 
 ## Description
 A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA) 
 with all default settings predefined [1, 2]. Produce figures to help clinicians to identify biomarkers: 
 samples and variables projected on the two first component of the multi-block analysis, list of top biomarkers
- and explained variance in the model.
+and explained variance in the model.
  
-#### RGCCA 
- We consider J data matrices X1 ,..., XJ.  Each n × pj data matrix Xj = [ xj1, ..., xjpj ] is called a block and represents a set
- of pj variables observed on n individuals. The number and the nature of the variables may differ from one block to another,
- but the individuals must be the same across blocks. We assume that all variables are centered. The objective of RGCCA is to find,
- for each block, a weighted composite of variables (called block component) yj = Xjaj, j = 1 ,..., J (where a j is a column-vector with pj
- elements) summarizing the relevant information between and within the blocks. The block components are obtained such that (i) block
- components explain well their own block and/or (ii) block components that are assumed to be connected are highly correlated.
- As a component-based method, RGCCA can provide users with graphical representations to visualize the sources
- of variability within blocks and the amount of correlation between blocks.
+## RGCCA 
+We consider J data matrices X1 ,..., XJ. Each n × pj data matrix Xj = [ xj1, ..., xjpj ] is called a block and represents a set
+of pj variables observed on n individuals. The number and the nature of the variables may differ from one block to another,
+but the individuals must be the same across blocks. We assume that all variables are centered. The objective of RGCCA is to find,
+for each block, a weighted composite of variables (called block component) yj = Xjaj, j = 1 ,..., J (where a j is a column-vector with pj
+elements) summarizing the relevant information between and within the blocks. The block components are obtained such that (i) block
+components explain well their own block and/or (ii) block components that are assumed to be connected are highly correlated.
+As a component-based method, RGCCA can provide users with graphical representations to visualize the sources
+of variability within blocks and the amount of correlation between blocks.
 
-#### Input files 
+## Input files 
 (see data/ folder for a working example at [https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/master/data])
 - ```blocks``` (.tsv, .csv, .txt or .xls, xlsx) : file(s) containing variables to analyse together.
- The samples should be in lines and labelled and variables in columns with a header. With an Excel format, each block must be
- in a separated sheet. For other format, each blocks must be in a separated file.
+The samples should be in lines and labelled and variables in columns with a header. With an Excel format, each block must be
+in a separated sheet. For other format, each blocks must be in a separated file.
 - ```connection``` (.tsv, .csv, .txt or .xls, xlsx) : file without header, containing a symmetric matrix
- of non-negative elements describing the network of connections between blocks that the user wants to take into account.
- Its dimension should be NB_BLOCKS + 1) * (NB_BLOCKS + 1). + 1 corresponds for the use of a supplementary block 
- (the "superblock"), a concatenation of all the blocks helpful to interpret the results. By default, the connection
- matrix is build with values for the last line (and column) except for the diagonal (i.e., the superblock is fully
- connected with the other blocks) and 0 values for the other cells (the blocks are not connected together). 
- To go further than this null hypothesis, a priori information could be used to tune the matrix (e.g., add 1 value 
- for a connection between two block).
+of non-negative elements describing the network of connections between blocks that the user wants to take into account.
+Its dimension should be NB_BLOCKS + 1) * (NB_BLOCKS + 1). + 1 corresponds for the use of a supplementary block 
+(the "superblock"), a concatenation of all the blocks helpful to interpret the results. By default, the connection
+matrix is build with values for the last line (and column) except for the diagonal (i.e., the superblock is fully
+connected with the other blocks) and 0 values for the other cells (the blocks are not connected together). 
+To go further than this null hypothesis, a priori information could be used to tune the matrix (e.g., add 1 value 
+for a connection between two block).
 - ```response``` (.tsv, .csv, .txt or .xls, xlsx) : an only column of of either a qualitative, or a quantitative variable or multiple columns containing a disjunctive table.
 
-#### Output files 
+## Output files 
 - ```corcircle``` (.pdf, .png, .tiff, .bmp or .jpeg) : samples projected in a space composed by the first two components of the analysis (with the percent of explained variance). By selecting a response, samples are colored according to this criterion.
 ![variables_space](https://raw.githubusercontent.com/BrainAndSpineInstitute/rgcca_Rpackage/master/img/variables_space.png)
 - ```samples_space``` (.pdf, .png, .tiff, .bmp or .jpeg) : circle of correlation of variables with the first two components of the analysis (with the percent of  explained variance). The dotted circle corresponds to a 0.5 correlation and the full one corresponds to a 1 correlation.
@@ -76,15 +78,13 @@ apt-get install -y --no-install-recommends git default-jre default-jdk && \
 ( apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-fonts-extra texlive-science )
 ```
 
-
-
 #### Execution
 
 
 For direct usage (Example from Russet data from RGCCA package [3]) :
 
 ```
-Rscript R/launcher.R run rgcca -d data/agriculture.tsv,data/industry.tsv,data/politic.tsv
+Rscript R/launcher.R -d data/agriculture.tsv,data/industry.tsv,data/politic.tsv
 ```
 
 With parameters :
@@ -111,27 +111,27 @@ By default, on tabulated files with a header without response groups. The names 
 
 #### Analyse parameters
 By default, the analysis : scales the blocks, initiates the algorithm with Singular Value Decomposition, 
-uses a superblock with a factorial scheme function, a biased estimator of the var/cov, a tau equals to one and
- two components for each block.
+uses a superblock with a factorial scheme function, a biased estimator of the variance, a tau equals to one and
+two components for each block.
 
-- ```--scale``` DO NOT standardize each block to zero means and unit variances and then divide by the square root of its number of variables.
-- ```--bias``` Use an unbiased estimator of the variance and the covariance.
+- ```--scale``` DO NOT standardize each block to zero mean and unit variances and then divide them by the square root of its number of variables.
+- ```--bias``` Use an unbiased estimator of the variance.
 - ```--superblock``` DO NOT use a superblock, a concatenation of all the blocks to better interpret the results.
 - ```-t (--tau)``` (FLOAT) Tau parameter in RGCCA. A tau near 0 maximize the covariance between blocks whereas a tau near 1 maximize
  the correlation between the blocks.
 - ```-g (--scheme)``` (INTEGER) Scheme function among 1: Horst, 2: Factorial, 3: Centroid, 4: x^4 (by default, factorial scheme).
- The identity (horst scheme) maximizes the sum of covariances between block components. The absolute value (centroid scheme)
- maximizes of the sum of the absolute values of the covariances. The square function (factorial scheme) maximizes the sum
- of squared covariances, or, more generally, for any even integer m, g(x)=x^m (m-scheme), maximizes the power of m of the
- sum of covariances.
+The identity (horst scheme) maximizes the sum of covariances between block components. The absolute value (centroid scheme)
+maximizes of the sum of the absolute values of the covariances. The square function (factorial scheme) maximizes the sum
+of squared covariances, or, more generally, for any even integer m, g(x)=x^m (m-scheme), maximizes the power of m of the
+sum of covariances.
 - ```--init``` (INTEGER) The mode of initialization of the algorithm (1: Singular Value Decompostion , 2: random).
 - ```--ncomp``` (INTEGER) The number of components to use in the analysis for each block (should be greater than 1 and lower than the minimum number of variable among the blocks).
  
 #### Graphical parameters
 By default, the x-axis and y-axis are respectively the first and the second components, the number of top biomarkers is 100 and the superblock is used in graphics.
 
-- ```--compx``` (INTEGER) The component used in the X-axis for biplots and the only component used for histograms (should not be greater than the ```--ncomp``` parameter). 
-- ```--compy``` (INTEGER) The component used in the Y-axis for biplots (should not be greater than the ```--ncomp``` parameter).
+- ```--compx``` (INTEGER) The component used in the X-axis in biplots and the one used in histograms (should not be greater than the ```--ncomp``` parameter). 
+- ```--compy``` (INTEGER) The component used in the Y-axis in biplots (should not be greater than the ```--ncomp``` parameter).
 - ```--nmark``` (INTEGER) The maximum number of top potential biomarkers (for ```fingerprint``` file).
 - ```--block``` (INTEGER) The block shown in the graphics (0: the superblock or, if not, the last, 1: the first one, 2: the 2nd, etc.).
 
