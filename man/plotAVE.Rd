@@ -9,10 +9,10 @@ plotAVE(rgcca, comp = 1)
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}
 
-\item{comp}{An integer giving the index of the analysis component}
+\item{comp}{An integer giving the index of the analysis components}
 }
 \description{
-Histogram of the model quality (base on Average Variance Explained) for each blocks and sort in decreasing order
+Histogram of the model quality (based on Average Variance Explained) for each blocks and sorted in decreasing order
 }
 \examples{
 random_val = function() lapply(1:4, function(x) runif(1))

@@ -56,7 +56,7 @@ loadData = function(f, sep = "\t", row.names = 1, h = TRUE) {
 #' @param row.names A vector of characters giving the names of the rows
 #' @param h A bolean giving the presence or the absence of the header
 #' @return A matrix containing the loaded file
-#' @examples.
+#' @examples
 #' \dontrun{
 #' loadExcel("data/blocks.xlsx", "industry")
 #' }

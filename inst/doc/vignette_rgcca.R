@@ -64,7 +64,7 @@ blocks = setBlocks(superblock = SUPERBLOCK,
 # Optional parameters
 RESPONSE = "data/response.tsv"
 CONNECTION = "data/connection.tsv"
-# uncomment the parameters below to try without default settings
+# Uncomment the parameters below to try without default settings
 # RESPONSE <- CONNECTION <- NULL
 
 response = setResponse(blocks = blocks, 
@@ -84,7 +84,7 @@ for (x in 1:length(files)) {
 }
 
 ## ----rgcca---------------------------------------------------------------
-# Use two component in RGCCA to plot in a bidimensionnal space
+# Use two components in RGCCA to plot in a bidimensionnal space
 NB_COMP = c(2, 2, 3, 3)
 
 sgcca.res = sgcca(A = blocks,

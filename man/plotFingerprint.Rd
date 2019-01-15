@@ -10,11 +10,11 @@ plotFingerprint(rgcca, comp = 1, superblock = TRUE, n_mark = 100,
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}
 
-\item{comp}{An integer giving the index of the analysis component}
+\item{comp}{An integer giving the index of the analysis components}
 
 \item{superblock}{A boolean giving the presence (TRUE) / absence (FALSE) of a superblock}
 
-\item{n_mark}{An integer giving the number of best fingerprint to select}
+\item{n_mark}{An integer giving the number of top potential biomarkers to select}
 
 \item{i_block}{An integer giving the index of a list of blocks}
 }
@@ -28,7 +28,7 @@ rgcca.res = list(a = weights)
 names(rgcca.res$a) = LETTERS[1:4]
 # With the 1rst component of the superblock
 plotFingerprint(rgcca.res, 1, TRUE)
-# With the 2nd component of the 1rst block by selecting the 5 higher weights
+# With the 2nd component of the 1rst block by selecting the ten higher weights
 plotFingerprint(rgcca.res, 2, FALSE, 10, 1)
 }
 \seealso{
