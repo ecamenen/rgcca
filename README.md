@@ -57,6 +57,7 @@ for a connection between two block).
 - ```fingerprint``` (.pdf, .png, .tiff, .bmp or .jpeg) : 100 best biomarkers for a set of blocks according to the weight of these variables in the analysis (eigen value for PCA, canonical variable for CCA, component for PLS and RGCCA).
 ![best_biomarkers](https://raw.githubusercontent.com/BrainAndSpineInstitute/rgcca_Rpackage/master/img/best_biomarkers.png)
 - ```ave``` (.pdf, .png, .tiff, .bmp or .jpeg) : average variance explained (in %) in the model for each block ranked decreasingly.
+![ave](inst/shiny/img/ave.png)
 
 ## Usage Instructions
 
