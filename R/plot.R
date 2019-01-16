@@ -1,3 +1,14 @@
+# Author: Etienne CAMENEN
+# Date: 2018
+# Contact: arthur.tenenhaus@l2s.centralesupelec.fr
+# Key-words: omics, RGCCA, multi-block
+# EDAM operation: analysis, correlation, visualisation
+#
+# Abstract: A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA)
+# with all default settings predefined. Produce four figures to help clinicians to identify fingerprint:
+# the samples and the variables projected on the two first component of the multi-block analysis, the histograms
+# of the most explicative variables and the explained variance for each blocks.
+
 #Global settings
 MAX_CLUSTERS = 10
 AXIS_TITLE_SIZE = 19
@@ -107,10 +118,10 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
 
 #' Get the blocs of each variables
 #'
-#' Get a vector of block name for each corresponding variable. The last block is considered as the superblock and ignored.
+#' Get a vector of block names for each corresponding variable. The last block is considered as the superblock and ignored.
 #'
 #' @param rgcca A list giving the results of a R/SGCCA
-#' @return A vector of character giving block name for each corresponding variable.
+#' @return A vector of character giving block names for each corresponding variable.
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' rgcca.res = list(a = rep(NA, 4))
@@ -177,9 +188,9 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 
   # remove legend if not on superblock
   if ( !superblock || !( i_block == length(blocks) ) )
-      p + theme(legend.position = "none")
-    else
-      p
+    p + theme(legend.position = "none")
+  else
+    p
 
 }
 
@@ -207,25 +218,32 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
   #if (comp_x > NB_COMP) comp_x = 1
   #if (comp_y > NB_COMP) comp_y = 2
 
-  if (is.null(p))
-    p = ggplot(df, aes(df[,comp_x], df[,comp_y], colour = group)) +
+  if (is.null(p)){
+    if (name_group == "Blocks"){
+      # For variablesPlot
+      x = 1; y = 2
+    }else{
+      x = comp_x; y = comp_y
+    }
+    p = ggplot(df, aes(df[,x], df[,y], colour = group)) +
       geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE)
       #geom_text_repel(aes(label= rownames(df)), size = PCH_TEXT_SIZE, force=2)
+  }
 
   p + theme_classic() +
-    geom_vline(xintercept = 0, col="grey", linetype="dashed", size=1) +
-    geom_hline(yintercept = 0, col="grey", linetype="dashed", size=1) +
+    geom_vline(xintercept = 0, col = "grey", linetype = "dashed", size = 1) +
+    geom_hline(yintercept = 0, col = "grey", linetype = "dashed", size = 1) +
     labs ( title = paste(title, "space"),
            x = printAxis(rgcca, comp_x, i_block),
            y = printAxis(rgcca, comp_y, i_block),
            color = name_group) +
-    scale_y_continuous(breaks=NULL) +
-    scale_x_continuous(breaks=NULL) +
+    scale_y_continuous(breaks = NULL) +
+    scale_x_continuous(breaks = NULL) +
     theme_perso() +
     theme(
       axis.text = element_blank(),
-      axis.title.y = element_text(face=AXIS_FONT, margin = margin(0,20,0,0), size=AXIS_TITLE_SIZE),
-      axis.title.x = element_text(face=AXIS_FONT, margin = margin(20,0,0,0), size=AXIS_TITLE_SIZE)
+      axis.title.y = element_text(face = AXIS_FONT, margin = margin(0,20,0,0), size = AXIS_TITLE_SIZE),
+      axis.title.x = element_text(face = AXIS_FONT, margin = margin(20,0,0,0), size =AXIS_TITLE_SIZE)
     )
   #+ stat_ellipse()
   #TODO: if NB_VAR > X
@@ -236,8 +254,8 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
 #' Histogram of the higher outer weight vectors for a component of a block (by default, the superblock or the last one) analysed by R/SGCCA
 #'
 #' @param rgcca A list giving the results of a R/SGCCA
-#' @param comp An integer giving the index of the analysis component
-#' @param n_mark An integer giving the number of best fingerprint to select
+#' @param comp An integer giving the index of the analysis components
+#' @param n_mark An integer giving the number of top potential biomarkers to select
 #' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
 #' @param i_block An integer giving the index of a list of blocks
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
@@ -248,7 +266,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
 #' names(rgcca.res$a) = LETTERS[1:4]
 #' # With the 1rst component of the superblock
 #' plotFingerprint(rgcca.res, 1, TRUE)
-#' # With the 2nd component of the 1rst block by selecting the 5 higher weights
+#' # With the 2nd component of the 1rst block by selecting the ten higher weights
 #' plotFingerprint(rgcca.res, 2, FALSE, 10, 1)
 #' @export plotFingerprint
 plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_block = NULL){
@@ -292,28 +310,32 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
 
 #' Histogram of Average Variance Explained
 #'
-#' Histogram of the model quality (base on Average Variance Explained) for each blocks and sort in decreasing order
+#' Histogram of the model quality (based on Average Variance Explained) for each blocks and sorted in decreasing order
 #'
 #' @param rgcca A list giving the results of a R/SGCCA
-#' @param comp An integer giving the index of the analysis component
+#' @param comp An integer giving the index of the analysis components
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' random_val = function() lapply(1:4, function(x) runif(1))
 #' rgcca.res = list(AVE = list(AVE_X = random_val()), a = random_val())
 #' names(rgcca.res$a) = LETTERS[1:4]
+#' library("ggplot2")
 #' plotAVE(rgcca.res, 1)
 #' @export plotAVE
 plotAVE = function(rgcca, comp = 1){
 
   df = as.matrix ( sapply(rgcca$AVE$AVE_X, function(x) x[comp]) )
+
   row.names(df) = names(rgcca$a)
 
   # order by decreasing
-  df = data.frame(df[order(abs(df[,comp]), decreasing = TRUE),], order = nrow(df):1)
+  #TODO: catch : Error in data.frame: row names contain missing values : the length of the header is not the same of the row number
+  df = data.frame(df[order(abs(df), decreasing = TRUE),], order = nrow(df):1)
 
-  p = ggplot(df, aes(order, df[,comp]))
+  p = ggplot(df, aes(order, df[,1]))
   plotHistogram(p, df, "Average Variance Explained")
 }
+
 
 #' Histogram settings
 #'

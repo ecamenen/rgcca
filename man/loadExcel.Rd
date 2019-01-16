@@ -2,7 +2,7 @@
 % Please edit documentation in R/parsing.R
 \name{loadExcel}
 \alias{loadExcel}
-\title{Creates a data frame from loading a file}
+\title{Creates a data frame from an Excel file loading}
 \usage{
 loadExcel(f, sheet, row.names = 1, h = TRUE)
 }
@@ -19,7 +19,7 @@ loadExcel(f, sheet, row.names = 1, h = TRUE)
 A matrix containing the loaded file
 }
 \description{
-Creates a data frame from loading a file
+Creates a data frame from an Excel file loading
 }
 \examples{
 \dontrun{

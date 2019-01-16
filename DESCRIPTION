@@ -5,7 +5,7 @@ Version: 1.0
 Author: Etienne Camenen, Arthur Tenenhaus and Vincent Guillemot
 Maintainer: Arthur Tenenhaus <arthur.tenenhaus@centralesupelec.fr>
 Description: A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA) with all default settings predefined.
-    Produce several plots to help clinicians to identify fingerprint: samples and variables projected on the two first component of the multi-block analysis, the 100 best predictors and the AVE of each blocks.
+    Produce several plots to help clinicians to identify fingerprint: samples and variables projected on the two first component of the multi-block analysis, the 100 best predictors and the explained variance in the model.
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
@@ -17,5 +17,8 @@ Imports: ggplot2,
 Depends: RGCCA
 Suggests: testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    pander,
+    shiny,
+    shinyjs
 VignetteBuilder: knitr

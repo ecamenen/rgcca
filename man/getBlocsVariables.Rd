@@ -10,10 +10,10 @@ getBlocsVariables(rgcca)
 \item{rgcca}{A list giving the results of a R/SGCCA}
 }
 \value{
-A vector of character giving block name for each corresponding variable.
+A vector of character giving block names for each corresponding variable.
 }
 \description{
-Get a vector of block name for each corresponding variable. The last block is considered as the superblock and ignored.
+Get a vector of block names for each corresponding variable. The last block is considered as the superblock and ignored.
 }
 \examples{
 rgcca.res = list(a = rep(NA, 4))

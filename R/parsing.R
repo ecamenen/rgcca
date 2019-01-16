@@ -1,3 +1,14 @@
+# Author: Etienne CAMENEN
+# Date: 2018
+# Contact: arthur.tenenhaus@l2s.centralesupelec.fr
+# Key-words: omics, RGCCA, multi-block
+# EDAM operation: analysis, correlation, visualisation
+#
+# Abstract: A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA)
+# with all default settings predefined. Produce four figures to help clinicians to identify fingerprint:
+# the samples and the variables projected on the two first component of the multi-block analysis, the histograms
+# of the most explicative variables and the explained variance for each blocks.
+
 #Global settings
 MSG_HEADER = " Possible mistake: header parameter is disabled, check if the file doesn't have one."
 ROW_NAMES = 1 # column of row names
@@ -38,7 +49,7 @@ loadData = function(f, sep = "\t", row.names = 1, h = TRUE) {
   # TODO: catch warning missing \n at the end of the file
 }
 
-#' Creates a data frame from loading a file
+#' Creates a data frame from an Excel file loading
 #'
 #' @param f A character giving the file name
 #' @param sheet A character giving the sheet name
@@ -78,12 +89,16 @@ savePlot = function(f, p) {
   # get suffixe of filename
   format = unlist(strsplit(f, '.', fixed="T"))
   format = format[length(format)]
+
   # dynamic loading of function depending of the extension
-  func = get(format)
+  if (format == "dat")
+    func = pdf
+  else
+    func = get(format)
 
   # save
-  if (format != "pdf") func(f, width = 10, height = 8, units = "in", res = 200)
-  else func(f, width = 10, height = 8)
+  if (format %in% c("pdf", "dat") ) func(f, width = 10, height = 8)
+  else func(f, width = 10, height = 8, units = "in", res = 200)
 
   plot(p)
   suprLog = dev.off()
@@ -104,7 +119,7 @@ parseList = function(s) {
   unlist(strsplit(s, ","))
 }
 
-#' Check if a dataframe contains no quanlitative variables
+#' Check if a dataframe contains no qualitative variables
 #'
 #' @param df A dataframe or a matrix
 #' @param fo A character giving the name of the tested file
@@ -155,10 +170,10 @@ setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE) 
   # Parse args containing files path
   isXls <- (length(grep("xlsx?", file)) == 1)
   # test if extension filename is xls
-  if (!isXls) {
+  if (!isXls)
     # if it is not, parse the name of file from the arg list
     blocksFilename = parseList(file)
-  } else {
+  else {
     # if xls, check file exists
     checkFile(file)
     # load the xls
@@ -203,7 +218,7 @@ setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE) 
 
     #if one-column file, it is a tabulation error
     if (NCOL(df) == 0)
-      stop(paste(fo, "block file has an only-column. Check the --separator [by default: 1 for tabulation].\n"),
+      stop(paste(fo, "block file has an only-column. Check the separator [by default: tabulation].\n"),
            call. = FALSE)
 
     checkQuantitative(df, fo, header)
@@ -234,9 +249,10 @@ checkConnection = function(c, blocks) {
     stop("The connection file must be a symmetric matrix.\n", call. = FALSE)
   n = length(blocks)
   if (NCOL(c) != n)
-    stop(paste("The number of rows/columns of the connection matrix file must
-               be equals to the number of files in the dataset + 1 (",
-               n, ").\n", sep = ""), call. = FALSE)
+    stop(paste("The number of rows/columns of the connection matrix file must be equals to ",
+               n,
+               " (the number of blocks in the dataset, +1 with a superblock by default).\n", sep = ""),
+         call. = FALSE)
   d = unique(diag(c))
   if (length(d) != 1 || d != 0)
     stop("The diagonal of the connection matrix file must be 0.\n", call. = FALSE)
