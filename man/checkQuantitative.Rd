@@ -2,7 +2,7 @@
 % Please edit documentation in R/parsing.R
 \name{checkQuantitative}
 \alias{checkQuantitative}
-\title{Check if a dataframe contains no quanlitative variables}
+\title{Check if a dataframe contains no qualitative variables}
 \usage{
 checkQuantitative(df, fo, h = FALSE)
 }
@@ -14,7 +14,7 @@ checkQuantitative(df, fo, h = FALSE)
 \item{h}{A bolean giving either the presence (TRUE) or absence (FALSE) of a header}
 }
 \description{
-Check if a dataframe contains no quanlitative variables
+Check if a dataframe contains no qualitative variables
 }
 \examples{
 df = matrix(runif(20), 10, 2)

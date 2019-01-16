@@ -1,11 +1,8 @@
 # Author: Etienne CAMENEN
 # Date: 2018
-# Institute: ICM - Institut du Cerveau et de la Moelle epiniere (Paris, FRANCE),
-# Institut Francais de Bioinformatique (IFB), Centre national de la recherche scientifique (CNRS)
-# Contact: iconics@icm-institute.org
+# Contact: arthur.tenenhaus@l2s.centralesupelec.fr
 # Key-words: omics, RGCCA, multi-block
 # EDAM operation: analysis, correlation, visualisation
-# EDAM topic: omics, medecine, mathematics
 #
 # Abstract: A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA)
 # with all default settings predefined. Produce four figures to help clinicians to identify fingerprint:
@@ -13,16 +10,8 @@
 # of the most explicative variables and the explained variance for each blocks.
 
 server <- function(input, output) {
-  source("parsing.R")
-  source("plot.R")
-
-  # Libraries loading
-  librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "shinyjs")
-  for (l in librairies) {
-    if (!(l %in% installed.packages()[, "Package"]))
-      install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
-    library(l, character.only = TRUE)
-  }
+  source("../../R/parsing.R")
+  source("../../R/plot.R")
 
   # Assign reactive variables
   assign("i_block", reactiveVal(), .GlobalEnv)

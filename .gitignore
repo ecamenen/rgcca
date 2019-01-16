@@ -13,4 +13,11 @@ temp/
 \.idea/
 data3/
 results/
-inst/doc
+
+functional_tests\.sh
+
+data/blocks\.xlsx
+
+data/response2\.tsv
+
+data/response3\.tsv
