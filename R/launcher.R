@@ -164,7 +164,7 @@ runShiny <- function()
 # Under linux: sudo apt-get install default-jre default-jdk && sudo R CMD javareconf
 
 #Loading librairies
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx")
+librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "plotly")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
     install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
