@@ -12,7 +12,7 @@
 #Global settings
 MAX_CLUSTERS = 10
 AXIS_TITLE_SIZE = 19
-AXIS_TEXT_SIZE = 8
+AXIS_TEXT_SIZE = 10
 PCH_TEXT_SIZE = 2
 AXIS_FONT = "italic"
 COLOR_SAMPLES_DEF = "#000099"
@@ -370,8 +370,14 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
   #     geom_bar(stat = "identity")
   # }
 
+  if (nrow(df) >= 10){
+    WIDTH = 1
+    AXIS_TEXT_SIZE = 8
+  }else
+    WIDTH = NULL
+
   p = p +
-    geom_bar(stat = "identity") +
+    geom_bar(stat = "identity", width = WIDTH) +
     #TODO: if NB_ROW > X, uncomment this
     #geom_hline(yintercept = c(-.5,.5), col="grey", linetype="dotted", size=1) +
     geom_hline(yintercept = 0, col = "gray40", size = 1) +
