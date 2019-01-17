@@ -247,5 +247,5 @@ plotFingerprint(rgcca.res, opt$compx, opt$superblock, opt$nmark, 2)
 savePlot(opt$output3, fingerprint)
 
 # Average Variance Explained
-ave = plotAVE(rgcca.res, opt$compx)
+(ave = plotAVE(rgcca.res, opt$compx))
 savePlot(opt$output4, ave)

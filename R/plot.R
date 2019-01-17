@@ -299,13 +299,17 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
   if(NROW(df) >= n_mark) df = df[1:n_mark,]
 
   if (  superblock & i_block == length(rgcca$a) ){
-    p = ggplot(df, aes(order, df[,comp], fill = color))
+    p = ggplot(df, aes(order, df[, comp], fill = color))
   }else{
-    p = ggplot(df, aes(order, df[,comp]))
+    p = ggplot(df, aes(order, df[, comp], fill = df[, comp]))
   }
 
     p = plotHistogram(p, df, "Variable weights", as.character(color2))
     p + labs (subtitle = printAxis(rgcca, comp, i_block))
+
+    if (  !superblock | i_block != length(rgcca$a) )
+      p +  labs( fill = "Weights")
+
 }
 
 #' Histogram of Average Variance Explained
@@ -332,10 +336,11 @@ plotAVE = function(rgcca, comp = 1){
   #TODO: catch : Error in data.frame: row names contain missing values : the length of the header is not the same of the row number
   df = data.frame(df[order(abs(df), decreasing = TRUE),], order = nrow(df):1)
 
-  p = ggplot(df, aes(order, df[,1]))
-  plotHistogram(p, df, "Average Variance Explained")
+  p = ggplot(df, aes(order, df[,1], fill=df[,1]))
+  plotHistogram(p, df, "Average Variance Explained") +
+    labs(subtitle = printAxis(rgcca.res, comp)) +
+    theme(legend.position = "none")
 }
-
 
 #' Histogram settings
 #'
@@ -349,19 +354,27 @@ plotAVE = function(rgcca, comp = 1){
 #' df = data.frame(x = runif(30), order = 30:1)
 #' library("ggplot2")
 #' p = ggplot(df, aes(order, x))
-#' plotHistogram(p, df, "This is my title", "red")
+#' plotHistogram(p, df, "This is my title")
 #' # Add colors per levels of a variable
 #' df$color = rep(c(1,2,3), each=10)
 #' p = ggplot(df, aes(order, x, fill = color))
 #' plotHistogram(p, df, "Histogram", as.character(df$color))
 #' @export plotHistogram
-plotHistogram = function(p, df, title = "", color = "black"){
+plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2", high_col = "coral3"){
 
-    p +
+  # if(length(color) == 1){
+  #   p = p +
+  #     geom_bar(stat = "identity", col = "gray40")
+  # }else{
+  #   p = p +
+  #     geom_bar(stat = "identity")
+  # }
+
+  p = p +
+    geom_bar(stat = "identity") +
     #TODO: if NB_ROW > X, uncomment this
     #geom_hline(yintercept = c(-.5,.5), col="grey", linetype="dotted", size=1) +
-    geom_hline(yintercept = 0, col = "grey", size = 1) +
-    geom_bar(stat = "identity") +
+    geom_hline(yintercept = 0, col = "gray40", size = 1) +
     coord_flip() +
     scale_x_continuous(breaks = df$order, labels = rownames(df)) +
     labs(
@@ -372,8 +385,14 @@ plotHistogram = function(p, df, title = "", color = "black"){
     theme_perso() +
     theme(
       axis.text.y = element_text(size = AXIS_TEXT_SIZE, face = AXIS_FONT, color = color),
-      axis.text.x = element_text(size = AXIS_TEXT_SIZE, face = AXIS_FONT, color = "darkgrey"),
+      axis.text.x = element_text(size = AXIS_TEXT_SIZE, face = AXIS_FONT, color = "gray40"),
       axis.line = element_blank(),
       axis.ticks = element_blank(),
       plot.subtitle = element_text(hjust = 0.5, size = 16, face = "italic"))
+
+  if(length(color) == 1){
+    p = p + scale_fill_gradient(low = low_col, high = high_col)
+  }
+
+  return(p)
 }
