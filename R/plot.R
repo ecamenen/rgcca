@@ -10,12 +10,11 @@
 # of the most explicative variables and the explained variance for each blocks.
 
 #Global settings
-MAX_CLUSTERS = 10
 AXIS_TITLE_SIZE = 19
-AXIS_TEXT_SIZE = 8
-PCH_TEXT_SIZE = 2
+AXIS_TEXT_SIZE = 10
+PCH_TEXT_SIZE = 3
 AXIS_FONT = "italic"
-COLOR_SAMPLES_DEF = "#000099"
+SAMPLES_COL_DEFAULT = "#000099"
 
 # Creates a circle
 circleFun = function(center = c(0, 0), diameter = 2, npoints = 100) {
@@ -82,32 +81,45 @@ theme_perso = function() {
 #' # Using the first block
 #' plotSamplesSpace(rgcca.res, runif(15, min=-15, max = 15), 1, 2, 1)
 #' @export plotSamplesSpace
-plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL){
+plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL, text = TRUE, i_block_y = NULL){
   # resp : color the points with a vector
 
   if ( is.null(i_block) )
     i_block = length(rgcca$Y)
 
-  df2 = data.frame(rgcca$Y[[i_block]])
+  if(is.null(i_block_y))
+    df = data.frame(rgcca$Y[[i_block]][, c(comp_x, comp_y)])
+  else
+    df =  data.frame(rgcca$Y[[i_block]][, comp_x], rgcca$Y[[i_block_y]][, comp_y] )
+
+  if(nrow(df) > 100)
+    PCH_TEXT_SIZE = 2
 
   # if the resp is numeric
   if ( ! is.null(resp) ){
     if( ! unique(isCharacter(as.vector(resp)))){
+      # have the nuber to round the legend text for numeric data
       # add some transparency
-      p = ggplot(df2, aes(df2[,comp_x], df2[,comp_y], alpha = (resp - min(resp)) / max(resp - min(resp)))) +
-        # get a color scale by quantile
+      p = ggplot(df, aes(df[, 1], df[, 2], alpha = (resp - min(resp)) / max(resp - min(resp)))) +
+      # get a color scale by quantile
             scale_alpha_continuous(
             name = "resp",
             breaks = seq(0, 1, .25),
-            labels = round(quantile(resp))
-        ) + geom_text(color = COLOR_SAMPLES_DEF, aes(label = rownames(df2)), size = PCH_TEXT_SIZE)
-        #+ geom_text_repel(color=COLOR_SAMPLES_DEF, aes(label= rownames(df2)), size = PCH_TEXT_SIZE, force=2)
+            labels = round(quantile(resp), 2)
+        )
+
+      if (!isTRUE(text)){
+        p = p + geom_point(colour = SAMPLES_COL_DEFAULT, size = PCH_TEXT_SIZE)
+      }else
+        p = p + geom_text(color = SAMPLES_COL_DEFAULT, aes(label = rownames(df)), size = PCH_TEXT_SIZE)
+        #+ geom_text_repel(color=SAMPLES_COL_DEFAULT, aes(label= rownames(df)), size = PCH_TEXT_SIZE, force=2)
+
     }else
       p = NULL
   }else
     p = NULL
 
-  p = plotSpace(rgcca, df2, "Samples", resp, "resp", comp_x, comp_y, i_block, p)
+  p = plotSpace(rgcca, df, "Samples", resp, "resp", comp_x, comp_y, i_block, p, text, i_block_y)
 
   # remove legend if missing
   if (is.null(resp)){
@@ -161,7 +173,7 @@ getBlocsVariables = function(rgcca){
 #' # Using the first block
 #' plotVariablesSpace(rgcca.res, blocks, 1, 2, FALSE, 1)
 #' @export plotVariablesSpace
-plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock = TRUE, i_block = NULL){
+plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock = TRUE, i_block = NULL, text = TRUE){
 
   x = y = NULL
 
@@ -182,7 +194,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 
   df = data.frame(df, color)
 
-  p = plotSpace(rgcca, df, "Variables", color, "Blocks", comp_x, comp_y, i_block) +
+  p = plotSpace(rgcca, df, "Variables", color, "Blocks", comp_x, comp_y, i_block, text = text) +
     geom_path(aes(x, y), data = circleFun(), col = "grey", size = 1) +
     geom_path(aes(x, y), data = circleFun()/2, col = "grey", size = 1, lty = 2)
 
@@ -213,10 +225,10 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
 #' plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
 #' @export plotSpace
-plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = 1, p = NULL){
+plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = 1, p = NULL, text = TRUE, i_block_y = NULL){
 
-  #if (comp_x > NB_COMP) comp_x = 1
-  #if (comp_y > NB_COMP) comp_y = 2
+  if(is.null(i_block_y))
+    i_block_y = i_block
 
   if (is.null(p)){
     if (name_group == "Blocks"){
@@ -225,8 +237,13 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     }else{
       x = comp_x; y = comp_y
     }
-    p = ggplot(df, aes(df[,x], df[,y], colour = group)) +
-      geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE)
+    p = ggplot(df, aes(df[,x], df[,y], colour = group))
+
+      if (!isTRUE(text)){
+        p = p + geom_point(size = PCH_TEXT_SIZE)
+      }else
+        p = p + geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE)
+      #geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE)
       #geom_text_repel(aes(label= rownames(df)), size = PCH_TEXT_SIZE, force=2)
   }
 
@@ -235,7 +252,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     geom_hline(yintercept = 0, col = "grey", linetype = "dashed", size = 1) +
     labs ( title = paste(title, "space"),
            x = printAxis(rgcca, comp_x, i_block),
-           y = printAxis(rgcca, comp_y, i_block),
+           y = printAxis(rgcca, comp_y, i_block_y),
            color = name_group) +
     scale_y_continuous(breaks = NULL) +
     scale_x_continuous(breaks = NULL) +
@@ -243,7 +260,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     theme(
       axis.text = element_blank(),
       axis.title.y = element_text(face = AXIS_FONT, margin = margin(0,20,0,0), size = AXIS_TITLE_SIZE),
-      axis.title.x = element_text(face = AXIS_FONT, margin = margin(20,0,0,0), size =AXIS_TITLE_SIZE)
+      axis.title.x = element_text(face = AXIS_FONT, margin = margin(20,0,0,0), size = AXIS_TITLE_SIZE)
     )
   #+ stat_ellipse()
   #TODO: if NB_VAR > X
@@ -299,13 +316,19 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
   if(NROW(df) >= n_mark) df = df[1:n_mark,]
 
   if (  superblock & i_block == length(rgcca$a) ){
-    p = ggplot(df, aes(order, df[,comp], fill = color))
+    p = ggplot(df, aes(order, df[, comp], fill = color))
   }else{
-    p = ggplot(df, aes(order, df[,comp]))
+    p = ggplot(df, aes(order, df[, comp], fill = abs(df[, comp])))
   }
 
-    p = plotHistogram(p, df, "Variable weights", as.character(color2))
-    p + labs (subtitle = printAxis(rgcca, comp, i_block))
+    p = plotHistogram(p, df, "Variable weights", as.character(color2)) +
+    labs(subtitle = printAxis(rgcca.res, comp, i_block))
+
+    if (  !superblock | i_block != length(rgcca$a) )
+      p = p + theme(legend.position = "none")
+
+    return(p)
+
 }
 
 #' Histogram of Average Variance Explained
@@ -332,10 +355,11 @@ plotAVE = function(rgcca, comp = 1){
   #TODO: catch : Error in data.frame: row names contain missing values : the length of the header is not the same of the row number
   df = data.frame(df[order(abs(df), decreasing = TRUE),], order = nrow(df):1)
 
-  p = ggplot(df, aes(order, df[,1]))
-  plotHistogram(p, df, "Average Variance Explained")
+  p = ggplot(df, aes(order, df[,1], fill=abs(df[,1])))
+  plotHistogram(p, df, "Average Variance Explained") +
+    labs(subtitle = printAxis(rgcca.res, comp)) +
+    theme(legend.position = "none")
 }
-
 
 #' Histogram settings
 #'
@@ -349,19 +373,23 @@ plotAVE = function(rgcca, comp = 1){
 #' df = data.frame(x = runif(30), order = 30:1)
 #' library("ggplot2")
 #' p = ggplot(df, aes(order, x))
-#' plotHistogram(p, df, "This is my title", "red")
+#' plotHistogram(p, df, "This is my title")
 #' # Add colors per levels of a variable
 #' df$color = rep(c(1,2,3), each=10)
 #' p = ggplot(df, aes(order, x, fill = color))
 #' plotHistogram(p, df, "Histogram", as.character(df$color))
 #' @export plotHistogram
-plotHistogram = function(p, df, title = "", color = "black"){
+plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2", high_col = "coral3"){
 
-    p +
-    #TODO: if NB_ROW > X, uncomment this
-    #geom_hline(yintercept = c(-.5,.5), col="grey", linetype="dotted", size=1) +
-    geom_hline(yintercept = 0, col = "grey", size = 1) +
-    geom_bar(stat = "identity") +
+  if (nrow(df) >= 10){
+    WIDTH = 1
+    AXIS_TEXT_SIZE = 8
+  }else
+    WIDTH = NULL
+
+  p = p +
+    geom_bar(stat = "identity", width = WIDTH) +
+    geom_hline(yintercept = 0, col = "gray40", size = 1) +
     coord_flip() +
     scale_x_continuous(breaks = df$order, labels = rownames(df)) +
     labs(
@@ -372,8 +400,14 @@ plotHistogram = function(p, df, title = "", color = "black"){
     theme_perso() +
     theme(
       axis.text.y = element_text(size = AXIS_TEXT_SIZE, face = AXIS_FONT, color = color),
-      axis.text.x = element_text(size = AXIS_TEXT_SIZE, face = AXIS_FONT, color = "darkgrey"),
+      axis.text.x = element_text(size = AXIS_TEXT_SIZE, face = AXIS_FONT, color = "gray40"),
       axis.line = element_blank(),
       axis.ticks = element_blank(),
       plot.subtitle = element_text(hjust = 0.5, size = 16, face = "italic"))
+
+  if(length(color) == 1){
+    p = p + scale_fill_gradient(low = low_col, high = high_col)
+  }
+
+  return(p)
 }

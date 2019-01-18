@@ -27,7 +27,7 @@ getArgs = function(){
     make_option(c("-H", "--header"), type="logical", action="store_false", help="DO NOT consider the first row as header of columns"),
     make_option(c("--separator"), type="integer", metavar="integer", default=1,
                 help="Character used to separate the columns (1: Tabulation, 2: Semicolon, 3: Comma) [default: tabulation]"),
-    make_option(c("-t", "--tau"), type="character", metavar="float", default=opt[4],
+    make_option(c("--tau"), type="character", metavar="float", default=opt[4],
                 help="Tau parameter for RGCCA, a float between 0 (maximize the covariance) and 1 (maximize the correlation between blocks)"),
     make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2,
                 help="Scheme function g(x) for RGCCA (1: x, 2: x^2, 3: |x|, 4: x^4) [default: x^2]"),
@@ -39,6 +39,7 @@ getArgs = function(){
                 help="Initialization mode for RGCCA (1: Singular Value Decompostion , 2: random) [default: SVD]"),
     make_option(c("--bias"),  type="logical", action="store_false",
                 help="Unbiased estimator of the variance"),
+    make_option(c("--text"),  type="logical", action="store_false", help="Print text when plotting points"),
     make_option(c("--ncomp"),  type="integer", metavar="integer", default=opt[6],
                 help="Number of components in the analysis for each block (should be greater than 1 and lower than the minimum number of variable among the blocks)"),
     make_option(c("--block"),  type="integer", metavar="integer", default=opt[7],
@@ -164,7 +165,7 @@ runShiny <- function()
 # Under linux: sudo apt-get install default-jre default-jdk && sudo R CMD javareconf
 
 #Loading librairies
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx")
+librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "plotly")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
     install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
@@ -205,6 +206,7 @@ opt$header = !("header" %in% names(opt))
 opt$superblock = !("superblock" %in% names(opt))
 opt$bias = !("bias" %in% names(opt))
 opt$scale = !("scale" %in% names(opt))
+opt$text = !("text" %in% names(opt))
 VERBOSE = F
 
 blocks = setBlocks(opt$superblock, opt$datasets, opt$names, opt$separator, opt$header)
@@ -232,12 +234,12 @@ rgcca.res = rgcca(A = blocks,
 names(rgcca.res$a) = names(blocks)
 
 # Samples common space
-( samples_plot = plotSamplesSpace(rgcca.res, response, opt$compx, opt$compy, opt$block) )
+( samples_plot = plotSamplesSpace(rgcca.res, response, opt$compx, opt$compy, opt$block, opt$text) )
 plotSamplesSpace(rgcca.res, response, opt$compx, opt$compy, 1)
 savePlot(opt$output1, samples_plot)
 
 # Variables common space
-( corcircle = plotVariablesSpace(rgcca.res, blocks, opt$compx, opt$compy, opt$superblock, opt$block) )
+( corcircle = plotVariablesSpace(rgcca.res, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
 plotVariablesSpace(rgcca.res, blocks, opt$compx, opt$compy, opt$superblock, 1)
 savePlot(opt$output2, corcircle)
 
@@ -247,5 +249,5 @@ plotFingerprint(rgcca.res, opt$compx, opt$superblock, opt$nmark, 2)
 savePlot(opt$output3, fingerprint)
 
 # Average Variance Explained
-ave = plotAVE(rgcca.res, opt$compx)
+(ave = plotAVE(rgcca.res, opt$compx))
 savePlot(opt$output4, ave)

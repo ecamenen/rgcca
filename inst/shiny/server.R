@@ -218,26 +218,27 @@ server <- function(input, output) {
     assign("rgcca.res", rgcca.res, .GlobalEnv)
   })
 
-  samples <- function() plotSamplesSpace(rgcca = rgcca.res,
+  samples <- function() ggplotly(plotSamplesSpace(rgcca = rgcca.res,
                                          resp = response,
                                          comp_x = input$axis1,
                                          comp_y = input$axis2,
-                                         i_block = id_block)
+                                         i_block = id_block))
 
-  corcircle <- function() plotVariablesSpace(rgcca = rgcca.res,
+  corcircle <- function() ggplotly(plotVariablesSpace(rgcca = rgcca.res,
                                              blocks = blocks,
                                              comp_x = input$axis1,
                                              comp_y = input$axis2,
                                              superblock = input$superblock,
-                                             i_block = id_block)
+                                             i_block = id_block))
 
-  fingerprint <- function() plotFingerprint(rgcca = rgcca.res,
+  fingerprint <- function() ggplotly(plotFingerprint(rgcca = rgcca.res,
                                             comp = input$axis1,
                                             superblock = input$superblock,
                                             n_mark = input$nb_mark,
-                                            i_block = id_block)
-  ave <- function() plotAVE(rgcca = rgcca.res,
-                            comp = input$axis1)
+                                            i_block = id_block))
+
+  ave <- function() ggplotly(plotAVE(rgcca = rgcca.res,
+                            comp = input$axis1))
 
 
   setFuncs <- reactive({
