@@ -259,6 +259,8 @@ checkConnection = function(c, blocks) {
   x = unique(c %in% c(0, 1))
   if (length(x) != 1 || x != T)
     stop("The connection file must contains only 0 or 1.\n", call. = FALSE)
+  if(all(c==0))
+    stop("The connection file could not contain only 0.\n", call. = FALSE)
 
 }
 

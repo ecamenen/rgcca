@@ -116,6 +116,7 @@ checkArg = function(opt){
 # opt : an optionParser object
 # blocks : a list of matrix
 postCheckArg = function(opt, blocks){
+
   if ((opt$ncomp < 2) || (opt$ncomp > min(sapply(blocks, NCOL)))){
     stop("--ncomp must be comprise between 2 and ", min(sapply(blocks, NCOL)) ," (the minimum number of variables among the whole blocks).\n", call.=FALSE)
   }
@@ -130,12 +131,27 @@ postCheckArg = function(opt, blocks){
   MSG = "--tau must be comprise between 0 and 1 or must correspond to the character 'optimal' for automatic setting.\n"
   if (opt$tau != "optimal"){
     tryCatch({
-      opt$tau = as.double(gsub(",", ".",  opt$tau))
-      if((opt$tau < 0) || (opt$tau > 1))
+
+      # Parse list of tau
+      list_tau = as.list(lapply(strsplit(unlist(as.character(opt$tau)), ","), as.double)[[1]])
+
+      # Check value of each tau
+      test = lapply(list_tau, function(x){
+        if((as.double(x) < 0) || (as.double(x) > 1))
         stop(MSG, call.=FALSE)
+      })
+
+      # If there is only one common tau
+      if(length(list_tau) == 1)
+        opt$tau = rep(as.double(opt$tau[[1]]), length(blocks))
       else
-        opt$tau = rep(opt$tau, length(blocks))
+        if(length(list_tau) != length(blocks))
+          stop(paste("--tau list must have the same size (", length(opt$tau), ") than the the number of blocks (", length(blocks), ").\n", sep=""), call.=FALSE)
+        else
+          opt$tau = unlist(lapply(list_tau, as.double))
+
     }, warning = function(w) {
+      print("okok")
       stop(MSG, call.=FALSE)
     })
   }
