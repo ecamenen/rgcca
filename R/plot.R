@@ -96,13 +96,14 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
   # if the resp is numeric
   if ( ! is.null(resp) ){
     if( ! unique(isCharacter(as.vector(resp)))){
+      # have the nuber to round the legend text for numeric data
       # add some transparency
       p = ggplot(df2, aes(df2[, comp_x], df2[, comp_y], alpha = (resp - min(resp)) / max(resp - min(resp)))) +
-        # get a color scale by quantile
+      # get a color scale by quantile
             scale_alpha_continuous(
             name = "resp",
             breaks = seq(0, 1, .25),
-            labels = round(quantile(resp))
+            labels = round(quantile(resp), 2)
         )
 
       if (isTRUE(pch)){
@@ -170,7 +171,7 @@ getBlocsVariables = function(rgcca){
 #' # Using the first block
 #' plotVariablesSpace(rgcca.res, blocks, 1, 2, FALSE, 1)
 #' @export plotVariablesSpace
-plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock = TRUE, i_block = NULL){
+plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock = TRUE, i_block = NULL, pch = TRUE){
 
   x = y = NULL
 
@@ -191,7 +192,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 
   df = data.frame(df, color)
 
-  p = plotSpace(rgcca, df, "Variables", color, "Blocks", comp_x, comp_y, i_block) +
+  p = plotSpace(rgcca, df, "Variables", color, "Blocks", comp_x, comp_y, i_block, pch = pch) +
     geom_path(aes(x, y), data = circleFun(), col = "grey", size = 1) +
     geom_path(aes(x, y), data = circleFun()/2, col = "grey", size = 1, lty = 2)
 
@@ -236,7 +237,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
       if (isTRUE(pch)){
         p = p + geom_point(size = PCH_TEXT_SIZE)
       }else
-        p = p + geom_text(aes(label = rownames(df2)), size = PCH_TEXT_SIZE)
+        p = p + geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE)
       #geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE)
       #geom_text_repel(aes(label= rownames(df)), size = PCH_TEXT_SIZE, force=2)
   }
@@ -254,7 +255,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     theme(
       axis.text = element_blank(),
       axis.title.y = element_text(face = AXIS_FONT, margin = margin(0,20,0,0), size = AXIS_TITLE_SIZE),
-      axis.title.x = element_text(face = AXIS_FONT, margin = margin(20,0,0,0), size =AXIS_TITLE_SIZE)
+      axis.title.x = element_text(face = AXIS_FONT, margin = margin(20,0,0,0), size = AXIS_TITLE_SIZE)
     )
   #+ stat_ellipse()
   #TODO: if NB_VAR > X
