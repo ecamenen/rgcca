@@ -82,7 +82,7 @@ theme_perso = function() {
 #' # Using the first block
 #' plotSamplesSpace(rgcca.res, runif(15, min=-15, max = 15), 1, 2, 1)
 #' @export plotSamplesSpace
-plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL, text = FALSE){
+plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL, text = TRUE){
   # resp : color the points with a vector
 
   if ( is.null(i_block) )
@@ -171,7 +171,7 @@ getBlocsVariables = function(rgcca){
 #' # Using the first block
 #' plotVariablesSpace(rgcca.res, blocks, 1, 2, FALSE, 1)
 #' @export plotVariablesSpace
-plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock = TRUE, i_block = NULL, text = FALSE){
+plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock = TRUE, i_block = NULL, text = TRUE){
 
   x = y = NULL
 
@@ -223,7 +223,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
 #' plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
 #' @export plotSpace
-plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = 1, p = NULL, text = FALSE){
+plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = 1, p = NULL, text = TRUE){
 
   if (is.null(p)){
     if (name_group == "Blocks"){
@@ -316,7 +316,8 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
     p = ggplot(df, aes(order, df[, comp], fill = abs(df[, comp])))
   }
 
-    p = plotHistogram(p, df, "Variable weights", as.character(color2))
+    p = plotHistogram(p, df, "Variable weights", as.character(color2)) +
+    labs(subtitle = printAxis(rgcca.res, comp, i_block))
 
     if (  !superblock | i_block != length(rgcca$a) )
       p = p + theme(legend.position = "none")

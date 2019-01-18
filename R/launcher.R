@@ -206,7 +206,7 @@ opt$header = !("header" %in% names(opt))
 opt$superblock = !("superblock" %in% names(opt))
 opt$bias = !("bias" %in% names(opt))
 opt$scale = !("scale" %in% names(opt))
-opt$text = ("text" %in% names(opt))
+opt$text = !("text" %in% names(opt))
 VERBOSE = F
 
 blocks = setBlocks(opt$superblock, opt$datasets, opt$names, opt$separator, opt$header)
