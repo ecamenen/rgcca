@@ -82,7 +82,7 @@ theme_perso = function() {
 #' # Using the first block
 #' plotSamplesSpace(rgcca.res, runif(15, min=-15, max = 15), 1, 2, 1)
 #' @export plotSamplesSpace
-plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL, pch = TRUE){
+plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL, text = FALSE){
   # resp : color the points with a vector
 
   if ( is.null(i_block) )
@@ -106,7 +106,7 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
             labels = round(quantile(resp), 2)
         )
 
-      if (isTRUE(pch)){
+      if (!isTRUE(text)){
         p = p + geom_point(colour = COLOR_SAMPLES_DEF, size = PCH_TEXT_SIZE)
       }else
         p = p + geom_text(color = COLOR_SAMPLES_DEF, aes(label = rownames(df2)), size = PCH_TEXT_SIZE)
@@ -171,7 +171,7 @@ getBlocsVariables = function(rgcca){
 #' # Using the first block
 #' plotVariablesSpace(rgcca.res, blocks, 1, 2, FALSE, 1)
 #' @export plotVariablesSpace
-plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock = TRUE, i_block = NULL, pch = TRUE){
+plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock = TRUE, i_block = NULL, text = FALSE){
 
   x = y = NULL
 
@@ -192,7 +192,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 
   df = data.frame(df, color)
 
-  p = plotSpace(rgcca, df, "Variables", color, "Blocks", comp_x, comp_y, i_block, pch = pch) +
+  p = plotSpace(rgcca, df, "Variables", color, "Blocks", comp_x, comp_y, i_block, text = text) +
     geom_path(aes(x, y), data = circleFun(), col = "grey", size = 1) +
     geom_path(aes(x, y), data = circleFun()/2, col = "grey", size = 1, lty = 2)
 
@@ -223,7 +223,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
 #' plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
 #' @export plotSpace
-plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = 1, p = NULL, pch = TRUE){
+plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = 1, p = NULL, text = FALSE){
 
   if (is.null(p)){
     if (name_group == "Blocks"){
@@ -234,7 +234,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     }
     p = ggplot(df, aes(df[,x], df[,y], colour = group))
 
-      if (isTRUE(pch)){
+      if (!isTRUE(text)){
         p = p + geom_point(size = PCH_TEXT_SIZE)
       }else
         p = p + geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE)
