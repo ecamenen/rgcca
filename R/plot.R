@@ -10,12 +10,11 @@
 # of the most explicative variables and the explained variance for each blocks.
 
 #Global settings
-MAX_CLUSTERS = 10
 AXIS_TITLE_SIZE = 19
 AXIS_TEXT_SIZE = 10
 PCH_TEXT_SIZE = 3
 AXIS_FONT = "italic"
-COLOR_SAMPLES_DEF = "#000099"
+SAMPLES_COL_DEFAULT = "#000099"
 
 # Creates a circle
 circleFun = function(center = c(0, 0), diameter = 2, npoints = 100) {
@@ -82,15 +81,18 @@ theme_perso = function() {
 #' # Using the first block
 #' plotSamplesSpace(rgcca.res, runif(15, min=-15, max = 15), 1, 2, 1)
 #' @export plotSamplesSpace
-plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL, text = TRUE){
+plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL, text = TRUE, i_block_y = NULL){
   # resp : color the points with a vector
 
   if ( is.null(i_block) )
     i_block = length(rgcca$Y)
 
-  df2 = data.frame(rgcca$Y[[i_block]])
+  if(is.null(i_block_y))
+    df = data.frame(rgcca$Y[[i_block]][, c(comp_x, comp_y)])
+  else
+    df =  data.frame(rgcca$Y[[i_block]][, comp_x], rgcca$Y[[i_block_y]][, comp_y] )
 
-  if(nrow(df2) > 100)
+  if(nrow(df) > 100)
     PCH_TEXT_SIZE = 2
 
   # if the resp is numeric
@@ -98,7 +100,7 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
     if( ! unique(isCharacter(as.vector(resp)))){
       # have the nuber to round the legend text for numeric data
       # add some transparency
-      p = ggplot(df2, aes(df2[, comp_x], df2[, comp_y], alpha = (resp - min(resp)) / max(resp - min(resp)))) +
+      p = ggplot(df, aes(df[, 1], df[, 2], alpha = (resp - min(resp)) / max(resp - min(resp)))) +
       # get a color scale by quantile
             scale_alpha_continuous(
             name = "resp",
@@ -107,17 +109,17 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
         )
 
       if (!isTRUE(text)){
-        p = p + geom_point(colour = COLOR_SAMPLES_DEF, size = PCH_TEXT_SIZE)
+        p = p + geom_point(colour = SAMPLES_COL_DEFAULT, size = PCH_TEXT_SIZE)
       }else
-        p = p + geom_text(color = COLOR_SAMPLES_DEF, aes(label = rownames(df2)), size = PCH_TEXT_SIZE)
-        #+ geom_text_repel(color=COLOR_SAMPLES_DEF, aes(label= rownames(df2)), size = PCH_TEXT_SIZE, force=2)
+        p = p + geom_text(color = SAMPLES_COL_DEFAULT, aes(label = rownames(df)), size = PCH_TEXT_SIZE)
+        #+ geom_text_repel(color=SAMPLES_COL_DEFAULT, aes(label= rownames(df)), size = PCH_TEXT_SIZE, force=2)
 
     }else
       p = NULL
   }else
     p = NULL
 
-  p = plotSpace(rgcca, df2, "Samples", resp, "resp", comp_x, comp_y, i_block, p)
+  p = plotSpace(rgcca, df, "Samples", resp, "resp", comp_x, comp_y, i_block, p, text, i_block_y)
 
   # remove legend if missing
   if (is.null(resp)){
@@ -223,7 +225,10 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
 #' plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
 #' @export plotSpace
-plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = 1, p = NULL, text = TRUE){
+plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = 1, p = NULL, text = TRUE, i_block_y = NULL){
+
+  if(is.null(i_block_y))
+    i_block_y = i_block
 
   if (is.null(p)){
     if (name_group == "Blocks"){
@@ -247,7 +252,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     geom_hline(yintercept = 0, col = "grey", linetype = "dashed", size = 1) +
     labs ( title = paste(title, "space"),
            x = printAxis(rgcca, comp_x, i_block),
-           y = printAxis(rgcca, comp_y, i_block),
+           y = printAxis(rgcca, comp_y, i_block_y),
            color = name_group) +
     scale_y_continuous(breaks = NULL) +
     scale_x_continuous(breaks = NULL) +
