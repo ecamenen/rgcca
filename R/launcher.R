@@ -28,7 +28,7 @@ getArgs = function(){
     make_option(c("--separator"), type="integer", metavar="integer", default=1,
                 help="Character used to separate the columns (1: Tabulation, 2: Semicolon, 3: Comma) [default: tabulation]"),
     make_option(c("--tau"), type="character", metavar="float", default=opt[4],
-                help="Tau parameter for RGCCA, a float between 0 (maximize the covariance) and 1 (maximize the correlation between blocks)"),
+                help="Tau parameter for RGCCA, a float between 0 (maximize the covariance) and 1 (maximize the correlation between blocks). Could also be a list separated by comma. Ex: 0,1,0.75,1"),
     make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2,
                 help="Scheme function g(x) for RGCCA (1: x, 2: x^2, 3: |x|, 4: x^4) [default: x^2]"),
     make_option(c("--scale"),  type="logical", action="store_false",
@@ -41,7 +41,7 @@ getArgs = function(){
                 help="Unbiased estimator of the variance"),
     make_option(c("--text"),  type="logical", action="store_false", help="Print text when plotting points"),
     make_option(c("--ncomp"),  type="character", metavar="integer", default=opt[6],
-                help="Number of components in the analysis for each block (should be greater than 1 and lower than the minimum number of variable among the blocks)"),
+                help="Number of components in the analysis for each block (should be greater than 1 and lower than the minimum number of variable among the blocks). Could also be a list separated by comma. Ex: 2,2,3,2."),
     make_option(c("--block"),  type="integer", metavar="integer", default=opt[7],
                 help="Number of the block shown in the graphics (0: the superblock or, if not, the last, 1: the fist one, 2: the 2nd, etc.) [default: the last one]"),
     make_option(c("--compx"),  type="integer", metavar="integer", default=opt[8],
@@ -168,10 +168,6 @@ postCheckArg = function(opt, blocks){
   else if(opt$block == 0)
     opt$block = length(blocks)
 
-  # if (opt$nmark > NCOL(blocks[[opt$block]])){
-  #   stop(paste("--nmark must be lower than ", NCOL(blocks[[opt$block]]) ," (the maximum number of columns among the block selected).\n", sep=""), call.=FALSE)
-  # }
-
   return (opt)
 }
 
@@ -240,9 +236,6 @@ blocks = setBlocks(opt$superblock, opt$datasets, opt$names, opt$separator, opt$h
 opt = postCheckArg(opt, blocks)
 connection = setConnection(blocks, opt$connection, opt$separator)
 response = setResponse(blocks, opt$response, opt$separator, opt$header)
-# ncomp = sapply(blocks, NCOL)
-# TODO: Error in rgcca(blocks, connection_matrix, tau = TAU, scheme = scheme, ncomp = rep(NB_COMP,  :
-#                                                                     For each block, choose a number of components smaller than the number of variables!
 
 getColumnSdNull = function(list_m)
   lapply(list_m, function (x) which( apply(x, 2, sd ) == 0 ))
@@ -278,3 +271,5 @@ savePlot(opt$output3, fingerprint)
 # Average Variance Explained
 (ave = plotAVE(rgcca.res, opt$compx))
 savePlot(opt$output4, ave)
+
+print(connection)

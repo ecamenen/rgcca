@@ -243,8 +243,6 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
         p = p + geom_point(size = PCH_TEXT_SIZE)
       }else
         p = p + geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE)
-      #geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE)
-      #geom_text_repel(aes(label= rownames(df)), size = PCH_TEXT_SIZE, force=2)
   }
 
   p + theme_classic() +
@@ -305,7 +303,6 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
   df = data.frame(df[order(abs(df[,comp]), decreasing = TRUE),], order = nrow(df):1)
 
   # if the superblock is selected, color the text of the y-axis according to their belonging to each blocks
-  #TODO: change this with a booleean with/without superblock
   if (  superblock & ( i_block == length(rgcca$a) ) ){
     color2 = df$color; levels(color2) = hue_pal()(length(rgcca$a)-1)
   }else{
