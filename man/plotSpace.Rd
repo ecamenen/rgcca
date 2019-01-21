@@ -5,7 +5,7 @@
 \title{Plot of components space}
 \usage{
 plotSpace(rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2,
-  i_block = 1, p = NULL)
+  i_block = 1, p = NULL, text = TRUE, i_block_y = NULL)
 }
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}
@@ -25,6 +25,10 @@ plotSpace(rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2,
 \item{i_block}{An integer giving the index of a list of blocks}
 
 \item{p}{A ggplot object}
+
+\item{text}{A bolean to represent the points with their row names (TRUE) or with circles (FALSE)}
+
+\item{i_block_y}{An integer giving the index of a list of blocks (another one, different from the one used in i_block)}
 }
 \description{
 Plots RGCCA components in a bi-dimensional space

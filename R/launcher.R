@@ -201,10 +201,10 @@ opt = list(directory = ".",
            scheme = "factorial",
            tau = "1",
            init = "svd",
-           ncomp = "2",
+           ncomp = "3",
            block = 0,
-           compx = 1,
-           compy = 2,
+           compx = 2,
+           compy = 3,
            nmark = 100,
            output1 = "samples_plot.pdf",
            output2 = "corcircle.pdf",
@@ -271,5 +271,3 @@ savePlot(opt$output3, fingerprint)
 # Average Variance Explained
 (ave = plotAVE(rgcca.res, opt$compx))
 savePlot(opt$output4, ave)
-
-print(connection)

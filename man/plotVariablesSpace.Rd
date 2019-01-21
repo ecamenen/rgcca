@@ -5,7 +5,7 @@
 \title{Plot of variables space}
 \usage{
 plotVariablesSpace(rgcca, blocks, comp_x = 1, comp_y = 2,
-  superblock = TRUE, i_block = NULL)
+  superblock = TRUE, i_block = NULL, text = TRUE)
 }
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}
@@ -19,6 +19,8 @@ plotVariablesSpace(rgcca, blocks, comp_x = 1, comp_y = 2,
 \item{superblock}{A boolean giving the presence (TRUE) / absence (FALSE) of a superblock}
 
 \item{i_block}{An integer giving the index of a list of blocks}
+
+\item{text}{A bolean to represent the points with their row names (TRUE) or with circles}
 }
 \description{
 Correlation circle highlighting the contribution of each variables to the construction of the RGCCA components

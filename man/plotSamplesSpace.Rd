@@ -4,7 +4,8 @@
 \alias{plotSamplesSpace}
 \title{Plot of samples space}
 \usage{
-plotSamplesSpace(rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL)
+plotSamplesSpace(rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL,
+  text = TRUE, i_block_y = NULL)
 }
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}
@@ -16,6 +17,10 @@ plotSamplesSpace(rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL)
 \item{comp_y}{An integer giving the index of the analysis component used for the y-axis}
 
 \item{i_block}{An integer giving the index of a list of blocks}
+
+\item{text}{A bolean to represent the points with their row names (TRUE) or with circles (FALSE)}
+
+\item{i_block_y}{An integer giving the index of a list of blocks (another one, different from the one used in i_block)}
 }
 \description{
 Plots samples on two components of a RGCCA

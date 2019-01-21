@@ -72,6 +72,8 @@ theme_perso = function() {
 #' @param comp_x An integer giving the index of the analysis component used for the x-axis
 #' @param comp_y An integer giving the index of the analysis component used for the y-axis
 #' @param i_block An integer giving the index of a list of blocks
+#' @param text A bolean to represent the points with their row names (TRUE) or with circles (FALSE)
+#' @param i_block_y An integer giving the index of a list of blocks (another one, different from the one used in i_block)
 #' @examples
 #' coord = lapply(1:3, function(x) matrix(runif(15 * 2, min = -1), 15, 2))
 #' AVE_X = lapply(1:3, function(x) runif(2))
@@ -87,9 +89,9 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
   if ( is.null(i_block) )
     i_block = length(rgcca$Y)
 
-  if(is.null(i_block_y))
+  if(is.null(i_block_y)){
     df = data.frame(rgcca$Y[[i_block]][, c(comp_x, comp_y)])
-  else
+  }else
     df =  data.frame(rgcca$Y[[i_block]][, comp_x], rgcca$Y[[i_block_y]][, comp_y] )
 
   if(nrow(df) > 100)
@@ -97,8 +99,8 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
 
   # if the resp is numeric
   if ( ! is.null(resp) ){
+
     if( ! unique(isCharacter(as.vector(resp)))){
-      # have the nuber to round the legend text for numeric data
       # add some transparency
       p = ggplot(df, aes(df[, 1], df[, 2], alpha = (resp - min(resp)) / max(resp - min(resp)))) +
       # get a color scale by quantile
@@ -107,12 +109,6 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
             breaks = seq(0, 1, .25),
             labels = round(quantile(resp), 2)
         )
-
-      if (!isTRUE(text)){
-        p = p + geom_point(colour = SAMPLES_COL_DEFAULT, size = PCH_TEXT_SIZE)
-      }else
-        p = p + geom_text(color = SAMPLES_COL_DEFAULT, aes(label = rownames(df)), size = PCH_TEXT_SIZE)
-        #+ geom_text_repel(color=SAMPLES_COL_DEFAULT, aes(label= rownames(df)), size = PCH_TEXT_SIZE, force=2)
 
     }else
       p = NULL
@@ -156,6 +152,7 @@ getBlocsVariables = function(rgcca){
 #' @param comp_y An integer giving the index of the analysis component used for the y-axis
 #' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
 #' @param i_block An integer giving the index of a list of blocks
+#' @param text A bolean to represent the points with their row names (TRUE) or with circles
 #' @examples
 #' setMatrix = function(nrow, ncol, iter = 3) lapply(1:iter, function(x) matrix(runif(nrow * ncol), nrow, ncol))
 #' blocks = setMatrix(10, 5)
@@ -187,9 +184,9 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
   )
 
   # if superblock is selected, color by blocks
-  if ( superblock & ( i_block == length(blocks)) )
+  if ( superblock & ( i_block == length(blocks)) ){
     color = getBlocsVariables(rgcca)
-  else
+  }else
     color = rep(1, NROW(df))
 
   df = data.frame(df, color)
@@ -219,6 +216,8 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 #' @param comp_y An integer giving the index of the analysis component used for the y-axis
 #' @param i_block An integer giving the index of a list of blocks
 #' @param p A ggplot object
+#' @param text A bolean to represent the points with their row names (TRUE) or with circles (FALSE)
+#' @param i_block_y An integer giving the index of a list of blocks (another one, different from the one used in i_block)
 #' @examples
 #' df = as.data.frame(matrix(runif(20*2, min = -1), 20, 2))
 #' AVE =  lapply(1:4, function(x) runif(2))
@@ -231,19 +230,13 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     i_block_y = i_block
 
   if (is.null(p)){
-    if (name_group == "Blocks"){
-      # For variablesPlot
-      x = 1; y = 2
-    }else{
-      x = comp_x; y = comp_y
-    }
-    p = ggplot(df, aes(df[,x], df[,y], colour = group))
-
-      if (!isTRUE(text)){
-        p = p + geom_point(size = PCH_TEXT_SIZE)
-      }else
-        p = p + geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE)
+    p = ggplot(df, aes(df[,1], df[,2], colour = group))
   }
+
+  if (!isTRUE(text)){
+    p = p + geom_point(size = PCH_TEXT_SIZE)
+  }else
+    p = p + geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE)
 
   p + theme_classic() +
     geom_vline(xintercept = 0, col = "grey", linetype = "dashed", size = 1) +
@@ -319,7 +312,7 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
   }
 
     p = plotHistogram(p, df, "Variable weights", as.character(color2)) +
-    labs(subtitle = printAxis(rgcca.res, comp, i_block))
+    labs(subtitle = printAxis(rgcca, comp, i_block))
 
     if (  !superblock | i_block != length(rgcca$a) )
       p = p + theme(legend.position = "none")
@@ -354,7 +347,7 @@ plotAVE = function(rgcca, comp = 1){
 
   p = ggplot(df, aes(order, df[,1], fill=abs(df[,1])))
   plotHistogram(p, df, "Average Variance Explained") +
-    labs(subtitle = printAxis(rgcca.res, comp)) +
+    labs(subtitle = printAxis(rgcca, comp)) +
     theme(legend.position = "none")
 }
 
@@ -366,6 +359,8 @@ plotAVE = function(rgcca, comp = 1){
 #' @param df A dataframe with a column named "order"
 #' @param title A character string giving a graphic title
 #' @param color A vector of character giving the colors for the rows
+#' @param low_col A character giving the color used for the lowest part of the gradient
+#' @param high_col A character giving the color used for the highest part of the gradient
 #' @examples
 #' df = data.frame(x = runif(30), order = 30:1)
 #' library("ggplot2")
