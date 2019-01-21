@@ -40,7 +40,7 @@ getArgs = function(){
     make_option(c("--bias"),  type="logical", action="store_false",
                 help="Unbiased estimator of the variance"),
     make_option(c("--text"),  type="logical", action="store_false", help="Print text when plotting points"),
-    make_option(c("--ncomp"),  type="integer", metavar="integer", default=opt[6],
+    make_option(c("--ncomp"),  type="character", metavar="integer", default=opt[6],
                 help="Number of components in the analysis for each block (should be greater than 1 and lower than the minimum number of variable among the blocks)"),
     make_option(c("--block"),  type="integer", metavar="integer", default=opt[7],
                 help="Number of the block shown in the graphics (0: the superblock or, if not, the last, 1: the fist one, 2: the 2nd, etc.) [default: the last one]"),
@@ -117,16 +117,23 @@ checkArg = function(opt){
 # blocks : a list of matrix
 postCheckArg = function(opt, blocks){
 
-  if ((opt$ncomp < 2) || (opt$ncomp > min(sapply(blocks, NCOL)))){
-    stop("--ncomp must be comprise between 2 and ", min(sapply(blocks, NCOL)) ," (the minimum number of variables among the whole blocks).\n", call.=FALSE)
-  }
+  opt$ncomp = as.list(lapply(strsplit(unlist(as.character(opt$ncomp)), ","), as.double)[[1]])
 
-  checkComp = function (x){
+  out = lapply(opt$ncomp, function(x){
+    if ((x < 2) || (x > min(sapply(blocks, NCOL)))){
+      stop("--ncomp must be comprise between 2 and ", min(sapply(blocks, NCOL)) ," (the minimum number of variables among the whole blocks).\n", call.=FALSE)
+    }
+  })
+  if(length(opt$ncomp) == 1)
+    opt$ncomp = rep(opt$ncomp[[1]], length(blocks))
+  else
+    opt$ncomp = unlist(opt$ncomp)
+
+  out = sapply(c("compx", "compy"), function (x){
     if ((opt[[x]] < 1) || (opt[[x]] > opt$ncomp )){
       stop(paste("--", x, " must be comprise between 2 and ", opt$ncomp ," (the number of component selected).\n ", sep=""), call.=FALSE)
     }
-  }
-  out = sapply(c("compx", "compy"), function(x) checkComp (x))
+  })
 
   MSG = "--tau must be comprise between 0 and 1 or must correspond to the character 'optimal' for automatic setting.\n"
   if (opt$tau != "optimal"){
@@ -136,22 +143,22 @@ postCheckArg = function(opt, blocks){
       list_tau = as.list(lapply(strsplit(unlist(as.character(opt$tau)), ","), as.double)[[1]])
 
       # Check value of each tau
-      test = lapply(list_tau, function(x){
-        if((as.double(x) < 0) || (as.double(x) > 1))
-        stop(MSG, call.=FALSE)
+      out = lapply(list_tau, function(x){
+        if((x < 0) || (x > 1))
+          stop(MSG, call.=FALSE)
       })
+
 
       # If there is only one common tau
       if(length(list_tau) == 1)
-        opt$tau = rep(as.double(opt$tau[[1]]), length(blocks))
+        opt$tau = rep(list_tau[[1]], length(blocks))
       else
         if(length(list_tau) != length(blocks))
           stop(paste("--tau list must have the same size (", length(opt$tau), ") than the the number of blocks (", length(blocks), ").\n", sep=""), call.=FALSE)
         else
-          opt$tau = unlist(lapply(list_tau, as.double))
+          opt$tau = unlist(list_tau)
 
     }, warning = function(w) {
-      print("okok")
       stop(MSG, call.=FALSE)
     })
   }
@@ -184,17 +191,21 @@ runShiny <- function()
 librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "plotly")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
-    install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
-  library(l, character.only = TRUE)
+    install.packages(l, repos = "http://cran.us.r-project.org",
+                     warn.conflicts = FALSE,
+                     quiet = TRUE)
+  library(l, character.only = TRUE,
+          warn.conflicts = FALSE,
+          quiet = TRUE)
 }
 
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
            scheme = "factorial",
-           tau = "optimal",
+           tau = "1",
            init = "svd",
-           ncomp = 2,
+           ncomp = "2",
            block = 0,
            compx = 1,
            compy = 2,
@@ -223,7 +234,7 @@ opt$superblock = !("superblock" %in% names(opt))
 opt$bias = !("bias" %in% names(opt))
 opt$scale = !("scale" %in% names(opt))
 opt$text = !("text" %in% names(opt))
-VERBOSE = F
+VERBOSE = FALSE
 
 blocks = setBlocks(opt$superblock, opt$datasets, opt$names, opt$separator, opt$header)
 opt = postCheckArg(opt, blocks)
@@ -240,7 +251,7 @@ getColumnSdNull = function(list_m)
 rgcca.res = rgcca(A = blocks,
               C = connection,
               scheme = opt$scheme,
-              ncomp = rep(opt$ncomp, length(blocks)),
+              ncomp = opt$ncomp,
               scale = opt$scale,
               tau = opt$tau,
               verbose = VERBOSE,
