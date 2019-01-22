@@ -45,8 +45,10 @@ getFileName = function(fi) {
 #' @export loadData
 loadData = function(f, sep = "\t", row.names = 1, h = TRUE) {
 
-  as.matrix(read.table(f, sep = sep, header = h, row.names = row.names, na.strings = "NA"))
+  df= as.matrix(read.table(f, sep = sep, header = h, row.names = row.names, na.strings = "NA"))
   # TODO: catch warning missing \n at the end of the file
+  #print(head(df))
+  return(df)
 }
 
 #' Creates a data frame from an Excel file loading
@@ -61,15 +63,23 @@ loadData = function(f, sep = "\t", row.names = 1, h = TRUE) {
 #' loadExcel("data/blocks.xlsx", "industry")
 #' }
 #' @export loadExcel
-loadExcel = function(f, sheet, row.names = 1, h = TRUE) {
-  # TODO: opt$dataset in arg
+loadExcel = function(f, sheet, row.names = 1, h = TRUE, num = TRUE) {
 
-  df = read.xlsx2(f, sheet, header = h)
-  checkQuantitative(df[, -row.names], opt$datasets, h)
-  df2 = as.matrix(as.data.frame(lapply(df[-row.names], function(x) as.numeric(as.vector(x)))))
-  row.names(df2) = df[, row.names]
+  df = read.xlsx(f, sheet, header = h, startRow = 1)
+  names = df[, row.names]
 
-  return (df2)
+  if(!is.null(row.names))
+    df = df[, -row.names]
+
+  if(num)
+    df = as.data.frame(lapply(df, function(x) as.numeric(as.vector(x))))
+
+  df = as.matrix(df)
+
+  if(!is.null(row.names))
+    row.names(df) = names
+
+  return (df)
 }
 
 #' Save a ggplot object
@@ -285,7 +295,12 @@ setConnection = function(blocks, file = NULL, sep = "\t") {
     connection[length(blocks), seq] <- connection[seq, length(blocks)] <- 1
 
   } else {
-    connection = loadData(file, sep, NULL, FALSE)
+    isXls <- (length(grep("xlsx?", file)) == 1)
+
+    if(!isXls)
+      connection = loadData(file, sep, NULL, FALSE)
+    else
+      connection = loadExcel(file, 1, NULL, h = FALSE)
   }
 
   checkConnection(connection, blocks)
@@ -310,7 +325,14 @@ setConnection = function(blocks, file = NULL, sep = "\t") {
 setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE) {
 
   if (!is.null(file)) {
-    response = loadData(file, sep, ROW_NAMES, header)
+
+    isXls <- (length(grep("xlsx?", file)) == 1)
+
+    if(!isXls)
+      response = loadData(file, sep, ROW_NAMES, header)
+    else{
+      response = loadExcel(file, 1, 1, h = header, num = FALSE)
+    }
 
     if (NROW(blocks[[1]]) != NROW(response)) {
       msg = paste("The number of rows of the response file (", NROW(response), ") is different from those of the blocks (", NROW(blocks[[1]]), ").", sep="")
