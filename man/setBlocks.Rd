@@ -4,7 +4,8 @@
 \alias{setBlocks}
 \title{Create a list of matrix from loading files corresponding to blocks}
 \usage{
-setBlocks(superblock, file, names = NULL, sep = "\\t", header = TRUE)
+setBlocks(superblock, file, names = NULL, sep = "\\t", header = TRUE,
+  rownames = ROW_NAMES)
 }
 \arguments{
 \item{superblock}{A boolean giving the presence (TRUE) / absence (FALSE) of a superblock}
@@ -16,6 +17,8 @@ setBlocks(superblock, file, names = NULL, sep = "\\t", header = TRUE)
 \item{sep}{A character giving the column separator}
 
 \item{header}{A bolean giving the presence or the absence of the header}
+
+\item{rownames}{An integer corresponding to the column number of the row names (NULL otherwise)}
 }
 \value{
 A list matrix corresponding to the blocks

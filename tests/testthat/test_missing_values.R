@@ -23,18 +23,6 @@ createMatrix = function(nrow, ncol){
   return (d)
 }
 
-commonRow = function(list_m){
-  # list_m: list of matrix to compare
-  # output: list of row.names in common
-
-  common_row = row.names(list_m[[1]])
-
-  for ( i in 2:length(list_m) )
-    common_row = common_row[ common_row %in% row.names(list_m[[i]]) ]
-
-  return(common_row)
-}
-
 getDiffRow = function(list_m, i){
   # Get the row that they are missing (according to their names) in a df in comparison with a list of othe matrix
   # list_m: list of dataframe
@@ -68,14 +56,6 @@ addNARow = function (df, r){
     return (df)
 }
 
-discardDiffRow = function(list_m){
-  names = names(list_m)
-  common_row = commonRow(list_m)
-  list_m = sapply(1:length(list_m), function (x) list_m[[x]] = list_m[[x]][common_row,])
-  names(list_m) = names
-  return (list_m)
-}
-
 filledRowInDiff = function (list_m){
   # Add NA rows to each missing row (based on their rownames) according to a pairwise comparaison among a list of df
   # list_m : list of dataframe
@@ -100,14 +80,14 @@ test_that( "test_commonRow", {
 })
 
 
-test_that( "test_discardDiffRow" ,{
+test_that( "test_keepCommonRow" ,{
   BLOCS = getData()
 
   dim_list_before = sapply(1:length(BLOCS), function (x) dim(BLOCS[[x]])[1] )
   # tests if any block if their row number is equals to the maximum number of rows
   expect_true ( any ( sapply(1:length(BLOCS), function (x) dim(BLOCS[[x]])[1] == max(dim_list_before)) == F) )
 
-  BLOCS = discardDiffRow(BLOCS)
+  BLOCS = keepCommonRow(BLOCS)
 
   # tests if all blocks have the same row.names (and at the same time, the same row number)
   expect_true ( all ( sapply(1:length(BLOCS), function (x) row.names(BLOCS[[x]]) == row.names(BLOCS[[1]])) == T) )

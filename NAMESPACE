@@ -2,9 +2,11 @@
 
 export(checkConnection)
 export(checkQuantitative)
+export(commonRow)
 export(getBlocsVariables)
 export(getFileName)
 export(isCharacter)
+export(keepCommonRow)
 export(loadData)
 export(loadExcel)
 export(parseList)

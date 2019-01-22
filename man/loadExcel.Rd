@@ -4,16 +4,18 @@
 \alias{loadExcel}
 \title{Creates a data frame from an Excel file loading}
 \usage{
-loadExcel(f, sheet, row.names = 1, h = TRUE)
+loadExcel(f, sheet, rownames = 1, h = TRUE, num = TRUE)
 }
 \arguments{
 \item{f}{A character giving the file name}
 
 \item{sheet}{A character giving the sheet name}
 
-\item{row.names}{A vector of characters giving the names of the rows}
+\item{rownames}{An integer corresponding to the column number of the row names (NULL otherwise)}
 
 \item{h}{A bolean giving the presence or the absence of the header}
+
+\item{num}{A bolean giving the presence or the absence of numerical values}
 }
 \value{
 A matrix containing the loaded file

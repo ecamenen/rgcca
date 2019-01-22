@@ -4,14 +4,14 @@
 \alias{loadData}
 \title{Creates a matrix from loading a file}
 \usage{
-loadData(f, sep = "\\t", row.names = 1, h = TRUE)
+loadData(f, sep = "\\t", rownames = 1, h = TRUE)
 }
 \arguments{
 \item{f}{A character giving the file name}
 
 \item{sep}{A character giving the column separator}
 
-\item{row.names}{A vector of characters giving the names of the rows}
+\item{rownames}{An integer corresponding to the column number of the row names (NULL otherwise)}
 
 \item{h}{A bolean giving the presence or the absence of the header}
 }

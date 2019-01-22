@@ -35,7 +35,7 @@ getFileName = function(fi) {
 #'
 #' @param f A character giving the file name
 #' @param sep A character giving the column separator
-#' @param row.names A vector of characters giving the names of the rows
+#' @param rownames An integer corresponding to the column number of the row names (NULL otherwise)
 #' @param h A bolean giving the presence or the absence of the header
 #' @return A matrix containing the loaded file
 #' @examples
@@ -43,9 +43,12 @@ getFileName = function(fi) {
 #' loadData("data/agriculture.tsv")
 #' }
 #' @export loadData
-loadData = function(f, sep = "\t", row.names = 1, h = TRUE) {
+loadData = function(f, sep = "\t", rownames = 1, h = TRUE) {
 
-  df= as.matrix(read.table(f, sep = sep, header = h, row.names = row.names, na.strings = "NA"))
+  if (!is.null(rownames) && rownames < 1)
+    rownames = NULL
+
+  df = as.matrix(read.table(f, sep = sep, header = h, row.names = rownames, na.strings = "NA"))
   # TODO: catch warning missing \n at the end of the file
   #print(head(df))
   return(df)
@@ -55,28 +58,33 @@ loadData = function(f, sep = "\t", row.names = 1, h = TRUE) {
 #'
 #' @param f A character giving the file name
 #' @param sheet A character giving the sheet name
-#' @param row.names A vector of characters giving the names of the rows
+#' @param rownames An integer corresponding to the column number of the row names (NULL otherwise)
 #' @param h A bolean giving the presence or the absence of the header
+#' @param num A bolean giving the presence or the absence of numerical values
 #' @return A matrix containing the loaded file
 #' @examples
 #' \dontrun{
 #' loadExcel("data/blocks.xlsx", "industry")
 #' }
 #' @export loadExcel
-loadExcel = function(f, sheet, row.names = 1, h = TRUE, num = TRUE) {
+loadExcel = function(f, sheet, rownames = 1, h = TRUE, num = TRUE) {
+
+  if (!is.null(rownames) && rownames < 1)
+    rownames = NULL
 
   df = read.xlsx(f, sheet, header = h, startRow = 1)
-  names = df[, row.names]
 
-  if(!is.null(row.names))
-    df = df[, -row.names]
+  if(!is.null(rownames)){
+    names = df[, rownames]
+    df = df[, -rownames]
+  }
 
   if(num)
     df = as.data.frame(lapply(df, function(x) as.numeric(as.vector(x))))
 
   df = as.matrix(df)
 
-  if(!is.null(row.names))
+  if(!is.null(rownames))
     row.names(df) = names
 
   return (df)
@@ -169,13 +177,14 @@ checkFile = function (f){
 #' @param names A character giving a list of names for the blocks
 #' @param sep A character giving the column separator
 #' @param header A bolean giving the presence or the absence of the header
+#' @param rownames An integer corresponding to the column number of the row names (NULL otherwise)
 #' @return A list matrix corresponding to the blocks
 #' @examples
 #' \dontrun{
 #' setBlocks (TRUE, "data/agriculture.tsv,data/industry.tsv,data/politic.tsv", "agric,ind,polit")
 #' }
 #' @export setBlocks
-setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE) {
+setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE, rownames = ROW_NAMES) {
 
   # Parse args containing files path
   isXls <- (length(grep("xlsx?", file)) == 1)
@@ -222,9 +231,9 @@ setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE) 
 
     #load the data
     if (!isXls)
-      df = loadData(fi, sep, ROW_NAMES, header)
+      df = loadData(fi, sep, rownames, header)
     else
-      df = loadExcel(file, blocksFilename[i], ROW_NAMES, header)
+      df = loadExcel(file, blocksFilename[i], rownames, header)
 
     #if one-column file, it is a tabulation error
     if (NCOL(df) == 0)
@@ -235,6 +244,8 @@ setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE) 
 
     blocks[[fo]] = df
   }
+
+  blocks = keepCommonRow(blocks)
 
   if (length(unique(sapply(1:length(blocks), function(x) NROW(blocks[[x]])))) > 1)
     stop("The number of rows is different among the blocks.\n", call. = FALSE)
@@ -315,6 +326,7 @@ setConnection = function(blocks, file = NULL, sep = "\t") {
 #' @param file A character giving the path of a file used as a response
 #' @param sep A character giving the column separator
 #' @param header A bolean giving the presence or the absence of the header
+#' @param rownames An integer corresponding to the column number of the row names (NULL otherwise)
 #' @return A matrix corresponding to the response
 #' @examples
 #' \dontrun{
@@ -322,16 +334,16 @@ setConnection = function(blocks, file = NULL, sep = "\t") {
 #' setResponse (blocks, "data/response3.tsv")
 #' }
 #' @export setResponse
-setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE) {
+setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames = ROW_NAMES) {
 
   if (!is.null(file)) {
 
     isXls <- (length(grep("xlsx?", file)) == 1)
 
     if(!isXls)
-      response = loadData(file, sep, ROW_NAMES, header)
+      response = loadData(file, sep, rownames, header)
     else{
-      response = loadExcel(file, 1, 1, h = header, num = FALSE)
+      response = loadExcel(file, 1, rownames, h = header, num = FALSE)
     }
 
     if (NROW(blocks[[1]]) != NROW(response)) {
@@ -399,4 +411,33 @@ isCharacter = function(x) {
 
   options(warn = 0)
   return(test)
+}
+
+#' Get the common row names
+#'
+#' @param list_m A list of dataframe
+#' @return A vector of character with the common rownames
+#' @export commonRow
+commonRow = function(list_m){
+
+  common_row = row.names(list_m[[1]])
+
+  for ( i in 2:length(list_m) )
+    common_row = common_row[ common_row %in% row.names(list_m[[i]]) ]
+
+  return(common_row)
+}
+
+#' Keep the common row names
+#'
+#' @param list_m A list of dataframe
+#' @return A list of datrame with the same number of row (those with the same name)
+#' @export keepCommonRow
+keepCommonRow = function(list_m){
+
+  names = names(list_m)
+  common_row = commonRow(list_m)
+  list_m = lapply(1:length(list_m), function (x) list_m[[x]] = list_m[[x]][common_row,])
+  names(list_m) = names
+  return (list_m)
 }

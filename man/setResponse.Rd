@@ -4,7 +4,8 @@
 \alias{setResponse}
 \title{Create a matrix from loading a file corresponding to the response}
 \usage{
-setResponse(blocks, file = NULL, sep = "\\t", header = TRUE)
+setResponse(blocks, file = NULL, sep = "\\t", header = TRUE,
+  rownames = ROW_NAMES)
 }
 \arguments{
 \item{blocks}{A list of matrix}
@@ -14,6 +15,8 @@ setResponse(blocks, file = NULL, sep = "\\t", header = TRUE)
 \item{sep}{A character giving the column separator}
 
 \item{header}{A bolean giving the presence or the absence of the header}
+
+\item{rownames}{An integer corresponding to the column number of the row names (NULL otherwise)}
 }
 \value{
 A matrix corresponding to the response
