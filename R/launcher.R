@@ -19,7 +19,7 @@ rm(list=ls())
 # Parse the arguments from a command line launch
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[15]),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[16]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
     make_option(c("-r", "--response"), type="character", metavar="character", help="Path of the response file (to color samples by group in the associated plot)"),
@@ -27,7 +27,9 @@ getArgs = function(){
     make_option(c("-H", "--header"), type="logical", action="store_false", help="DO NOT consider the first row as header of columns"),
     make_option(c("--separator"), type="integer", metavar="integer", default=1,
                 help="Character used to separate the columns (1: Tabulation, 2: Semicolon, 3: Comma) [default: tabulation]"),
-    make_option(c("--tau"), type="character", metavar="float", default=opt[4],
+    make_option(c("--type"), type="character", metavar="character", default=opt[3],
+                help="Type of analysis to use (by default, 1 for RGCCA) [1: rgcca, 2: pca, 3: cca, 4: gcca, cpca-w, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov]"),
+    make_option(c("--tau"), type="character", metavar="float", default=opt[5],
                 help="Tau parameter for RGCCA, a float between 0 (maximize the covariance) and 1 (maximize the correlation between blocks). Could also be a list separated by comma. Ex: 0,1,0.75,1"),
     make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2,
                 help="Scheme function g(x) for RGCCA (1: x, 2: x^2, 3: |x|, 4: x^4) [default: x^2]"),
@@ -40,23 +42,23 @@ getArgs = function(){
     make_option(c("--bias"),  type="logical", action="store_false",
                 help="Unbiased estimator of the variance"),
     make_option(c("--text"),  type="logical", action="store_false", help="Print text when plotting points"),
-    make_option(c("--ncomp"),  type="character", metavar="integer", default=opt[6],
+    make_option(c("--ncomp"),  type="character", metavar="integer", default=opt[7],
                 help="Number of components in the analysis for each block (should be greater than 1 and lower than the minimum number of variable among the blocks). Could also be a list separated by comma. Ex: 2,2,3,2."),
-    make_option(c("--block"),  type="integer", metavar="integer", default=opt[7],
+    make_option(c("--block"),  type="integer", metavar="integer", default=opt[8],
                 help="Number of the block shown in the graphics (0: the superblock or, if not, the last, 1: the fist one, 2: the 2nd, etc.) [default: the last one]"),
-    make_option(c("--compx"),  type="integer", metavar="integer", default=opt[8],
+    make_option(c("--compx"),  type="integer", metavar="integer", default=opt[9],
                 help="Component used in the X-axis for biplots and the only component used for histograms (should not be greater than the --ncomp parameter)"),
-    make_option(c("--compy"),  type="integer", metavar="integer", default=opt[9],
+    make_option(c("--compy"),  type="integer", metavar="integer", default=opt[10],
                 help="Component used in the Y-axis for biplots (should not be greater than the --ncomp parameter)"),
-    make_option(c("--nmark"),  type="integer", metavar="integer", default=opt[10],
+    make_option(c("--nmark"),  type="integer", metavar="integer", default=opt[11],
                 help="Number maximum of biomarkers in the fingerprint"),
-    make_option(c( "--output1"), type="character", metavar="character", default=opt[11],
+    make_option(c( "--output1"), type="character", metavar="character", default=opt[12],
                 help="Variables space file name [default: %default]"),
-    make_option(c( "--output2"), type="character", metavar="character", default=opt[12],
+    make_option(c( "--output2"), type="character", metavar="character", default=opt[13],
                 help="Sample space file name [default: %default]"),
-    make_option(c( "--output3"), type="character", metavar="character", default=opt[13],
+    make_option(c( "--output3"), type="character", metavar="character", default=opt[14],
                 help="Best fingerprint file name [default: %default]"),
-    make_option(c( "--output4"), type="character", metavar="character", default=opt[14],
+    make_option(c( "--output4"), type="character", metavar="character", default=opt[15],
                 help="AVE plot file name [default: %default]")
   )
   args = commandArgs(trailingOnly=T)
@@ -117,6 +119,11 @@ checkArg = function(opt){
 # blocks : a list of matrix
 postCheckArg = function(opt, blocks){
 
+  opt = select.type(opt, blocks)
+
+  if(opt$superblock)
+    blocks = c(blocks, list(Reduce(cbind, blocks)))
+
   opt$ncomp = as.list(lapply(strsplit(unlist(as.character(opt$ncomp)), ","), as.double)[[1]])
 
   out = lapply(opt$ncomp, function(x){
@@ -136,7 +143,7 @@ postCheckArg = function(opt, blocks){
   })
 
   MSG = "--tau must be comprise between 0 and 1 or must correspond to the character 'optimal' for automatic setting.\n"
-  if (opt$tau != "optimal"){
+  if (all(opt$tau != "optimal")){
     tryCatch({
 
       # Parse list of tau
@@ -147,7 +154,6 @@ postCheckArg = function(opt, blocks){
         if((x < 0) || (x > 1))
           stop(MSG, call.=FALSE)
       })
-
 
       # If there is only one common tau
       if(length(list_tau) == 1)
@@ -162,6 +168,22 @@ postCheckArg = function(opt, blocks){
       stop(MSG, call.=FALSE)
     })
   }
+
+  # c1 : A vector of integer giving the spasity parameter for SGCCA (c1)
+  # Stop the program if at least one c1 parameter is not in the required interval
+
+    # Select the minimum value avalaible
+    # min_c1 = lapply(blocks, function(x) 1 / sqrt(ncol(x)))
+    #
+    # # Check c1 varying between 1/sqrt(pj) and 1
+    # out = mapply(function(x, y){
+    #   if(x < y | x > 1)
+    #     stop(paste("Sparsity parameter is equals to ", x,
+    #                ". For SGCCA, it must be comprise between 1/sqrt(number_column) (i.e., ",
+    #                ceiling(y * 100) / 100 , ") and 1.\n", sep=""),
+    #          call. = FALSE)
+    # }, opt$c1, min_c1)
+
 
   if(opt$block > length(blocks))
     stop(paste("--block must be lower than ", length(blocks), " (the maximum number of blocks).\n", sep=""), call.=FALSE)
@@ -198,10 +220,11 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
+           type = "hpca",
            scheme = "factorial",
-           tau = "1",
+           tau = "1,0,1,0.75,1,1",
            init = "svd",
-           ncomp = "2",
+           ncomp = "2, 3, 2, 2, 2, 3",
            block = 0,
            compx = 1,
            compy = 2,
@@ -210,7 +233,7 @@ opt = list(directory = ".",
            output2 = "corcircle.pdf",
            output3 = "fingerprint.pdf",
            output4 = "ave.pdf",
-           datasets="data2/Clinique.tsv,data2/Lipidomique.tsv,data2/Transcriptomique.tsv,data2/Imagerie.tsv,data2/Metabolomique.tsv")
+           datasets="data4/Clinique.tsv,data4/Lipidomique.tsv,data4/Transcriptomique.tsv,data4/Imagerie.tsv,data4/Metabolomique.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -222,6 +245,7 @@ tryCatch({
 
 setwd(opt$directory)
 source("R/parsing.R")
+source("R/select.type.R")
 source("R/plot.R")
 
 # Global settings
@@ -234,12 +258,19 @@ VERBOSE = FALSE
 
 blocks = setBlocks(opt$superblock, opt$datasets, opt$names, opt$separator, opt$header)
 opt = postCheckArg(opt, blocks)
-connection = setConnection(blocks, opt$connection, opt$separator)
+
+if( opt$superblock ){
+  blocks[["Superblock"]] = Reduce(cbind, blocks)
+  warning("By using a superblock, all blocks are connected to this superblock in the connection matrix and the connection file is ignored.\n",
+          call. = FALSE)
+}
+
+connection = opt$connection
+if(!is.matrix(connection))
+  connection = setConnection(blocks, opt$superblock, opt$connection, opt$separator)
+
 response = setResponse(blocks, opt$response, opt$separator, opt$header)
 
-getColumnSdNull = function(list_m)
-  lapply(list_m, function (x) which( apply(x, 2, sd ) == 0 ))
-# TODO: getColumnSdNull(blocks)
 
 rgcca.res = rgcca(A = blocks,
               C = connection,

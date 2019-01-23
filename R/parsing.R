@@ -245,16 +245,7 @@ setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE, 
     blocks[[fo]] = df
   }
 
-  blocks = keepCommonRow(blocks)
-
-  if (length(unique(sapply(1:length(blocks), function(x) NROW(blocks[[x]])))) > 1)
-    stop("The number of rows is different among the blocks.\n", call. = FALSE)
-  #print(names(blocks[[3]])[99])
-  #blocks[[3]] = blocks[[3]][, -99]
-
-  if( superblock )
-    blocks[["Superblock"]] = Reduce(cbind, blocks)
-  #blocks[["Superblock"]] = blocks[["Superblock"]][, -242]
+  blocks = removeColumnSdNull(keepCommonRow(blocks))
 
   return(blocks)
 }
@@ -283,6 +274,8 @@ checkConnection = function(c, blocks) {
   if(all(c==0))
     stop("The connection file could not contain only 0.\n", call. = FALSE)
 
+  #TODO: warning if superblock = TRUE
+
 }
 
 #' Create a matrix from loading a file corresponding to a connection between the blocks
@@ -297,13 +290,16 @@ checkConnection = function(c, blocks) {
 #' setConnection (blocks, "data/connection.tsv")
 #' }
 #' @export setConnection
-setConnection = function(blocks, file = NULL, sep = "\t") {
+setConnection = function(blocks, superblock = FALSE, file = NULL, sep = "\t") {
 
-  if (is.null(file)) {
+  J = length(blocks)
 
-    seq = 1:(length(blocks) - 1)
-    connection = matrix(0, length(blocks), length(blocks))
-    connection[length(blocks), seq] <- connection[seq, length(blocks)] <- 1
+  if (is.null(file))
+    connection = 1-diag(J)
+
+  else if(superblock){
+    connection <- matrix(0, J, J)
+    connection[1:J-1, J] = connection[J, 1:J-1] = 1
 
   } else {
     isXls <- (length(grep("xlsx?", file)) == 1)
@@ -413,7 +409,7 @@ isCharacter = function(x) {
   return(test)
 }
 
-#' Get the common row names
+#' Get the rows with the same names among a list of dataframe
 #'
 #' @param list_m A list of dataframe
 #' @return A vector of character with the common rownames
@@ -428,16 +424,42 @@ commonRow = function(list_m){
   return(common_row)
 }
 
-#' Keep the common row names
+#' Keep only the rows with the same names among a list of dataframe
 #'
 #' @param list_m A list of dataframe
-#' @return A list of datrame with the same number of row (those with the same name)
+#' @return A list of dataframe
 #' @export keepCommonRow
 keepCommonRow = function(list_m){
 
   names = names(list_m)
+
   common_row = commonRow(list_m)
   list_m = lapply(1:length(list_m), function (x) list_m[[x]] = list_m[[x]][common_row,])
+
+  names(list_m) = names
+  return (list_m)
+}
+
+#' Remove column having a standard deviation equals to 0
+#'
+#' @param list_m A list of dataframe
+#' @return A list of dataframe
+#' @export removeColumnSdNull
+removeColumnSdNull = function(list_m) {
+
+  names = names(list_m)
+
+  column_sd_null = lapply(list_m, function (x) which( apply(x, 2, sd ) == 0 ))
+  blocks_index =  seq(1, length(list_m))[unlist(lapply(column_sd_null, function(x) length(x) > 0))]
+
+  list_m = lapply(1:length(list_m), function(x){
+
+    if( x %in% blocks_index)
+      list_m[[x]][, -column_sd_null[[x]]]
+    else
+      list_m[[x]]
+  })
+
   names(list_m) = names
   return (list_m)
 }
