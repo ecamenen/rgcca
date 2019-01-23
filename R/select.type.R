@@ -32,7 +32,7 @@ select.type <- function(opt, A = blocks){
   }
 
   warnSuper = function(x){
-    if(length(x) < (length(A)+1)){
+    if(length(x) < (length(A))){
       warning(paste("Because of the use of a superblock, ", paste(deparse(substitute(x))) ,
                     " for the superblock was the one of the first block.\n", sep=""), call. = FALSE)
       return(c(x, x[1]))
@@ -45,8 +45,8 @@ select.type <- function(opt, A = blocks){
     if(verbose)
       warning(paste("Because ", type, " was set, a superblock was used.\n",
                     sep=""), call. = FALSE)
-
-    assign("A", list(c(A, Reduce(cbind, A))), envir = parent.frame())
+    A = c(A, list(Reduce(cbind, A)))
+    assign("A", A, envir = parent.frame())
     assign("superblock", TRUE, envir = parent.frame())
     assign("C", NULL, envir = parent.frame())
     assign("ncomp", warnSuper(ncomp), envir = parent.frame())
@@ -123,8 +123,8 @@ select.type <- function(opt, A = blocks){
   }
 
   else if (tolower(type) == "rcon-pca"){
-    tau <- warnSuper(tau)
     setSuperbloc()
+    tau <- warnSuper(tau)
   }
 
   else if (tolower(type)%in%c("maxvar-b", "gcca", "niles", "maxvar")){
@@ -147,8 +147,8 @@ select.type <- function(opt, A = blocks){
 
   else if (tolower(type) == "r-maxvar"){
     scheme   <- setScheme("factorial")
-    tau <- warnSuper(tau)
     setSuperbloc()
+    tau <- warnSuper(tau)
   }
 
   else if (tolower(type) == "hpca"){

@@ -120,8 +120,6 @@ checkArg = function(opt){
 postCheckArg = function(opt, blocks){
 
   opt = select.type(opt, blocks)
-  print("TAU")
-  print(opt$tau)
 
   if(opt$superblock | opt$type == "pca")
     blocks = c(blocks, list(Reduce(cbind, blocks)))
@@ -136,7 +134,10 @@ postCheckArg = function(opt, blocks){
   if(length(opt$ncomp) == 1)
     opt$ncomp = rep(opt$ncomp[[1]], length(blocks))
   else
-    opt$ncomp = unlist(opt$ncomp)
+    if(length(opt$ncomp) != length(blocks))
+      stop(paste("--ncomp list must have the same size (", length(opt$ncomp), ") than the the number of blocks (", length(blocks), ").\n", sep=""), call.=FALSE)
+    else
+      opt$ncomp = unlist(opt$ncomp)
 
   out = sapply(c("compx", "compy"), function (x){
     if ((opt[[x]] < 1) || (opt[[x]] > opt$ncomp )){
@@ -220,11 +221,11 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "pca",
+           type = "rgcca",
            scheme = "factorial",
-           tau = "1,0,1,0.75,1,1",
+           tau = "1, 0.2, 0.75",
            init = "svd",
-           ncomp = "2, 3, 2, 2, 2, 3",
+           ncomp = "2, 3, 3",
            block = 0,
            compx = 1,
            compy = 2,
@@ -233,7 +234,7 @@ opt = list(directory = ".",
            output2 = "corcircle.pdf",
            output3 = "fingerprint.pdf",
            output4 = "ave.pdf",
-           datasets="data4/Clinique.tsv")
+           datasets="data4/Clinique.tsv,data4/Metabolomique.tsv, data4/Lipidomique.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -301,5 +302,7 @@ plotFingerprint(rgcca.res, opt$compx, opt$superblock, opt$nmark, 2)
 savePlot(opt$output3, fingerprint)
 
 # Average Variance Explained
-(ave = plotAVE(rgcca.res, opt$compx))
-savePlot(opt$output4, ave)
+if(opt$type != "pca"){
+  (ave = plotAVE(rgcca.res, opt$compx))
+  savePlot(opt$output4, ave)
+}

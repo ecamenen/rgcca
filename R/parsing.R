@@ -246,7 +246,7 @@ setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE, 
   }
 
   if(length(blocks) > 1)
-    keepCommonRow(blocks)
+    blocks = keepCommonRow(blocks)
 
   blocks = removeColumnSdNull(blocks)
 
