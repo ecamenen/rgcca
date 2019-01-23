@@ -245,7 +245,10 @@ setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE, 
     blocks[[fo]] = df
   }
 
-  blocks = removeColumnSdNull(keepCommonRow(blocks))
+  if(length(blocks) > 1)
+    keepCommonRow(blocks)
+
+  blocks = removeColumnSdNull(blocks)
 
   return(blocks)
 }

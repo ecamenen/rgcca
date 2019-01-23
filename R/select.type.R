@@ -5,6 +5,10 @@ select.type <- function(opt, A = blocks){
 
   scheme = opt$scheme;  tau = opt$tau;  ncomp = opt$ncomp;  C = opt$connection;  superblock = opt$superblock; type = opt$type
 
+  ncomp = unlist(lapply(strsplit(unlist(as.character(ncomp)), ","), as.double)[[1]])
+  if(tau != "optimal")
+    tau = unlist(lapply(strsplit(unlist(as.character(tau)), ","), as.double)[[1]])
+
   ### SETTINGS ###
 
   warnParam = function(param, x)
@@ -65,7 +69,7 @@ select.type <- function(opt, A = blocks){
     scheme   <- setScheme("horst")
     tau      <- setTau(c(1, 1))
     ncomp    <- rep(ncomp[1], 2)
-    C        <- NULL
+    C        <- setConnection(1-diag(2))
   }
 
   else if (tolower(type) == "cca"){
@@ -73,7 +77,7 @@ select.type <- function(opt, A = blocks){
       stop(paste(length(A), " blocks used in the analysis. Two blocks are required for a CCA.\n", sep=""), call.=FALSE)
     scheme   <- setScheme("horst")
     tau      <- setTau(c(0, 0))
-    C        <- setConnection(1-diag(J))
+    C        <- setConnection(1-diag(2))
   }
 
   else if (tolower(type) == "sumcor"){

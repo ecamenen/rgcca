@@ -120,11 +120,13 @@ checkArg = function(opt){
 postCheckArg = function(opt, blocks){
 
   opt = select.type(opt, blocks)
+  print("TAU")
+  print(opt$tau)
 
-  if(opt$superblock)
+  if(opt$superblock | opt$type == "pca")
     blocks = c(blocks, list(Reduce(cbind, blocks)))
 
-  opt$ncomp = as.list(lapply(strsplit(unlist(as.character(opt$ncomp)), ","), as.double)[[1]])
+  opt$ncomp = as.list(opt$ncomp)
 
   out = lapply(opt$ncomp, function(x){
     if ((x < 2) || (x > min(sapply(blocks, NCOL)))){
@@ -146,9 +148,7 @@ postCheckArg = function(opt, blocks){
   if (all(opt$tau != "optimal")){
     tryCatch({
 
-      # Parse list of tau
-      list_tau = as.list(lapply(strsplit(unlist(as.character(opt$tau)), ","), as.double)[[1]])
-
+      list_tau = as.list(opt$tau)
       # Check value of each tau
       out = lapply(list_tau, function(x){
         if((x < 0) || (x > 1))
@@ -160,7 +160,7 @@ postCheckArg = function(opt, blocks){
         opt$tau = rep(list_tau[[1]], length(blocks))
       else
         if(length(list_tau) != length(blocks))
-          stop(paste("--tau list must have the same size (", length(opt$tau), ") than the the number of blocks (", length(blocks), ").\n", sep=""), call.=FALSE)
+          stop(paste("--tau list must have the same size (", length(list_tau), ") than the the number of blocks (", length(blocks), ").\n", sep=""), call.=FALSE)
         else
           opt$tau = unlist(list_tau)
 
@@ -220,7 +220,7 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "hpca",
+           type = "pca",
            scheme = "factorial",
            tau = "1,0,1,0.75,1,1",
            init = "svd",
@@ -233,7 +233,7 @@ opt = list(directory = ".",
            output2 = "corcircle.pdf",
            output3 = "fingerprint.pdf",
            output4 = "ave.pdf",
-           datasets="data4/Clinique.tsv,data4/Lipidomique.tsv,data4/Transcriptomique.tsv,data4/Imagerie.tsv,data4/Metabolomique.tsv")
+           datasets="data4/Clinique.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -259,10 +259,11 @@ VERBOSE = FALSE
 blocks = setBlocks(opt$superblock, opt$datasets, opt$names, opt$separator, opt$header)
 opt = postCheckArg(opt, blocks)
 
-if( opt$superblock ){
+if( opt$superblock  | opt$type == "pca"){
   blocks[["Superblock"]] = Reduce(cbind, blocks)
-  warning("By using a superblock, all blocks are connected to this superblock in the connection matrix and the connection file is ignored.\n",
-          call. = FALSE)
+  if( opt$superblock )
+    warning("By using a superblock, all blocks are connected to this superblock in the connection matrix and the connection file is ignored.\n",
+            call. = FALSE)
 }
 
 connection = opt$connection
