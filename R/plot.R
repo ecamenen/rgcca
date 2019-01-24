@@ -14,7 +14,7 @@ AXIS_TITLE_SIZE = 19
 AXIS_TEXT_SIZE = 10
 PCH_TEXT_SIZE = 3
 AXIS_FONT = "italic"
-SAMPLES_COL_DEFAULT = "#000099"
+SAMPLES_COL_DEFAULT = "brown3"
 
 # Creates a circle
 circleFun = function(center = c(0, 0), diameter = 2, npoints = 100) {
@@ -50,8 +50,18 @@ printAxis = function (rgcca, n, i = NULL){
   if ( is.null(i) )
     i = length(rgcca$AVE$AVE_X)
 
-  paste("Axis ", n, " (", round(rgcca$AVE$AVE_X[[i]][n] * 100 , 1),"%)", sep="")
+
+  nvar = varSelected(rgcca, i, n)
+  if(class(rgcca) !="sgcca" | nvar == length(rgcca$a[[i]][, n]) )
+    varText = ""
+  else
+    varText = paste(nvar, " variables, ", sep="")
+
+  paste("Component ", n, " (", varText, round(rgcca$AVE$AVE_X[[i]][n] * 100 , 1),"%)", sep="")
 }
+
+varSelected = function(rgcca, i_block, comp)
+  sum(rgcca$a[[i_block]][,comp] != 0)
 
 #' Default font for plots
 theme_perso = function() {
@@ -183,6 +193,13 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
     row.names = colnames(blocks[[i_block]])
   )
 
+  if(class(rgcca)=="sgcca"){
+    selectedVar = rgcca$a[[i_block]][,comp_x] != 0 | rgcca$a[[i_block]][,comp_y] != 0
+    df = df[selectedVar, ]
+  }
+
+
+
   # if superblock is selected, color by blocks
   if ( superblock & ( i_block == length(blocks)) ){
     color = getBlocsVariables(rgcca)
@@ -234,11 +251,15 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
   }
 
   if (!isTRUE(text)){
-    p = p + geom_point(size = PCH_TEXT_SIZE)
+    func = quote(geom_point(size = PCH_TEXT_SIZE))
   }else
-    p = p + geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE)
+    func = quote(geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE))
 
-  p + theme_classic() +
+  if(title == "Samples")
+    func$colour = SAMPLES_COL_DEFAULT
+
+  p + eval(as.call(func)) +
+    theme_classic() +
     geom_vline(xintercept = 0, col = "grey", linetype = "dashed", size = 1) +
     geom_hline(yintercept = 0, col = "grey", linetype = "dashed", size = 1) +
     labs ( title = paste(title, "space"),
@@ -301,6 +322,11 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
   }else{
     color2 = "black"
   }
+
+  # selected variables in sgcca
+  nvar_select = varSelected(rgcca, i_block, comp)
+  if(n_mark > nvar_select)
+    n_mark = nvar_select
 
   # max threshold for n
   if(NROW(df) >= n_mark) df = df[1:n_mark,]

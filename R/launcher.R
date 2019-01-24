@@ -273,7 +273,7 @@ if(!is.matrix(connection))
 
 response = setResponse(blocks, opt$response, opt$separator, opt$header)
 
-rgcca.out = rgcca.analyze(blocks, connection, opt)
+rgcca.out = rgcca.analyze(blocks, connection, opt$scheme, opt$ncomp, opt$scale, opt$init, opt$bias, opt$tau)
 
 # Samples common space
 ( samples_plot = plotSamplesSpace(rgcca.out, response, opt$compx, opt$compy, opt$block, opt$text) )
@@ -282,7 +282,7 @@ savePlot(opt$output1, samples_plot)
 
 # Variables common space
 ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
-plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 1)
+plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 2)
 savePlot(opt$output2, corcircle)
 
 # Fingerprint plot

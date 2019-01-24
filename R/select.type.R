@@ -180,8 +180,9 @@ select.type <- function(opt, A = blocks){
   return(opt)
 }
 
-rgcca.analyze = function(blocks, connection, opt){
-
+rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, length(blocks)),
+                         ncomp = rep(2, length(blocks)), scheme = "factorial", scale = TRUE,
+                         init = "svd", bias = TRUE){
 
   if(opt$type =="sgcca"){
     func = sgcca
