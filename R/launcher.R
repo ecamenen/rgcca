@@ -221,11 +221,11 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "rgcca",
+           type = "sgcca",
            scheme = "factorial",
-           tau = "1, 0.2, 0.75",
+           tau = "1, 0.2",
            init = "svd",
-           ncomp = "2, 3, 3",
+           ncomp = "2, 3",
            block = 0,
            compx = 1,
            compy = 2,
@@ -234,7 +234,7 @@ opt = list(directory = ".",
            output2 = "corcircle.pdf",
            output3 = "fingerprint.pdf",
            output4 = "ave.pdf",
-           datasets="data4/Clinique.tsv,data4/Metabolomique.tsv, data4/Lipidomique.tsv")
+           datasets="data4/Clinique.tsv,data4/Metabolomique.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -273,36 +273,25 @@ if(!is.matrix(connection))
 
 response = setResponse(blocks, opt$response, opt$separator, opt$header)
 
-
-rgcca.res = rgcca(A = blocks,
-              C = connection,
-              scheme = opt$scheme,
-              ncomp = opt$ncomp,
-              scale = opt$scale,
-              tau = opt$tau,
-              verbose = VERBOSE,
-              init = opt$init,
-              bias = opt$bias)
-
-names(rgcca.res$a) = names(blocks)
+rgcca.out = rgcca.analyze(blocks, connection, opt)
 
 # Samples common space
-( samples_plot = plotSamplesSpace(rgcca.res, response, opt$compx, opt$compy, opt$block, opt$text) )
-plotSamplesSpace(rgcca.res, response, opt$compx, opt$compy, 1)
+( samples_plot = plotSamplesSpace(rgcca.out, response, opt$compx, opt$compy, opt$block, opt$text) )
+plotSamplesSpace(rgcca.out, response, opt$compx, opt$compy, 1)
 savePlot(opt$output1, samples_plot)
 
 # Variables common space
-( corcircle = plotVariablesSpace(rgcca.res, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
-plotVariablesSpace(rgcca.res, blocks, opt$compx, opt$compy, opt$superblock, 1)
+( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
+plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 1)
 savePlot(opt$output2, corcircle)
 
 # Fingerprint plot
-( fingerprint = plotFingerprint(rgcca.res, opt$compx, opt$superblock, opt$nmark, opt$block) )
-plotFingerprint(rgcca.res, opt$compx, opt$superblock, opt$nmark, 2)
+( fingerprint = plotFingerprint(rgcca.out, opt$compx, opt$superblock, opt$nmark, opt$block) )
+plotFingerprint(rgcca.out, opt$compx, opt$superblock, opt$nmark, 2)
 savePlot(opt$output3, fingerprint)
 
 # Average Variance Explained
 if(opt$type != "pca"){
-  (ave = plotAVE(rgcca.res, opt$compx))
+  (ave = plotAVE(rgcca.out, opt$compx))
   savePlot(opt$output4, ave)
 }

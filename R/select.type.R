@@ -52,9 +52,16 @@ select.type <- function(opt, A = blocks){
     assign("ncomp", warnSuper(ncomp), envir = parent.frame())
   }
 
+  set2Block = function(){
+    if(length(A) != 2)
+      stop(paste(length(A), " blocks used in the analysis. Two blocks are required for a CCA.\n", sep=""), call.=FALSE)
+    assign(scheme, setScheme("horst"), envir = parent.frame())
+    assign("C", setConnection(1-diag(2)), envir = parent.frame())
+  }
+
   ### CHECK TYPES ###
 
-  if (tolower(type) == "rgcca"){
+  if(length(grep("[sr]gcca", tolower(type))) == 1){
     if(superblock){
       setSuperbloc(FALSE)
       tau <- warnSuper(tau)
@@ -73,11 +80,18 @@ select.type <- function(opt, A = blocks){
   }
 
   else if (tolower(type) == "cca"){
-    if(length(A) != 2)
-      stop(paste(length(A), " blocks used in the analysis. Two blocks are required for a CCA.\n", sep=""), call.=FALSE)
-    scheme   <- setScheme("horst")
+    set2Block()
     tau      <- setTau(c(0, 0))
-    C        <- setConnection(1-diag(2))
+  }
+
+  else if (tolower(type) %in% c("ifa", "pls")){
+    set2Block()
+    tau      <- setTau(c(1, 1))
+  }
+
+  else if (tolower(type) == "ra"){
+    set2Block()
+    tau      <- setTau(c(1, 0))
   }
 
   else if (tolower(type) == "sumcor"){
@@ -157,11 +171,37 @@ select.type <- function(opt, A = blocks){
     setSuperbloc()
   }
 
-  else if(tolower(type) != "rgcca"){
+  else if(length(grep("[sr]gcca", tolower(type))) != 1){
     stop("Wrong type of analysis. Please select one among the following list: rgcca, cpca-w, gcca, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov.\n")
   }
 
   opt$scheme = scheme;  opt$tau = tau;  opt$ncomp = ncomp;  opt$connection = C;  opt$superblock = superblock
 
   return(opt)
+}
+
+rgcca.analyze = function(blocks, connection, opt){
+
+
+  if(opt$type =="sgcca"){
+    func = sgcca
+    par = "c1"
+  }else{
+    func = rgcca
+    par = "tau"
+  }
+
+  func.complete = quote(func(A = blocks,
+                             C = connection,
+                             scheme = opt$scheme,
+                             ncomp = opt$ncomp,
+                             scale = opt$scale,
+                             verbose = VERBOSE,
+                             init = opt$init,
+                             bias = opt$bias))
+  func.complete[[par]] = opt$tau
+  func.res = eval(as.call(func.complete))
+
+  names(func.res$a) = names(blocks)
+  return(func.res)
 }
