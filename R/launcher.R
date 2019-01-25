@@ -24,8 +24,8 @@ getArgs = function(){
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
     make_option(c("-g", "--group"), type="character", metavar="character",
                 help="Path of the group file (to color samples by group in the associated plot)"),
-    make_option(c("-r", "--response"), type="character", metavar="character", default = opt[17],
-                help="Path of the response file (for supervized method)"),
+    make_option(c("-r", "--response"), type="integer", metavar="integer", default = 3,
+                help="Position of the response file in datasets (if not null, activate supervized method)"),
     make_option(c("--names"), type="character", metavar="character", help="List of the names for each block file separated by comma [default: filename]"),
     make_option(c("-H", "--header"), type="logical", action="store_false", help="DO NOT consider the first row as header of columns"),
     make_option(c("--separator"), type="integer", metavar="integer", default=1,
@@ -109,7 +109,7 @@ checkArg = function(opt){
     opt$init = ifelse(opt$init == 1, "svd", "random")
   }
 
-  FILES = c("connection", "response")
+  FILES = c("connection", "group")
   for (o in FILES)
     if(!is.null(opt[[o]]))
       checkFile(opt[[o]])
@@ -121,8 +121,7 @@ checkArg = function(opt){
 # opt : an optionParser object
 # blocks : a list of matrix
 postCheckArg = function(opt, blocks){
-
-  opt = setPosPar(select.type(opt, blocks), blocks)
+  opt = select.type(opt, blocks)
 
   if(opt$superblock | opt$type == "pca")
     blocks = c(blocks, list(Reduce(cbind, blocks)))
@@ -200,6 +199,29 @@ postCheckArg = function(opt, blocks){
   return (opt)
 }
 
+setPosPar = function(opt, blocks, i_resp){
+
+  J = length(blocks)
+  opt$blocks = blocks
+
+  par = c("blocks", "ncomp")
+  if (all(opt$tau != "optimal"))
+    par[3] = "tau"
+
+  for (i in 1:3){
+    temp = opt[[par[i]]][[J]]
+    opt[[par[i]]][[J]] = opt[[par[i]]][[i_resp]]
+    opt[[par[i]]][[i_resp]] = temp
+  }
+
+  n = names(opt$blocks)
+
+  names(opt$blocks) = n [ match( n,
+                                 c(n[-i_resp], n[i_resp]) ) ]
+
+  return(opt)
+}
+
 #' Launch a Shiny application for S/RGCCA
 #' @export
 runShiny <- function()
@@ -209,24 +231,6 @@ runShiny <- function()
 warnConnection = function(x)
   warning(paste("By using a ", x , ", all blocks are connected to this block in the connection matrix and the connection file is ignored.\n", sep=""),
           call. = FALSE)
-
-setPosPar = function(opt, blocks){
-
-  i_resp = match(opt$response, parseList(opt$datasets))
-  J = length(blocks)
-
-  par = c("ncomp")
-  if (all(opt$tau != "optimal"))
-    par[2] = "tau"
-
-  for (i in 1:2){
-    temp = opt[[par[i]]][[J]]
-    opt[[par[i]]][[J]] = opt[[par[i]]][[i_resp]]
-    opt[[par[i]]][[i_resp]] = temp
-  }
-
-  return(opt)
-}
 
 ##################
 #     Main
@@ -252,7 +256,7 @@ opt = list(directory = ".",
            separator = "\t",
            type = "sgcca",
            scheme = "factorial",
-           tau = "0.45, 0.1, 0.1, 0.5",
+           tau = "0.45, 0.1, 0.5, 0.1",
            init = "svd",
            ncomp = "2, 3, 2, 2",
            block = 0,
@@ -263,8 +267,7 @@ opt = list(directory = ".",
            output2 = "corcircle.pdf",
            output3 = "fingerprint.pdf",
            output4 = "ave.pdf",
-           datasets="data4/Clinique.tsv,data4/Metabolomique.tsv,data4/Imagerie.tsv,data4/Lipidomique.tsv",
-           response = "data4/Imagerie.tsv")
+           datasets="data4/Clinique.tsv,data4/Metabolomique.tsv,data4/Imagerie.tsv,data4/Lipidomique.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -298,17 +301,12 @@ if( ! is.null(opt$response) ){
 
 blocks = setBlocks(opt$superblock, opt$datasets, opt$names, opt$separator, opt$header)
 
-if( ! is.null(opt$response) ){
-
-  # If response file is already included in the block datasets
-  if(length(grep(opt$response, opt$datasets)) == 1)
-    blocks[[getFileName(opt$response)]] <- NULL
-
-  resp = setBlocks(F, opt$response, NULL, opt$separator, opt$header)
-  blocks = append(blocks, resp)
-}
-
 opt = postCheckArg(opt, blocks)
+
+if( ! is.null(opt$response) ){
+  opt = setPosPar(opt, blocks, opt$response)
+  blocks = opt$blocks
+}
 
 if( opt$superblock  | opt$type == "pca"){
   blocks[["Superblock"]] = Reduce(cbind, blocks)
