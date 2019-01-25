@@ -70,7 +70,12 @@ select.type <- function(opt, A = blocks){
     superblock <- FALSE
   }
 
-  if (tolower(type) == "pca"){
+  if(length(grep("pls-?pm", tolower(type))) == 1){
+    scheme   <- setScheme("centroid")
+    tau      <- setTau(rep(0, J))
+  }
+
+  else if (tolower(type) == "pca"){
     if(length(A) != 1)
       stop(paste(length(A), " blocks used in the analysis. Only one block is required for a PCA.\n", sep=""), call.=FALSE)
     scheme   <- setScheme("horst")
@@ -110,6 +115,12 @@ select.type <- function(opt, A = blocks){
     scheme   <- setScheme("centroid")
     tau      <- setTau(rep(0, J))
     C        <- setConnection(1-diag(J))
+  }
+
+  else if (tolower(type) == "sabscov"){
+    scheme   <- setScheme("centroid")
+    tau      <- setTau(rep(1, J))
+    C        <- setConnection(matrix(1, J, J))
   }
 
   else if (tolower(type)%in%c("sumcov", "sumcov-1", "maxbet")){
@@ -172,7 +183,7 @@ select.type <- function(opt, A = blocks){
   }
 
   else if(length(grep("[sr]gcca", tolower(type))) != 1){
-    stop("Wrong type of analysis. Please select one among the following list: rgcca, cpca-w, gcca, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov.\n")
+    stop("Wrong type of analysis. Please select one among the following list: rgcca, cpca-w, gcca, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov., sabscov, plspm\n")
   }
 
   opt$scheme = scheme;  opt$tau = tau;  opt$ncomp = ncomp;  opt$connection = C;  opt$superblock = superblock
