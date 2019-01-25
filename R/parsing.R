@@ -297,14 +297,14 @@ setConnection = function(blocks, superblock = FALSE, file = NULL, sep = "\t") {
 
   J = length(blocks)
 
-  if (is.null(file))
-    connection = 1-diag(J)
-
-  else if(superblock){
+  if(superblock){
     connection <- matrix(0, J, J)
     connection[1:J-1, J] = connection[J, 1:J-1] = 1
 
-  } else {
+  }else if (is.null(file))
+    connection = 1-diag(J)
+
+  else {
     isXls <- (length(grep("xlsx?", file)) == 1)
 
     if(!isXls)

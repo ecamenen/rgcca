@@ -22,7 +22,10 @@ getArgs = function(){
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[16]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
-    make_option(c("-r", "--response"), type="character", metavar="character", help="Path of the response file (to color samples by group in the associated plot)"),
+    make_option(c("-g", "--group"), type="character", metavar="character",
+                help="Path of the group file (to color samples by group in the associated plot)"),
+    make_option(c("-r", "--response"), type="character", metavar="character", default = opt[17],
+                help="Path of the response file (for supervized method)"),
     make_option(c("--names"), type="character", metavar="character", help="List of the names for each block file separated by comma [default: filename]"),
     make_option(c("-H", "--header"), type="logical", action="store_false", help="DO NOT consider the first row as header of columns"),
     make_option(c("--separator"), type="integer", metavar="integer", default=1,
@@ -31,7 +34,7 @@ getArgs = function(){
                 help="Type of analysis to use (by default, 1 for RGCCA) [1: rgcca, 2: pca, 3: cca, 4: gcca, cpca-w, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov]"),
     make_option(c("--tau"), type="character", metavar="float", default=opt[5],
                 help="Tau parameter for RGCCA, a float between 0 (maximize the covariance) and 1 (maximize the correlation between blocks). Could also be a list separated by comma. Ex: 0,1,0.75,1"),
-    make_option(c("-g", "--scheme"), type="integer", metavar="integer", default=2,
+    make_option(c("--scheme"), type="integer", metavar="integer", default=2,
                 help="Scheme function g(x) for RGCCA (1: x, 2: x^2, 3: |x|, 4: x^4) [default: x^2]"),
     make_option(c("--scale"),  type="logical", action="store_false",
                 help="DO NOT scale the blocks (i.e., standardize each block to zero mean and unit variances and then divide them by the square root of its number of variables)"),
@@ -119,7 +122,7 @@ checkArg = function(opt){
 # blocks : a list of matrix
 postCheckArg = function(opt, blocks){
 
-  opt = select.type(opt, blocks)
+  opt = setPosPar(select.type(opt, blocks), blocks)
 
   if(opt$superblock | opt$type == "pca")
     blocks = c(blocks, list(Reduce(cbind, blocks)))
@@ -173,17 +176,20 @@ postCheckArg = function(opt, blocks){
   # c1 : A vector of integer giving the spasity parameter for SGCCA (c1)
   # Stop the program if at least one c1 parameter is not in the required interval
 
-    # Select the minimum value avalaible
-    # min_c1 = lapply(blocks, function(x) 1 / sqrt(ncol(x)))
-    #
-    # # Check c1 varying between 1/sqrt(pj) and 1
-    # out = mapply(function(x, y){
-    #   if(x < y | x > 1)
-    #     stop(paste("Sparsity parameter is equals to ", x,
-    #                ". For SGCCA, it must be comprise between 1/sqrt(number_column) (i.e., ",
-    #                ceiling(y * 100) / 100 , ") and 1.\n", sep=""),
-    #          call. = FALSE)
-    # }, opt$c1, min_c1)
+  if(opt$type == "sgcca"){
+      #the minimum value avalaible
+      min_c1 = lapply(blocks, function(x) 1 / sqrt(ncol(x)))
+
+      # Check c1 varying between 1/sqrt(pj) and 1
+      out = mapply(function(x, y){
+        if(x < y | x > 1)
+          stop(paste("Sparsity parameter is equals to ", x,
+                     ". For SGCCA, it must be comprise between 1/sqrt(number_column) (i.e., ",
+                     toString(unlist(lapply(min_c1, function(x) ceiling(x * 100) / 100)))
+                     , ") and 1.\n", sep=""),
+               call. = FALSE)
+      }, opt$tau, min_c1)
+  }
 
 
   if(opt$block > length(blocks))
@@ -198,6 +204,29 @@ postCheckArg = function(opt, blocks){
 #' @export
 runShiny <- function()
   shiny::runApp("inst/shiny")
+
+
+warnConnection = function(x)
+  warning(paste("By using a ", x , ", all blocks are connected to this block in the connection matrix and the connection file is ignored.\n", sep=""),
+          call. = FALSE)
+
+setPosPar = function(opt, blocks){
+
+  i_resp = match(opt$response, parseList(opt$datasets))
+  J = length(blocks)
+
+  par = c("ncomp")
+  if (all(opt$tau != "optimal"))
+    par[2] = "tau"
+
+  for (i in 1:2){
+    temp = opt[[par[i]]][[J]]
+    opt[[par[i]]][[J]] = opt[[par[i]]][[i_resp]]
+    opt[[par[i]]][[i_resp]] = temp
+  }
+
+  return(opt)
+}
 
 ##################
 #     Main
@@ -223,9 +252,9 @@ opt = list(directory = ".",
            separator = "\t",
            type = "sgcca",
            scheme = "factorial",
-           tau = "1, 0.2",
+           tau = "0.45, 0.1, 0.1, 0.5",
            init = "svd",
-           ncomp = "2, 3",
+           ncomp = "2, 3, 2, 2",
            block = 0,
            compx = 1,
            compy = 2,
@@ -234,7 +263,8 @@ opt = list(directory = ".",
            output2 = "corcircle.pdf",
            output3 = "fingerprint.pdf",
            output4 = "ave.pdf",
-           datasets="data4/Clinique.tsv,data4/Metabolomique.tsv")
+           datasets="data4/Clinique.tsv,data4/Metabolomique.tsv,data4/Imagerie.tsv,data4/Lipidomique.tsv",
+           response = "data4/Imagerie.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -251,38 +281,57 @@ source("R/plot.R")
 
 # Global settings
 opt$header = !("header" %in% names(opt))
-opt$superblock = !("superblock" %in% names(opt))
+opt$superblock = ("superblock" %in% names(opt))
 opt$bias = !("bias" %in% names(opt))
 opt$scale = !("scale" %in% names(opt))
 opt$text = !("text" %in% names(opt))
 VERBOSE = FALSE
 
+if( ! is.null(opt$response) ){
+  warnConnection("supervized method with a response")
+  if( opt$superblock){
+    opt$superblock = FALSE
+    if(("superblock" %in% names(opt)))
+      warning("In a supervised mode, the superblock corresponds to the response.\n", call. = FALSE)
+  }
+}
+
 blocks = setBlocks(opt$superblock, opt$datasets, opt$names, opt$separator, opt$header)
+
+if( ! is.null(opt$response) ){
+
+  # If response file is already included in the block datasets
+  if(length(grep(opt$response, opt$datasets)) == 1)
+    blocks[[getFileName(opt$response)]] <- NULL
+
+  resp = setBlocks(F, opt$response, NULL, opt$separator, opt$header)
+  blocks = append(blocks, resp)
+}
+
 opt = postCheckArg(opt, blocks)
 
 if( opt$superblock  | opt$type == "pca"){
   blocks[["Superblock"]] = Reduce(cbind, blocks)
   if( opt$superblock )
-    warning("By using a superblock, all blocks are connected to this superblock in the connection matrix and the connection file is ignored.\n",
-            call. = FALSE)
+    warnConnection("superblock")
 }
 
 connection = opt$connection
 if(!is.matrix(connection))
-  connection = setConnection(blocks, opt$superblock, opt$connection, opt$separator)
+  connection = setConnection(blocks, (opt$superblock | !is.null(opt$response)), opt$connection, opt$separator)
 
-response = setResponse(blocks, opt$response, opt$separator, opt$header)
+group = setResponse(blocks, opt$group, opt$separator, opt$header)
 
 rgcca.out = rgcca.analyze(blocks, connection, opt$scheme, opt$ncomp, opt$scale, opt$init, opt$bias, opt$tau)
 
 # Samples common space
-( samples_plot = plotSamplesSpace(rgcca.out, response, opt$compx, opt$compy, opt$block, opt$text) )
-plotSamplesSpace(rgcca.out, response, opt$compx, opt$compy, 1)
+( samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text) )
+plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, 1)
 savePlot(opt$output1, samples_plot)
 
 # Variables common space
 ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
-plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 2)
+plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 3)
 savePlot(opt$output2, corcircle)
 
 # Fingerprint plot
