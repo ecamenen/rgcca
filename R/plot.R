@@ -108,7 +108,7 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
     PCH_TEXT_SIZE = 2
 
   # if the resp is numeric
-  if ( ! is.null(resp) ){
+  if (  length(unique(resp)) > 1 ){
 
     if( ! unique(isCharacter(as.vector(resp)))){
       # add some transparency
@@ -125,10 +125,10 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
   }else
     p = NULL
 
-  p = plotSpace(rgcca, df, "Samples", resp, "resp", comp_x, comp_y, i_block, p, text, i_block_y)
+  p = plotSpace(rgcca, df, "Samples", resp, "Response", comp_x, comp_y, i_block, p, text, i_block_y)
 
   # remove legend if missing
-  if (is.null(resp)){
+  if ( length(unique(resp)) == 1){
     p + theme(legend.position = "none")
   }else
     p
@@ -198,13 +198,14 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
     df = df[selectedVar, ]
   }
 
-
-
   # if superblock is selected, color by blocks
   if ( superblock & ( i_block == length(blocks)) ){
     color = getBlocsVariables(rgcca)
   }else
     color = rep(1, NROW(df))
+
+  if(class(rgcca)=="sgcca")
+    color = color[selectedVar]
 
   df = data.frame(df, color)
 
@@ -246,17 +247,17 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
   if(is.null(i_block_y))
     i_block_y = i_block
 
-  if (is.null(p)){
-    p = ggplot(df, aes(df[,1], df[,2], colour = group))
-  }
-
   if (!isTRUE(text)){
-    func = quote(geom_point(size = PCH_TEXT_SIZE))
+    func = quote(geom_point(size = PCH_TEXT_SIZE, aes(shape = as.factor(group))))
   }else
     func = quote(geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE))
 
-  if(title == "Samples")
+  if(title == "Samples" && !is.null(p))
     func$colour = SAMPLES_COL_DEFAULT
+
+  if (is.null(p)){
+    p = ggplot(df, aes(df[,1], df[,2], colour = group))
+  }
 
   p + eval(as.call(func)) +
     theme_classic() +
@@ -265,7 +266,8 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     labs ( title = paste(title, "space"),
            x = printAxis(rgcca, comp_x, i_block),
            y = printAxis(rgcca, comp_y, i_block_y),
-           color = name_group) +
+           color = name_group,
+           shape = name_group) +
     scale_y_continuous(breaks = NULL) +
     scale_x_continuous(breaks = NULL) +
     theme_perso() +
