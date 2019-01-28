@@ -229,6 +229,8 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
   else
     p
 
+  return( p + scale_color_manual(values=colorGroup(color)))
+
 }
 
 #' Plot of components space
@@ -355,8 +357,6 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
     if (  !superblock | i_block != length(rgcca$a) )
       p = p + theme(legend.position = "none")
 
-    print(color2)
-    print(colorGroup(color2))
     return(p + scale_fill_manual(values=colorGroup(color2)))
 
 }
