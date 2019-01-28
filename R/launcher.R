@@ -22,7 +22,7 @@ getArgs = function(){
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[16]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
-    make_option(c("--group"), type="character", metavar="character", default="data/response.tsv",
+    make_option(c("--group"), type="character", metavar="character",
                 help="Path of the group file (to color samples by group in the associated plot)"),
     make_option(c("-r", "--response"), type="integer", metavar="integer",
                 help="Position of the response file in datasets (if not null, activate supervized method)"),
@@ -256,9 +256,9 @@ opt = list(directory = ".",
            separator = "\t",
            type = "sgcca",
            scheme = "factorial",
-           tau = "0.6, 0.42, 0.71",
+           tau = "0.6, 0.45, 0.71, 0.5, 0.6",
            init = "svd",
-           ncomp = "2, 2, 2",
+           ncomp = "2, 2, 3, 2, 3",
            block = 0,
            compx = 1,
            compy = 2,
@@ -267,7 +267,7 @@ opt = list(directory = ".",
            output2 = "corcircle.pdf",
            output3 = "fingerprint.pdf",
            output4 = "ave.pdf",
-           datasets="data/agriculture.tsv,data/politic.tsv,data/industry.tsv")
+           datasets="data4/Clinique.tsv,data4/Imagerie.tsv,data4/Metabolomique.tsv, data4/Lipidomique.tsv, data4/Transcriptomique.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())

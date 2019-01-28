@@ -223,13 +223,13 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
     geom_path(aes(x, y), data = circleFun(), col = "grey", size = 1) +
     geom_path(aes(x, y), data = circleFun()/2, col = "grey", size = 1, lty = 2)
 
+  p = p + scale_color_manual(values = colorGroup(color))
+
   # remove legend if not on superblock
-  if ( !superblock || !( i_block == length(blocks) ) )
+  if ( !superblock || i_block != length(blocks) )
     p + theme(legend.position = "none")
   else
     p
-
-  return( p + scale_color_manual(values=colorGroup(color)))
 
 }
 
@@ -268,7 +268,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     func$colour = SAMPLES_COL_DEFAULT
 
   if (is.null(p)){
-    p = ggplot(df, aes(df[,1], df[,2], colour = group))
+    p = ggplot(df, aes(df[,1], df[,2], colour = as.factor(group)))
   }
 
   p + eval(as.call(func)) +
@@ -346,7 +346,7 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
   if(NROW(df) >= n_mark) df = df[1:n_mark,]
 
   if (  superblock & i_block == length(rgcca$a) ){
-    p = ggplot(df, aes(order, df[, comp], fill = color))
+    p = ggplot(df, aes(order, df[, comp], fill = as.factor(color)))
   }else{
     p = ggplot(df, aes(order, df[, comp], fill = abs(df[, comp])))
   }
@@ -354,11 +354,13 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
     p = plotHistogram(p, df, "Variable weights", as.character(color2)) +
     labs(subtitle = printAxis(rgcca, comp, i_block))
 
+    if(length(color2) != 1)
+      p = p + scale_fill_manual(values = colorGroup(color2))
+
     if (  !superblock | i_block != length(rgcca$a) )
       p = p + theme(legend.position = "none")
 
-    return(p + scale_fill_manual(values=colorGroup(color2)))
-
+    return(p)
 }
 
 #' Histogram of Average Variance Explained
