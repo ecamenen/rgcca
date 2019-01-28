@@ -74,13 +74,10 @@ theme_perso = function() {
 }
 
 colorGroup = function(group){
-  palette = colorRampPalette(c(rgb(0.6, 0.1, 0.5, 1),
-                               rgb(1, 0, 0, 1),
-                               rgb(0.9, 0.6, 0, 1),
-                               rgb(0.1, 0.6, 0.3, 1),
-                               rgb(0.1, 0.6, 0.5, 1),
-                               rgb(0, 0, 1, 1)), alpha = TRUE)
-  palette(length(levels(as.factor(group))))
+  palette = rep(c("#cd5b45", "#71ad65", "#ffc600", "#3c78b4",
+                  "#b448af", "#9d9d9d", "#abcaef", "#4a6f43",  "#f0e500",
+                  "#efb8f0", "black", "#d6d6d6" ), 10)
+  palette[0 : length(levels(as.factor(group))) ]
 }
 
 #' Plot of samples space
@@ -325,17 +322,10 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
 
   # Get a qualitative variable with which block is associated with each variables
   if (  superblock & ( i_block == length(rgcca$a) ) )
-    df = data.frame(df, color = getBlocsVariables(rgcca) )
+    df = data.frame( df, color = getBlocsVariables(rgcca) )
 
   # sort in decreasing order
   df = data.frame(df[order(abs(df[,comp]), decreasing = TRUE),], order = nrow(df):1)
-
-  # if the superblock is selected, color the text of the y-axis according to their belonging to each blocks
-  if (  superblock & ( i_block == length(rgcca$a) ) ){
-    color2 = df$color; levels(color2) = colorGroup(color2)
-  }else{
-    color2 = "black"
-  }
 
   # selected variables in sgcca
   nvar_select = varSelected(rgcca, i_block, comp)
@@ -345,22 +335,29 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
   # max threshold for n
   if(NROW(df) >= n_mark) df = df[1:n_mark,]
 
+  # if the superblock is selected, color the text of the y-axis according to their belonging to each blocks
+  if (  superblock & ( i_block == length(rgcca$a) ) ){
+    color2 = factor(df$color); levels(color2) = colorGroup(color2)
+  }else{
+    color2 = "black"
+  }
+
   if (  superblock & i_block == length(rgcca$a) ){
     p = ggplot(df, aes(order, df[, comp], fill = as.factor(color)))
   }else{
     p = ggplot(df, aes(order, df[, comp], fill = abs(df[, comp])))
   }
 
-    p = plotHistogram(p, df, "Variable weights", as.character(color2)) +
-    labs(subtitle = printAxis(rgcca, comp, i_block))
+  p = plotHistogram(p, df, "Variable weights", as.character(color2)) +
+  labs(subtitle = printAxis(rgcca, comp, i_block))
 
-    if(length(color2) != 1)
-      p = p + scale_fill_manual(values = colorGroup(color2))
+  if(length(color2) != 1)
+    p = p + scale_fill_manual(values = colorGroup(color2))
 
-    if (  !superblock | i_block != length(rgcca$a) )
-      p = p + theme(legend.position = "none")
+  if (  !superblock | i_block != length(rgcca$a) )
+    p = p + theme(legend.position = "none")
 
-    return(p)
+  return(p)
 }
 
 #' Histogram of Average Variance Explained
