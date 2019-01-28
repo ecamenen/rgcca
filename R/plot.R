@@ -73,6 +73,16 @@ theme_perso = function() {
   )
 }
 
+colorGroup = function(group){
+  palette = colorRampPalette(c(rgb(0.6, 0.1, 0.5, 1),
+                               rgb(1, 0, 0, 1),
+                               rgb(0.9, 0.6, 0, 1),
+                               rgb(0.1, 0.6, 0.3, 1),
+                               rgb(0.1, 0.6, 0.5, 1),
+                               rgb(0, 0, 1, 1)), alpha = TRUE)
+  palette(length(levels(as.factor(group))))
+}
+
 #' Plot of samples space
 #'
 #' Plots samples on two components of a RGCCA
@@ -320,7 +330,7 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
 
   # if the superblock is selected, color the text of the y-axis according to their belonging to each blocks
   if (  superblock & ( i_block == length(rgcca$a) ) ){
-    color2 = df$color; levels(color2) = hue_pal()(length(rgcca$a)-1)
+    color2 = df$color; levels(color2) = colorGroup(color2)
   }else{
     color2 = "black"
   }
@@ -345,7 +355,9 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
     if (  !superblock | i_block != length(rgcca$a) )
       p = p + theme(legend.position = "none")
 
-    return(p)
+    print(color2)
+    print(colorGroup(color2))
+    return(p + scale_fill_manual(values=colorGroup(color2)))
 
 }
 
