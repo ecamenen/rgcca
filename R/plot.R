@@ -442,3 +442,22 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
 
   return(p)
 }
+
+corResponse = function(rgcca, comp = 1, i_block = 1){
+  response = blocks[[ length(rgcca$a)]]
+
+
+  cor.res = matrix(cor(rgcca$Y[[i_block]][, comp],
+                       response,
+                       use = "pairwise.complete.obs"),
+                   dimnames = list(colnames(response, NULL)))
+  res = data.frame(cor = cor.res[order(abs(cor.res[, 1]),
+                                       decreasing = TRUE),],
+                   order = length(cor.res):1)
+
+  p = ggplot(res, aes(order, cor, fill=abs(res[,1])))
+
+  plotHistogram(p, res, "Correlation to the response") +
+    labs(subtitle = printAxis(rgcca, comp, i_block))  +
+    theme(legend.position = "none")
+}
