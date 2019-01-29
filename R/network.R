@@ -44,6 +44,7 @@ plotNetwotk = function(net, blocks){
 
 V(net)$color <-  colorGroup(as.factor(names(blocks)))
 V(net)$size <- V(net)$tau * 50
+V(net)$label.font <- 3
 E(net)$width <- E(net)$weight
 
 plot(net,
@@ -53,4 +54,27 @@ plot(net,
 }
 
 plotNetwotk(net, blocks)
+
+
+plotNetwotk2 = function(nodes, edges, blocks){
+  nodes$shape  <- "square"
+  nodes$shadow <- TRUE
+
+  nodes$title  <- nodes$id
+  nodes$label  <-  nodes$id
+  nodes$size   <-nodes$tau * 50
+  nodes$color.background <- colorGroup(as.factor(names(blocks)))
+
+  nodes$borderWidth <- nodes$weight
+  nodes$color.highlight.background <- "black"
+  nodes$color.highlight.border <- "darkred"
+  nodes$color.border <- "gray"
+
+  edges$color <- "gray"
+  edges$shadow <- TRUE
+
+  visNetwork(nodes, edges)
+}
+
+plotNetwotk2(nodes, edges, blocks)
 
