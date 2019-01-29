@@ -54,26 +54,34 @@ plot(net,
 }
 
 plotNetwotk(net, blocks)
-
+library("visNetwork")
 
 plotNetwotk2 = function(nodes, edges, blocks){
-  nodes$shape  <- "square"
-  nodes$shadow <- TRUE
 
   nodes$title  <- nodes$id
-  nodes$label  <-  nodes$id
-  nodes$size   <-nodes$tau * 50
-  nodes$color.background <- colorGroup(as.factor(names(blocks)))
+  nodes$label  <- paste(nodes$id, "\nP =", nodes$P, "\ntau =", nodes$tau, "\nncomp =", nodes$ncomp, sep=" ")
+  nodes$size  <-  nodes$tau * 50
+  edges$width <- edges$weight * 2
+  nodes$color.background <- unlist( lapply(as.list(1 - nodes$P/max(nodes$P)), function(x) rgb(colorRamp(c("khaki2", "coral3"))(x)/255) ) )
 
-  nodes$borderWidth <- nodes$weight
-  nodes$color.highlight.background <- "black"
-  nodes$color.highlight.border <- "darkred"
-  nodes$color.border <- "gray"
+  visnet <- visNetwork(nodes, edges)
 
-  edges$color <- "gray"
-  edges$shadow <- TRUE
+  visnet <- visNodes(visnet,
+                     borderWidth = 2,
+                     shape = "square",
+                     shadow = TRUE,
+                     color=list(border = "gray",
+                                highlight = list(background = "black", border = "darkred"))
+  )
 
-  visNetwork(nodes, edges)
+  visnet <- visEdges(visnet,
+                     smooth = FALSE,
+                     shadow = TRUE,
+                     dashes = TRUE,
+                     color = list(color = "gray", highlight = "darkred")
+  )
+
+  visnet
 }
 
 plotNetwotk2(nodes, edges, blocks)
