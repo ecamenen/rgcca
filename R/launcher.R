@@ -19,7 +19,7 @@ rm(list=ls())
 # Parse the arguments from a command line launch
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[16]),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[17]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
     make_option(c("--group"), type="character", metavar="character", default = "data2/UPDRS.tsv",
@@ -62,7 +62,9 @@ getArgs = function(){
     make_option(c( "--output3"), type="character", metavar="character", default=opt[14],
                 help="Best fingerprint file name [default: %default]"),
     make_option(c( "--output4"), type="character", metavar="character", default=opt[15],
-                help="AVE plot file name [default: %default]")
+                help="AVE plot file name [default: %default]"),
+    make_option(c( "--output5"), type="character", metavar="character", default=opt[16],
+                help="Correlation with response plot file name [default: %default]")
   )
   args = commandArgs(trailingOnly=T)
   return (OptionParser(option_list=option_list))
@@ -267,7 +269,8 @@ opt = list(directory = ".",
            output2 = "corcircle.pdf",
            output3 = "fingerprint.pdf",
            output4 = "ave.pdf",
-           datasets="data4/Clinique.tsv,data4/Imagerie.tsv,data4/Metabolomique.tsv, data4/Lipidomique.tsv, data4/Transcriptomique.tsv")
+           output5 = "correlation.pdf",
+           datasets = "data4/Clinique.tsv,data4/Imagerie.tsv,data4/Metabolomique.tsv, data4/Lipidomique.tsv, data4/Transcriptomique.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -341,4 +344,9 @@ savePlot(opt$output3, fingerprint)
 if(opt$type != "pca"){
   (ave = plotAVE(rgcca.out, opt$compx))
   savePlot(opt$output4, ave)
+}
+
+if( ! is.null(opt$response) ){
+  ( correlation = corResponse(rgcca.out, opt$compx, opt$block) )
+    savePlot(opt$output5, correlation)
 }
