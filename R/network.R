@@ -78,8 +78,6 @@ plotNetwotk2 = function(nodes, edges, blocks){
                      color = list(color = "gray", highlight = "darkred")
   )
 
-  addNodes <- data.frame(label = nodes$size[x]/50, shape = "square", size = nodes$size[x])
-
   # visLegend(visnet, main = "Legend", position = "right", useGroups = FALSE, stepY = 125, addNodes =
   #             data.frame(title = "Tau", label = rev(seq(.25, 1, .25)), shape = "square", size = rev(seq(.25, 1, .25) * 50),
   #                        color.background = "white", color.border = "gray", font.align = "bottom")
@@ -91,12 +89,14 @@ plotNetwotk2 = function(nodes, edges, blocks){
   #                        color.background = colorRampPalette(c("coral3", "khaki2"))(3), color.border = "gray", font.align = "bottom")
   # )
 
-  visLegend(visnet, main = "Legend", position = "right", useGroups = FALSE, stepY = 125, addNodes =
-              data.frame(label = c(rev(paste("tau =", seq(.25, 1, .25))), paste("P =", c(max(nodes$P), round(max(nodes$P)/2), 0))),
-                         size = c(rev(seq(.25, 1, .25) * 50), rep(25, 3)),
-                         color.background = c(rep("white", 4), colorRampPalette(c("coral3", "khaki2"))(3)),
-                         color.border = "gray", shape = "square", font.align = "bottom")
-            )
+  visLegend(visnet, main = "", position = "right", width = .2, useGroups = FALSE, stepY = 135, addNodes =
+              data.frame(label = c("Tau", c(1, .5), "", "Nb. variables", c(max(nodes$P), round(max(nodes$P)/2), 0)),
+                         size = c(0, c(1, .5) * 50, 0, 0, rep(25, 3)),
+                         color.background = c("", rep("gray", 2), "", "", colorRampPalette(c("coral3", "khaki2"))(3)),
+                         color.border = "white",
+                         font.size = c(30, rep(20, 2), 30, 30, rep(20, 3)),
+                         shape = c("text", rep("square", 2), "text", "text", rep("square", 3))
+            ))
 
 }
 
