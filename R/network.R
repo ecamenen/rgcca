@@ -24,9 +24,6 @@ getEdges = function(connection, blocks) {
     k = k + 1
   }
 
-  # ceiling(which(connection > 0) / nrow(connection) )
-  # which(connection > 0) %% nrow(connection)
-
   edges <- as.data.frame(t(matrix(unlist(edges), 3, length(edges))))
   colnames(edges) = c("from", "to", "weight")
   edges[, 3] <- as.numeric(edges[, 3])
@@ -34,27 +31,20 @@ getEdges = function(connection, blocks) {
   return(edges)
 }
 
-nodes <- getNodes(opt, blocks)
-edges <- getEdges(connection, blocks)
+plotNetwotk = function(nodes, edges, blocks){
 
-library("igraph")
-net <- graph_from_data_frame(d = edges, vertices = nodes, directed = FALSE)
+  net <- graph_from_data_frame(d = edges, vertices = nodes, directed = FALSE)
 
-plotNetwotk = function(net, blocks){
+  V(net)$color <-  colorGroup(as.factor(names(blocks)))
+  V(net)$size <- V(net)$tau * 50
+  V(net)$label.font <- 3
+  E(net)$width <- E(net)$weight
 
-V(net)$color <-  colorGroup(as.factor(names(blocks)))
-V(net)$size <- V(net)$tau * 50
-V(net)$label.font <- 3
-E(net)$width <- E(net)$weight
-
-plot(net,
-     edge.color = "gray80",
-     vertex.frame.color="white",
-     vertex.label.color="black")
+  plot(net,
+       edge.color = "gray80",
+       vertex.frame.color="white",
+       vertex.label.color="black")
 }
-
-plotNetwotk(net, blocks)
-library("visNetwork")
 
 plotNetwotk2 = function(nodes, edges, blocks){
 
@@ -84,5 +74,11 @@ plotNetwotk2 = function(nodes, edges, blocks){
   visnet
 }
 
+nodes <- getNodes(opt, blocks)
+edges <- getEdges(connection, blocks)
+
+library("igraph")
+plotNetwotk(nodes, edges, blocks)
+library("visNetwork")
 plotNetwotk2(nodes, edges, blocks)
 
