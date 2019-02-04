@@ -31,19 +31,26 @@ getEdges = function(connection, blocks) {
   return(edges)
 }
 
+colorNodes = function(nodes){
+  unlist( lapply(as.list(1 - nodes$P/max(nodes$P)), function(x) rgb(colorRamp(c("coral3", "khaki2"))(x)/255) ) )
+}
+
 plotNetwotk = function(nodes, edges, blocks){
 
   net <- graph_from_data_frame(d = edges, vertices = nodes, directed = FALSE)
 
-  V(net)$color <-  colorGroup(as.factor(names(blocks)))
+  V(net)$color <- colorNodes(nodes)
   V(net)$size <- V(net)$tau * 50
+  V(net)$label <- paste(nodes$id, "\nP =", nodes$P, "\ntau =", nodes$tau, "\nncomp =", nodes$ncomp, sep=" ")
   V(net)$label.font <- 3
+  V(net)$shape <- "square"
   E(net)$width <- E(net)$weight
 
   plot(net,
        edge.color = "gray80",
-       vertex.frame.color="white",
-       vertex.label.color="black")
+       vertex.frame.color = "gray",
+       vertex.label.color = "black",
+       vertex.label.dist = "bottom")
 }
 
 plotNetwotk2 = function(nodes, edges, blocks){
@@ -52,7 +59,7 @@ plotNetwotk2 = function(nodes, edges, blocks){
   nodes$label  <- paste(nodes$id, "\nP =", nodes$P, "\ntau =", nodes$tau, "\nncomp =", nodes$ncomp, sep=" ")
   nodes$size  <-  nodes$tau * 50
   edges$width <- edges$weight * 2
-  nodes$color.background <- unlist( lapply(as.list(1 - nodes$P/max(nodes$P)), function(x) rgb(colorRamp(c("khaki2", "coral3"))(x)/255) ) )
+  nodes$color.background <- colorNodes(nodes)
 
   visnet <- visNetwork(nodes, edges)
 
@@ -71,7 +78,26 @@ plotNetwotk2 = function(nodes, edges, blocks){
                      color = list(color = "gray", highlight = "darkred")
   )
 
-  visnet
+  addNodes <- data.frame(label = nodes$size[x]/50, shape = "square", size = nodes$size[x])
+
+  # visLegend(visnet, main = "Legend", position = "right", useGroups = FALSE, stepY = 125, addNodes =
+  #             data.frame(title = "Tau", label = rev(seq(.25, 1, .25)), shape = "square", size = rev(seq(.25, 1, .25) * 50),
+  #                        color.background = "white", color.border = "gray", font.align = "bottom")
+  #
+  # )
+  #
+  # visLegend(visnet, main = "Legend", position = "right", useGroups = FALSE, addNodes =
+  #             data.frame(title = "Nb. variables", label = c(max(nodes$P), max(nodes$P)/2, 0), shape = "square", size = 25,
+  #                        color.background = colorRampPalette(c("coral3", "khaki2"))(3), color.border = "gray", font.align = "bottom")
+  # )
+
+  visLegend(visnet, main = "Legend", position = "right", useGroups = FALSE, stepY = 125, addNodes =
+              data.frame(label = c(rev(paste("tau =", seq(.25, 1, .25))), paste("P =", c(max(nodes$P), round(max(nodes$P)/2), 0))),
+                         size = c(rev(seq(.25, 1, .25) * 50), rep(25, 3)),
+                         color.background = c(rep("white", 4), colorRampPalette(c("coral3", "khaki2"))(3)),
+                         color.border = "gray", shape = "square", font.align = "bottom")
+            )
+
 }
 
 nodes <- getNodes(opt, blocks)
@@ -81,4 +107,3 @@ library("igraph")
 plotNetwotk(nodes, edges, blocks)
 library("visNetwork")
 plotNetwotk2(nodes, edges, blocks)
-
