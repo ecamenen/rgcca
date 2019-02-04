@@ -205,21 +205,19 @@ setPosPar = function(opt, blocks, i_resp){
 
   J = length(blocks)
   opt$blocks = blocks
+  opt$block_names = names(blocks)
 
-  par = c("blocks", "ncomp")
+  par = c("blocks", "block_names", "ncomp")
   if (all(opt$tau != "optimal"))
-    par[3] = "tau"
+    par[length(par)+1] = "tau"
 
-  for (i in 1:3){
+  for (i in 1:length(par)){
     temp = opt[[par[i]]][[J]]
     opt[[par[i]]][[J]] = opt[[par[i]]][[i_resp]]
     opt[[par[i]]][[i_resp]] = temp
   }
 
-  n = names(opt$blocks)
-
-  names(opt$blocks) = n [ match( n,
-                                 c(n[-i_resp], n[i_resp]) ) ]
+  names(opt$blocks) = opt$block_names
 
   return(opt)
 }
@@ -242,7 +240,7 @@ warnConnection = function(x)
 # Under linux: sudo apt-get install default-jre default-jdk && sudo R CMD javareconf
 
 #Loading librairies
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "plotly", "")
+librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "plotly")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
     install.packages(l, repos = "http://cran.us.r-project.org",
@@ -260,7 +258,7 @@ opt = list(directory = ".",
            scheme = "factorial",
            tau = "0.6, 0.45, 0.71, 0.5, 0.5",
            init = "svd",
-           ncomp = "2, 2, 3, 2, 2",
+           ncomp = "2, 4, 3, 3, 5",
            block = 0,
            compx = 1,
            compy = 2,
