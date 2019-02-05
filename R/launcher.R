@@ -19,12 +19,12 @@ rm(list=ls())
 # Parse the arguments from a command line launch
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[17]),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[18]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
-    make_option(c("--group"), type="character", metavar="character", default = "data2/UPDRS.tsv",
+    make_option(c("--group"), type="character", metavar="character", default = "data/response.tsv",
                 help="Path of the group file (to color samples by group in the associated plot)"),
-    make_option(c("-r", "--response"), type="integer", metavar="integer", default = 1,
+    make_option(c("-r", "--response"), type="integer", metavar="integer",
                 help="Position of the response file in datasets (if not null, activate supervized method)"),
     make_option(c("--names"), type="character", metavar="character", help="List of the names for each block file separated by comma [default: filename]"),
     make_option(c("-H", "--header"), type="logical", action="store_false", help="DO NOT consider the first row as header of columns"),
@@ -64,7 +64,9 @@ getArgs = function(){
     make_option(c( "--output4"), type="character", metavar="character", default=opt[15],
                 help="AVE plot file name [default: %default]"),
     make_option(c( "--output5"), type="character", metavar="character", default=opt[16],
-                help="Correlation with response plot file name [default: %default]")
+                help="Correlation with response plot file name [default: %default]"),
+    make_option(c( "--output6"), type="character", metavar="character", default=opt[17],
+                help="Connection plot file name [default: %default]")
   )
   args = commandArgs(trailingOnly=T)
   return (OptionParser(option_list=option_list))
@@ -240,7 +242,7 @@ warnConnection = function(x)
 # Under linux: sudo apt-get install default-jre default-jdk && sudo R CMD javareconf
 
 #Loading librairies
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "plotly")
+librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "plotly", "visNetwork", "igraph")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
     install.packages(l, repos = "http://cran.us.r-project.org",
@@ -254,11 +256,11 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "sgcca",
+           type = "rgcca",
            scheme = "factorial",
-           tau = "0.6, 0.45, 0.71, 0.5, 0.5",
+           tau = "optimal",
            init = "svd",
-           ncomp = "2, 4, 3, 3, 5",
+           ncomp = "2, 2, 2",
            block = 0,
            compx = 1,
            compy = 2,
@@ -268,7 +270,8 @@ opt = list(directory = ".",
            output3 = "fingerprint.pdf",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
-           datasets = "data4/Clinique.tsv,data4/Imagerie.tsv,data4/Metabolomique.tsv, data4/Lipidomique.tsv, data4/Transcriptomique.tsv")
+           output5 = "connection.pdf",
+           datasets = "data/agriculture.tsv,data/industry.tsv,data/politic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -282,6 +285,7 @@ setwd(opt$directory)
 source("R/parsing.R")
 source("R/select.type.R")
 source("R/plot.R")
+source("R/network.R")
 
 # Global settings
 opt$header = !("header" %in% names(opt))
@@ -338,13 +342,19 @@ savePlot(opt$output2, corcircle)
 plotFingerprint(rgcca.out, opt$compx, opt$superblock, opt$nmark, 2)
 savePlot(opt$output3, fingerprint)
 
-# Average Variance Explained
-if(opt$type != "pca"){
-  (ave = plotAVE(rgcca.out, opt$compx))
-  savePlot(opt$output4, ave)
-}
-
 if( ! is.null(opt$response) ){
   ( correlation = corResponse(rgcca.out, opt$compx, opt$block) )
     savePlot(opt$output5, correlation)
+}
+
+# Average Variance Explained
+if(opt$type != "pca"){
+
+  (ave = plotAVE(rgcca.out, opt$compx))
+  savePlot(opt$output4, ave)
+
+  nodes <- getNodes(opt, blocks)
+  edges <- getEdges(connection, blocks)
+  conNet <- plotNetwotk2(nodes, edges, blocks)
+  savePlot(opt$output6, conNet)
 }

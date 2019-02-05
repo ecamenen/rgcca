@@ -44,14 +44,19 @@ plotNetwotk = function(nodes, edges, blocks){
   V(net)$label <- paste(nodes$id, "\nP =", nodes$P, "\ntau =", nodes$tau, "\nncomp =", nodes$ncomp, sep=" ")
   V(net)$label.font <- 3
   V(net)$shape <- "square"
-  E(net)$width <- E(net)$weight
+  E(net)$width <- E(net)$weight * 2
 
-  plot(net,
-       edge.color = "gray80",
-       vertex.frame.color = "gray",
+  return (plot(net,
+       edge.color = "gray70",
+       edge.lty = 2,
+       vertex.frame.color = "gray50",
        vertex.label.color = "black",
-       vertex.label.dist = "bottom")
+       vertex.label.dist = 6,
+       vertex.label.degree = 1.5))
+
 }
+
+plotNetwotk(nodes, edges, blocks)
 
 plotNetwotk2 = function(nodes, edges, blocks){
 
@@ -78,17 +83,6 @@ plotNetwotk2 = function(nodes, edges, blocks){
                      color = list(color = "gray", highlight = "darkred")
   )
 
-  # visLegend(visnet, main = "Legend", position = "right", useGroups = FALSE, stepY = 125, addNodes =
-  #             data.frame(title = "Tau", label = rev(seq(.25, 1, .25)), shape = "square", size = rev(seq(.25, 1, .25) * 50),
-  #                        color.background = "white", color.border = "gray", font.align = "bottom")
-  #
-  # )
-  #
-  # visLegend(visnet, main = "Legend", position = "right", useGroups = FALSE, addNodes =
-  #             data.frame(title = "Nb. variables", label = c(max(nodes$P), max(nodes$P)/2, 0), shape = "square", size = 25,
-  #                        color.background = colorRampPalette(c("coral3", "khaki2"))(3), color.border = "gray", font.align = "bottom")
-  # )
-
   visLegend(visnet, main = "", position = "right", width = .2, useGroups = FALSE, stepY = 135, addNodes =
               data.frame(label = c("Tau", c(1, .5), "", "Nb. variables", c(max(nodes$P), round(max(nodes$P)/2), 0)),
                          size = c(0, c(1, .5) * 50, 0, 0, rep(25, 3)),
@@ -99,11 +93,3 @@ plotNetwotk2 = function(nodes, edges, blocks){
             ))
 
 }
-
-nodes <- getNodes(opt, blocks)
-edges <- getEdges(connection, blocks)
-
-library("igraph")
-plotNetwotk(nodes, edges, blocks)
-library("visNetwork")
-plotNetwotk2(nodes, edges, blocks)
