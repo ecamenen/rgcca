@@ -67,8 +67,6 @@ plotNetwork = function(nodes, edges, blocks){
 
 }
 
-plotNetwork(nodes, edges, blocks)
-
 plotNetwork2 = function(nodes, edges, blocks){
 
   if(all(is.na(nodes$tau))){
