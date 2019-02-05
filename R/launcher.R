@@ -261,7 +261,7 @@ opt = list(directory = ".",
            scheme = "factorial",
            tau = "optimal",
            init = "svd",
-           ncomp = "2, 2",
+           ncomp = "2, 2, 2",
            block = 0,
            compx = 1,
            compy = 2,
@@ -272,7 +272,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "data/agriculture.tsv,data/industry.tsv")
+           datasets = "data/agriculture.tsv,data/industry.tsv,data/politic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -290,7 +290,7 @@ source("R/network.R")
 
 # Global settings
 opt$header = !("header" %in% names(opt))
-opt$superblock = ("superblock" %in% names(opt))
+opt$superblock = !("superblock" %in% names(opt))
 opt$bias = !("bias" %in% names(opt))
 opt$scale = !("scale" %in% names(opt))
 opt$text = !("text" %in% names(opt))
@@ -356,6 +356,6 @@ if(opt$type != "pca"){
 
   nodes <- getNodes(opt, blocks)
   edges <- getEdges(connection, blocks)
-  conNet <- function() plotNetwork(nodes, edges, blocks)
+  conNet <- function() plotNetwork2(nodes, edges, blocks)
   savePlot(opt$output6, conNet)
 }

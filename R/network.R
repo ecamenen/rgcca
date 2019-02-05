@@ -73,12 +73,14 @@ plotNetwork2 = function(nodes, edges, blocks){
 
   if(all(is.na(nodes$tau))){
     nodes$tau = rep("optimal", length(blocks))
-    V(net)$tau = rep(1, length(blocks))
+    nodes$size = rep(50, length(blocks))
+  }else{
+    nodes$size  <-  nodes$tau * 50
   }
 
   nodes$title  <- nodes$id
   nodes$label  <- paste(nodes$id, "\nP =", nodes$P, "\ntau =", nodes$tau, "\nncomp =", nodes$ncomp, sep=" ")
-  nodes$size  <-  nodes$tau * 50
+
   edges$width <- edges$weight * 2
   nodes$color.background <- colorNodes(nodes)
 
