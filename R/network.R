@@ -1,5 +1,10 @@
 getNodes = function(opt, blocks) {
 
+  if(any(opt$tau == "optimal")){
+    warning("Tau is optimal. By default, its value has been set to 1 in the connection plot.\n", call. = FALSE)
+    opt$tau = rep(NA, length(blocks))
+  }
+
   values <- list( names(blocks), unlist(lapply(blocks, NCOL)), opt$tau, opt$ncomp )
   nodes <- as.data.frame(matrix(unlist(values), length(blocks), length(values)))
   colnames(nodes) = c("id", "P", "tau", "ncomp")
@@ -32,12 +37,18 @@ getEdges = function(connection, blocks) {
 }
 
 colorNodes = function(nodes){
-  unlist( lapply(as.list(1 - nodes$P/max(nodes$P)), function(x) rgb(colorRamp(c("coral3", "khaki2"))(x)/255) ) )
+  unlist( lapply(as.list(1 - nodes$P/max(nodes$P)),
+                 function(x) rgb(colorRamp(c("coral3", "khaki2"))(x)/255) ) )
 }
 
-plotNetwotk = function(nodes, edges, blocks){
+plotNetwork = function(nodes, edges, blocks){
 
   net <- graph_from_data_frame(d = edges, vertices = nodes, directed = FALSE)
+
+  if(all(is.na(nodes$tau))){
+    nodes$tau = rep("optimal", length(blocks))
+    V(net)$tau = rep(1, length(blocks))
+  }
 
   V(net)$color <- colorNodes(nodes)
   V(net)$size <- V(net)$tau * 50
@@ -46,19 +57,24 @@ plotNetwotk = function(nodes, edges, blocks){
   V(net)$shape <- "square"
   E(net)$width <- E(net)$weight * 2
 
-  return (plot(net,
+  plot(net,
        edge.color = "gray70",
        edge.lty = 2,
        vertex.frame.color = "gray50",
        vertex.label.color = "black",
        vertex.label.dist = 6,
-       vertex.label.degree = 1.5))
+       vertex.label.degree = 1.5)
 
 }
 
-plotNetwotk(nodes, edges, blocks)
+plotNetwork(nodes, edges, blocks)
 
-plotNetwotk2 = function(nodes, edges, blocks){
+plotNetwork2 = function(nodes, edges, blocks){
+
+  if(all(is.na(nodes$tau))){
+    nodes$tau = rep("optimal", length(blocks))
+    V(net)$tau = rep(1, length(blocks))
+  }
 
   nodes$title  <- nodes$id
   nodes$label  <- paste(nodes$id, "\nP =", nodes$P, "\ntau =", nodes$tau, "\nncomp =", nodes$ncomp, sep=" ")

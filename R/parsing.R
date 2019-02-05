@@ -108,17 +108,23 @@ savePlot = function(f, p) {
   format = unlist(strsplit(f, '.', fixed="T"))
   format = format[length(format)]
 
-  # dynamic loading of function depending of the extension
+  # dynamic loading of formattion depending of the extension
   if (format == "dat")
-    func = pdf
+    formatFunc = pdf
   else
-    func = get(format)
+    formatFunc = get(format)
 
   # save
-  if (format %in% c("pdf", "dat") ) func(f, width = 10, height = 8)
-  else func(f, width = 10, height = 8, units = "in", res = 200)
+  if (format %in% c("pdf", "dat") )
+    formatFunc(f, width = 10, height = 8)
+  else
+    formatFunc(f, width = 10, height = 8, units = "in", res = 200)
 
-  plot(p)
+  if(is.function(p))
+    p()
+  else
+    plot(p)
+
   suprLog = dev.off()
 }
 

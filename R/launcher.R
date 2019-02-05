@@ -22,7 +22,7 @@ getArgs = function(){
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[18]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
-    make_option(c("--group"), type="character", metavar="character", default = "data/response.tsv",
+    make_option(c("--group"), type="character", metavar="character",
                 help="Path of the group file (to color samples by group in the associated plot)"),
     make_option(c("-r", "--response"), type="integer", metavar="integer",
                 help="Position of the response file in datasets (if not null, activate supervized method)"),
@@ -137,6 +137,7 @@ postCheckArg = function(opt, blocks){
       stop("--ncomp must be comprise between 2 and ", min(sapply(blocks, NCOL)) ," (the minimum number of variables among the whole blocks).\n", call.=FALSE)
     }
   })
+
   if(length(opt$ncomp) == 1)
     opt$ncomp = rep(opt$ncomp[[1]], length(blocks))
   else
@@ -260,7 +261,7 @@ opt = list(directory = ".",
            scheme = "factorial",
            tau = "optimal",
            init = "svd",
-           ncomp = "2, 2, 2",
+           ncomp = "2, 2",
            block = 0,
            compx = 1,
            compy = 2,
@@ -271,7 +272,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "data/agriculture.tsv,data/industry.tsv,data/politic.tsv")
+           datasets = "data/agriculture.tsv,data/industry.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -289,7 +290,7 @@ source("R/network.R")
 
 # Global settings
 opt$header = !("header" %in% names(opt))
-opt$superblock = !("superblock" %in% names(opt))
+opt$superblock = ("superblock" %in% names(opt))
 opt$bias = !("bias" %in% names(opt))
 opt$scale = !("scale" %in% names(opt))
 opt$text = !("text" %in% names(opt))
@@ -355,6 +356,6 @@ if(opt$type != "pca"){
 
   nodes <- getNodes(opt, blocks)
   edges <- getEdges(connection, blocks)
-  conNet <- plotNetwotk2(nodes, edges, blocks)
+  conNet <- function() plotNetwork(nodes, edges, blocks)
   savePlot(opt$output6, conNet)
 }
