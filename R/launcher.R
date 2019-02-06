@@ -22,7 +22,7 @@ getArgs = function(){
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[18]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
-    make_option(c("--group"), type="character", metavar="character",
+    make_option(c("--group"), type="character", metavar="character", default="data/response.tsv",
                 help="Path of the group file (to color samples by group in the associated plot)"),
     make_option(c("-r", "--response"), type="integer", metavar="integer",
                 help="Position of the response file in datasets (if not null, activate supervized method)"),
@@ -328,13 +328,19 @@ group = setResponse(blocks, opt$group, opt$separator, opt$header)
 
 rgcca.out = rgcca.analyze(blocks, connection, opt$scheme, opt$ncomp, opt$scale, opt$init, opt$bias, opt$tau)
 
+ax <- list(linecolor = toRGB("white"), ticks = "")
+
 # Samples common space
-( samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text) )
-plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, 1)
+samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text)
+ggplotly(samples_plot) %>%
+  layout(xaxis = ax, yaxis = ax)
+plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, 2)
 savePlot(opt$output1, samples_plot)
 
 # Variables common space
 ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
+ggplotly(corcircle) %>%
+  layout(xaxis = ax, yaxis = ax)
 plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 3)
 savePlot(opt$output2, corcircle)
 
@@ -356,6 +362,7 @@ if(opt$type != "pca"){
 
   nodes <- getNodes(opt, blocks)
   edges <- getEdges(connection, blocks)
-  conNet <- function() plotNetwork2(nodes, edges, blocks)
+  conNet <- function() plotNetwork(nodes, edges, blocks)
+  plotNetwork2(nodes, edges, blocks)
   savePlot(opt$output6, conNet)
 }
