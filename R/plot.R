@@ -74,7 +74,7 @@ theme_perso = function() {
 }
 
 colorGroup = function(group){
-  palette = rep(c("#cd5b45", "#71ad65", "#ffc600", "#3c78b4",
+  palette = rep(c("#cd5b45", "#71ad65", "#3c78b4", "#ffc600",
                   "#b448af", "#9d9d9d", "#abcaef", "#4a6f43",  "#f0e500",
                   "#efb8f0", "black", "#d6d6d6" ), 10)
   palette[0 : length(levels(as.factor(group))) ]
@@ -220,8 +220,6 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
     geom_path(aes(x, y), data = circleFun(), col = "grey", size = 1) +
     geom_path(aes(x, y), data = circleFun()/2, col = "grey", size = 1, lty = 2)
 
-  p = p + scale_color_manual(values = colorGroup(color))
-
   # remove legend if not on superblock
   if ( !superblock || i_block != length(blocks) )
     p + theme(legend.position = "none")
@@ -279,6 +277,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
            shape = name_group) +
     scale_y_continuous(breaks = NULL) +
     scale_x_continuous(breaks = NULL) +
+    scale_color_manual(values = colorGroup(group)) +
     theme_perso() +
     theme(
       axis.text = element_blank(),
