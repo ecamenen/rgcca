@@ -245,7 +245,7 @@ warnConnection = function(x)
 # Under linux: sudo apt-get install default-jre default-jdk && sudo R CMD javareconf
 
 #Loading librairies
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "plotly", "visNetwork", "igraph")
+librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "plotly", "visNetwork", "igraph", "ggrepel")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
     install.packages(l, repos = "http://cran.us.r-project.org",
@@ -261,7 +261,7 @@ opt = list(directory = ".",
            separator = "\t",
            type = "rgcca",
            scheme = "factorial",
-           tau = "0.1, optimal, 1",
+           tau = "optimal",
            init = "svd",
            ncomp = "2, 2, 2",
            block = 1,
@@ -274,7 +274,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "data5/GE.tsv, data5/CGH.tsv, data5/y.tsv")
+           datasets = "data5/CGH.tsv, data5/GE.tsv, data5/y.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())

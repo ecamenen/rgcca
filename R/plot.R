@@ -121,7 +121,7 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
   # if the resp is numeric
   if (  length(unique(resp)) > 1 ){
 
-    if( ! unique(isCharacter(as.vector(resp))) && levels(as.factor(as.vector(resp))) > 5 ){
+    if( ! unique(isCharacter(as.vector(resp))) && length(levels(as.factor(as.vector(resp)))) > 5 ){
       # add some transparency
       p = ggplot(df, aes(df[, 1], df[, 2], alpha = (resp - min(resp)) / max(resp - min(resp)))) +
       # get a color scale by quantile
@@ -259,12 +259,17 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     i_block_y = i_block
 
   if (!isTRUE(text)){
-    func = quote(geom_point(size = PCH_TEXT_SIZE, aes(shape = as.factor(group))))
+    func = quote(geom_point_repel(size = PCH_TEXT_SIZE, aes(shape = as.factor(group)), force = 0, max.iter = 1))
   }else
-    func = quote(geom_text(aes(label = rownames(df)), size = PCH_TEXT_SIZE))
+    func = quote(geom_text_repel(aes(label = rownames(df)), size = PCH_TEXT_SIZE, force = 0, max.iter = 1))
 
   if(title == "Samples" && !is.null(p))
     func$colour = SAMPLES_COL_DEFAULT
+
+  if(nrow(df) < 100){
+    func$force = 0.2
+    func$max.iter = 500
+  }
 
   if (is.null(p)){
     p = ggplot(df, aes(df[,1], df[,2], colour = as.factor(group)))
