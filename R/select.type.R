@@ -203,12 +203,17 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
                          ncomp = rep(2, length(blocks)), scheme = "factorial", scale = TRUE,
                          init = "svd", bias = TRUE, type = "rgcca"){
 
+  WARN = FALSE
+
   for (i in 1:length(blocks)){
     if( ncol(blocks[[i]]) > 1000 ){
       if( (type == "sgcca" && tau > 0.3) || type != "sgcca" )
-        VERBOSE = TRUE
+        WARN = TRUE
     }
   }
+
+  if (WARN)
+    warning("Some blocks are too big. RGCCA could take some times......\n", immediate. = TRUE, call. = FALSE)
 
   if(type =="sgcca"){
     func = sgcca

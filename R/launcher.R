@@ -292,7 +292,7 @@ source("R/network.R")
 
 # Global settings
 opt$header = !("header" %in% names(opt))
-opt$superblock = ("superblock" %in% names(opt))
+opt$superblock = !("superblock" %in% names(opt))
 opt$bias = !("bias" %in% names(opt))
 opt$scale = !("scale" %in% names(opt))
 opt$text = !("text" %in% names(opt))
@@ -302,7 +302,7 @@ if( ! is.null(opt$response) ){
   warnConnection("supervized method with a response")
   if( opt$superblock){
     opt$superblock = FALSE
-    if(("superblock" %in% names(opt)))
+    if("superblock" %in% names(opt))
       warning("In a supervised mode, the superblock corresponds to the response.\n", call. = FALSE)
   }
 }
@@ -317,9 +317,12 @@ if( ! is.null(opt$response) ){
 }
 
 if( opt$superblock  | opt$type == "pca"){
-  blocks[["Superblock"]] = Reduce(cbind, blocks)
-  if( opt$superblock )
+  if( opt$superblock ){
     warnConnection("superblock")
+    blocks  = lapply(blocks, function(x) scale2(x, bias = opt$bias))
+    opt$scale = FALSE
+  }
+  blocks[["Superblock"]] = Reduce(cbind, blocks)
 }
 
 connection = opt$connection
