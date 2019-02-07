@@ -39,7 +39,7 @@ getArgs = function(){
     make_option(c("--scale"),  type="logical", action="store_false",
                 help="DO NOT scale the blocks (i.e., standardize each block to zero mean and unit variances and then divide them by the square root of its number of variables)"),
     make_option(c("--superblock"),  type="logical", action="store_false",
-                help="Use a superblock (a concatenation of all the blocks to better interpret the results)"),
+                help="DO NOT use a superblock (a concatenation of all the blocks to better interpret the results)"),
     make_option(c("--init"),  type="integer", metavar="integer", default=1,
                 help="Initialization mode for RGCCA (1: Singular Value Decompostion , 2: random) [default: SVD]"),
     make_option(c("--bias"),  type="logical", action="store_false",
@@ -257,9 +257,9 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "rgcca",
+           type = "sgcca",
            scheme = "factorial",
-           tau = "optimal",
+           tau = "0.05,0.2, 1",
            init = "svd",
            ncomp = "2, 2, 2",
            block = 0,
@@ -272,7 +272,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "data/agriculture.tsv,data/industry.tsv,data/politic.tsv")
+           datasets = "GE.tsv, CGH.tsv, y.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -329,7 +329,6 @@ group = setResponse(blocks, opt$group, opt$separator, opt$header)
 rgcca.out = rgcca.analyze(blocks, connection, opt$scheme, opt$ncomp, opt$scale, opt$init, opt$bias, opt$tau)
 
 ax <- list(linecolor = toRGB("white"), ticks = "")
-
 # Samples common space
 samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text)
 ggplotly(samples_plot) %>%
@@ -338,7 +337,7 @@ plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, 2)
 savePlot(opt$output1, samples_plot)
 
 # Variables common space
-( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
+corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 1, opt$text)
 ggplotly(corcircle) %>%
   layout(xaxis = ax, yaxis = ax)
 plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 3)
@@ -346,7 +345,7 @@ savePlot(opt$output2, corcircle)
 
 # Fingerprint plot
 ( fingerprint = plotFingerprint(rgcca.out, opt$compx, opt$superblock, opt$nmark, opt$block) )
-plotFingerprint(rgcca.out, opt$compx, opt$superblock, opt$nmark, 2)
+plotFingerprint(rgcca.out, 2, opt$superblock, 100, 1)
 savePlot(opt$output3, fingerprint)
 
 if( ! is.null(opt$response) ){

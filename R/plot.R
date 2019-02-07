@@ -208,11 +208,11 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
   # if superblock is selected, color by blocks
   if ( superblock & ( i_block == length(blocks)) ){
     color = getBlocsVariables(rgcca)
-  }else
+    if(class(rgcca)=="sgcca")
+      color = color[row.names(df[selectedVar, ])]
+  }else{
     color = rep(1, NROW(df))
-
-  if(class(rgcca)=="sgcca")
-    color = color[selectedVar]
+  }
 
   df = data.frame(df, color)
 
