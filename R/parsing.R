@@ -31,6 +31,15 @@ getFileName = function(fi) {
   unlist(strsplit(fo, "[.]"))[1]
 }
 
+# Print warning if file size over
+checkFileSize = function(filename){
+  size = file.size(filename)
+  if(size > 5E6)
+    warning(paste("The size of ", filename, " is over 5 Mo (", round(size / 1E6, 1), " Mo). File loading could take some times...\n", sep=""),
+            immediate. = TRUE,
+            call. = FALSE)
+}
+
 #' Creates a matrix from loading a file
 #'
 #' @param f A character giving the file name
@@ -236,10 +245,13 @@ setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE, 
     }
 
     #load the data
-    if (!isXls)
+    if (!isXls){
+      checkFileSize(fi)
       df = loadData(fi, sep, rownames, header)
-    else
+    }else{
+      checkFileSize(file)
       df = loadExcel(file, blocksFilename[i], rownames, header)
+    }
 
     #if one-column file, it is a tabulation error
     if (NCOL(df) == 0)

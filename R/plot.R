@@ -44,12 +44,16 @@ circleFun = function(center = c(0, 0), diameter = 2, npoints = 100) {
 #' printAxis(rgcca.res, 2, 1)
 #' # "Axis 2 (50%)"
 #' @export printAxis
-printAxis = function (rgcca, n, i = NULL){
+printAxis = function (rgcca, n, i = NULL, outer = FALSE){
 
   # by default, take the last block
   if ( is.null(i) )
     i = length(rgcca$AVE$AVE_X)
 
+  if(isTRUE(outer))
+    AVE = rgcca$AVE$AVE_outer
+  else
+    AVE = rgcca$AVE$AVE_X[[i]]
 
   nvar = varSelected(rgcca, i, n)
   if(class(rgcca) !="sgcca" | nvar == length(rgcca$a[[i]][, n]) )
@@ -57,7 +61,7 @@ printAxis = function (rgcca, n, i = NULL){
   else
     varText = paste(nvar, " variables, ", sep="")
 
-  paste("Component ", n, " (", varText, round(rgcca$AVE$AVE_X[[i]][n] * 100 , 1),"%)", sep="")
+  paste("Component ", n, " (", varText, round(AVE[n] * 100 , 1),"%)", sep = "")
 }
 
 varSelected = function(rgcca, i_block, comp)
@@ -385,7 +389,7 @@ plotAVE = function(rgcca, comp = 1){
 
   p = ggplot(df, aes(order, df[,1], fill=abs(df[,1])))
   plotHistogram(p, df, "Average Variance Explained") +
-    labs(subtitle = printAxis(rgcca, comp)) +
+    labs(subtitle = printAxis(rgcca, comp, outer = TRUE)) +
     theme(legend.position = "none")
 }
 

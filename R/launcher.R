@@ -22,7 +22,7 @@ getArgs = function(){
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[18]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
-    make_option(c("--group"), type="character", metavar="character",
+    make_option(c("--group"), type="character", metavar="character", default = "data5/localisation_tumeur.tsv",
                 help="Path of the group file (to color samples by group in the associated plot)"),
     make_option(c("-r", "--response"), type="integer", metavar="integer",
                 help="Position of the response file in datasets (if not null, activate supervized method)"),
@@ -262,7 +262,7 @@ opt = list(directory = ".",
            tau = "0.05,0.2, 1",
            init = "svd",
            ncomp = "2, 2, 2",
-           block = 0,
+           block = 1,
            compx = 1,
            compy = 2,
            nmark = 100,
@@ -272,7 +272,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "GE.tsv, CGH.tsv, y.tsv")
+           datasets = "data5/GE.tsv, data5/CGH.tsv, data5/y.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -337,15 +337,15 @@ plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, 2)
 savePlot(opt$output1, samples_plot)
 
 # Variables common space
-corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 1, opt$text)
+corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text)
 ggplotly(corcircle) %>%
   layout(xaxis = ax, yaxis = ax)
-plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 3)
+plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 2)
 savePlot(opt$output2, corcircle)
 
 # Fingerprint plot
 ( fingerprint = plotFingerprint(rgcca.out, opt$compx, opt$superblock, opt$nmark, opt$block) )
-plotFingerprint(rgcca.out, 2, opt$superblock, 100, 1)
+plotFingerprint(rgcca.out, 2, opt$superblock, 100, 2)
 savePlot(opt$output3, fingerprint)
 
 if( ! is.null(opt$response) ){
