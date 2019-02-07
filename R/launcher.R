@@ -326,8 +326,7 @@ connection = opt$connection
 if(!is.matrix(connection))
   connection = setConnection(blocks, (opt$superblock | !is.null(opt$response)), opt$connection, opt$separator)
 
-#group = setResponse(blocks, opt$group, opt$separator, opt$header)
-group = apply(blocks[["y"]], 1, which.max)
+group = setResponse(blocks, opt$group, opt$separator, opt$header)
 
 rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
 

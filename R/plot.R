@@ -121,7 +121,7 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
   # if the resp is numeric
   if (  length(unique(resp)) > 1 ){
 
-    if( ! unique(isCharacter(as.vector(resp)))){
+    if( ! unique(isCharacter(as.vector(resp))) && levels(as.factor(as.vector(resp))) > 5 ){
       # add some transparency
       p = ggplot(df, aes(df[, 1], df[, 2], alpha = (resp - min(resp)) / max(resp - min(resp)))) +
       # get a color scale by quantile
