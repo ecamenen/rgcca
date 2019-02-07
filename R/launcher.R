@@ -153,13 +153,12 @@ postCheckArg = function(opt, blocks){
   })
 
   MSG = "--tau must be comprise between 0 and 1 or must correspond to the character 'optimal' for automatic setting.\n"
-  if (all(opt$tau != "optimal")){
     tryCatch({
 
       list_tau = as.list(opt$tau)
       # Check value of each tau
       out = lapply(list_tau, function(x){
-        if((x < 0) || (x > 1))
+        if(((x < 0) || (x > 1)) && x != "optimal")
           stop(MSG, call.=FALSE)
       })
 
@@ -175,7 +174,6 @@ postCheckArg = function(opt, blocks){
     }, warning = function(w) {
       stop(MSG, call.=FALSE)
     })
-  }
 
   # c1 : A vector of integer giving the spasity parameter for SGCCA (c1)
   # Stop the program if at least one c1 parameter is not in the required interval
@@ -257,9 +255,9 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "sgcca",
+           type = "rgcca",
            scheme = "factorial",
-           tau = "0.05,0.2, 1",
+           tau = "0.05, optimal, 1",
            init = "svd",
            ncomp = "2, 2, 2",
            block = 1,

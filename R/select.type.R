@@ -3,11 +3,18 @@ select.type <- function(opt, A = blocks){
 
   J = length(A)
 
-  scheme = opt$scheme;  tau = opt$tau;  ncomp = opt$ncomp;  C = opt$connection;  superblock = opt$superblock; type = opt$type
+  scheme = opt$scheme; C = opt$connection;  superblock = opt$superblock; type = opt$type
 
-  ncomp = unlist(lapply(strsplit(unlist(as.character(ncomp)), ","), as.double)[[1]])
-  if(tau != "optimal")
-    tau = unlist(lapply(strsplit(unlist(as.character(tau)), ","), as.double)[[1]])
+  ncomp = unlist(lapply(strsplit(gsub(" ", "", as.character(opt$ncomp)), ","), as.double)[[1]])
+
+  tau = unlist(strsplit(gsub(" ", "", as.character(opt$tau)), ","))
+  for (i in 1: length(tau)){
+    tryCatch({
+      tau[i] = as.double(tau[i])
+      }, warning = function(w) {
+        tau[i] <- "xx"
+    })
+  }
 
   ### SETTINGS ###
 
