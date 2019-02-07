@@ -7,14 +7,15 @@ select.type <- function(opt, A = blocks){
 
   ncomp = unlist(lapply(strsplit(gsub(" ", "", as.character(opt$ncomp)), ","), as.double)[[1]])
 
-  tau = unlist(strsplit(gsub(" ", "", as.character(opt$tau)), ","))
-  for (i in 1: length(tau)){
+  l_tau = as.list(strsplit(gsub(" ", "", as.character(opt$tau)), ",")[[1]])
+
+  tau = lapply(l_tau, function(x){
     tryCatch({
-      tau[i] = as.double(tau[i])
-      }, warning = function(w) {
-        tau[i] <- "xx"
-    })
-  }
+      as.double(x)
+      }, warning = function(w){
+        "optimal"
+      })
+  })
 
   ### SETTINGS ###
 
@@ -200,9 +201,16 @@ select.type <- function(opt, A = blocks){
 
 rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, length(blocks)),
                          ncomp = rep(2, length(blocks)), scheme = "factorial", scale = TRUE,
-                         init = "svd", bias = TRUE){
+                         init = "svd", bias = TRUE, type = "rgcca"){
 
-  if(opt$type =="sgcca"){
+  for (i in 1:length(blocks)){
+    if( ncol(blocks[[i]]) > 1000 ){
+      if( (type == "sgcca" && tau > 0.3) || type != "sgcca" )
+        VERBOSE = TRUE
+    }
+  }
+
+  if(type =="sgcca"){
     func = sgcca
     par = "c1"
   }else{

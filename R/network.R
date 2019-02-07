@@ -1,7 +1,6 @@
 getNodes = function(opt, blocks) {
 
   if(any(opt$tau == "optimal")){
-    warning("Tau is optimal. By default, its value has been set to 1 in the connection plot.\n", call. = FALSE)
     opt$tau = rep(NA, length(blocks))
   }
 

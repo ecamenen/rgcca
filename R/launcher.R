@@ -153,6 +153,7 @@ postCheckArg = function(opt, blocks){
   })
 
   MSG = "--tau must be comprise between 0 and 1 or must correspond to the character 'optimal' for automatic setting.\n"
+  if(all(opt$tau!="optimal")){
     tryCatch({
 
       list_tau = as.list(opt$tau)
@@ -174,6 +175,9 @@ postCheckArg = function(opt, blocks){
     }, warning = function(w) {
       stop(MSG, call.=FALSE)
     })
+  }else{
+    opt$tau = "optimal"
+  }
 
   # c1 : A vector of integer giving the spasity parameter for SGCCA (c1)
   # Stop the program if at least one c1 parameter is not in the required interval
@@ -257,7 +261,7 @@ opt = list(directory = ".",
            separator = "\t",
            type = "rgcca",
            scheme = "factorial",
-           tau = "0.05, optimal, 1",
+           tau = "0.1, optimal, 1",
            init = "svd",
            ncomp = "2, 2, 2",
            block = 1,
@@ -322,9 +326,10 @@ connection = opt$connection
 if(!is.matrix(connection))
   connection = setConnection(blocks, (opt$superblock | !is.null(opt$response)), opt$connection, opt$separator)
 
-group = setResponse(blocks, opt$group, opt$separator, opt$header)
+#group = setResponse(blocks, opt$group, opt$separator, opt$header)
+group = apply(blocks[["y"]], 1, which.max)
 
-rgcca.out = rgcca.analyze(blocks, connection, opt$scheme, opt$ncomp, opt$scale, opt$init, opt$bias, opt$tau)
+rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
 
 ax <- list(linecolor = toRGB("white"), ticks = "")
 # Samples common space
