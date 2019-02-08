@@ -22,7 +22,7 @@ getArgs = function(){
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[18]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
-    make_option(c("--group"), type="character", metavar="character", default = "data5/localisation_tumeur.tsv",
+    make_option(c("--group"), type="character", metavar="character", default = "data/response.tsv",
                 help="Path of the group file (to color samples by group in the associated plot)"),
     make_option(c("-r", "--response"), type="integer", metavar="integer",
                 help="Position of the response file in datasets (if not null, activate supervized method)"),
@@ -49,6 +49,8 @@ getArgs = function(){
                 help="Number of components in the analysis for each block (should be greater than 1 and lower than the minimum number of variable among the blocks). Could also be a list separated by comma. Ex: 2,2,3,2."),
     make_option(c("--block"),  type="integer", metavar="integer", default=opt[8],
                 help="Number of the block shown in the graphics (0: the superblock or, if not, the last, 1: the fist one, 2: the 2nd, etc.) [default: the last one]"),
+    make_option(c("--block_y"),  type="integer", metavar="integer", default=2,
+                help="Block shown in the Y-axis of the samples plot (0: the superblock or, if not, the last, 1: the fist one, 2: the 2nd, etc.) [default: the last one]"),
     make_option(c("--compx"),  type="integer", metavar="integer", default=opt[9],
                 help="Component used in the X-axis for biplots and the only component used for histograms (should not be greater than the --ncomp parameter)"),
     make_option(c("--compy"),  type="integer", metavar="integer", default=opt[10],
@@ -133,8 +135,8 @@ postCheckArg = function(opt, blocks){
   opt$ncomp = as.list(opt$ncomp)
 
   out = lapply(opt$ncomp, function(x){
-    if ((x < 2) || (x > min(sapply(blocks, NCOL)))){
-      stop("--ncomp must be comprise between 2 and ", min(sapply(blocks, NCOL)) ," (the minimum number of variables among the whole blocks).\n", call.=FALSE)
+    if ((x < 1) || (x > min(sapply(blocks, NCOL)))){
+      stop("--ncomp must be comprise between 1 and ", min(sapply(blocks, NCOL)) ," (the minimum number of variables among the whole blocks).\n", call.=FALSE)
     }
   })
 
@@ -148,7 +150,7 @@ postCheckArg = function(opt, blocks){
 
   out = sapply(c("compx", "compy"), function (x){
     if ((opt[[x]] < 1) || (opt[[x]] > opt$ncomp )){
-      stop(paste("--", x, " must be comprise between 2 and ", opt$ncomp ," (the number of component selected).\n ", sep=""), call.=FALSE)
+      stop(paste("--", x, " must be comprise between 1 and ", opt$ncomp ," (the number of component selected).\n ", sep=""), call.=FALSE)
     }
   })
 
@@ -266,7 +268,7 @@ opt = list(directory = ".",
            ncomp = "2, 2, 2",
            block = 1,
            compx = 1,
-           compy = 2,
+           compy = 1,
            nmark = 100,
            output1 = "samples_plot.pdf",
            output2 = "corcircle.pdf",
@@ -274,7 +276,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "data5/CGH.tsv, data5/GE.tsv, data5/y.tsv")
+           datasets = "data/agriculture.tsv, data/industry.tsv, data/politic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -335,18 +337,24 @@ rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, op
 
 ax <- list(linecolor = toRGB("white"), ticks = "")
 # Samples common space
-samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text)
-ggplotly(samples_plot) %>%
-  layout(xaxis = ax, yaxis = ax)
-plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, 2)
-savePlot(opt$output1, samples_plot)
+if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
+  warning("With a number of component of 1, a second block should be chosen to perform a samples plot", .call = FALSE)
+}else{
+  samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y)
+  ggplotly(samples_plot) %>%
+    layout(xaxis = ax, yaxis = ax)
+  plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, 2)
+  savePlot(opt$output1, samples_plot)
+}
 
-# Variables common space
-corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text)
-ggplotly(corcircle) %>%
-  layout(xaxis = ax, yaxis = ax)
-plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 2)
-savePlot(opt$output2, corcircle)
+if(opt$ncomp[opt$block] > 1){
+  # Variables common space
+  corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text)
+  ggplotly(corcircle) %>%
+    layout(xaxis = ax, yaxis = ax)
+  plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 2)
+  savePlot(opt$output2, corcircle)
+}
 
 # Fingerprint plot
 ( fingerprint = plotFingerprint(rgcca.out, opt$compx, opt$superblock, opt$nmark, opt$block) )

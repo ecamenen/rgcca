@@ -211,7 +211,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 
   if(nrow(df) > 200){
     df = df [as.vector (unique( sapply(c(comp_x, comp_y), function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:100,])))), ]
-    }
+  }
 
   # if superblock is selected, color by blocks
   if ( superblock & ( i_block == length(blocks)) ){
@@ -270,7 +270,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
   if(title == "Samples" && !is.null(p))
     func$colour = SAMPLES_COL_DEFAULT
 
-  if(no_Overlap && nrow(df) < 100){
+  if(no_Overlap && nrow(df) <= 100){
     func$force = 0.2
     func$max.iter = 500
   }
@@ -327,15 +327,15 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
   if ( is.null(i_block) )
     i_block = length(rgcca$a)
 
-  # select the weights
-  df = data.frame(rgcca$a[[i_block]])
+  # select the weights (var to add a column to work with comp = 1)
+  df = data.frame(rgcca$a[[i_block]], var = row.names(rgcca$a[[i_block]]))
 
   # Get a qualitative variable with which block is associated with each variables
   if (  superblock & ( i_block == length(rgcca$a) ) )
     df = data.frame( df, color = getBlocsVariables(rgcca) )
 
   # sort in decreasing order
-  df = data.frame(df[order(abs(df[,comp]), decreasing = TRUE),], order = nrow(df):1)
+  df = data.frame(df[order(abs(df[, c(comp)]), decreasing = TRUE),], order = nrow(df):1)
 
   # selected variables in sgcca
   nvar_select = varSelected(rgcca, i_block, comp)
