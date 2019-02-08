@@ -209,6 +209,10 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
     df = df[selectedVar, ]
   }
 
+  if(nrow(df) > 200){
+    df = df [as.vector (unique( sapply(c(comp_x, comp_y), function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:100,])))), ]
+    }
+
   # if superblock is selected, color by blocks
   if ( superblock & ( i_block == length(blocks)) ){
     color = getBlocsVariables(rgcca)
@@ -253,7 +257,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
 #' plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
 #' @export plotSpace
-plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = 1, p = NULL, text = TRUE, i_block_y = NULL){
+plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = 1, p = NULL, text = TRUE, i_block_y = NULL, no_Overlap = TRUE){
 
   if(is.null(i_block_y))
     i_block_y = i_block
@@ -266,7 +270,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
   if(title == "Samples" && !is.null(p))
     func$colour = SAMPLES_COL_DEFAULT
 
-  if(nrow(df) < 100){
+  if(no_Overlap && nrow(df) < 100){
     func$force = 0.2
     func$max.iter = 500
   }
@@ -293,8 +297,6 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
       axis.title.y = element_text(face = AXIS_FONT, margin = margin(0,20,0,0), size = AXIS_TITLE_SIZE),
       axis.title.x = element_text(face = AXIS_FONT, margin = margin(20,0,0,0), size = AXIS_TITLE_SIZE)
     )
-  #+ stat_ellipse()
-  #TODO: if NB_VAR > X
 }
 
 #' Histogram of a fingerprint
