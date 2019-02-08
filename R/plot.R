@@ -386,18 +386,15 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
 #' @export plotAVE
 plotAVE = function(rgcca, comp = 1){
 
-  df = as.matrix ( sapply(rgcca$AVE$AVE_X, function(x) x[comp]) )
+  ave = as.vector(Reduce(c, rgcca$AVE$AVE_X))
+  blocks = unlist(lapply(1:length(names(rgcca$a)), function(x) rep(names(rgcca$a)[x], rgcca$ncomp[x])))
+  ncomp = as.vector(Reduce(c, lapply(rgcca$AVE$AVE_X, names)))
 
-  row.names(df) = names(rgcca$a)
+  df = data.frame(ave, blocks, ncomp)
 
-  # order by decreasing
-  #TODO: catch : Error in data.frame: row names contain missing values : the length of the header is not the same of the row number
-  df = data.frame(df[order(abs(df), decreasing = TRUE),], order = nrow(df):1)
-
-  p = ggplot(df, aes(order, df[,1], fill=abs(df[,1])))
+  p = ggplot(data=df, aes(x=blocks, y=ave, fill = ncomp))
   plotHistogram(p, df, "Average Variance Explained") +
-    labs(subtitle = printAxis(rgcca, comp, outer = TRUE)) +
-    theme(legend.position = "none")
+    labs(subtitle = printAxis(rgcca, comp, outer = TRUE))
 }
 
 #' Histogram settings
@@ -422,21 +419,20 @@ plotAVE = function(rgcca, comp = 1){
 #' @export plotHistogram
 plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2", high_col = "coral3"){
 
-  if (nrow(df) >= 10){
+  if ( nrow(df) <= 10 || title == "Average Variance Explained" ){
+    WIDTH = NULL
+  }else{
     WIDTH = 1
     AXIS_TEXT_SIZE = 8
-  }else
-    WIDTH = NULL
+  }
 
   p = p +
     geom_bar(stat = "identity", width = WIDTH) +
     geom_hline(yintercept = 0, col = "gray40", size = 1) +
-    coord_flip() +
-    scale_x_continuous(breaks = df$order, labels = rownames(df)) +
+    coord_flip()  +
     labs(
       title = title,
-      x = "", y = "",
-      fill = "Blocks") +
+      x = "", y = "") +
     theme_classic() +
     theme_perso() +
     theme(
@@ -446,8 +442,17 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
       axis.ticks = element_blank(),
       plot.subtitle = element_text(hjust = 0.5, size = 16, face = "italic"))
 
-  if(length(color) == 1){
-    p = p + scale_fill_gradient(low = low_col, high = high_col)
+  if(title == "Variable weights"){
+    p  = p +
+    scale_x_continuous(breaks = df$order, labels = rownames(df)) +
+    labs( fill = "Blocks")
+    if(length(color) == 1){
+      p = p + scale_fill_gradient(low = low_col, high = high_col)
+    }
+  }else{
+    print(gsub("comp", "", levels(df$ncomp)))
+    p  = p + scale_fill_manual(values=colorGroup(levels(df$ncomp)), labels = gsub("comp", " ", levels(df$ncomp))) +
+      labs( fill = "Components" )
   }
 
   return(p)

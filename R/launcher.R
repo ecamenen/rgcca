@@ -134,9 +134,9 @@ postCheckArg = function(opt, blocks){
 
   opt$ncomp = as.list(opt$ncomp)
 
-  out = lapply(opt$ncomp, function(x){
-    if ((x < 1) || (x > min(sapply(blocks, NCOL)))){
-      stop("--ncomp must be comprise between 1 and ", min(sapply(blocks, NCOL)) ," (the minimum number of variables among the whole blocks).\n", call.=FALSE)
+  out = lapply(1:length(opt$ncomp), function(x){
+    if ((opt$ncomp[x] < 1) || (opt$ncomp[x] > ncol(blocks[[x]]))){
+      stop("--ncomp must be comprise between 1 and ", ncol(blocks[[x]]) ,", the number of variables of the block (currently equals to ", opt$ncomp[x]  ,").\n", call.=FALSE)
     }
   })
 
@@ -265,7 +265,7 @@ opt = list(directory = ".",
            scheme = "factorial",
            tau = "optimal",
            init = "svd",
-           ncomp = "2, 2, 2",
+           ncomp = "3, 2, 4, 4",
            block = 1,
            compx = 1,
            compy = 1,
