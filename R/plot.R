@@ -204,6 +204,8 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
     row.names = colnames(blocks[[i_block]])
   )
 
+  print(df)
+
   if(class(rgcca)=="sgcca"){
     selectedVar = rgcca$a[[i_block]][,comp_x] != 0 | rgcca$a[[i_block]][,comp_y] != 0
     df = df[selectedVar, ]
@@ -297,6 +299,8 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
       axis.title.y = element_text(face = AXIS_FONT, margin = margin(0,20,0,0), size = AXIS_TITLE_SIZE),
       axis.title.x = element_text(face = AXIS_FONT, margin = margin(20,0,0,0), size = AXIS_TITLE_SIZE)
     )
+  #+ stat_ellipse()
+  #TODO: if NB_VAR > X
 }
 
 #' Histogram of a fingerprint
@@ -390,11 +394,24 @@ plotAVE = function(rgcca, comp = 1){
   blocks = unlist(lapply(1:length(names(rgcca$a)), function(x) rep(names(rgcca$a)[x], rgcca$ncomp[x])))
   ncomp = as.vector(Reduce(c, lapply(rgcca$AVE$AVE_X, names)))
 
-  df = data.frame(ave, blocks, ncomp)
+  y_ave_cum = lapply(lapply(rgcca$AVE$AVE_X, function(x) round(cumsum(rev(x)), 2)), function(x) c(0, x))
+  y_ave_cum = unlist(lapply(y_ave_cum, function(x) unlist(lapply(1:length(x), function(i) (x[i-1] + x[i]) / 2 ))))
+  # TODO < max(ave)/10
 
-  p = ggplot(data=df, aes(x=blocks, y=ave, fill = ncomp))
-  plotHistogram(p, df, "Average Variance Explained") +
-    labs(subtitle = printAxis(rgcca, comp, outer = TRUE))
+  ave_label =  unlist(lapply(rgcca$AVE$AVE_X, function(x) round(rev(x), 2)))
+  ave_label[ave_label < 0.1] =  NA
+
+
+  df = data.frame(ave, blocks, ncomp)
+  p = ggplot(data=df, aes(x=blocks, y=ave, fill = ncomp, label =  ave_label))
+
+  p = plotHistogram(p, df, "Average Variance Explained") +
+    labs(subtitle = printAxis(rgcca, comp, outer = TRUE)) +
+    geom_text(aes(y = y_ave_cum), cex = 3) +
+    scale_fill_manual(values=colorGroup(levels(df$ncomp)), labels = gsub("comp", " ", levels(df$ncomp))) +
+    labs( fill = "Components" )
+
+  return(p)
 }
 
 #' Histogram settings
@@ -442,25 +459,22 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
       axis.ticks = element_blank(),
       plot.subtitle = element_text(hjust = 0.5, size = 16, face = "italic"))
 
-  if(title == "Variable weights"){
+  if(title != "Average Variance Explained"){
     p  = p +
-    scale_x_continuous(breaks = df$order, labels = rownames(df)) +
-    labs( fill = "Blocks")
+      scale_x_continuous(breaks = df$order, labels = rownames(df)) +
+      labs( fill = "Blocks")
     if(length(color) == 1){
       p = p + scale_fill_gradient(low = low_col, high = high_col)
     }
-  }else{
-    print(gsub("comp", "", levels(df$ncomp)))
-    p  = p + scale_fill_manual(values=colorGroup(levels(df$ncomp)), labels = gsub("comp", " ", levels(df$ncomp))) +
-      labs( fill = "Components" )
   }
 
   return(p)
 }
 
-corResponse = function(rgcca, comp = 1, i_block = 1){
+corResponse = function(rgcca, blocks = NULL, response = NULL, comp = 1, i_block = 1){
 
-  response = blocks[[ length(rgcca$a) ]]
+  if(is.null(response))
+    response = blocks[[ length(rgcca$a) ]]
 
   cor.res = matrix(cor(rgcca$Y[[i_block]][, comp],
                        response,

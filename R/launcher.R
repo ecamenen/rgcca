@@ -24,7 +24,7 @@ getArgs = function(){
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
     make_option(c("--group"), type="character", metavar="character", default = "data/response.tsv",
                 help="Path of the group file (to color samples by group in the associated plot)"),
-    make_option(c("-r", "--response"), type="integer", metavar="integer",
+    make_option(c("-r", "--response"), type="integer", metavar="integer", default = 3,
                 help="Position of the response file in datasets (if not null, activate supervized method)"),
     make_option(c("--names"), type="character", metavar="character", help="List of the names for each block file separated by comma [default: filename]"),
     make_option(c("-H", "--header"), type="logical", action="store_false", help="DO NOT consider the first row as header of columns"),
@@ -265,7 +265,7 @@ opt = list(directory = ".",
            scheme = "factorial",
            tau = "optimal",
            init = "svd",
-           ncomp = "3, 2, 4, 4",
+           ncomp = "3, 2, 4",
            block = 1,
            compx = 1,
            compy = 1,
@@ -362,7 +362,7 @@ plotFingerprint(rgcca.out, 2, opt$superblock, 100, 2)
 savePlot(opt$output3, fingerprint)
 
 if( ! is.null(opt$response) ){
-  ( correlation = corResponse(rgcca.out, opt$compx, opt$block) )
+  ( correlation = corResponse(rgcca.out, blocks, comp = opt$compx, i_block = opt$block) )
     savePlot(opt$output5, correlation)
 }
 
