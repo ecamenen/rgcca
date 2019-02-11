@@ -396,10 +396,9 @@ plotAVE = function(rgcca, comp = 1){
 
   y_ave_cum = lapply(lapply(rgcca$AVE$AVE_X, function(x) round(cumsum(rev(x)), 2)), function(x) c(0, x))
   y_ave_cum = unlist(lapply(y_ave_cum, function(x) unlist(lapply(1:length(x), function(i) (x[i-1] + x[i]) / 2 ))))
-  # TODO < max(ave)/10
 
   ave_label =  unlist(lapply(rgcca$AVE$AVE_X, function(x) round(rev(x), 2)))
-  ave_label[ave_label < 0.1] =  NA
+  ave_label[ave_label < max(y_ave_cum)/10] =  ""
 
 
   df = data.frame(ave, blocks, ncomp)
