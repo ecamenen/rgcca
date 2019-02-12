@@ -23,6 +23,7 @@ circleFun = function(center = c(0, 0), diameter = 2, npoints = 100) {
   tt = seq(0, 2 * pi, length.out = npoints)
   xx = center[1] + r * cos(tt)
   yy = center[2] + r * sin(tt)
+
   return(data.frame(x = xx, y = yy))
 }
 
@@ -204,15 +205,14 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
     row.names = colnames(blocks[[i_block]])
   )
 
-  print(df)
-
   if(class(rgcca)=="sgcca"){
     selectedVar = rgcca$a[[i_block]][,comp_x] != 0 | rgcca$a[[i_block]][,comp_y] != 0
     df = df[selectedVar, ]
   }
 
   if(nrow(df) > 200){
-    df = df [as.vector (unique( sapply(c(comp_x, comp_y), function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:100,])))), ]
+    df = df [as.vector (unique( sapply(c(comp_x, comp_y),
+                                       function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:100,])))), ]
   }
 
   # if superblock is selected, color by blocks
@@ -265,14 +265,18 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     i_block_y = i_block
 
   if (!isTRUE(text)){
-    func = quote(geom_point_repel(size = PCH_TEXT_SIZE, aes(shape = as.factor(group)), force = 0, max.iter = 1))
-  }else
-    func = quote(geom_text_repel(aes(label = rownames(df)), size = PCH_TEXT_SIZE, force = 0, max.iter = 1))
+    f = "geom_point"
+    func = quote(get(f)(size = PCH_TEXT_SIZE, aes(shape = as.factor(group))))
+  }else{
+    f = "geom_text"
+    func = quote(get(f)(aes(label = rownames(df)), size = PCH_TEXT_SIZE))
+  }
 
   if(title == "Samples" && !is.null(p))
     func$colour = SAMPLES_COL_DEFAULT
 
   if(no_Overlap && nrow(df) <= 100){
+    f = paste0(f, "_repel")
     func$force = 0.2
     func$max.iter = 500
   }
@@ -299,8 +303,6 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
       axis.title.y = element_text(face = AXIS_FONT, margin = margin(0,20,0,0), size = AXIS_TITLE_SIZE),
       axis.title.x = element_text(face = AXIS_FONT, margin = margin(20,0,0,0), size = AXIS_TITLE_SIZE)
     )
-  #+ stat_ellipse()
-  #TODO: if NB_VAR > X
 }
 
 #' Histogram of a fingerprint
