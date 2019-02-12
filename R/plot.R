@@ -126,7 +126,7 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
 
     if(!is.null(rownames(resp))){
       names=row.names(resp)
-      resp[ setdiff(row.names(blocks[[i_block]]), row.names(resp))] <- "NA"
+      resp[ setdiff(row.names(blocks[[i_block]]), row.names(resp))] <- NA
       names(resp)[names(resp)==""] <- names
       resp = resp[row.names(blocks[[i_block]])]
     }
@@ -276,21 +276,20 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     i_block_y = i_block
 
   if (!isTRUE(text)){
-    f = "geom_point"
-    func = quote(get(f)(size = PCH_TEXT_SIZE, aes(shape = as.factor(group))))
+    func = quote(geom_point(size = PCH_TEXT_SIZE, aes(shape = as.factor(group))))
   }else{
     f = "geom_text"
     func = quote(get(f)(aes(label = rownames(df)), size = PCH_TEXT_SIZE))
+
+    if(no_Overlap && nrow(df) <= 100){
+      f = paste0(f, "_repel")
+      func$force = 0.2
+      func$max.iter = 500
+    }
   }
 
   if(title == "Samples" && !is.null(p))
     func$colour = SAMPLES_COL_DEFAULT
-
-  if(no_Overlap && nrow(df) <= 100){
-    f = paste0(f, "_repel")
-    func$force = 0.2
-    func$max.iter = 500
-  }
 
   if (is.null(p)){
     p = ggplot(df, aes(df[,1], df[,2], colour = as.factor(group)))
@@ -307,7 +306,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
            shape = name_group) +
     scale_y_continuous(breaks = NULL) +
     scale_x_continuous(breaks = NULL) +
-    scale_color_manual(values = colorGroup(group)) +
+    scale_color_manual(values = colorGroup(group), na.translate = TRUE) +
     theme_perso() +
     theme(
       axis.text = element_blank(),
