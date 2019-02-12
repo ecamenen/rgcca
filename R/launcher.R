@@ -22,7 +22,7 @@ getArgs = function(){
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[18]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
-    make_option(c("--group"), type="character", metavar="character", default = "data/response.tsv",
+    make_option(c("--group"), type="character", metavar="character",
                 help="Path of the group file (to color samples by group in the associated plot)"),
     make_option(c("-r", "--response"), type="integer", metavar="integer", default = 3,
                 help="Position of the response file in datasets (if not null, activate supervized method)"),
@@ -261,14 +261,14 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "rgcca",
+           type = "pca",
            scheme = "factorial",
            tau = "optimal",
            init = "svd",
-           ncomp = "3, 2, 4",
+           ncomp = "2",
            block = 1,
            compx = 1,
-           compy = 1,
+           compy = 2,
            nmark = 100,
            output1 = "samples_plot.pdf",
            output2 = "corcircle.pdf",
@@ -276,7 +276,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "data/agriculture.tsv, data/industry.tsv, data/politic.tsv")
+           datasets = "data4/Lipidomique.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -340,7 +340,7 @@ ax <- list(linecolor = toRGB("white"), ticks = "")
 if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
   warning("With a number of component of 1, a second block should be chosen to perform a samples plot", .call = FALSE)
 }else{
-  samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y)
+  ( samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y) )
   ggplotly(samples_plot) %>%
     layout(xaxis = ax, yaxis = ax)
   plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, 2)
@@ -348,8 +348,9 @@ if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
 }
 
 if(opt$ncomp[opt$block] > 1){
+  print("ok")
   # Variables common space
-  corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text)
+  ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
   ggplotly(corcircle) %>%
     layout(xaxis = ax, yaxis = ax)
   plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 2)

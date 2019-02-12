@@ -120,7 +120,18 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
     PCH_TEXT_SIZE = 2
 
   # if the resp is numeric
-  if (  length(unique(resp)) > 1 ){
+  if (  length(unique(as.matrix(resp))) > 1 ){
+
+    resp = as.matrix(apply(resp, 1, as.character), row.names = row.names(resp))
+
+    if(!is.null(rownames(resp))){
+      names=row.names(resp)
+      resp[ setdiff(row.names(blocks[[i_block]]), row.names(resp))] <- "NA"
+      names(resp)[names(resp)==""] <- names
+      resp = resp[row.names(blocks[[i_block]])]
+    }
+
+    print(resp)
 
     if( ! unique(isCharacter(as.vector(resp))) && length(levels(as.factor(as.vector(resp)))) > 5 ){
       # add some transparency
@@ -472,10 +483,18 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
   return(p)
 }
 
-corResponse = function(rgcca, blocks = NULL, response = NULL, comp = 1, i_block = 1){
+corResponse = function(rgcca, blocks, response = NULL, comp = 1, i_block = 1){
 
   if(is.null(response))
     response = blocks[[ length(rgcca$a) ]]
+  else{
+    common_rows = intersect(row.names(blocks[[i_block]]), row.names(response))
+    response = response[common_rows, ]
+    options(warn = -1)
+    # Disabling automatic factor conversion for some columns
+    response = apply(response, 2, as.double)
+    options(warn = 0)
+  }
 
   cor.res = matrix(cor(rgcca$Y[[i_block]][, comp],
                        response,
@@ -484,6 +503,8 @@ corResponse = function(rgcca, blocks = NULL, response = NULL, comp = 1, i_block 
   res = data.frame(cor = cor.res[order(abs(cor.res[, 1]),
                                        decreasing = TRUE),],
                    order = length(cor.res):1)
+
+  if(VERBOSE) print(res)
 
   p = ggplot(res, aes(order, cor, fill = abs(res[,1])))
   plotHistogram(p, res, "Correlation to the response") +
