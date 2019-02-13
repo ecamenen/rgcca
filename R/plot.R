@@ -313,8 +313,8 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     geom_vline(xintercept = 0, col = "grey", linetype = "dashed", size = 1) +
     geom_hline(yintercept = 0, col = "grey", linetype = "dashed", size = 1) +
     labs ( title = paste(title, "space"),
-           x = printAxis(rgcca, comp_x, i_block),
-           y = printAxis(rgcca, comp_y, i_block_y),
+           x = "",
+           y = "",
            color = name_group,
            shape = name_group) +
     scale_y_continuous(breaks = NULL) +
@@ -387,8 +387,8 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
     p = ggplot(df, aes(order, df[, comp], fill = abs(df[, comp])))
   }
 
-  p = plotHistogram(p, df, "Variable weights", as.character(color2)) +
-  labs(subtitle = printAxis(rgcca, comp, i_block))
+  p = plotHistogram(p, df, "Variable weights", as.character(color2))
+  #labs(subtitle = printAxis(rgcca, comp, i_block))
 
   if(length(color2) != 1)
     p = p + scale_fill_manual(values = colorGroup(color2))
@@ -519,7 +519,7 @@ corResponse = function(rgcca, blocks, response = NULL, comp = 1, i_block = 1){
   if(VERBOSE) print(res)
 
   p = ggplot(res, aes(order, cor, fill = abs(res[,1])))
-  plotHistogram(p, res, "Correlation to the response") +
+  plotHistogram(p, res, "Correlation with response") +
     labs(subtitle = printAxis(rgcca, comp, i_block))  +
     theme(legend.position = "none")
 }

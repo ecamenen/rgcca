@@ -276,7 +276,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "BLOCK_CSV/Metabolomic.tsv")
+           datasets = "BLOCK_CSV/Transcriptomic_without_23.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -382,34 +382,34 @@ rev(rgcca.out$a[[1]][order(abs(rgcca.out$a[[1]][, 1])), 1])
 
 ax <- list(linecolor = toRGB("white"), ticks = "")
 # Samples common space
-if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
-  warning("With a number of component of 1, a second block should be chosen to perform a samples plot", .call = FALSE)
-}else{
+# if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
+#   warning("With a number of component of 1, a second block should be chosen to perform a samples plot", .call = FALSE)
+# }else{
   ( samples_plot = plotSamplesSpace(rgcca.out, group2, opt$compx, opt$compy, opt$block, opt$text, opt$block_y) )
-  ggplotly(samples_plot) %>%
-    layout(xaxis = ax, yaxis = ax)
-  plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, 2)
-  savePlot(opt$output1, samples_plot)
-}
+#   ggplotly(samples_plot) %>%
+#     layout(xaxis = ax, yaxis = ax)
+#   plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, 2)
+#   savePlot(opt$output1, samples_plot)
+# }
 
-if(opt$ncomp[opt$block] > 1){
+#if(opt$ncomp[opt$block] > 1){
   # Variables common space
   ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
   ggplotly(corcircle) %>%
     layout(xaxis = ax, yaxis = ax)
-  plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 2)
+  #plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 2)
   savePlot(opt$output2, corcircle)
-}
+#}
 
 # Fingerprint plot
 ( fingerprint = plotFingerprint(rgcca.out, opt$compx, opt$superblock, opt$nmark, opt$block) )
-plotFingerprint(rgcca.out, 2, opt$superblock, 100, 2)
+plotFingerprint(rgcca.out, 2, opt$superblock, opt$nmark, opt$block)
 savePlot(opt$output3, fingerprint)
 
-if( ! is.null(opt$response) ){
+#if( ! is.null(opt$response) ){
   ( correlation = corResponse(rgcca.out, blocks, response, comp = opt$compx, i_block = opt$block) )
     savePlot(opt$output5, correlation)
-}
+#}
 
 # Average Variance Explained
 if(opt$type != "pca"){
