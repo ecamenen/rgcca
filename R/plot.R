@@ -123,13 +123,13 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
   if (  length(unique(as.matrix(resp))) > 1 ){
 
     if(!is.null(rownames(resp))){
+
       names = row.names(resp)
       resp = as.matrix(apply(as.matrix(resp), 1, as.character), row.names = row.names(resp))
       diff_column = setdiff(row.names(blocks[[i_block]]), row.names(resp))
 
       if(length(diff_column) > 1 ){
         resp[diff_column ] <- 'NA'
-        print(names(resp)[names(resp)!=""] )
         names(resp)[names(resp)==""] <- names
       }else{
         names(resp) = names
@@ -138,16 +138,25 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
       resp = resp[row.names(blocks[[i_block]])]
     }
 
-
     if( ! unique(isCharacter(as.vector(resp))) && length(levels(as.factor(as.vector(resp)))) > 5 ){
+
+      if(length(diff_column) > 1 ){
+        resp = resp
+        resp[diff_column ] <- NA
+      }
+
+      resp = as.numeric(resp)
+
       # add some transparency
-      p = ggplot(df, aes(df[, 1], df[, 2], alpha = (resp - min(resp)) / max(resp - min(resp)))) +
+      p = ggplot(df, aes(df[, 1], df[, 2], alpha = (resp - min(resp, na.rm = T)) / max(resp - min(resp, na.rm = T), na.rm = T))) +
       # get a color scale by quantile
             scale_alpha_continuous(
             name = "resp",
             breaks = seq(0, 1, .25),
-            labels = round(quantile(resp), 2)
+            labels = round(quantile(as.matrix(resp), na.rm = T), 2)
         )
+
+      print(resp)
 
     }else
       p = NULL
@@ -515,4 +524,16 @@ corResponse = function(rgcca, blocks, response = NULL, comp = 1, i_block = 1){
   plotHistogram(p, res, "Correlation to the response") +
     labs(subtitle = printAxis(rgcca, comp, i_block))  +
     theme(legend.position = "none")
+}
+
+getCor = function(rgcca, blocks, comp_x = 1, comp_y = 2, i_block = NULL){
+
+  if ( is.null(i_block) )
+    i_block = length(blocks)
+
+  return(  data.frame(
+    #correlation matrix within a block for each variables and each component selected
+    sapply ( c(comp_x, comp_y), function(x) cor( blocks[[i_block]], rgcca$Y[[i_block]][, x] ) ) ,
+    row.names = colnames(blocks[[i_block]])
+  ))
 }

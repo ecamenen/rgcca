@@ -276,7 +276,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "data4/Lipidomique.tsv")
+           datasets = "BLOCK_CSV/Lipidomic_without_P7498.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -340,9 +340,37 @@ connection = opt$connection
 if(!is.matrix(connection))
   connection = setConnection(blocks, (opt$superblock | !is.null(opt$response)), opt$connection, opt$separator)
 
-group = setResponse(blocks, opt$group, opt$separator, opt$header)
+#group = setResponse(blocks, opt$group, opt$separator, opt$header)
 
 rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
+
+
+##### Nucleiparks #####
+group = read.table("~/Documents/Nucleiparks/DATA/group_V2.tsv",
+                   header = F,
+                   sep = "\t",
+                   dec = ".",
+                   row.names = 1)
+
+group2 = read.table("/home/etienne.camenen/bin/rgccaLauncher/BLOCK_CSV/UPDRS.tsv",
+           header = T,
+           sep = "\t",
+           dec = ".",
+           row.names = 1)
+
+response = read.table("~/Documents/Nucleiparks/DATA/Clinic_full.txt",
+                      header = T,
+                      sep = "\t",
+                      dec = ".",
+                      row.names = 1)
+response = response[, 6:NCOL(response)]
+
+cor = getCor(rgcca.out, blocks)
+
+cor1 = cor[order(cor[,1]), 1 ] ; names(cor1) = row.names(cor)[order(cor[,1])]; cor1
+rgcca.out$Y[[1]][order(rgcca.out$Y[[1]][,1]), 1]
+
+##########"
 
 ax <- list(linecolor = toRGB("white"), ticks = "")
 # Samples common space
@@ -357,7 +385,6 @@ if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
 }
 
 if(opt$ncomp[opt$block] > 1){
-  print("ok")
   # Variables common space
   ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
   ggplotly(corcircle) %>%
@@ -372,7 +399,7 @@ plotFingerprint(rgcca.out, 2, opt$superblock, 100, 2)
 savePlot(opt$output3, fingerprint)
 
 if( ! is.null(opt$response) ){
-  ( correlation = corResponse(rgcca.out, blocks, comp = opt$compx, i_block = opt$block) )
+  ( correlation = corResponse(rgcca.out, blocks, response, comp = opt$compx, i_block = opt$block) )
     savePlot(opt$output5, correlation)
 }
 
