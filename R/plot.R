@@ -156,8 +156,6 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
             labels = round(quantile(as.matrix(resp), na.rm = T), 2)
         )
 
-      print(resp)
-
     }else
       p = NULL
   }else

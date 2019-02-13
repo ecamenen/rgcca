@@ -265,18 +265,18 @@ opt = list(directory = ".",
            scheme = "factorial",
            tau = "optimal",
            init = "svd",
-           ncomp = "3",
+           ncomp = "2",
            block = 1,
            compx = 1,
            compy = 2,
-           nmark = 100,
+           nmark = 20,
            output1 = "samples_plot.pdf",
            output2 = "corcircle.pdf",
            output3 = "fingerprint.pdf",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "BLOCK_CSV/Lipidomic_without_P7498.tsv")
+           datasets = "BLOCK_CSV/Metabolomic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -352,11 +352,18 @@ group = read.table("~/Documents/Nucleiparks/DATA/group_V2.tsv",
                    dec = ".",
                    row.names = 1)
 
-group2 = read.table("/home/etienne.camenen/bin/rgccaLauncher/BLOCK_CSV/UPDRS.tsv",
+group2 = read.table("~/bin/rgccaLauncher/BLOCK_CSV/UPDRS.tsv",
            header = T,
            sep = "\t",
            dec = ".",
            row.names = 1)
+
+clusters = read.table("~/bin/fingerprint_clustering/clusters.tsv",
+                    header = T,
+                    sep = "\t",
+                    dec = ".",
+                    row.names = 1)
+clusters = as.data.frame(clusters[, 1], row.names = row.names(clusters))
 
 response = read.table("~/Documents/Nucleiparks/DATA/Clinic_full.txt",
                       header = T,
@@ -367,8 +374,9 @@ response = response[, 6:NCOL(response)]
 
 cor = getCor(rgcca.out, blocks)
 
-cor1 = cor[order(cor[,1]), 1 ] ; names(cor1) = row.names(cor)[order(cor[,1])]; cor1
+cor1 = rev(cor[order(abs(cor[,1])), 1 ]) ; names(cor1) = row.names(cor)[order(cor[,1])]; cor1
 rgcca.out$Y[[1]][order(rgcca.out$Y[[1]][,1]), 1]
+rev(rgcca.out$a[[1]][order(abs(rgcca.out$a[[1]][, 1])), 1])
 
 ##########"
 
@@ -377,7 +385,7 @@ ax <- list(linecolor = toRGB("white"), ticks = "")
 if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
   warning("With a number of component of 1, a second block should be chosen to perform a samples plot", .call = FALSE)
 }else{
-  ( samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y) )
+  ( samples_plot = plotSamplesSpace(rgcca.out, group2, opt$compx, opt$compy, opt$block, opt$text, opt$block_y) )
   ggplotly(samples_plot) %>%
     layout(xaxis = ax, yaxis = ax)
   plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, 2)
@@ -415,3 +423,12 @@ if(opt$type != "pca"){
   plotNetwork2(nodes, edges, blocks)
   savePlot(opt$output6, conNet)
 }
+
+# Lipidomic correlatio with disease duration
+# plot(rgcca.out$Y[[1]][, 2], resp[names(rgcca.out$Y[[1]][, 2])] , xlab = "", ylab= "")
+# title(xlab = "RGCCA$Y", ylab = "Disease duration")
+# abline(lm(y ~ x, data= df ), col="red")
+
+
+(res = plotSamplesSpace(rgcca.out, group2, opt$compx, opt$compy, opt$block, opt$text, opt$block_y))
+savePlot("out.png", res)
