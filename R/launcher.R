@@ -24,7 +24,7 @@ getArgs = function(){
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
     make_option(c("--group"), type="character", metavar="character",
                 help="Path of the group file (to color samples by group in the associated plot)"),
-    make_option(c("-r", "--response"), type="integer", metavar="integer", default = 3,
+    make_option(c("-r", "--response"), type="integer", metavar="integer",
                 help="Position of the response file in datasets (if not null, activate supervized method)"),
     make_option(c("--names"), type="character", metavar="character", help="List of the names for each block file separated by comma [default: filename]"),
     make_option(c("-H", "--header"), type="logical", action="store_false", help="DO NOT consider the first row as header of columns"),
@@ -265,7 +265,7 @@ opt = list(directory = ".",
            scheme = "factorial",
            tau = "optimal",
            init = "svd",
-           ncomp = "2",
+           ncomp = "3",
            block = 1,
            compx = 1,
            compy = 2,
@@ -296,7 +296,7 @@ source("R/network.R")
 opt$header = !("header" %in% names(opt))
 opt$superblock = !("superblock" %in% names(opt))
 opt$bias = !("bias" %in% names(opt))
-opt$scale = !("scale" %in% names(opt))
+opt$scale = ("scale" %in% names(opt))
 opt$text = !("text" %in% names(opt))
 VERBOSE = FALSE
 
@@ -318,10 +318,19 @@ if( ! is.null(opt$response) ){
   blocks = opt$blocks
 }
 
+if(!isTRUE(scale))
+  blocks = lapply(blocks, function(x) scale2(x, scale = F))
+
 if( opt$superblock  | opt$type == "pca"){
   if( opt$superblock ){
     warnConnection("superblock")
-    blocks  = lapply(blocks, function(x) scale2(x, bias = opt$bias))
+
+    if(isTRUE(scale))
+      blocks  = lapply(blocks, function(x) scale2(x, bias = opt$bias))
+    else
+      blocks = lapply(blocks, function(x) scale2(x, scale = F))
+
+    # TODO: scale par column
     opt$scale = FALSE
   }
   blocks[["Superblock"]] = Reduce(cbind, blocks)

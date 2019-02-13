@@ -122,16 +122,22 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
   # if the resp is numeric
   if (  length(unique(as.matrix(resp))) > 1 ){
 
-    resp = as.matrix(apply(resp, 1, as.character), row.names = row.names(resp))
-
     if(!is.null(rownames(resp))){
-      names=row.names(resp)
-      resp[ setdiff(row.names(blocks[[i_block]]), row.names(resp))] <- NA
-      names(resp)[names(resp)==""] <- names
+      names = row.names(resp)
+      resp = as.matrix(apply(as.matrix(resp), 1, as.character), row.names = row.names(resp))
+      diff_column = setdiff(row.names(blocks[[i_block]]), row.names(resp))
+
+      if(length(diff_column) > 1 ){
+        resp[diff_column ] <- 'NA'
+        print(names(resp)[names(resp)!=""] )
+        names(resp)[names(resp)==""] <- names
+      }else{
+        names(resp) = names
+      }
+
       resp = resp[row.names(blocks[[i_block]])]
     }
 
-    print(resp)
 
     if( ! unique(isCharacter(as.vector(resp))) && length(levels(as.factor(as.vector(resp)))) > 5 ){
       # add some transparency
