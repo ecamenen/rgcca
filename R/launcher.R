@@ -11,6 +11,7 @@
 
 
 rm(list=ls())
+graphics.off()
 
 ##################
 #     Arguments
@@ -276,7 +277,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "BLOCK_CSV/Transcriptomic_without_23.tsv")
+           datasets = "BLOCK_CSV/Metabolomic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -318,21 +319,21 @@ if( ! is.null(opt$response) ){
   blocks = opt$blocks
 }
 
-if(!isTRUE(scale))
-  blocks = lapply(blocks, function(x) scale2(x, scale = F))
-
-if( opt$superblock  | opt$type == "pca"){
-  if( opt$superblock ){
+if( !opt$superblock  && opt$type != "pca"){
+  if(!isTRUE(opt$scale))
+    blocks = lapply(blocks, function(x) scale2(x, scale = F))
+}else{
+  if( opt$superblock )
     warnConnection("superblock")
 
-    if(isTRUE(scale))
-      blocks  = lapply(blocks, function(x) scale2(x, bias = opt$bias))
-    else
-      blocks = lapply(blocks, function(x) scale2(x, scale = F))
+  if(isTRUE(opt$scale))
+    blocks  = lapply(blocks, function(x) scale2(x, bias = opt$bias))
+  else
+    blocks = lapply(blocks, function(x) scale2(x, scale = F))
 
-    # TODO: scale par column
-    opt$scale = FALSE
-  }
+  # TODO: scale par column
+  opt$scale = FALSE
+
   blocks[["Superblock"]] = Reduce(cbind, blocks)
 }
 
@@ -386,6 +387,8 @@ ax <- list(linecolor = toRGB("white"), ticks = "")
 #   warning("With a number of component of 1, a second block should be chosen to perform a samples plot", .call = FALSE)
 # }else{
   ( samples_plot = plotSamplesSpace(rgcca.out, group2, opt$compx, opt$compy, opt$block, opt$text, opt$block_y) )
+plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y)
+plotSamplesSpace(rgcca.out, clusters, opt$compx, opt$compy, opt$block, opt$text, opt$block_y)
 #   ggplotly(samples_plot) %>%
 #     layout(xaxis = ax, yaxis = ax)
 #   plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, 2)
@@ -400,15 +403,15 @@ ax <- list(linecolor = toRGB("white"), ticks = "")
   #plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 2)
   savePlot(opt$output2, corcircle)
 #}
-
 # Fingerprint plot
 ( fingerprint = plotFingerprint(rgcca.out, opt$compx, opt$superblock, opt$nmark, opt$block) )
-plotFingerprint(rgcca.out, 2, opt$superblock, opt$nmark, opt$block)
+plotFingerprint(rgcca.out, opt$compy, opt$superblock, opt$nmark, opt$block)
 savePlot(opt$output3, fingerprint)
 
 #if( ! is.null(opt$response) ){
   ( correlation = corResponse(rgcca.out, blocks, response, comp = opt$compx, i_block = opt$block) )
-    savePlot(opt$output5, correlation)
+  corResponse(rgcca.out, blocks, response, comp = opt$compy, i_block = opt$block)
+  savePlot(opt$output5, correlation)
 #}
 
 # Average Variance Explained
@@ -432,3 +435,26 @@ if(opt$type != "pca"){
 
 (res = plotSamplesSpace(rgcca.out, group2, opt$compx, opt$compy, opt$block, opt$text, opt$block_y))
 savePlot("out.png", res)
+
+
+library(ade4)
+library(factoextra)
+library(magrittr)
+
+res.pca <- dudi.pca(blocks[[1]],
+                    scale = FALSE,
+                    scannf = FALSE,   # Cacher le scree plot
+                    nf = 2            # Nombre d'axes gardés
+)
+
+
+fviz_pca_ind(res.pca,
+             col.ind = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE
+)
+
+scatter(res.pca,
+        posieig = "none", # Cacher le scree plot
+        clab.row = 1      # Caché l'annotation de slignes
+)

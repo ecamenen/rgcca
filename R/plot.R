@@ -122,11 +122,13 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
   # if the resp is numeric
   if (  length(unique(as.matrix(resp))) > 1 ){
 
-    if(!is.null(rownames(resp))){
+    names = row.names(resp)
+    resp = apply(as.matrix(resp), 1, as.character)
 
-      names = row.names(resp)
-      resp = as.matrix(apply(as.matrix(resp), 1, as.character), row.names = row.names(resp))
-      diff_column = setdiff(row.names(blocks[[i_block]]), row.names(resp))
+    if(!is.null(names)){
+
+      resp = as.matrix(resp, row.names = names)
+      diff_column = setdiff(row.names(blocks[[i_block]]), names)
 
       if(length(diff_column) > 1 ){
         resp[diff_column ] <- 'NA'
@@ -138,14 +140,10 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
       resp = resp[row.names(blocks[[i_block]])]
     }
 
-    if( ! unique(isCharacter(as.vector(resp))) && length(levels(as.factor(as.vector(resp)))) > 5 ){
-
-      if(length(diff_column) > 1 ){
-        resp = resp
-        resp[diff_column ] <- NA
-      }
-
+    if( ! unique(isCharacter(as.vector(resp != "NA"))) && length(levels(as.factor(as.vector(resp)))) > 5 ){
+      options(warn=-1)
       resp = as.numeric(resp)
+      options(warn=0)
 
       # add some transparency
       p = ggplot(df, aes(df[, 1], df[, 2], alpha = (resp - min(resp, na.rm = T)) / max(resp - min(resp, na.rm = T), na.rm = T))) +
@@ -500,12 +498,14 @@ corResponse = function(rgcca, blocks, response = NULL, comp = 1, i_block = 1){
   if(is.null(response))
     response = blocks[[ length(rgcca$a) ]]
   else{
-    common_rows = intersect(row.names(blocks[[i_block]]), row.names(response))
-    response = response[common_rows, ]
+    diff_column = setdiff(row.names(blocks[[i_block]]), row.names(response))
+    response[diff_column, ] <- NA
+    response = response[row.names(rgcca$Y[[i_block]]),]
     options(warn = -1)
     # Disabling automatic factor conversion for some columns
     response = apply(response, 2, as.double)
     options(warn = 0)
+
   }
 
   cor.res = matrix(cor(rgcca$Y[[i_block]][, comp],
@@ -520,7 +520,7 @@ corResponse = function(rgcca, blocks, response = NULL, comp = 1, i_block = 1){
 
   p = ggplot(res, aes(order, cor, fill = abs(res[,1])))
   plotHistogram(p, res, "Correlation with response") +
-    labs(subtitle = printAxis(rgcca, comp, i_block))  +
+    #labs(subtitle = printAxis(rgcca, comp, i_block))  +
     theme(legend.position = "none")
 }
 
