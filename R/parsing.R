@@ -57,7 +57,7 @@ loadData = function(f, sep = "\t", rownames = 1, h = TRUE) {
   if (!is.null(rownames) && rownames < 1)
     rownames = NULL
 
-  df = as.matrix(read.table(f, sep = sep, header = h, row.names = rownames, na.strings = "NA"))
+  df = as.matrix(read.table(f, sep = sep, header = h, row.names = rownames, na.strings = "NA", dec=","))
   # TODO: catch warning missing \n at the end of the file
   #print(head(df))
   return(df)
@@ -258,7 +258,19 @@ setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE, 
       stop(paste(fo, "block file has an only-column. Check the separator [by default: tabulation].\n"),
            call. = FALSE)
 
+    dimnames = list(row.names(df), colnames(df))
+
+    if( any(is.na(df)) ){
+      print("ok")
+      df = matrix(unlist(lapply(1:ncol(df),
+                                    function(x) unlist(lapply(as.list(df[,x]),
+                                                                           function(y) ifelse(is.na(y),  mean(df[, x], na.rm = T), y))))),
+                      nrow(df), ncol(df))
+    }
+
     checkQuantitative(df, fo, header)
+
+    df = matrix( as.numeric(df), nrow(df), ncol(df), dimnames = dimnames)
 
     blocks[[fo]] = df
   }

@@ -262,7 +262,7 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "rgcca",
+           type = "pca",
            scheme = "factorial",
            tau = "1, 1",
            init = "svd",
@@ -277,7 +277,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "Nucleiparks_selectedVar/Imaging.tsv, Nucleiparks_selectedVar/Clinic.tsv" )
+           datasets = "~/Documents/DATA/Nucleiparks/without_NA/metabolomic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -297,7 +297,7 @@ source("R/network.R")
 opt$header = !("header" %in% names(opt))
 opt$superblock = !("superblock" %in% names(opt))
 opt$bias = !("bias" %in% names(opt))
-opt$scale = !("scale" %in% names(opt))
+opt$scale = ("scale" %in% names(opt))
 opt$text = !("text" %in% names(opt))
 VERBOSE = FALSE
 
@@ -348,31 +348,27 @@ if(!is.matrix(connection))
 rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
 
 ##### Nucleiparks #####
-group = read.table("Nucleiparks_selectedVar/group_V2.tsv",
+group = read.table("~/Documents/DATA/Nucleiparks/group_V2.tsv",
                    header = F,
                    sep = "\t",
                    dec = ".",
                    row.names = 1)
 
-group2 = read.table("Nucleiparks_selectedVar/UPDRS.tsv",
-           header = T,
-           sep = "\t",
-           dec = ".",
-           row.names = 1)
+clusters = read.table("~/bin/fingerprint_clustering/clusters.tsv",
+                   header = T,
+                    sep = "\t",
+                   dec = ".",
+                   row.names = 1)
+clusters = as.data.frame(clusters[, 1], row.names = row.names(clusters))
 
-#clusters = read.table("~/bin/fingerprint_clustering/clusters.tsv",
-#                    header = T,
-##                    sep = "\t",
-#                    dec = ".",
-#                    row.names = 1)
-#clusters = as.data.frame(clusters[, 1], row.names = row.names(clusters))
-
-response = read.table("Nucleiparks_full/Clinic.txt",
+response = read.table("~/Documents/DATA/Nucleiparks/Nucleiparks_full/clinic.tsv",
                       header = T,
                       sep = "\t",
                       dec = ".",
                       row.names = 1)
 response = response[, 6:NCOL(response)]
+
+group2 = as.data.frame(response[, "updrs.score"]); row.names(group2) = row.names(response)
 
 cor = getCor(rgcca.out, blocks)
 
@@ -398,16 +394,15 @@ plotSamplesSpace(rgcca.out, clusters, opt$compx, opt$compy, opt$block, opt$text,
 
 #if(opt$ncomp[opt$block] > 1){
   # Variables common space
-  ( corcircle = plotVariablesSpace(rgcca.out, blocks,
-opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
+  ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
   #ggplotly(corcircle) %>%
     #layout(xaxis = ax, yaxis = ax)
   #plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 2)
   savePlot(opt$output2, corcircle)
 #}
 # Fingerprint plot
-( fingerprint = plotFingerprint(rgcca.out, opt$compx, opt$superblock, opt$nmark, opt$block) )
-plotFingerprint(rgcca.out, opt$compy, opt$superblock, opt$nmark, opt$block)
+( fingerprint = plotFingerprint(rgcca.out, opt$compx, opt$superblock, 50, opt$block) )
+plotFingerprint(rgcca.out, opt$compy, opt$superblock, 50, opt$block)
 savePlot(opt$output3, fingerprint)
 
 #if( ! is.null(opt$response) ){
