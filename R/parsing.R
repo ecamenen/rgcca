@@ -263,10 +263,17 @@ setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE, 
     blocks[[fo]] = df
   }
 
+nrow = lapply(blocks, NROW)
+
   if(length(blocks) > 1)
     blocks = keepCommonRow(blocks)
 
+
   blocks = removeColumnSdNull(blocks)
+
+	for (i in 1:length(blocks)){
+		attributes(blocks[[i]])$nrow = nrow[[i]]
+	}
 
   return(blocks)
 }

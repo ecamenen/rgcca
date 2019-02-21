@@ -216,7 +216,7 @@ getBlocsVariables = function(rgcca){
 #' @export plotVariablesSpace
 plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock = TRUE, i_block = NULL, text = TRUE){
 
-  x = y = NULL
+  x = y = selectedVar = NULL
 
   if ( is.null(i_block) )
     i_block = length(blocks)
@@ -233,15 +233,19 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
   }
 
   if(nrow(df) > 200){
-    df = df [as.vector (unique( sapply(c(comp_x, comp_y),
-                                       function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:100,])))), ]
+    selectedVar = as.vector (unique( sapply(c(comp_x, comp_y),
+                                       function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:100,]))))
+	df = df[selectedVar, ]
   }
 
   # if superblock is selected, color by blocks
   if ( superblock & ( i_block == length(blocks)) ){
     color = getBlocsVariables(rgcca)
+	if(!is.null(selectedVar))
+		color = color[unlist(lapply(1:length(selectedVar), function(x) which(colnames(blocks[[3]]) == selectedVar[x])))]
+
     if(class(rgcca)=="sgcca")
-      color = color[row.names(df[selectedVar, ])]
+      color = color[row.names(df[, ])]
   }else{
     color = rep(1, NROW(df))
   }
@@ -311,8 +315,8 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     geom_vline(xintercept = 0, col = "grey", linetype = "dashed", size = 1) +
     geom_hline(yintercept = 0, col = "grey", linetype = "dashed", size = 1) +
     labs ( title = paste(title, "space"),
-           x = "",
-           y = "",
+		 x = printAxis(rgcca, comp_x, i_block),
+		y = printAxis(rgcca, comp_y, i_block_y),
            color = name_group,
            shape = name_group) +
     scale_y_continuous(breaks = NULL) +
@@ -385,8 +389,8 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
     p = ggplot(df, aes(order, df[, comp], fill = abs(df[, comp])))
   }
 
-  p = plotHistogram(p, df, "Variable weights", as.character(color2))
-  #labs(subtitle = printAxis(rgcca, comp, i_block))
+  p = plotHistogram(p, df, "Variable weights", as.character(color2)) +
+  labs(subtitle = printAxis(rgcca, comp, i_block))
 
   if(length(color2) != 1)
     p = p + scale_fill_manual(values = colorGroup(color2))
@@ -413,15 +417,15 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
 #' @export plotAVE
 plotAVE = function(rgcca, comp = 1){
 
-  ave = as.vector(Reduce(c, rgcca$AVE$AVE_X))
+  ave = 100* as.vector(Reduce(c, rgcca$AVE$AVE_X))
   blocks = unlist(lapply(1:length(names(rgcca$a)), function(x) rep(names(rgcca$a)[x], rgcca$ncomp[x])))
   ncomp = as.vector(Reduce(c, lapply(rgcca$AVE$AVE_X, names)))
 
-  y_ave_cum = lapply(lapply(rgcca$AVE$AVE_X, function(x) round(cumsum(rev(x)), 2)), function(x) c(0, x))
+  y_ave_cum = lapply(lapply(rgcca$AVE$AVE_X, function(x) round(100 * cumsum(rev(x)), 1)), function(x) c(0, x))
   y_ave_cum = unlist(lapply(y_ave_cum, function(x) unlist(lapply(1:length(x), function(i) (x[i-1] + x[i]) / 2 ))))
 
-  ave_label =  unlist(lapply(rgcca$AVE$AVE_X, function(x) round(rev(x), 2)))
-  ave_label[ave_label < max(y_ave_cum)/10] =  ""
+  ave_label = unlist(lapply(rgcca$AVE$AVE_X, function(x) round(100 * rev(x), 1)))
+  ave_label[ave_label < max(y_ave_cum)/20] =  ""
 
 
   df = data.frame(ave, blocks, ncomp)
@@ -520,7 +524,7 @@ corResponse = function(rgcca, blocks, response = NULL, comp = 1, i_block = 1){
 
   p = ggplot(res, aes(order, cor, fill = abs(res[,1])))
   plotHistogram(p, res, "Correlation with response") +
-    #labs(subtitle = printAxis(rgcca, comp, i_block))  +
+    labs(subtitle = printAxis(rgcca, comp, i_block))  +
     theme(legend.position = "none")
 }
 

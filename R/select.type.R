@@ -231,7 +231,7 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
                              verbose = VERBOSE,
                              init = opt$init,
                              bias = opt$bias))
-  func.complete[[par]] = opt$tau
+  func.complete[[par]] = tau
   func.res = eval(as.call(func.complete))
 
   names(func.res$a) = names(blocks)

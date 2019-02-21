@@ -1,14 +1,19 @@
-getNodes = function(opt, blocks) {
+getNodes = function(opt, blocks, rgcca = NULL) {
 
   if(any(opt$tau == "optimal")){
-    opt$tau = rep(NA, length(blocks))
+	if(!is.null(rgcca))
+		opt$tau = unlist(lapply(1:ncol(rgcca$tau), function(x) Reduce(paste, round(rgcca$tau[, x],2))))
+	else
+    		opt$tau = rep(NA, length(blocks))
   }
+	
+	nrow = unlist(lapply(blocks, function(x) ifelse(is.null(attributes(x)$nrow), nrow(blocks[[1]]) , attributes(x)$nrow)))
 
-  values <- list( names(blocks), unlist(lapply(blocks, NCOL)), opt$tau, opt$ncomp )
+  values <- list( names(blocks), unlist(lapply(blocks, NCOL)), nrow, opt$tau )
   nodes <- as.data.frame(matrix(unlist(values), length(blocks), length(values)))
-  colnames(nodes) = c("id", "P", "tau", "ncomp")
+  colnames(nodes) = c("id", "P", "nrow", "tau")
 
-  nodes[, c(2, 3, 4)] <- apply(nodes[, c(2, 3, 4)], 2, as.numeric)
+  #nodes[, c(2, 3)] <- apply(nodes[, c(2, 3)], 2, as.numeric)
 
   return(nodes)
 }
@@ -50,7 +55,7 @@ plotNetwork = function(nodes, edges, blocks){
   }
 
   V(net)$color <- "khaki2"
-  V(net)$label <- paste(nodes$id, "\nP =", nodes$P, "\ntau =", nodes$tau, "\nncomp =", nodes$ncomp, sep=" ")
+  V(net)$label <- paste(nodes$id, "\nP =", nodes$P, "\ntau =", nodes$tau, "\nN =", nodes$nrow, sep=" ")
   V(net)$label.font <- 3
   V(net)$shape <- "square"
   E(net)$width <- E(net)$weight * 2
@@ -71,7 +76,7 @@ plotNetwork2 = function(nodes, edges, blocks){
     nodes$tau = rep("optimal", length(blocks))
 
   nodes$title  <- nodes$id
-  nodes$label  <- paste(nodes$id, "\nP =", nodes$P, "\ntau =", nodes$tau, "\nncomp =", nodes$ncomp, sep=" ")
+  nodes$label  <- paste(nodes$id, "\nP =", nodes$P, "\ntau =", nodes$tau, "\nN =", nodes$nrow, sep=" ")
 
   edges$width <- edges$weight * 2
   nodes$color.background <- rep("#eee685", length(blocks))

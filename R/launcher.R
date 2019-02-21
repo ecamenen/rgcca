@@ -12,6 +12,7 @@
 
 rm(list=ls())
 graphics.off()
+setwd("C:/Users/etienne.camenen/Documents/bin/rgcca")
 
 ##################
 #     Arguments
@@ -50,7 +51,7 @@ getArgs = function(){
                 help="Number of components in the analysis for each block (should be greater than 1 and lower than the minimum number of variable among the blocks). Could also be a list separated by comma. Ex: 2,2,3,2."),
     make_option(c("--block"),  type="integer", metavar="integer", default=opt[8],
                 help="Number of the block shown in the graphics (0: the superblock or, if not, the last, 1: the fist one, 2: the 2nd, etc.) [default: the last one]"),
-    make_option(c("--block_y"),  type="integer", metavar="integer", default=2,
+    make_option(c("--block_y"),  type="integer", metavar="integer",
                 help="Block shown in the Y-axis of the samples plot (0: the superblock or, if not, the last, 1: the fist one, 2: the 2nd, etc.) [default: the last one]"),
     make_option(c("--compx"),  type="integer", metavar="integer", default=opt[9],
                 help="Component used in the X-axis for biplots and the only component used for histograms (should not be greater than the --ncomp parameter)"),
@@ -248,7 +249,7 @@ warnConnection = function(x)
 # Under linux: sudo apt-get install default-jre default-jdk && sudo R CMD javareconf
 
 #Loading librairies
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "plotly", "visNetwork", "igraph", "ggrepel")
+librairies = c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph", "ggrepel")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
     install.packages(l, repos = "http://cran.us.r-project.org",
@@ -262,12 +263,12 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "pca",
+           type = "rgcca",
            scheme = "factorial",
-           tau = "optimal",
+           tau = "1, 1",
            init = "svd",
-           ncomp = "2",
-           block = 1,
+           ncomp = "2, 2",
+           block = 0,
            compx = 1,
            compy = 2,
            nmark = 20,
@@ -277,7 +278,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "BLOCK_CSV/Metabolomic.tsv")
+           datasets = "Nucleiparks_selectedVar/Imaging.tsv, Nucleiparks_selectedVar/Clinic.tsv" )
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -297,7 +298,7 @@ source("R/network.R")
 opt$header = !("header" %in% names(opt))
 opt$superblock = !("superblock" %in% names(opt))
 opt$bias = !("bias" %in% names(opt))
-opt$scale = ("scale" %in% names(opt))
+opt$scale = !("scale" %in% names(opt))
 opt$text = !("text" %in% names(opt))
 VERBOSE = FALSE
 
@@ -327,7 +328,7 @@ if( !opt$superblock  && opt$type != "pca"){
     warnConnection("superblock")
 
   if(isTRUE(opt$scale))
-    blocks  = lapply(blocks, function(x) scale2(x, bias = opt$bias))
+    blocks  = lapply(blocks, function(x) scale2(x, bias = opt$bias) / nrow(x) )
   else
     blocks = lapply(blocks, function(x) scale2(x, scale = F))
 
@@ -343,30 +344,31 @@ if(!is.matrix(connection))
 
 #group = setResponse(blocks, opt$group, opt$separator, opt$header)
 
+#blocks[["Clinic"]] = scale(blocks[["Clinic"]], scale = T)
+
 rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
 
-
 ##### Nucleiparks #####
-group = read.table("~/Documents/Nucleiparks/DATA/group_V2.tsv",
+group = read.table("Nucleiparks_selectedVar/group_V2.tsv",
                    header = F,
                    sep = "\t",
                    dec = ".",
                    row.names = 1)
 
-group2 = read.table("~/bin/rgccaLauncher/BLOCK_CSV/UPDRS.tsv",
+group2 = read.table("Nucleiparks_selectedVar/UPDRS.tsv",
            header = T,
            sep = "\t",
            dec = ".",
            row.names = 1)
 
-clusters = read.table("~/bin/fingerprint_clustering/clusters.tsv",
-                    header = T,
-                    sep = "\t",
-                    dec = ".",
-                    row.names = 1)
-clusters = as.data.frame(clusters[, 1], row.names = row.names(clusters))
+#clusters = read.table("~/bin/fingerprint_clustering/clusters.tsv",
+#                    header = T,
+##                    sep = "\t",
+#                    dec = ".",
+#                    row.names = 1)
+#clusters = as.data.frame(clusters[, 1], row.names = row.names(clusters))
 
-response = read.table("~/Documents/Nucleiparks/DATA/Clinic_full.txt",
+response = read.table("Nucleiparks_full/Clinic.txt",
                       header = T,
                       sep = "\t",
                       dec = ".",
@@ -375,9 +377,9 @@ response = response[, 6:NCOL(response)]
 
 cor = getCor(rgcca.out, blocks)
 
-cor1 = rev(cor[order(abs(cor[,1])), 1 ]) ; names(cor1) = row.names(cor)[order(cor[,1])]; cor1
-rgcca.out$Y[[1]][order(rgcca.out$Y[[1]][,1]), 1]
-rev(rgcca.out$a[[1]][order(abs(rgcca.out$a[[1]][, 1])), 1])
+#cor1 = rev(cor[order(abs(cor[,1])), 1 ]) ; names(cor1) = row.names(cor)[order(cor[,1])]; cor1
+#rgcca.out$Y[[1]][order(rgcca.out$Y[[1]][,1]), 1]
+#rev(rgcca.out$a[[1]][order(abs(rgcca.out$a[[1]][, 1])), 1])
 
 ##########"
 
@@ -397,9 +399,10 @@ plotSamplesSpace(rgcca.out, clusters, opt$compx, opt$compy, opt$block, opt$text,
 
 #if(opt$ncomp[opt$block] > 1){
   # Variables common space
-  ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
-  ggplotly(corcircle) %>%
-    layout(xaxis = ax, yaxis = ax)
+  ( corcircle = plotVariablesSpace(rgcca.out, blocks,
+opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
+  #ggplotly(corcircle) %>%
+    #layout(xaxis = ax, yaxis = ax)
   #plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 2)
   savePlot(opt$output2, corcircle)
 #}
@@ -409,8 +412,8 @@ plotFingerprint(rgcca.out, opt$compy, opt$superblock, opt$nmark, opt$block)
 savePlot(opt$output3, fingerprint)
 
 #if( ! is.null(opt$response) ){
-  ( correlation = corResponse(rgcca.out, blocks, response, comp = opt$compx, i_block = opt$block) )
-  corResponse(rgcca.out, blocks, response, comp = opt$compy, i_block = opt$block)
+  ( correlation = corResponse(rgcca.out, blocks, response, comp = opt$compx, i_block = 1) )
+  corResponse(rgcca.out, blocks, response, comp = opt$compy, i_block = 1)
   savePlot(opt$output5, correlation)
 #}
 
@@ -420,7 +423,7 @@ if(opt$type != "pca"){
   (ave = plotAVE(rgcca.out, opt$compx))
   savePlot(opt$output4, ave)
 
-  nodes <- getNodes(opt, blocks)
+  nodes <- getNodes(opt, blocks, rgcca.out)
   edges <- getEdges(connection, blocks)
   conNet <- function() plotNetwork(nodes, edges, blocks)
   plotNetwork2(nodes, edges, blocks)
@@ -432,29 +435,19 @@ if(opt$type != "pca"){
 # title(xlab = "RGCCA$Y", ylab = "Disease duration")
 # abline(lm(y ~ x, data= df ), col="red")
 
-
 (res = plotSamplesSpace(rgcca.out, group2, opt$compx, opt$compy, opt$block, opt$text, opt$block_y))
 savePlot("out.png", res)
 
+library(mixOmics)
 
-library(ade4)
-library(factoextra)
-library(magrittr)
+pls.res <- pls(blocks[[1]], blocks[[2]], ncomp = 3, scale = F, mode="canonical")
+plotIndiv(pls.res)
+plotVar(pls.res)
+#rgcca.out$AVE$AVE_X = lapply(pls.res$explained_variance, function(x) round(x*100, 1))
+#rgcca.out$ncomp = c(3, length(blocks))
+#if(opt$superblock)
+#	rgcca.out$a = rgcca.out$a[-length(blocks)]
+#plotAVE(rgcca.out)
 
-res.pca <- dudi.pca(blocks[[1]],
-                    scale = FALSE,
-                    scannf = FALSE,   # Cacher le scree plot
-                    nf = 2            # Nombre d'axes gardés
-)
+nrow(blocks[[1]])
 
-
-fviz_pca_ind(res.pca,
-             col.ind = "cos2",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-             repel = TRUE
-)
-
-scatter(res.pca,
-        posieig = "none", # Cacher le scree plot
-        clab.row = 1      # Caché l'annotation de slignes
-)
