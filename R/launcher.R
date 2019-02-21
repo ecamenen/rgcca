@@ -12,7 +12,6 @@
 
 rm(list=ls())
 graphics.off()
-setwd("C:/Users/etienne.camenen/Documents/bin/rgcca")
 
 ##################
 #     Arguments
@@ -430,24 +429,4 @@ if(opt$type != "pca"){
   savePlot(opt$output6, conNet)
 }
 
-# Lipidomic correlatio with disease duration
-# plot(rgcca.out$Y[[1]][, 2], resp[names(rgcca.out$Y[[1]][, 2])] , xlab = "", ylab= "")
-# title(xlab = "RGCCA$Y", ylab = "Disease duration")
-# abline(lm(y ~ x, data= df ), col="red")
-
-(res = plotSamplesSpace(rgcca.out, group2, opt$compx, opt$compy, opt$block, opt$text, opt$block_y))
-savePlot("out.png", res)
-
-library(mixOmics)
-
-pls.res <- pls(blocks[[1]], blocks[[2]], ncomp = 3, scale = F, mode="canonical")
-plotIndiv(pls.res)
-plotVar(pls.res)
-#rgcca.out$AVE$AVE_X = lapply(pls.res$explained_variance, function(x) round(x*100, 1))
-#rgcca.out$ncomp = c(3, length(blocks))
-#if(opt$superblock)
-#	rgcca.out$a = rgcca.out$a[-length(blocks)]
-#plotAVE(rgcca.out)
-
 nrow(blocks[[1]])
-
