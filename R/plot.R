@@ -66,7 +66,7 @@ printAxis = function (rgcca, n, i = NULL, outer = FALSE){
 }
 
 varSelected = function(rgcca, i_block, comp)
-  sum(rgcca$a[[i_block]][,comp] != 0)
+  sum(rgcca$a[[i_block]][,comp] > 0)
 
 #' Default font for plots
 theme_perso = function() {
@@ -258,8 +258,6 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
   }
 
   df = data.frame(df, color)
-
-  print(df)
 
   p = plotSpace(rgcca, df, "Variables", color, "Blocks", comp_x, comp_y, i_block, text = text) +
     geom_path(aes(x, y), data = circleFun(), col = "grey", size = 1) +

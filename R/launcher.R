@@ -240,6 +240,51 @@ warnConnection = function(x)
   warning(paste("By using a ", x , ", all blocks are connected to this block in the connection matrix and the connection file is ignored.\n", sep=""),
           call. = FALSE)
 
+
+###
+
+
+lambda_combinaison = function(blocks, by = 0.2){
+
+  min_lambda = unlist(lapply(blocks, function(x) 1/sqrt(NCOL(x))))
+  sapply(min_lambda, function(x) seq(x, 1, by = by) )
+}
+
+bootstrap = function(block_list, boot_iter = 5, C = 1 - diag(length(block_list)), c1 = rep(1, length(block_list)), scheme = 'factorial'){
+  r = vector('list', length = boot_iter)
+
+  for (i in seq(boot_iter)){
+    idx_boot = sample(NROW(block_list[[1]]), replace = T)
+    boot_A = lapply(block_list, function(x) x[idx_boot,])
+    w = sgcca(boot_A, C, c1=c1,  scheme = scheme, scale = FALSE, verbose = FALSE)$a
+    # r = sapply(1:length(block_list), function(i) cbind(r[[i]], w[[i]]))
+    r[[i]] = Reduce(rbind, w)
+  }
+  return(r)
+}
+
+getOptimalLambda = function(blocks){
+
+  n_cores = detectCores() - 1
+  boot_iter = 5
+  cv_rep = 5
+  lambda_values = list(lambda_combinaison(blocks)[,1], 1)
+  comb_grid = expand.grid(lambda_values, stringsAsFactors = F)
+  mean_model = vector()
+
+  #t = Sys.time()
+  for (i in 1:nrow(comb_grid)){
+    lambdas = comb_grid[i,]
+    r = unlist(mclapply(1:cv_rep, function(x) bootstrap(blocks[1:2], boot_iter = boot_iter, c1 = lambdas),
+                        mc.cores = getOption("mc.cores", n_cores)))
+    mean_model[i] = mean(r)
+  }
+  #print(Sys.time() - t)
+
+  return( comb_grid[which.max(as.matrix(mean_model)),] )
+}
+
+###
 ##################
 #     Main
 ##################
@@ -248,7 +293,7 @@ warnConnection = function(x)
 # Under linux: sudo apt-get install default-jre default-jdk && sudo R CMD javareconf
 
 #Loading librairies
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph", "ggrepel")
+librairies = c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph", "ggrepel", "parallel")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
     install.packages(l, repos = "http://cran.us.r-project.org",
@@ -264,7 +309,7 @@ opt = list(directory = ".",
            separator = "\t",
            type = "sgcca",
            scheme = "factorial",
-           tau = "0.3, 1",
+           tau = "0.15, 1",
            init = "svd",
            ncomp = "2, 2",
            block = 0,
@@ -277,7 +322,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_full/lipidomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_full/clinic_quant.tsv")
+           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_full/transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_full/clinic_quant.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -295,9 +340,9 @@ source("R/network.R")
 
 # Global settings
 opt$header = !("header" %in% names(opt))
-opt$superblock = !("superblock" %in% names(opt))
+opt$superblock = ("superblock" %in% names(opt))
 opt$bias = !("bias" %in% names(opt))
-opt$scale = ("scale" %in% names(opt))
+opt$scale = !("scale" %in% names(opt))
 opt$text = !("text" %in% names(opt))
 VERBOSE = FALSE
 
@@ -347,6 +392,8 @@ if(!is.matrix(connection))
 
 #blocks[["Clinic"]] = scale(blocks[["Clinic"]], scale = T)
 
+#opt$tau[1] = getOptimalLambda(blocks)[1]
+
 rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
 
 ##### Nucleiparks #####
@@ -386,8 +433,8 @@ ax <- list(linecolor = toRGB("white"), ticks = "")
 #   warning("With a number of component of 1, a second block should be chosen to perform a samples plot", .call = FALSE)
 # }else{
   ( samples_plot = plotSamplesSpace(rgcca.out, group2, opt$compx, opt$compy, opt$block, opt$text, opt$block_y) )
-plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y)
-plotSamplesSpace(rgcca.out, clusters, opt$compx, opt$compy, opt$block, opt$text, opt$block_y)
+#plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y)
+#plotSamplesSpace(rgcca.out, clusters, opt$compx, opt$compy, opt$block, opt$text, opt$block_y)
 #   ggplotly(samples_plot) %>%
 #     layout(xaxis = ax, yaxis = ax)
 #   plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, 1)
@@ -396,25 +443,25 @@ plotSamplesSpace(rgcca.out, clusters, opt$compx, opt$compy, opt$block, opt$text,
 
 #if(opt$ncomp[opt$block] > 1){
   # Variables common space
-  ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
+  #( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
   #ggplotly(corcircle) %>%
     #layout(xaxis = ax, yaxis = ax)
-  # plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 3)
-  savePlot(opt$output2, corcircle)
+  #plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 1)
+  #savePlot(opt$output2, corcircle)
 #}
 # Fingerprint plot
 ( fingerprint = plotFingerprint(rgcca.out, opt$compx, opt$superblock, 50, opt$block) )
-plotFingerprint(rgcca.out, opt$compy, opt$superblock, 50, opt$block)
+plotFingerprint(rgcca.out, opt$compx, opt$superblock, 50, 1)
 savePlot(opt$output3, fingerprint)
 
 #if( ! is.null(opt$response) ){
-  ( correlation = corResponse(rgcca.out, blocks, response, comp = opt$compx, i_block = 1) )
-  corResponse(rgcca.out, blocks, response, comp = opt$compy, i_block = 1)
-  savePlot(opt$output5, correlation)
+  # ( correlation = corResponse(rgcca.out, blocks, response, comp = opt$compx, i_block = 1) )
+  # corResponse(rgcca.out, blocks, response, comp = opt$compy, i_block = 1)
+  # savePlot(opt$output5, correlation)
 #}
 
 # Average Variance Explained
-if(opt$type != "pca"){
+#if(opt$type != "pca"){
 
   (ave = plotAVE(rgcca.out, opt$compx))
   savePlot(opt$output4, ave)
@@ -424,14 +471,30 @@ if(opt$type != "pca"){
   conNet <- function() plotNetwork(nodes, edges, blocks)
   plotNetwork2(nodes, edges, blocks)
   savePlot(opt$output6, conNet)
-}
+#}
 
 nrow(blocks[[1]])
-#write.table(res, paste0("~/Documents/DATA/Nucleiparks/without_NA/", names(blocks)[1], ".tsv"), row.names= T, col.names = T, sep="\t")
 
-
-# penalty_matrix = matrix(0, 2, 20)
-# penalty_matrix[1, ] = seq(1, sqrt(NCOL(blocks[[1]])), l = 20)
-# penalty_matrix[2, ] = rep(sqrt(NCOL(CLI1)), 20)
-# perm.out = MultiCCA.permute(xlist, nperms = 50, trace = FALSE,
+# penalty_matrix = matrix(0, 2, 10)
+# penalty_matrix[1, ] = seq(1, sqrt(NCOL(blocks[[1]])), l = 10)
+# penalty_matrix[2, ] = seq(1, sqrt(NCOL(blocks[[2]])), l = 10)
+# perm.out = MultiCCA.permute(blocks[1:2], nperms = 50, trace = FALSE,
 #                             penalties = penalty_matrix)
+# print(min(perm.out$pvals))
+#
+# out <- MultiCCA(blocks[1:2],
+#                 type= rep("standard", 2),
+#                 #penalty= perm.out$bestpenalties,
+#                 penalty = c(penalty_matrix[1, which.min(perm.out$pvals)],
+#                             penalty_matrix[2, which.min(perm.out$pvals)]),
+#                 ws=perm.out$ws.init,
+#                 standardize = FALSE)
+#
+# blocks[[1]] = blocks[[1]][, which(out$ws[[1]] > 0)]
+# blocks[[2]] = blocks[[2]][, which(out$ws[[2]] > 0)]
+selectedVar = colnames(blocks[[1]])[which(rgcca.out$a[[1]][,1] > 0 | rgcca.out$a[[1]][,2] > 0) ]
+write.table(names(selectedVar), paste0("~/Documents/DATA/Nucleiparks/fingerprint_", names(blocks)[1], ".tsv"), row.names= F, col.names = F, sep="\t")
+
+blocks[[1]] = blocks[[1]][,selectedVar]
+
+write.table(blocks[[1]], paste0("~/Documents/DATA/Nucleiparks/sCCA/", names(blocks)[1], ".tsv"), row.names= T, col.names = T, sep="\t")
