@@ -230,27 +230,36 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
   if(class(rgcca)=="sgcca"){
     selectedVar = rgcca$a[[i_block]][,comp_x] != 0 | rgcca$a[[i_block]][,comp_y] != 0
     df = df[selectedVar, ]
-  }
+  }else{
 
-  if(nrow(df) > 200){
-    selectedVar = as.vector (unique( sapply(c(comp_x, comp_y),
-                                       function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:100,]))))
-	df = df[selectedVar, ]
+    if(nrow(df) > 200){
+      selectedVar = as.vector (unique( sapply(c(comp_x, comp_y),
+                                         function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:100,]))))
+  	df = df[selectedVar, ]
+    }
   }
 
   # if superblock is selected, color by blocks
   if ( superblock & ( i_block == length(blocks)) ){
     color = getBlocsVariables(rgcca)
-	if(!is.null(selectedVar))
-		color = color[unlist(lapply(1:length(selectedVar), function(x) which(colnames(blocks[[3]]) == selectedVar[x])))]
 
-    if(class(rgcca)=="sgcca")
-      color = color[row.names(df[, ])]
+    if(class(rgcca)=="sgcca"){
+      names(color) = row.names(df)
+      color = color[row.names(df[selectedVar, ])]
+    }
+
+    else{
+    	if(!is.null(selectedVar))
+    		color = color[unlist(lapply(1:length(selectedVar), function(x) which(colnames(blocks[[3]]) == selectedVar[x])))]
+    }
+
   }else{
     color = rep(1, NROW(df))
   }
 
   df = data.frame(df, color)
+
+  print(df)
 
   p = plotSpace(rgcca, df, "Variables", color, "Blocks", comp_x, comp_y, i_block, text = text) +
     geom_path(aes(x, y), data = circleFun(), col = "grey", size = 1) +

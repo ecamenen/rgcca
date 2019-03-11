@@ -259,9 +259,11 @@ setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE, 
            call. = FALSE)
 
     dimnames = list(row.names(df), colnames(df))
+    options(warn = -1)
+    df = matrix( as.numeric(df), nrow(df), ncol(df), dimnames = dimnames)
+    options(warn = 0)
 
     if( any(is.na(df)) ){
-      print("ok")
       df = matrix(unlist(lapply(1:ncol(df),
                                     function(x) unlist(lapply(as.list(df[,x]),
                                                                            function(y) ifelse(is.na(y),  mean(df[, x], na.rm = T), y))))),
@@ -269,13 +271,11 @@ setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE, 
     }
 
     checkQuantitative(df, fo, header)
-
     df = matrix( as.numeric(df), nrow(df), ncol(df), dimnames = dimnames)
-
     blocks[[fo]] = df
   }
 
-nrow = lapply(blocks, NROW)
+  nrow = lapply(blocks, NROW)
 
   if(length(blocks) > 1)
     blocks = keepCommonRow(blocks)

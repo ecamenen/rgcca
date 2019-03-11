@@ -262,9 +262,9 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "pca",
+           type = "sgcca",
            scheme = "factorial",
-           tau = "1, 1",
+           tau = "0.3, 1",
            init = "svd",
            ncomp = "2, 2",
            block = 0,
@@ -277,7 +277,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "~/Documents/DATA/Nucleiparks/without_NA/metabolomic.tsv")
+           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_full/lipidomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_full/clinic_quant.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -313,6 +313,8 @@ if( ! is.null(opt$response) ){
 blocks = setBlocks(opt$superblock, opt$datasets, opt$names, opt$separator, opt$header)
 
 opt = postCheckArg(opt, blocks)
+
+res = blocks[[1]]
 
 if( ! is.null(opt$response) ){
   opt = setPosPar(opt, blocks, opt$response)
@@ -388,7 +390,7 @@ plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, op
 plotSamplesSpace(rgcca.out, clusters, opt$compx, opt$compy, opt$block, opt$text, opt$block_y)
 #   ggplotly(samples_plot) %>%
 #     layout(xaxis = ax, yaxis = ax)
-#   plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, 2)
+#   plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, 1)
 #   savePlot(opt$output1, samples_plot)
 # }
 
@@ -397,7 +399,7 @@ plotSamplesSpace(rgcca.out, clusters, opt$compx, opt$compy, opt$block, opt$text,
   ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
   #ggplotly(corcircle) %>%
     #layout(xaxis = ax, yaxis = ax)
-  #plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 2)
+  # plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 3)
   savePlot(opt$output2, corcircle)
 #}
 # Fingerprint plot
@@ -425,3 +427,11 @@ if(opt$type != "pca"){
 }
 
 nrow(blocks[[1]])
+#write.table(res, paste0("~/Documents/DATA/Nucleiparks/without_NA/", names(blocks)[1], ".tsv"), row.names= T, col.names = T, sep="\t")
+
+
+# penalty_matrix = matrix(0, 2, 20)
+# penalty_matrix[1, ] = seq(1, sqrt(NCOL(blocks[[1]])), l = 20)
+# penalty_matrix[2, ] = rep(sqrt(NCOL(CLI1)), 20)
+# perm.out = MultiCCA.permute(xlist, nperms = 50, trace = FALSE,
+#                             penalties = penalty_matrix)
