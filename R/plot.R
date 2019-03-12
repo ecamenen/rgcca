@@ -66,7 +66,7 @@ printAxis = function (rgcca, n, i = NULL, outer = FALSE){
 }
 
 varSelected = function(rgcca, i_block, comp)
-  sum(rgcca$a[[i_block]][,comp] > 0)
+  sum(rgcca$a[[i_block]][,comp] != 0)
 
 #' Default font for plots
 theme_perso = function() {

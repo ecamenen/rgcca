@@ -322,7 +322,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_full/transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_full/clinic_quant.tsv")
+           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_full/transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_full/clinic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -366,23 +366,23 @@ if( ! is.null(opt$response) ){
   blocks = opt$blocks
 }
 
-if( !opt$superblock  && opt$type != "pca"){
-  if(!isTRUE(opt$scale))
-    blocks = lapply(blocks, function(x) scale2(x, scale = F))
-}else{
-  if( opt$superblock )
-    warnConnection("superblock")
-
-  if(isTRUE(opt$scale))
-    blocks  = lapply(blocks, function(x) scale2(x, bias = opt$bias) / nrow(x) )
-  else
-    blocks = lapply(blocks, function(x) scale2(x, scale = F))
-
-  # TODO: scale par column
-  opt$scale = FALSE
-
-  blocks[["Superblock"]] = Reduce(cbind, blocks)
-}
+# if( !opt$superblock  && opt$type != "pca"){
+#   if(!isTRUE(opt$scale))
+#     blocks = lapply(blocks, function(x) scale2(x, scale = F))
+# }else{
+#   if( opt$superblock )
+#     warnConnection("superblock")
+#
+#   if(isTRUE(opt$scale))
+#     blocks  = lapply(blocks, function(x) scale2(x, bias = opt$bias) / nrow(x) )
+#   else
+#     blocks = lapply(blocks, function(x) scale2(x, scale = F))
+#
+#   # TODO: scale par column
+#   opt$scale = FALSE
+#
+#   blocks[["Superblock"]] = Reduce(cbind, blocks)
+# }
 
 connection = opt$connection
 if(!is.matrix(connection))
@@ -393,8 +393,26 @@ if(!is.matrix(connection))
 #blocks[["Clinic"]] = scale(blocks[["Clinic"]], scale = T)
 
 #opt$tau[1] = getOptimalLambda(blocks)[1]
+blocks  = lapply(blocks, function(x) scale2(x, bias = opt$bias) / nrow(x) )
 
-rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
+rgcca.out1 = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, F, opt$init, opt$bias, opt$type)
+
+selectedVar = colnames(blocks[[1]])[which(rgcca.out1$a[[1]][,1] != 0 | rgcca.out1$a[[1]][,2] != 0) ]
+dim(blocks[[1]])
+
+nodes <- getNodes(opt, blocks, rgcca.out)
+edges <- getEdges(connection, blocks)
+conNet <- function() plotNetwork(nodes, edges, blocks)
+plotNetwork2(nodes, edges, blocks)
+savePlot(opt$output6, conNet)
+
+blocks[[1]] = blocks[[1]][,selectedVar]
+
+blocks[["Superblock"]] = Reduce(cbind, blocks)
+connection = setConnection(blocks, T, opt$connection, opt$separator)
+opt$tau = c(1, 1, 1)
+opt$ncomp = c(opt$ncomp,opt$ncomp[1])
+rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, F, opt$init, opt$bias, "rgcca")
 
 ##### Nucleiparks #####
 group = read.table("~/Documents/DATA/Nucleiparks/group_V2.tsv",
@@ -432,7 +450,9 @@ ax <- list(linecolor = toRGB("white"), ticks = "")
 # if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
 #   warning("With a number of component of 1, a second block should be chosen to perform a samples plot", .call = FALSE)
 # }else{
-  ( samples_plot = plotSamplesSpace(rgcca.out, group2, opt$compx, opt$compy, opt$block, opt$text, opt$block_y) )
+  plotSamplesSpace(rgcca.out, group2, opt$compx, opt$compy, 3, opt$text, 3)
+  ( samples_plot = plotSamplesSpace(rgcca.out, group2, opt$compx, opt$compy, 1, opt$text, 1) )
+  plotSamplesSpace(rgcca.out, group2, opt$compx, opt$compy, 2, opt$text, 2)
 #plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y)
 #plotSamplesSpace(rgcca.out, clusters, opt$compx, opt$compy, opt$block, opt$text, opt$block_y)
 #   ggplotly(samples_plot) %>%
@@ -443,15 +463,19 @@ ax <- list(linecolor = toRGB("white"), ticks = "")
 
 #if(opt$ncomp[opt$block] > 1){
   # Variables common space
-  #( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
+  ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, T, NULL, opt$text) )
+  plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 1, opt$text)
+  plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 2, opt$text)
   #ggplotly(corcircle) %>%
     #layout(xaxis = ax, yaxis = ax)
   #plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, 1)
-  #savePlot(opt$output2, corcircle)
+  savePlot(opt$output2, corcircle)
 #}
 # Fingerprint plot
-( fingerprint = plotFingerprint(rgcca.out, opt$compx, opt$superblock, 50, opt$block) )
-plotFingerprint(rgcca.out, opt$compx, opt$superblock, 50, 1)
+  plotFingerprint(rgcca.out, opt$compx, T, 20)
+  plotFingerprint(rgcca.out, opt$compy, T, 20)
+  plotFingerprint(rgcca.out, opt$compx, F, 20, 1)
+  plotFingerprint(rgcca.out, opt$compy, F, 20, 1)
 savePlot(opt$output3, fingerprint)
 
 #if( ! is.null(opt$response) ){
@@ -466,14 +490,10 @@ savePlot(opt$output3, fingerprint)
   (ave = plotAVE(rgcca.out, opt$compx))
   savePlot(opt$output4, ave)
 
-  nodes <- getNodes(opt, blocks, rgcca.out)
-  edges <- getEdges(connection, blocks)
-  conNet <- function() plotNetwork(nodes, edges, blocks)
-  plotNetwork2(nodes, edges, blocks)
-  savePlot(opt$output6, conNet)
+
 #}
 
-nrow(blocks[[1]])
+
 
 # penalty_matrix = matrix(0, 2, 10)
 # penalty_matrix[1, ] = seq(1, sqrt(NCOL(blocks[[1]])), l = 10)
@@ -492,9 +512,5 @@ nrow(blocks[[1]])
 #
 # blocks[[1]] = blocks[[1]][, which(out$ws[[1]] > 0)]
 # blocks[[2]] = blocks[[2]][, which(out$ws[[2]] > 0)]
-selectedVar = colnames(blocks[[1]])[which(rgcca.out$a[[1]][,1] > 0 | rgcca.out$a[[1]][,2] > 0) ]
-write.table(names(selectedVar), paste0("~/Documents/DATA/Nucleiparks/fingerprint_", names(blocks)[1], ".tsv"), row.names= F, col.names = F, sep="\t")
 
-blocks[[1]] = blocks[[1]][,selectedVar]
-
-write.table(blocks[[1]], paste0("~/Documents/DATA/Nucleiparks/sCCA/", names(blocks)[1], ".tsv"), row.names= T, col.names = T, sep="\t")
+write.table(selectedVar, paste0("~/Documents/DATA/Nucleiparks/sCCA/fingerprint_", names(blocks)[1], ".tsv"), row.names= F, col.names = F, sep="\t")
