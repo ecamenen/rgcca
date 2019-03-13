@@ -435,24 +435,26 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
 #' @export plotAVE
 plotAVE = function(rgcca, comp = 1){
 
-  ave = 100* as.vector(Reduce(c, rgcca$AVE$AVE_X))
-  blocks = unlist(lapply(1:length(names(rgcca$a)), function(x) rep(names(rgcca$a)[x], rgcca$ncomp[x])))
-  ncomp = as.vector(Reduce(c, lapply(rgcca$AVE$AVE_X, names)))
+  ave = 100 * unlist(lapply(rgcca$AVE$AVE_X, rev))
+  blocks = factor(unlist(lapply(1:length(names(rgcca$a)), function(x) rep(names(rgcca$a)[x], rgcca$ncomp[x]))), levels = names(rgcca$a))
+  ncomp = as.factor(Reduce(c, lapply(rgcca$AVE$AVE_X, function(x) names(x))))
+  levels(ncomp) = max(rgcca$ncomp):1
 
-  y_ave_cum = lapply(lapply(rgcca$AVE$AVE_X, function(x) round(100 * cumsum(rev(x)), 1)), function(x) c(0, x))
+  y_ave_cum = lapply(lapply(rgcca$AVE$AVE_X, function(x) round(100 * cumsum(x), 1)), function(x) c(0, x))
   y_ave_cum = unlist(lapply(y_ave_cum, function(x) unlist(lapply(1:length(x), function(i) (x[i-1] + x[i]) / 2 ))))
 
-  ave_label = unlist(lapply(rgcca$AVE$AVE_X, function(x) round(100 * rev(x), 1)))
+  ave_label = unlist(lapply(rgcca$AVE$AVE_X, function(x) round(100 * x, 1)))
   ave_label[ave_label < max(y_ave_cum)/20] =  ""
 
-  df = data.frame(ave, blocks, ncomp)
+  df = data.frame(ave, blocks, ncomp, stringsAsFactors = F)
   p = ggplot(data=df, aes(x=blocks, y=ave, fill = ncomp, label =  ave_label))
 
   p = plotHistogram(p, df, "Average Variance Explained") +
     labs(subtitle = printAxis(rgcca, comp, outer = TRUE)) +
-    geom_text(aes(y = y_ave_cum), cex = 3) +
+    geom_text(aes(y = y_ave_cum), cex = 3.5, color = "white") +
     scale_fill_manual(values=colorGroup(levels(df$ncomp)), labels = gsub("comp", " ", levels(df$ncomp))) +
-    labs( fill = "Components" )
+    labs( fill = "Components" ) +
+    guides(fill = guide_legend(reverse=TRUE))
 
   return(p)
 }
