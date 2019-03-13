@@ -59,7 +59,6 @@ loadData = function(f, sep = "\t", rownames = 1, h = TRUE) {
 
   df = as.matrix(read.table(f, sep = sep, header = h, row.names = rownames, na.strings = "NA", dec=","))
   # TODO: catch warning missing \n at the end of the file
-  #print(head(df))
   return(df)
 }
 
@@ -279,9 +278,7 @@ setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE, 
 
   if(length(blocks) > 1)
     blocks = keepCommonRow(blocks)
-
-
-  blocks = removeColumnSdNull(blocks)
+    blocks = removeColumnSdNull(blocks)
 
 	for (i in 1:length(blocks)){
 		attributes(blocks[[i]])$nrow = nrow[[i]]
@@ -382,18 +379,11 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
       response = loadExcel(file, 1, rownames, h = header, num = FALSE)
     }
 
-    if (NROW(blocks[[1]]) != NROW(response)) {
-      msg = paste("The number of rows of the response file (", NROW(response), ") is different from those of the blocks (", NROW(blocks[[1]]), ").", sep="")
-      if (header)
-        msg = paste(msg, MSG_HEADER, sep = "")
-      stop(paste(msg, "\n"), call. = FALSE)
-    }
-
     qualitative = unique(isCharacter(response))
 
-    if (length(qualitative) > 1)
-      stop("Please, select a response file with either qualitative data only or quantitative data only. The header must be disabled for quantitative data and activated for disjunctive table.\n",
-           call. = FALSE)
+    # if (length(qualitative) > 1)
+    #   stop("Please, select a response file with either qualitative data only or quantitative data only. The header must be disabled for quantitative data and activated for disjunctive table.\n",
+    #        call. = FALSE)
 
     if (NCOL(response) > 1) {
       disjunctive = unique(apply(response, 1, sum))

@@ -65,6 +65,7 @@ printAxis = function (rgcca, n, i = NULL, outer = FALSE){
   paste("Component ", n, " (", varText, round(AVE[n] * 100 , 1),"%)", sep = "")
 }
 
+#' Get the variables with a weight != 0
 varSelected = function(rgcca, i_block, comp)
   sum(rgcca$a[[i_block]][,comp] != 0)
 
@@ -197,6 +198,7 @@ getBlocsVariables = function(rgcca){
 #' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
 #' @param i_block An integer giving the index of a list of blocks
 #' @param text A bolean to represent the points with their row names (TRUE) or with circles
+#' @param removeVariable A bolean to keep only the 100 variables of each component with the biggest correlation
 #' @examples
 #' setMatrix = function(nrow, ncol, iter = 3) lapply(1:iter, function(x) matrix(runif(nrow * ncol), nrow, ncol))
 #' blocks = setMatrix(10, 5)
@@ -214,7 +216,7 @@ getBlocsVariables = function(rgcca){
 #' # Using the first block
 #' plotVariablesSpace(rgcca.res, blocks, 1, 2, FALSE, 1)
 #' @export plotVariablesSpace
-plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock = TRUE, i_block = NULL, text = TRUE){
+plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock = TRUE, i_block = NULL, text = TRUE, removeVariable = TRUE){
 
   x = y = selectedVar = NULL
 
@@ -232,11 +234,11 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
     df = df[selectedVar, ]
   }else{
 
-  #   if(nrow(df) > 200){
-  #     selectedVar = as.vector (unique( sapply(c(comp_x, comp_y),
-  #                                        function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:100,]))))
-  # 	df = df[selectedVar, ]
-  #   }
+    if(removeVariable & nrow(df) > 200){
+      selectedVar = as.vector (unique( sapply(c(comp_x, comp_y),
+                                         function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:100,]))))
+  	df = df[selectedVar, ]
+    }
   }
 
   # if superblock is selected, color by blocks
@@ -257,7 +259,6 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
   }else{
     color = rep(1, NROW(df))
   }
-
 
   df = data.frame(df, color)
 
@@ -506,11 +507,12 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
   return(p)
 }
 
-corResponse = function(rgcca, blocks, response = NULL, comp = 1, i_block = 1){
+corResponse = function(rgcca, blocks, i_response = NULL, comp = 1, i_block = 1){
 
-  if(is.null(response))
+  if(is.null(i_response))
     response = blocks[[ length(rgcca$a) ]]
   else{
+    response = blocks[[i_response]]
     diff_column = setdiff(row.names(blocks[[i_block]]), row.names(response))
     response[diff_column, ] <- NA
     response = response[row.names(rgcca$Y[[i_block]]),]
@@ -518,7 +520,6 @@ corResponse = function(rgcca, blocks, response = NULL, comp = 1, i_block = 1){
     # Disabling automatic factor conversion for some columns
     response = apply(response, 2, as.double)
     options(warn = 0)
-
   }
 
   cor.res = matrix(cor(rgcca$Y[[i_block]][, comp],
@@ -547,4 +548,24 @@ getCor = function(rgcca, blocks, comp_x = 1, comp_y = 2, i_block = NULL){
     sapply ( c(comp_x, comp_y), function(x) cor( blocks[[i_block]], rgcca$Y[[i_block]][, x] ) ) ,
     row.names = colnames(blocks[[i_block]])
   ))
+}
+
+#' Rank values of a dataframe in decreasing order
+#'
+#' @param allCol A boolean to use all the column of the datafram
+#' @examples
+#' getRankedValues(getCor(rgcca.out, blocks))
+#' getRankedValues(rgcca.out$Y[[1]], 2, F)
+getRankedValues = function(df, comp = 1, allCol = T){
+  ordered = order(abs(df[, comp]), decreasing = T)
+
+  if (allCol)
+    comp = 1:ncol(df)
+
+  res = df[ordered, comp ]
+
+  if (!allCol)
+    names(res) = row.names(df)[ordered]
+
+  return(res)
 }
