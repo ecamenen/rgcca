@@ -297,7 +297,9 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     i_block_y = i_block
 
   if (!isTRUE(text)){
-    func = quote(geom_point(size = PCH_TEXT_SIZE, aes(shape = as.factor(group))))
+    func = quote(geom_point(size = PCH_TEXT_SIZE))
+    if (!is.numeric(na.omit(group)))
+      func$mapping = aes(shape = as.factor(group))
   }else{
     f = "geom_text"
     func = quote(get(f)(aes(label = rownames(df)), size = PCH_TEXT_SIZE))
@@ -442,7 +444,6 @@ plotAVE = function(rgcca, comp = 1){
 
   ave_label = unlist(lapply(rgcca$AVE$AVE_X, function(x) round(100 * rev(x), 1)))
   ave_label[ave_label < max(y_ave_cum)/20] =  ""
-
 
   df = data.frame(ave, blocks, ncomp)
   p = ggplot(data=df, aes(x=blocks, y=ave, fill = ncomp, label =  ave_label))
