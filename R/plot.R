@@ -223,11 +223,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
   if ( is.null(i_block) )
     i_block = length(blocks)
 
-  df =  data.frame(
-    #correlation matrix within a block for each variables and each component selected
-    sapply ( c(comp_x, comp_y), function(x) cor( blocks[[i_block]], rgcca$Y[[i_block]][, x] ) ) ,
-    row.names = colnames(blocks[[i_block]])
-  )
+  df =  getCor(rgcca, blocks, comp_x, comp_y, i_block)
 
   if(class(rgcca)=="sgcca"){
     selectedVar = rgcca$a[[i_block]][,comp_x] != 0 | rgcca$a[[i_block]][,comp_y] != 0
@@ -349,6 +345,8 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
 #' @param n_mark An integer giving the number of top potential biomarkers to select
 #' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
 #' @param i_block An integer giving the index of a list of blocks
+#' @param type A string giving the criterion to selects biomarkers : either "cor" for correlation between the component and the block
+#' or "weight" for the weight of the RGCCA
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' weights = lapply(1:3, function(x) matrix(runif(10*2), 10, 2))
@@ -360,7 +358,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
 #' # With the 2nd component of the 1rst block by selecting the ten higher weights
 #' plotFingerprint(rgcca.res, 2, FALSE, 10, 1)
 #' @export plotFingerprint
-plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_block = NULL){
+plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_block = NULL, type = "cor"){
 
   color = NULL
 
@@ -368,15 +366,23 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
   if ( is.null(i_block) )
     i_block = length(rgcca$a)
 
+  if(type == "cor"){
+    title = "Correlation with the block"
+    criterion = getCor(rgcca, blocks, comp, comp, i_block)
+  }else{
+    title = "Variable weights"
+    criterion = rgcca$a[[i_block]][, c(comp, comp)]
+  }
+
   # select the weights (var to add a column to work with comp = 1)
-  df = data.frame(rgcca$a[[i_block]], var = row.names(rgcca$a[[i_block]]))
+  df = data.frame(criterion, var = row.names(criterion))
 
   # Get a qualitative variable with which block is associated with each variables
   if (  superblock & ( i_block == length(rgcca$a) ) )
     df = data.frame( df, color = getBlocsVariables(rgcca) )
 
   # sort in decreasing order
-  df = data.frame(df[order(abs(df[, c(comp)]), decreasing = TRUE),], order = nrow(df):1)
+  df = data.frame(getRankedValues(df, 1, F), order = nrow(df):1)
 
   # selected variables in sgcca
   nvar_select = varSelected(rgcca, i_block, comp)
@@ -394,12 +400,12 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
   }
 
   if (  superblock & i_block == length(rgcca$a) ){
-    p = ggplot(df, aes(order, df[, comp], fill = as.factor(color)))
+    p = ggplot(df, aes(order, df[, 1], fill = as.factor(color)))
   }else{
-    p = ggplot(df, aes(order, df[, comp], fill = abs(df[, comp])))
+    p = ggplot(df, aes(order, df[, 1], fill = abs(df[, 1])))
   }
 
-  p = plotHistogram(p, df, "Variable weights", as.character(color2)) +
+  p = plotHistogram(p, df, title, as.character(color2)) +
   labs(subtitle = printAxis(rgcca, comp, i_block))
 
   if(length(color2) != 1)
@@ -562,7 +568,7 @@ getRankedValues = function(df, comp = 1, allCol = T){
   if (allCol)
     comp = 1:ncol(df)
 
-  res = df[ordered, comp ]
+  res = df[ordered, comp]
 
   if (!allCol)
     names(res) = row.names(df)[ordered]

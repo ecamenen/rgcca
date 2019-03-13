@@ -343,7 +343,7 @@ group = setResponse(blocks, opt$group, opt$separator, opt$header)
 
 rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, F, opt$init, opt$bias, opt$type)
 
-##########"
+##########
 
 ax <- list(linecolor = toRGB("white"), ticks = "")
 
