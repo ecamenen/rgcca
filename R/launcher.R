@@ -325,11 +325,11 @@ if( !opt$superblock  && opt$type != "pca"){
     warnConnection("superblock")
 
   if(isTRUE(opt$scale))
-    blocks  = lapply(blocks, function(x) scale2(x, bias = opt$bias) / nrow(x) )
+    blocks  = lapply(blocks, function(x) scale2(x, bias = opt$bias) / sqrt(ncol(x)) )
   else
     blocks = lapply(blocks, function(x) scale2(x, scale = F))
 
-  # TODO: scale par column
+  # TODO: scale per column
   opt$scale = FALSE
 
   blocks[["Superblock"]] = Reduce(cbind, blocks)
@@ -387,3 +387,6 @@ if(opt$type != "pca"){
   plotNetwork2(nodes, edges, blocks)
   savePlot(opt$output6, conNet)
 }
+
+boot = bootstrap(blocks, 5, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
+plotBootstrap(boot, opt$compx, opt$nmark, opt$block)
