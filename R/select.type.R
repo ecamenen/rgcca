@@ -237,3 +237,69 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
   names(func.res$a) = names(blocks)
   return(func.res)
 }
+
+
+# Examples
+# library(RGCCA)
+# data("Russett")
+# blocks3 = list(agriculture = Russett[, 1:3], industry = Russett[, 4:5], politic = Russett[, 6:11] )
+# bootstrap(blocks3)
+bootstrap = function(block_list, boot_iter = 5, C = 1 - diag(length(block_list)), c1 = rep(1, length(block_list)),
+                     ncomp = rep(2, length(block_list)), scheme = 'factorial', scale = T){
+
+  W = vector('list', length = boot_iter)
+
+  for (i in seq(boot_iter)){
+
+    #TODO: parallel::mclapply(1:B, function(z) bootstrap_k(n = n, J = J, A = A, object = object, W = W, ndim = ndim), mc.cores = nb_cores)
+
+    # Shuffle rows
+    id_boot = sample(NROW(block_list[[1]]), replace = T)
+    boot_blocks = lapply(block_list, function(x) x[id_boot, ])
+    #boot_A = lapply(block_list, function(x) scale(x[idx_boot,]) / sqrt(NCOL(x)))
+    #TODO : conserve the scale of the initial block
+
+    # Get boostraped weights
+    w = sgcca(boot_blocks, C, c1=c1,  ncomp = ncomp, scheme = scheme, scale = scale, verbose = FALSE)$a
+    # r = sapply(1:length(block_list), function(i) cbind(r[[i]], w[[i]]))
+
+    # Test on the sign of the correlation
+    if(i == 1)
+      w1 = w
+    else{
+      for(k in 1:length(block_list)){
+        for (j in 1:ncol(w[[k]])){
+          if (cor(w1[[k]][, j], w[[k]][, j]) < 0){
+            w[[k]][, j] = -1 * w[[k]][, j]
+          }
+        }
+      }
+
+    }
+
+    W[[i]] = w
+  }
+
+  return(W)
+}
+
+plotBootstrap = function(boostrap, dim = 1){
+
+  if(dim > min(unlist(lapply(boostrap, function(x) lapply(x, function(z) ncol(z))))))
+    stop("Selected dimension was not associated to every blocks", call. = FALSE)
+
+  W = Reduce( rbind, lapply(boostrap, function(x) Reduce(c,
+                                                         lapply(x, function(z) z[, dim]))))
+
+  stats = apply(res, 2,  function(x) c(mean(x), sd(x)))
+  #W1 = Reduce(c, lapply(object$a, function(x) x[, dim]) )
+
+  mat = cbind(W1, stats[1, ]-stats[2, ], stats[1, ]+stats[2, ])
+
+  par(cex = .8)
+  r   = barplot(stats[1, ], col = "red", ylim = c(min(0, min(mat[, 2])), max(0, mat[, 3])), las = 2,  omi = c(50, 4, 4, 4))
+  segments(r, mat[, 2], r, mat[, 3])
+  segments(r-0.1, mat[, 2], r+0.1, mat[, 2])
+  segments(r-0.1, mat[, 3], r+0.1, mat[, 3])
+
+}
