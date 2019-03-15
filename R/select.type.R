@@ -244,15 +244,13 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
 # data("Russett")
 # blocks3 = list(agriculture = Russett[, 1:3], industry = Russett[, 4:5], politic = Russett[, 6:11] )
 # bootstrap(blocks3)
-bootstrap = function(block_list, boot_iter = 5, C = 1 - diag(length(block_list)), c1 = rep(1, length(block_list)),
-                     ncomp = rep(2, length(block_list)), scheme = 'factorial', scale = T){
+bootstrap_k = function(block_list, boot_iter = 5, C = 1 - diag(length(block_list)), c1 = rep(1, length(block_list)),
+                       ncomp = rep(2, length(block_list)), scheme = 'factorial', scale = T, nb_cores = NULL){
 
-  W = vector('list', length = boot_iter)
+  if(is.null(nb_cores) )
+    nb_cores = detectCores() - 1
 
-  for (i in seq(boot_iter)){
-
-    #TODO: parallel::mclapply(1:B, function(z) bootstrap_k(n = n, J = J, A = A, object = object, W = W, ndim = ndim), mc.cores = nb_cores)
-
+  bootstrap = function(){
     # Shuffle rows
     id_boot = sample(NROW(block_list[[1]]), replace = T)
     boot_blocks = lapply(block_list, function(x) x[id_boot, ])
@@ -261,43 +259,60 @@ bootstrap = function(block_list, boot_iter = 5, C = 1 - diag(length(block_list))
 
     # Get boostraped weights
     w = sgcca(boot_blocks, C, c1=c1,  ncomp = ncomp, scheme = scheme, scale = scale, verbose = FALSE)$a
-    # r = sapply(1:length(block_list), function(i) cbind(r[[i]], w[[i]]))
-
-    # Test on the sign of the correlation
-    if(i == 1)
-      w1 = w
-    else{
-      for(k in 1:length(block_list)){
-        for (j in 1:ncol(w[[k]])){
-          if (cor(w1[[k]][, j], w[[k]][, j]) < 0){
-            w[[k]][, j] = -1 * w[[k]][, j]
-          }
-        }
-      }
-
-    }
-
-    W[[i]] = w
   }
 
-  return(W)
+  w1 = bootstrap4()
+
+  parallel::mclapply(1:boot_iter, function(x) {
+
+    w = bootstrap()
+
+    # Test on the sign of the correlation
+    for(k in 1:length(block_list)){
+      for (j in 1:ncol(w[[k]])){
+        if (cor(w1[[k]][, j], w[[k]][, j]) < 0){
+          w[[k]][, j] = -1 * w[[k]][, j]
+        }
+      }
+    }
+
+    return(w)
+
+  }, mc.cores = nb_cores)
+
 }
 
-plotBootstrap = function(boostrap, dim = 1){
+plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL,){
 
-  if(dim > min(unlist(lapply(boostrap, function(x) lapply(x, function(z) ncol(z))))))
+  if ( is.null(i_block) )
+    i_block = length(W[[1]])
+
+  if(dim > min(unlist(lapply(W, function(x) lapply(x, function(z) ncol(z))))))
     stop("Selected dimension was not associated to every blocks", call. = FALSE)
 
-  W = Reduce( rbind, lapply(boostrap, function(x) Reduce(c,
-                                                         lapply(x, function(z) z[, dim]))))
+  W_select = Reduce(rbind, lapply(W, function(x) x[[i_block]][, comp]) )
 
-  stats = apply(res, 2,  function(x) c(mean(x), sd(x)))
+  stats = apply(W_select, 2,  function(x) c(mean(x), sd(x)))
   #W1 = Reduce(c, lapply(object$a, function(x) x[, dim]) )
 
-  mat = cbind(W1, stats[1, ]-stats[2, ], stats[1, ]+stats[2, ])
+  mat = cbind(stats[1, ], stats[1, ]-stats[2, ], stats[1, ]+stats[2, ])
+  mat = getRankedValues(mat,  allCol = T)[1:n_mark, ]
+  mat = data.frame(mat, order = nrow(mat):1 , var = factor(rownames(mat), levels = rev(rownames(mat))))
+
+  # p = ggplot(mat, aes(var,
+  #                     mat[,1],
+  #                     fill = as.factor( seq(0, 1, length.out = nrow(mat)) ) ))
+
+  p = ggplot(mat, aes(var,
+                      mat[,1],
+                      fill = var  ) )
+
+  plotHistogram(p, mat, "Average Variance Explained") +
+    scale_fill_gradient(low = "khaki2", high = "coral3") +
+    geom_errorbar(aes(ymin=X2, ymax=X3))
 
   par(cex = .8)
-  r   = barplot(stats[1, ], col = "red", ylim = c(min(0, min(mat[, 2])), max(0, mat[, 3])), las = 2,  omi = c(50, 4, 4, 4))
+  r   = barplot(mat[, 1], col = "red", ylim = c(min(0, min(mat[, 2])), max(0, mat[, 3])), las = 2,  omi = c(50, 4, 4, 4))
   segments(r, mat[, 2], r, mat[, 3])
   segments(r-0.1, mat[, 2], r+0.1, mat[, 2])
   segments(r-0.1, mat[, 3], r+0.1, mat[, 3])
