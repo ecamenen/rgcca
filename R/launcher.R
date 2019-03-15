@@ -387,3 +387,6 @@ if(opt$type != "pca"){
   plotNetwork2(nodes, edges, blocks)
   savePlot(opt$output6, conNet)
 }
+
+boot = bootstrap(blocks, 5, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
+plotBootstrap(boot, opt$compx, opt$nmark, opt$block)
