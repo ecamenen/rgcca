@@ -239,36 +239,74 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
 }
 
 
+bootstrap_k = function(blocks, connection = 1 - diag(length(blocks)), tau = rep(1, length(blocks)),
+                       ncomp = rep(2, length(blocks)), scheme = 'factorial', scale = TRUE,
+                       init = "svd", bias = TRUE, type = "rgcca"){
+  # Shuffle rows
+  id_boot = sample(NROW(blocks[[1]]), replace = T)
+
+  # Scale the blocks
+  if( !is.null(attr(blocks, "scaled:center"))){
+    # If blocks are already scaled
+
+    if(!is.null(attr(blocks, "scaled:scale")))
+      boot_blocks  = lapply(blocks, function(x) scale(x[id_boot, ],
+                                                      center = attr(blocks, "scaled:center"),
+                                                      scale = attr(blocks, "scaled:scale"))
+                            / sqrt(ncol(x)) )
+    else
+      boot_blocks  = lapply(blocks, function(x) scale(x[id_boot, ],
+                                                      center = attr(blocks, "scaled:center"),
+                                                      scale = F))
+
+  }else{
+
+    if(isTRUE(scale))
+      boot_blocks  = lapply(blocks, function(x) scale2(x[id_boot, ], bias = bias) / sqrt(ncol(x)) )
+    else
+      boot_blocks = lapply(blocks, function(x) scale2(x[id_boot, ], scale = F))
+  }
+
+  boot_blocks = removeColumnSdNull(boot_blocks)
+
+  # Get boostraped weights
+  w = rgcca.analyze(boot_blocks, connection, tau = tau,  ncomp = ncomp, scheme = scheme,
+                scale = FALSE, init = init, bias = bias, type = type)$a
+
+  # Add removed variables
+  missing_var = lapply(1:length(blocks), function(x) setdiff(colnames(blocks[[x]]), rownames(w[[x]])))
+  missing_tab = lapply(1:length(missing_var),
+                       function(x) matrix(0,
+                                        length(missing_var[[x]]),
+                                        ncomp[x],
+                                        dimnames = list(missing_var[[x]], 1:ncomp[x]))
+                                      )
+  w = mapply(rbind, w, missing_tab)
+  w = mapply(function(x, y) x[y, ], w, lapply(blocks, colnames))
+
+  return(w)
+}
+
 # Examples
 # library(RGCCA)
 # data("Russett")
 # blocks3 = list(agriculture = Russett[, 1:3], industry = Russett[, 4:5], politic = Russett[, 6:11] )
 # bootstrap(blocks3)
-bootstrap_k = function(block_list, boot_iter = 5, C = 1 - diag(length(block_list)), c1 = rep(1, length(block_list)),
-                       ncomp = rep(2, length(block_list)), scheme = 'factorial', scale = T, nb_cores = NULL){
+bootstrap = function(blocks, n_boot = 5, connection = 1 - diag(length(blocks)), tau = rep(1, length(blocks)),
+                       ncomp = rep(2, length(blocks)), scheme = 'factorial', scale = TRUE,
+                       init = "svd", bias = TRUE, type = "rgcca", nb_cores = NULL){
 
   if(is.null(nb_cores) )
     nb_cores = detectCores() - 1
 
-  bootstrap = function(){
-    # Shuffle rows
-    id_boot = sample(NROW(block_list[[1]]), replace = T)
-    boot_blocks = lapply(block_list, function(x) x[id_boot, ])
-    #boot_A = lapply(block_list, function(x) scale(x[idx_boot,]) / sqrt(NCOL(x)))
-    #TODO : conserve the scale of the initial block
+  w1 = bootstrap_k(blocks, connection, tau, ncomp, scheme, scale, init, bias, type)
 
-    # Get boostraped weights
-    w = sgcca(boot_blocks, C, c1=c1,  ncomp = ncomp, scheme = scheme, scale = scale, verbose = FALSE)$a
-  }
+  W = parallel::mclapply(1:(n_boot-1), function(x) {
 
-  w1 = bootstrap()
-
-  W = parallel::mclapply(1:(boot_iter-1), function(x) {
-
-    w = bootstrap()
+    w = bootstrap_k(blocks, connection, tau, ncomp, scheme, scale, init, bias, type)
 
     # Test on the sign of the correlation
-    for(k in 1:length(block_list)){
+    for(k in 1:length(blocks)){
       for (j in 1:ncol(w[[k]])){
         if (cor(w1[[k]][, j], w[[k]][, j]) < 0){
           w[[k]][, j] = -1 * w[[k]][, j]
@@ -283,6 +321,7 @@ bootstrap_k = function(block_list, boot_iter = 5, C = 1 - diag(length(block_list
   return(c(list(w1), W))
 }
 
+#' list of list weights (one per bootstrap per blocks)
 plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
 
   if ( is.null(i_block) )
@@ -297,16 +336,15 @@ plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
   mat = cbind(stats[1, ],
               stats[1, ] - stats[2, ],
               stats[1, ] + stats[2, ])
-  mat = getRankedValues(mat,  allCol = T)
-  mat = data.frame(mat,
+  mat = data.frame(getRankedValues(mat,  allCol = T),
                    order = nrow(mat):1)
 
   if(nrow(mat) > n_mark)
     mat = mat[1:n_mark, ]
 
   p = ggplot(mat, aes(order,
-                      mat[,1],
-                      fill = abs( mat[,1])  ) )
+                      mat[, 1],
+                      fill = abs( mat[, 1])  ) )
   plotHistogram(p, mat, "Average variable weights") +
-    geom_errorbar(aes(ymin=X2, ymax=X3))
+    geom_errorbar(aes(ymin = X2, ymax = X3), color ="gray40")
 }

@@ -325,11 +325,11 @@ if( !opt$superblock  && opt$type != "pca"){
     warnConnection("superblock")
 
   if(isTRUE(opt$scale))
-    blocks  = lapply(blocks, function(x) scale2(x, bias = opt$bias) / nrow(x) )
+    blocks  = lapply(blocks, function(x) scale2(x, bias = opt$bias) / sqrt(ncol(x)) )
   else
     blocks = lapply(blocks, function(x) scale2(x, scale = F))
 
-  # TODO: scale par column
+  # TODO: scale per column
   opt$scale = FALSE
 
   blocks[["Superblock"]] = Reduce(cbind, blocks)
