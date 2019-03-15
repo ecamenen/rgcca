@@ -261,9 +261,9 @@ bootstrap_k = function(block_list, boot_iter = 5, C = 1 - diag(length(block_list
     w = sgcca(boot_blocks, C, c1=c1,  ncomp = ncomp, scheme = scheme, scale = scale, verbose = FALSE)$a
   }
 
-  w1 = bootstrap4()
+  w1 = bootstrap()
 
-  parallel::mclapply(1:boot_iter, function(x) {
+  W = parallel::mclapply(1:(boot_iter-1), function(x) {
 
     w = bootstrap()
 
@@ -280,41 +280,33 @@ bootstrap_k = function(block_list, boot_iter = 5, C = 1 - diag(length(block_list
 
   }, mc.cores = nb_cores)
 
+  return(c(list(w1), W))
 }
 
-plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL,){
+plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
 
   if ( is.null(i_block) )
     i_block = length(W[[1]])
 
-  if(dim > min(unlist(lapply(W, function(x) lapply(x, function(z) ncol(z))))))
+  if(comp > min(unlist(lapply(W, function(x) lapply(x, function(z) ncol(z))))))
     stop("Selected dimension was not associated to every blocks", call. = FALSE)
 
   W_select = Reduce(rbind, lapply(W, function(x) x[[i_block]][, comp]) )
-
   stats = apply(W_select, 2,  function(x) c(mean(x), sd(x)))
-  #W1 = Reduce(c, lapply(object$a, function(x) x[, dim]) )
 
-  mat = cbind(stats[1, ], stats[1, ]-stats[2, ], stats[1, ]+stats[2, ])
-  mat = getRankedValues(mat,  allCol = T)[1:n_mark, ]
-  mat = data.frame(mat, order = nrow(mat):1 , var = factor(rownames(mat), levels = rev(rownames(mat))))
+  mat = cbind(stats[1, ],
+              stats[1, ] - stats[2, ],
+              stats[1, ] + stats[2, ])
+  mat = getRankedValues(mat,  allCol = T)
+  mat = data.frame(mat,
+                   order = nrow(mat):1)
 
-  # p = ggplot(mat, aes(var,
-  #                     mat[,1],
-  #                     fill = as.factor( seq(0, 1, length.out = nrow(mat)) ) ))
+  if(nrow(mat) > n_mark)
+    mat = mat[1:n_mark, ]
 
-  p = ggplot(mat, aes(var,
+  p = ggplot(mat, aes(order,
                       mat[,1],
-                      fill = var  ) )
-
-  plotHistogram(p, mat, "Average Variance Explained") +
-    scale_fill_gradient(low = "khaki2", high = "coral3") +
+                      fill = abs( mat[,1])  ) )
+  plotHistogram(p, mat, "Average variable weights") +
     geom_errorbar(aes(ymin=X2, ymax=X3))
-
-  par(cex = .8)
-  r   = barplot(mat[, 1], col = "red", ylim = c(min(0, min(mat[, 2])), max(0, mat[, 3])), las = 2,  omi = c(50, 4, 4, 4))
-  segments(r, mat[, 2], r, mat[, 3])
-  segments(r-0.1, mat[, 2], r+0.1, mat[, 2])
-  segments(r-0.1, mat[, 3], r+0.1, mat[, 3])
-
 }

@@ -508,7 +508,8 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
       scale_x_continuous(breaks = df$order, labels = rownames(df)) +
       labs( fill = "Blocks")
     if(length(color) == 1){
-      p = p + scale_fill_gradient(low = low_col, high = high_col)
+      p = p + scale_fill_gradient(low = low_col, high = high_col) +
+      theme(legend.position = "none")
     }
   }
 
