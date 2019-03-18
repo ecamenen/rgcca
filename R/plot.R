@@ -262,6 +262,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 
   df = data.frame(df, color)
 
+
   p = plotSpace(rgcca, df, "Variables", color, "Blocks", comp_x, comp_y, i_block, text = text) +
     geom_path(aes(x, y), data = circleFun(), col = "grey", size = 1) +
     geom_path(aes(x, y), data = circleFun()/2, col = "grey", size = 1, lty = 2)
@@ -388,7 +389,7 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
     df = data.frame( df, color = getBlocsVariables(rgcca) )
 
   # sort in decreasing order
-  df = data.frame(getRankedValues(df, 1, F), order = nrow(df):1)
+  df = data.frame(getRankedValues(df, 1, T), order = nrow(df):1)
 
   # selected variables in sgcca
   nvar_select = varSelected(rgcca, i_block, comp)

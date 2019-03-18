@@ -186,7 +186,6 @@ checkFile = function (f){
 
 #' Create a list of matrix from loading files corresponding to blocks
 #'
-#' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
 #' @param file A character giving the path of a file used as a response
 #' @param names A character giving a list of names for the blocks
 #' @param sep A character giving the column separator
@@ -198,7 +197,7 @@ checkFile = function (f){
 #' setBlocks (TRUE, "data/agriculture.tsv,data/industry.tsv,data/politic.tsv", "agric,ind,polit")
 #' }
 #' @export setBlocks
-setBlocks = function(superblock, file, names = NULL, sep = "\t", header = TRUE, rownames = ROW_NAMES) {
+setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = ROW_NAMES) {
 
   # Parse args containing files path
   isXls <- (length(grep("xlsx?", file)) == 1)

@@ -12,11 +12,13 @@
 server <- function(input, output) {
   source("../../R/parsing.R")
   source("../../R/plot.R")
+  source("../../R/select.type.R")
 
   # Assign reactive variables
   assign("i_block", reactiveVal(), .GlobalEnv)
   assign("id_block", NULL, .GlobalEnv)
   assign("n_comp", reactiveVal(), .GlobalEnv)
+  assign("scale", reactiveVal(), .GlobalEnv)
   assign("click", FALSE, .GlobalEnv)
 
   #TODO: remove blocks, superblock from observeEvent
@@ -102,7 +104,6 @@ server <- function(input, output) {
     }
   }
 
-
   getMaxCol = function(){
     # Get the maximum number of columns among the blocks
 
@@ -134,7 +135,6 @@ server <- function(input, output) {
     return (100)
   }
 
-
   getNbComp = function(){
     refresh <- input$nb_comp
     return(nb_comp)
@@ -156,12 +156,31 @@ server <- function(input, output) {
     names = paste(input$blocks$name, collapse = ',')
 
     tryCatch({
-      assign("blocks", setBlocks (superblock = input$superblock,
-                      file = paths,
+      blocks = setBlocks (file = paths,
                       names = names,
                       sep = input$sep,
-                      header = TRUE),
-          .GlobalEnv)
+                      header = TRUE)
+
+      if( !input$superblock){
+        if(!isTRUE(input$scale))
+          blocks = lapply(blocks, function(x) scale2(x, scale = F))
+      }else{
+        if( input$superblock )
+          warnConnection("superblock")
+
+        if(isTRUE(input$scale))
+          blocks  = lapply(blocks, function(x) scale2(x, bias = input$bias) / sqrt(ncol(x)) )
+        else
+          blocks = lapply(blocks, function(x) scale2(x, scale = F))
+
+        # TODO: scale per column
+        assign("scale", FALSE, .GlobalEnv)
+
+        blocks[["Superblock"]] = Reduce(cbind, blocks)
+      }
+
+      assign("blocks", blocks , .GlobalEnv)
+
     }, error = function(e) {
       assign("blocks", NULL, .GlobalEnv)
       if(click)
@@ -186,6 +205,7 @@ server <- function(input, output) {
                         header = input$header),
           .GlobalEnv)
     assign("connection", setConnection (blocks = blocks,
+                          superblock = input$superblock,
                           file = NULL,
                           sep = input$sep),
           .GlobalEnv)
@@ -218,27 +238,27 @@ server <- function(input, output) {
     assign("rgcca.res", rgcca.res, .GlobalEnv)
   })
 
-  samples <- function() ggplotly(plotSamplesSpace(rgcca = rgcca.res,
+  samples <- function() plotSamplesSpace(rgcca = rgcca.res,
                                          resp = response,
                                          comp_x = input$axis1,
                                          comp_y = input$axis2,
-                                         i_block = id_block))
+                                         i_block = id_block)
 
-  corcircle <- function() ggplotly(plotVariablesSpace(rgcca = rgcca.res,
+  corcircle <- function() plotVariablesSpace(rgcca = rgcca.res,
                                              blocks = blocks,
                                              comp_x = input$axis1,
                                              comp_y = input$axis2,
                                              superblock = input$superblock,
-                                             i_block = id_block))
+                                             i_block = id_block)
 
-  fingerprint <- function() ggplotly(plotFingerprint(rgcca = rgcca.res,
+  fingerprint <- function() plotFingerprint(rgcca = rgcca.res,
                                             comp = input$axis1,
                                             superblock = input$superblock,
                                             n_mark = input$nb_mark,
-                                            i_block = id_block))
+                                            i_block = id_block)
 
-  ave <- function() ggplotly(plotAVE(rgcca = rgcca.res,
-                            comp = input$axis1))
+  ave <- function() plotAVE(rgcca = rgcca.res,
+                            comp = input$axis1)
 
 
   setFuncs <- reactive({
@@ -309,8 +329,9 @@ server <- function(input, output) {
     if(blocksExists()){
       tryCatch({
       connection = setConnection (blocks = blocks,
-                                          file = input$connection$datapath,
-                                          sep = input$sep)
+                                  superblock = input$superblock,
+                                  file = input$connection$datapath,
+                                  sep = input$sep)
       assign("connection", connection,
             .GlobalEnv)
       setAnalysis()

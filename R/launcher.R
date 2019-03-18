@@ -22,9 +22,9 @@ getArgs = function(){
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[18]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
-    make_option(c("--group"), type="character", metavar="character", default="/home/etienne.camenen/Documents/DATA/Nucleiparks/UPDRS.tsv",
+    make_option(c("--group"), type="character",
                 help="Path of the group file (to color samples by group in the associated plot)"),
-    make_option(c("-r", "--response"), type="integer", metavar="integer", default=4,
+    make_option(c("-r", "--response"), type="integer", metavar="integer",
                 help="Position of the response file in datasets (if not null, activate supervized method)"),
     make_option(c("--names"), type="character", metavar="character", help="List of the names for each block file separated by comma [default: filename]"),
     make_option(c("-H", "--header"), type="logical", action="store_false", help="DO NOT consider the first row as header of columns"),
@@ -261,11 +261,11 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "sgcca",
+           type = "rgcca",
            scheme = "factorial",
-           tau = "0.05, 0.15, 0.075, 1",
+           tau = "optimal",
            init = "svd",
-           ncomp = "2, 3, 4, 2",
+           ncomp = "2, 3, 2",
            block = 0,
            compx = 1,
            compy = 2,
@@ -276,7 +276,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_full/transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_full/lipidomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_full/metabolomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_full/clinic.tsv")
+           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -309,7 +309,7 @@ if( ! is.null(opt$response) ){
   }
 }
 
-blocks = setBlocks(opt$superblock, opt$datasets, opt$names, opt$separator, opt$header)
+blocks = setBlocks(opt$datasets, opt$names, opt$separator, opt$header)
 opt = postCheckArg(opt, blocks)
 
 if( ! is.null(opt$response) ){
