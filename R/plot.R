@@ -51,18 +51,22 @@ printAxis = function (rgcca, n, i = NULL, outer = FALSE){
   if ( is.null(i) )
     i = length(rgcca$AVE$AVE_X)
 
-  if(isTRUE(outer))
-    AVE = rgcca$AVE$AVE_outer
-  else
-    AVE = rgcca$AVE$AVE_X[[i]]
-
   nvar = varSelected(rgcca, i, n)
   if(class(rgcca) !="sgcca" | nvar == length(rgcca$a[[i]][, n]) )
     varText = ""
   else
     varText = paste(nvar, " variables, ", sep="")
 
-  paste("Component ", n, " (", varText, round(AVE[n] * 100 , 1),"%)", sep = "")
+  ave = quote(paste0(round(AVE[n] * 100 , 1),"%"))
+
+  if(isTRUE(outer)){
+    AVE = rgcca$AVE$AVE_outer
+    n = c(1, 2)
+    paste0("First outer comp. : ", paste(eval(ave), collapse=" & "))
+  }else{
+    AVE = rgcca$AVE$AVE_X[[i]]
+    paste0("Component ", n, " (", varText, eval(ave), ")")
+  }
 }
 
 #' Get the variables with a weight != 0
