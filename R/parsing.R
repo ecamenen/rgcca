@@ -492,3 +492,15 @@ removeColumnSdNull = function(list_m) {
   names(list_m) = names
   return (list_m)
 }
+
+setSuperblock = function(blocks, superblock = FALSE, type = "rgcca"){
+  if(superblock | type != "pca"){
+
+    if(type != "pca")
+      warnConnection("superblock")
+
+    blocks[["Superblock"]] = Reduce(cbind, blocks)
+  }
+
+  return(blocks)
+}

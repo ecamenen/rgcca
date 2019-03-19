@@ -18,8 +18,7 @@ server <- function(input, output) {
   assign("i_block", reactiveVal(), .GlobalEnv)
   assign("id_block", NULL, .GlobalEnv)
   assign("n_comp", reactiveVal(), .GlobalEnv)
-  assign("scale", reactiveVal(), .GlobalEnv)
-  assign("click", FALSE, .GlobalEnv)
+  assign("clickSep", FALSE, .GlobalEnv)
 
   #TODO: remove blocks, superblock from observeEvent
   output$blocks_names_custom <- renderUI({
@@ -144,7 +143,7 @@ server <- function(input, output) {
     # Refresh all the plots when any input is changed
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
-                 input$scale, input$bias, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt,
+                input$scale, input$bias, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt,
                 input$connection, input$nb_comp, input$adv_pars, input$adv_ana, input$adv_graph, input$names_block )
   })
 
@@ -161,20 +160,12 @@ server <- function(input, output) {
                       sep = input$sep,
                       header = TRUE)
 
-      if( !input$superblock){
-        if(!isTRUE(input$scale))
-          blocks = lapply(blocks, function(x) scale2(x, scale = F))
-      }else{
-        if( input$superblock )
+      blocks = scaling(blocks, input$scale, input$bias)
+
+      if(input$superblock){
+
+        #if(opt$type != "pca")
           warnConnection("superblock")
-
-        if(isTRUE(input$scale))
-          blocks  = lapply(blocks, function(x) scale2(x, bias = input$bias) / sqrt(ncol(x)) )
-        else
-          blocks = lapply(blocks, function(x) scale2(x, scale = F))
-
-        # TODO: scale per column
-        assign("scale", FALSE, .GlobalEnv)
 
         blocks[["Superblock"]] = Reduce(cbind, blocks)
       }
@@ -183,16 +174,14 @@ server <- function(input, output) {
 
     }, error = function(e) {
       assign("blocks", NULL, .GlobalEnv)
-      if(click)
+      if(clickSep)
         message(e$message)
-      else
-        message(paste("COUCOU", e$message))
     })
-    assign("click", FALSE, .GlobalEnv)
+    assign("clickSep", FALSE, .GlobalEnv)
     return(blocks)
   })
 
-  onclick("sep", function(e) assign("click", TRUE, .GlobalEnv))
+  onclick("sep", function(e) assign("clickSep", TRUE, .GlobalEnv))
 
   setData <- reactive({
     # Load the blocks, the response and the connection matrix
@@ -211,7 +200,7 @@ server <- function(input, output) {
           .GlobalEnv)
   })
 
-  setAnalysis <- eventReactive(c(nb_comp, input$nb_comp, input$scheme, input$scale, input$bias, input$init,
+  setAnalysis <- eventReactive(c(nb_comp, input$nb_comp, input$scheme, input$bias, input$init,
                                  input$connection, input$superblock, input$blocks, input$tau, input$tau_opt), {
     # Load the analysis
     refresh = c(input$superblock, input$blocks)
@@ -229,7 +218,7 @@ server <- function(input, output) {
                  tau = rep(tau, length(blocks)),
                  scheme = input$scheme,
                  ncomp = ncomp,
-                 scale = input$scale,
+                 scale = FALSE,
                  bias = input$bias,
                  init = input$init,
                  verbose = FALSE)
@@ -281,7 +270,7 @@ server <- function(input, output) {
 
   ################################################ Observe events ################################################
 
-  observeEvent(c(input$superblock, input$blocks, input$sep), {
+  observeEvent(c(input$blocks, input$sep), {
     # Observe the changes for parsing functionnalities (column separator,
     # the header, the path for the blocks and the presence of a superblock)
 
@@ -301,6 +290,28 @@ server <- function(input, output) {
       assign("nb_comp", 2, .GlobalEnv)
       setAnalysis()
       setFuncs()
+    }
+  })
+
+  setTest = function(){
+    blocks = setSuperblock(blocks, input$superblock)
+    assign("blocks", blocks , .GlobalEnv)
+    setData()
+    setAnalysis()
+    setFuncs()
+  }
+
+  observeEvent(c(input$scale, input$bias), {
+    if(blocksExists()){
+      blocks = scaling(blocks, input$scale, input$bias)
+      setTest()
+    }
+  })
+
+  observeEvent(input$superblock, {
+    if(blocksExists()){
+      blocks = setSuperblock(blocks, input$superblock)
+      setTest()
     }
   })
 
@@ -342,7 +353,7 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(c(input$nb_comp, input$scheme, input$scale, input$bias, input$init, input$tau, input$tau_opt), {
+  observeEvent(c(input$nb_comp, input$scheme, input$bias, input$init, input$tau, input$tau_opt), {
     # Observe if analysis parameters are changed
     if(blocksExists()){
       assign("nb_comp", input$nb_comp, .GlobalEnv)

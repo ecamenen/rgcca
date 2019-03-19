@@ -348,3 +348,16 @@ plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
   plotHistogram(p, mat, "Average variable weights") +
     geom_errorbar(aes(ymin = X2, ymax = X3), color ="gray40")
 }
+
+scaling = function(blocks, scale = TRUE, bias = TRUE){
+
+  print("SCALE")
+
+
+  if(scale)
+    lapply(blocks, function(x)
+      scale2(x, bias = bias) / sqrt(ncol(x)) )
+  else
+    lapply(blocks, function(x)
+      scale2(x, scale = F))
+}

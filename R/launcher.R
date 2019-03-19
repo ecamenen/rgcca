@@ -129,9 +129,6 @@ checkArg = function(opt){
 postCheckArg = function(opt, blocks){
   opt = select.type(opt, blocks)
 
-  if(opt$superblock | opt$type == "pca")
-    blocks = c(blocks, list(Reduce(cbind, blocks)))
-
   opt$ncomp = as.list(opt$ncomp)
 
   out = lapply(1:length(opt$ncomp), function(x){
@@ -310,30 +307,16 @@ if( ! is.null(opt$response) ){
 }
 
 blocks = setBlocks(opt$datasets, opt$names, opt$separator, opt$header)
-opt = postCheckArg(opt, blocks)
+blocks = scaling(blocks, opt$scale, opt$bias)
 
 if( ! is.null(opt$response) ){
   opt = setPosPar(opt, blocks, opt$response)
   blocks = opt$blocks
 }
 
-if( !opt$superblock  && opt$type != "pca"){
-  if(!isTRUE(opt$scale))
-    blocks = lapply(blocks, function(x) scale2(x, scale = F))
-}else{
-  if( opt$superblock )
-    warnConnection("superblock")
+blocks = setSuperblock(blocks, opt$superblock, opt$type)
 
-  if(isTRUE(opt$scale))
-    blocks  = lapply(blocks, function(x) scale2(x, bias = opt$bias) / sqrt(ncol(x)) )
-  else
-    blocks = lapply(blocks, function(x) scale2(x, scale = F))
-
-  # TODO: scale per column
-  opt$scale = FALSE
-
-  blocks[["Superblock"]] = Reduce(cbind, blocks)
-}
+opt = postCheckArg(opt, blocks)
 
 connection = opt$connection
 if(!is.matrix(connection))
@@ -341,7 +324,7 @@ if(!is.matrix(connection))
 
 group = setResponse(blocks, opt$group, opt$separator, opt$header)
 
-rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, F, opt$init, opt$bias, opt$type)
+rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, FALSE, opt$init, opt$bias, opt$type)
 
 ##########
 
