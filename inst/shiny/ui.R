@@ -111,18 +111,21 @@ ui <- fluidPage(
       tabsetPanel(
         type = "tabs",
         id = "navbar",
-        tabPanel("Samples plot",
+        tabPanel("Samples",
                  plotOutput("samplesPlot"),
                  actionButton("samples_save","Save")),
-        tabPanel("Corcircle plot",
+        tabPanel("Corcircle",
                  plotOutput("corcirclePlot"),
                  actionButton("corcircle_save","Save")),
-        tabPanel("Fingerprint plot",
+        tabPanel("Fingerprint",
                  plotOutput("fingerprintPlot"),
                  actionButton("fingerprint_save","Save")),
-        tabPanel("AVE plot",
+        tabPanel("AVE",
                  plotOutput("AVEPlot"),
-                 actionButton("ave_save","Save"))
+                 actionButton("ave_save","Save")),
+        tabPanel("Connection",
+                 plotOutput("connection"),
+                 actionButton("connection_save","Save"))
       )
 
     )

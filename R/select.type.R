@@ -238,7 +238,6 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
   return(func.res)
 }
 
-
 bootstrap_k = function(blocks, connection = 1 - diag(length(blocks)), tau = rep(1, length(blocks)),
                        ncomp = rep(2, length(blocks)), scheme = 'factorial', scale = TRUE,
                        init = "svd", bias = TRUE, type = "rgcca"){
@@ -351,13 +350,11 @@ plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
 
 scaling = function(blocks, scale = TRUE, bias = TRUE){
 
-  print("SCALE")
-
-
-  if(scale)
+  if(scale){
     lapply(blocks, function(x)
       scale2(x, bias = bias) / sqrt(ncol(x)) )
-  else
+  }else{
     lapply(blocks, function(x)
       scale2(x, scale = F))
+  }
 }

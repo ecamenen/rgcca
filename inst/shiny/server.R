@@ -41,7 +41,6 @@ server <- function(input, output) {
                 choices = getNames(), selected = n)
   })
 
-
   output$nb_comp_custom <- renderUI({
     # Set dynamicly the maximum number of component that should be used in the analysis
 
@@ -74,8 +73,6 @@ server <- function(input, output) {
                 label = h5("Number of potential biomarkers: "),
                 min = 10, max = getMaxCol(), value = getDefaultCol(), step = 1)
   })
-
-
 
   ################################################ Set variables ################################################
 
@@ -128,10 +125,10 @@ server <- function(input, output) {
     # Set the maximum of biomarkers to the maximum
     # number of column among the blocks but not lower than 100
 
-  if (getMaxCol() < 100)
-    return (getMaxCol())
-  else
-    return (100)
+    if (getMaxCol() < 100)
+      return (getMaxCol())
+    else
+      return (100)
   }
 
   getNbComp = function(){
@@ -139,15 +136,17 @@ server <- function(input, output) {
     return(nb_comp)
   }
 
-  getDynamicVariables <- reactive({
+  getDynamicVariables = function(){
     # Refresh all the plots when any input is changed
+
+    print("mouais")
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
                 input$scale, input$bias, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt,
                 input$connection, input$nb_comp, input$adv_pars, input$adv_ana, input$adv_graph, input$names_block )
-  })
+  }
 
-  getInfile <- eventReactive(c(input$blocks, input$superblock, input$sep), {
+  getInfile <- eventReactive(c(input$blocks, input$sep), {
     # Return the list of blocks
 
     # Load the blocks
@@ -155,37 +154,42 @@ server <- function(input, output) {
     names = paste(input$blocks$name, collapse = ',')
 
     tryCatch({
-      blocks = setBlocks (file = paths,
-                      names = names,
-                      sep = input$sep,
-                      header = TRUE)
+      assign("blocks_unscaled",
+             setBlocks (file = paths,
+                         names = names,
+                         sep = input$sep,
+                         header = TRUE),
+             .GlobalEnv)
 
-      blocks = scaling(blocks, input$scale, input$bias)
+      assign("blocks_without_superb",
+             scaling(blocks_unscaled, input$scale, input$bias),
+             .GlobalEnv)
 
-      if(input$superblock){
 
-        #if(opt$type != "pca")
-          warnConnection("superblock")
+      blocks = setSuperblock(blocks_without_superb, input$superblock)
 
-        blocks[["Superblock"]] = Reduce(cbind, blocks)
-      }
 
-      assign("blocks", blocks , .GlobalEnv)
+      assign("blocks", blocks,
+             .GlobalEnv)
 
     }, error = function(e) {
+
       assign("blocks", NULL, .GlobalEnv)
       if(clickSep)
         message(e$message)
+
     })
+
     assign("clickSep", FALSE, .GlobalEnv)
     return(blocks)
   })
 
   onclick("sep", function(e) assign("clickSep", TRUE, .GlobalEnv))
 
-  setData <- reactive({
+  setData <- eventReactive(c(input$blocks, input$connection, input$superblock, input$header, input$sep), {
     # Load the blocks, the response and the connection matrix
-    refresh = c(input$superblock, input$blocks)
+
+
     # This function activated only when a new dataset is loaded, set the reponse
     # and connection of the previous dataset to NULL
     assign("response", setResponse (blocks = blocks,
@@ -200,10 +204,9 @@ server <- function(input, output) {
           .GlobalEnv)
   })
 
-  setAnalysis <- eventReactive(c(nb_comp, input$nb_comp, input$scheme, input$bias, input$init,
+  setAnalysis <- eventReactive(c(nb_comp, input$nb_comp, input$scheme, input$bias, input$init, input$scale, input$sep,
                                  input$connection, input$superblock, input$blocks, input$tau, input$tau_opt), {
     # Load the analysis
-    refresh = c(input$superblock, input$blocks)
 
     # Tau is set to optimal by default
     if (input$tau_opt)
@@ -262,11 +265,26 @@ server <- function(input, output) {
   blocksExists = function(){
     # Test if the blocks are loaded and contain any errors
 
+
+
     if(!is.null(input$blocks))
       if(!is.null(getInfile()))
         return(TRUE)
     return(FALSE)
   }
+
+  setIdBlock <- reactive({
+
+    if(!input$superblock && as.integer(input$names_block) > round(length(blocks)) ){
+      i_block(as.integer(input$names_block))
+      assign("id_block", i_block() - 1, .GlobalEnv)
+    }else{
+      # By default, when a new dataset is loaded, the selected block is the last
+      assign("id_block", length(blocks), .GlobalEnv)
+    }
+
+    print(c("ID_BLOCK", id_block))
+  })
 
   ################################################ Observe events ################################################
 
@@ -275,48 +293,46 @@ server <- function(input, output) {
     # the header, the path for the blocks and the presence of a superblock)
 
     if(blocksExists()){
-
       # Update the id_block (the block used for visualization) when superblock option is disabled
-      if(!input$superblock && as.integer(input$names_block) > round(length(getInfile())) ){
-        i_block(as.integer(input$names_block))
-        assign("id_block", i_block() - 1, .GlobalEnv)
-      }else{
-        # By default, when a new dataset is loaded, the selected block is the last
-        assign("id_block", length(getInfile()), .GlobalEnv)
-      }
 
+      setIdBlock()
       setData()
       # By default, the number of component is set to 2
       assign("nb_comp", 2, .GlobalEnv)
       setAnalysis()
       setFuncs()
+      print("OK")
     }
-  })
+})
 
   setTest = function(){
-    blocks = setSuperblock(blocks, input$superblock)
-    assign("blocks", blocks , .GlobalEnv)
+
+    assign("blocks",
+           setSuperblock(blocks_without_superb, input$superblock),
+           .GlobalEnv)
+
     setData()
     setAnalysis()
+    setIdBlock()
     setFuncs()
   }
 
   observeEvent(c(input$scale, input$bias), {
     if(blocksExists()){
-      blocks = scaling(blocks, input$scale, input$bias)
+      blocks_without_superb = scaling(blocks_unscaled, input$scale, input$bias)
       setTest()
     }
   })
 
   observeEvent(input$superblock, {
     if(blocksExists()){
-      blocks = setSuperblock(blocks, input$superblock)
       setTest()
     }
   })
 
   observeEvent(c(input$response, input$header), {
     # Observe if a response is fixed
+
     if(blocksExists()){
       tryCatch({
         assign("response", setResponse (blocks = blocks,
@@ -333,10 +349,12 @@ server <- function(input, output) {
           message(e$message)
       })
     }
+
   })
 
   observeEvent(input$connection, {
     # Observe if a connection is fixed
+
     if(blocksExists()){
       tryCatch({
       connection = setConnection (blocks = blocks,
@@ -351,24 +369,29 @@ server <- function(input, output) {
         message(e$message)
       })
     }
+
   })
 
   observeEvent(c(input$nb_comp, input$scheme, input$bias, input$init, input$tau, input$tau_opt), {
     # Observe if analysis parameters are changed
+
     if(blocksExists()){
       assign("nb_comp", input$nb_comp, .GlobalEnv)
       setAnalysis()
       setFuncs()
     }
+
   })
 
   observeEvent(c(input$names_block, input$nb_mark, input$axis1, input$axis2, id_block), {
     # Observe if graphical parameters are changed
+
     if(blocksExists()){
       i_block(as.integer(input$names_block))
       assign("id_block", i_block(), .GlobalEnv)
       setFuncs()
     }
+
   })
 
 #TODO : Duplicates rows are not allowed

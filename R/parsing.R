@@ -494,12 +494,15 @@ removeColumnSdNull = function(list_m) {
 }
 
 setSuperblock = function(blocks, superblock = FALSE, type = "rgcca"){
-  if(superblock | type != "pca"){
 
-    if(type != "pca")
-      warnConnection("superblock")
+  if(superblock | type == "pca"){
+
+# TODO: allowed warning in shiny
+#     if(type != "pca")
+#       warnConnection("superblock")
 
     blocks[["Superblock"]] = Reduce(cbind, blocks)
+
   }
 
   return(blocks)

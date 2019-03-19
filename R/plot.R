@@ -224,6 +224,8 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 
   x = y = selectedVar = NULL
 
+  print(c(comp_x, comp_y))
+
   if ( is.null(i_block) )
     i_block = length(blocks)
 
@@ -235,7 +237,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
   }else{
 
     if(removeVariable & nrow(df) > 200){
-      selectedVar = as.vector (unique( sapply(c(comp_x, comp_y),
+      selectedVar = as.vector (unique( sapply(c(1, 2),
                                          function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:100,]))))
   	df = df[selectedVar, ]
     }
