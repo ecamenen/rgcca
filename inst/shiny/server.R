@@ -144,55 +144,8 @@ server <- function(input, output) {
                 input$connection, input$nb_comp, input$adv_pars, input$adv_ana, input$adv_graph, input$names_block )
   }
 
-  getInfile <- eventReactive(c(input$blocks, input$sep), {
-    # Return the list of blocks
-
-    # Load the blocks
-    paths = paste(input$blocks$datapath, collapse = ',')
-    names = paste(input$blocks$name, collapse = ',')
-
-    tryCatch({
-      assign("blocks_unscaled",
-             setBlocks (file = paths,
-                         names = names,
-                         sep = input$sep,
-                         header = TRUE),
-             .GlobalEnv)
-
-      assign("blocks_without_superb",
-             scaling(blocks_unscaled, input$scale, input$bias),
-             .GlobalEnv)
-
-      blocks = setSuperblock(blocks_without_superb, input$superblock)
-
-
-      assign("blocks", blocks,
-             .GlobalEnv)
-
-      setIdBlock()
-      setData()
-      # By default, the number of component is set to 2
-      assign("nb_comp", 2, .GlobalEnv)
-      setAnalysis()
-      setFuncs()
-
-    }, error = function(e) {
-
-      assign("blocks", NULL, .GlobalEnv)
-      if(clickSep)
-        message(e$message)
-
-    })
-
-    assign("clickSep", FALSE, .GlobalEnv)
-    return(blocks)
-  })
-
-  onclick("sep", function(e) assign("clickSep", TRUE, .GlobalEnv))
-
-  setData <- eventReactive(c(input$blocks, input$connection, input$superblock, input$header, input$sep), {
+  setData <- function() {
     # Load the blocks, the response and the connection matrix
-
 
     # This function activated only when a new dataset is loaded, set the reponse
     # and connection of the previous dataset to NULL
@@ -206,11 +159,12 @@ server <- function(input, output) {
                           file = NULL,
                           sep = input$sep),
           .GlobalEnv)
-  })
+  }
 
-  setAnalysis <- eventReactive(c(nb_comp, input$nb_comp, input$scheme, input$bias, input$init, input$scale, input$sep,
-                                 input$connection, input$superblock, input$blocks, input$tau, input$tau_opt), {
+  setAnalysis <- function() {
     # Load the analysis
+
+    print(connection)
 
     # Tau is set to optimal by default
     if (input$tau_opt)
@@ -232,7 +186,7 @@ server <- function(input, output) {
 
     names(rgcca.res$a)  = names(blocks)
     assign("rgcca.res", rgcca.res, .GlobalEnv)
-  })
+  }
 
   samples <- function() plotSamplesSpace(rgcca = rgcca.res,
                                          resp = response,
@@ -256,15 +210,14 @@ server <- function(input, output) {
   ave <- function() plotAVE(rgcca = rgcca.res,
                             comp = input$axis1)
 
-
-  setFuncs <- reactive({
+  setFuncs = function(){
     # Set plotting functions
 
     samples()
     corcircle()
     fingerprint()
     ave()
-  })
+  }
 
   blocksExists = function(){
     # Test if the blocks are loaded and contain any errors
@@ -275,7 +228,7 @@ server <- function(input, output) {
     return(FALSE)
   }
 
-  setIdBlock <- reactive({
+  setIdBlock = function(){
 
     if(!input$superblock && as.integer(input$names_block) > round(length(blocks)) ){
       i_block(as.integer(input$names_block))
@@ -284,25 +237,7 @@ server <- function(input, output) {
       # By default, when a new dataset is loaded, the selected block is the last
       assign("id_block", length(blocks), .GlobalEnv)
     }
-  })
-
-  ################################################ Observe events ################################################
-
-#   observeEvent(c(input$blocks, input$sep), {
-#     # Observe the changes for parsing functionnalities (column separator,
-#     # the header, the path for the blocks and the presence of a superblock)
-#
-#     if(blocksExists()){
-#       # Update the id_block (the block used for visualization) when superblock option is disabled
-#
-#       setIdBlock()
-#       setData()
-#       # By default, the number of component is set to 2
-#       assign("nb_comp", 2, .GlobalEnv)
-#       setAnalysis()
-#       setFuncs()
-#     }
-# })
+  }
 
   setTest = function(){
 
@@ -315,6 +250,52 @@ server <- function(input, output) {
     setIdBlock()
     setFuncs()
   }
+
+  ################################################ Observe events ################################################
+
+  onclick("sep", function(e) assign("clickSep", TRUE, .GlobalEnv))
+
+  getInfile <- eventReactive(c(input$blocks, input$sep), {
+    # Return the list of blocks
+
+    # Load the blocks
+    paths = paste(input$blocks$datapath, collapse = ',')
+    names = paste(input$blocks$name, collapse = ',')
+
+    tryCatch({
+      assign("blocks_unscaled",
+             setBlocks (file = paths,
+                        names = names,
+                        sep = input$sep,
+                        header = TRUE),
+             .GlobalEnv)
+
+      assign("blocks_without_superb",
+             scaling(blocks_unscaled, input$scale, input$bias),
+             .GlobalEnv)
+
+      blocks = setSuperblock(blocks_without_superb, input$superblock)
+      assign("blocks", blocks,
+             .GlobalEnv)
+
+      setIdBlock()
+      setData()
+      # By default, the number of component is set to 2
+      assign("nb_comp", 2, .GlobalEnv)
+      setAnalysis()
+      setFuncs()
+
+    }, error = function(e) {
+
+      assign("blocks", NULL, .GlobalEnv)
+      if(clickSep)
+        message(e$message)
+
+    })
+
+    assign("clickSep", FALSE, .GlobalEnv)
+    return(blocks)
+  })
 
   observeEvent(c(input$scale, input$bias), {
     if(blocksExists()){
@@ -358,11 +339,11 @@ server <- function(input, output) {
 
     if(blocksExists()){
       tryCatch({
-        connection = setConnection (blocks = blocks,
-                                    superblock = input$superblock,
-                                    file = input$connection$datapath,
-                                    sep = input$sep)
-        assign("connection", connection,
+
+        assign("connection", setConnection (blocks = blocks,
+                                            superblock = input$superblock,
+                                            file = input$connection$datapath,
+                                            sep = input$sep),
               .GlobalEnv)
         setAnalysis()
         setFuncs()
@@ -395,8 +376,6 @@ server <- function(input, output) {
 
   })
 
-#TODO : Duplicates rows are not allowed
-
   observeEvent(input$save_all, {
     if(blocksExists()){
       savePlot("samples_plot.pdf", samples())
@@ -407,7 +386,6 @@ server <- function(input, output) {
   })
 
   ################################################ Outputs ################################################
-
 
   output$samplesPlot <- renderPlot({
     getDynamicVariables()
