@@ -101,7 +101,7 @@ ui <- fluidPage(
         condition = "input.adv_graph == true",
         uiOutput("blocks_names_custom"),
         checkboxInput(inputId = "text",
-                      label = "Print row names",
+                      label = "Print names",
                       value = TRUE),
         uiOutput("axis1_custom"),
         uiOutput("axis2_custom"),

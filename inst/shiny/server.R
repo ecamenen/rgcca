@@ -142,7 +142,7 @@ server <- function(input, output) {
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
                 input$scale, input$bias, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt,
-                input$connection, input$nb_comp, input$names_block, input$boot )
+                input$connection, input$nb_comp, input$names_block, input$boot, input$text )
   }
 
   setData <- function() {
@@ -202,14 +202,16 @@ server <- function(input, output) {
                                          resp = response,
                                          comp_x = input$axis1,
                                          comp_y = input$axis2,
-                                         i_block = id_block)
+                                         i_block = id_block,
+                                         text = input$text)
 
   corcircle <- function() plotVariablesSpace(rgcca = rgcca.res,
                                              blocks = blocks,
                                              comp_x = input$axis1,
                                              comp_y = input$axis2,
                                              superblock = input$superblock,
-                                             i_block = id_block)
+                                             i_block = id_block,
+                                             text = input$text)
 
   fingerprint <- function() plotFingerprint(rgcca = rgcca.res,
                                             comp = input$axis1,
@@ -257,7 +259,6 @@ server <- function(input, output) {
     setData()
     setRGCCA()
     setIdBlock()
-
   }
 
   ################################################ Observe events ################################################
