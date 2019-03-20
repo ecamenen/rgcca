@@ -142,7 +142,7 @@ server <- function(input, output) {
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
                 input$scale, input$bias, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt,
-                input$connection, input$nb_comp, input$names_block )
+                input$connection, input$nb_comp, input$names_block, input$boot )
   }
 
   setData <- function() {
@@ -190,10 +190,14 @@ server <- function(input, output) {
 
     assign("nodes", getNodes(blocks, rgcca = rgcca.res), .GlobalEnv)
     assign("edges", getEdges(connection, blocks), .GlobalEnv)
-    assign("boot",
-           bootstrap(blocks, 5, connection, tau, ncomp, input$scheme, input$scale, input$init, input$bias),
-           .GlobalEnv)
+    getBoot()
   }
+
+  getBoot <- function()
+    assign("boot",
+           bootstrap(blocks, input$boot, connection, tau, ncomp, input$scheme, input$scale, input$init, input$bias),
+           .GlobalEnv)
+
 
   samples <- function() plotSamplesSpace(rgcca = rgcca.res,
                                          resp = response,
@@ -220,7 +224,10 @@ server <- function(input, output) {
   conNet <- function() plotNetwork(nodes, edges, blocks)
   conNet2 <- function() plotNetwork2(nodes, edges, blocks)
 
-  plotBoot <- function() plotBootstrap(boot, input$axis1, input$nb_mark, id_block)
+  plotBoot <- function() plotBootstrap(boot,
+                                       input$axis1,
+                                       input$nb_mark,
+                                       id_block)
 
   blocksExists = function(){
     # Test if the blocks are loaded and contain any errors
@@ -368,6 +375,13 @@ server <- function(input, output) {
     }
 
   })
+
+
+  observeEvent(input$boot, {
+    if(blocksExists())
+      getBoot()
+  })
+
 
   observeEvent(c(input$names_block, input$nb_mark, input$axis1, input$axis2, id_block), {
     # Observe if graphical parameters are changed

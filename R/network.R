@@ -54,6 +54,9 @@ colorNodes = function(nodes){
 
 plotNetwork = function(nodes, edges, blocks){
 
+  # Avoid random
+  set.seed(1)
+
   net <- graph_from_data_frame(d = edges, vertices = nodes, directed = FALSE)
 
   if(all(is.na(nodes$tau))){
@@ -78,6 +81,9 @@ plotNetwork = function(nodes, edges, blocks){
 }
 
 plotNetwork2 = function(nodes, edges, blocks){
+
+  # Avoid random
+  set.seed(1)
 
   if(all(is.na(nodes$tau)))
     nodes$tau = rep("optimal", length(blocks))

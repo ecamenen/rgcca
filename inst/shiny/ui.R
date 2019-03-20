@@ -20,7 +20,7 @@ for (l in librairies) {
 
 ui <- fluidPage(
 
-  titlePanel("RGCCA - graphical interface"),
+  titlePanel("R/SGCCA - Shiny graphical interface"),
 
   sidebarLayout(
 
@@ -84,6 +84,9 @@ ui <- fluidPage(
                                  Centroid = "centroid",
                                  Factorial = "factorial"),
                      selected = "factorial"),
+        sliderInput(inputId = "boot",
+                    label = h5("Number of boostrap : "),
+                    min = 5, max = 100, value = 10, step = 5),
         radioButtons("init",
                      label = "Mode of initialization",
                      choices = c(SVD = "svd",
