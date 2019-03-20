@@ -228,7 +228,7 @@ setPosPar = function(opt, blocks, i_resp){
 
 #' Launch a Shiny application for S/RGCCA
 #' @export
-runShiny <- function()
+runShiny = function()
   shiny::runApp("inst/shiny")
 
 

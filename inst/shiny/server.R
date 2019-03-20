@@ -142,7 +142,7 @@ server <- function(input, output) {
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
                 input$scale, input$bias, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt,
-                input$connection, input$nb_comp, input$adv_pars, input$adv_ana, input$adv_graph, input$names_block )
+                input$connection, input$nb_comp, input$names_block )
   }
 
   setData <- function() {
@@ -187,11 +187,12 @@ server <- function(input, output) {
     assign("rgcca.res", rgcca.res, .GlobalEnv)
     assign("tau", tau, .GlobalEnv)
     assign("ncomp", ncomp, .GlobalEnv)
-  }
 
-  setGraph = function() {
     assign("nodes", getNodes(blocks, rgcca = rgcca.res), .GlobalEnv)
     assign("edges", getEdges(connection, blocks), .GlobalEnv)
+    assign("boot",
+           bootstrap(blocks, 5, connection, tau, ncomp, input$scheme, input$scale, input$init, input$bias),
+           .GlobalEnv)
   }
 
   samples <- function() plotSamplesSpace(rgcca = rgcca.res,
@@ -219,21 +220,7 @@ server <- function(input, output) {
   conNet <- function() plotNetwork(nodes, edges, blocks)
   conNet2 <- function() plotNetwork2(nodes, edges, blocks)
 
-  boot <- function() plotBootstrap(bootstrap(blocks, 5, connection, tau, ncomp, input$scheme, input$scale, input$init, input$bias),
-                                        input$axis1, input$nb_mark, id_block)
-
-  setFuncs = function(){
-    # Set plotting functions
-
-    samples()
-    corcircle()
-    fingerprint()
-    ave()
-    setGraph()
-    conNet()
-    conNet2()
-    #boot()
-  }
+  plotBoot <- function() plotBootstrap(boot, input$axis1, input$nb_mark, id_block)
 
   blocksExists = function(){
     # Test if the blocks are loaded and contain any errors
@@ -264,7 +251,7 @@ server <- function(input, output) {
     setData()
     setAnalysis()
     setIdBlock()
-    setFuncs()
+
 
   }
 
@@ -300,7 +287,7 @@ server <- function(input, output) {
       # By default, the number of component is set to 2
       assign("nb_comp", 2, .GlobalEnv)
       setAnalysis()
-      setFuncs()
+
 
     }, error = function(e) {
 
@@ -363,7 +350,7 @@ server <- function(input, output) {
                                             sep = input$sep),
               .GlobalEnv)
         setAnalysis()
-        setFuncs()
+
       }, error = function(e) {
         message(e$message)
       })
@@ -377,7 +364,7 @@ server <- function(input, output) {
     if(blocksExists()){
       assign("nb_comp", input$nb_comp, .GlobalEnv)
       setAnalysis()
-      setFuncs()
+
     }
 
   })
@@ -388,7 +375,7 @@ server <- function(input, output) {
     if(blocksExists()){
       i_block(as.integer(input$names_block))
       assign("id_block", i_block(), .GlobalEnv)
-      setFuncs()
+
     }
 
   })
@@ -447,8 +434,8 @@ server <- function(input, output) {
   output$bootstrapPlot <- renderPlot({
     getDynamicVariables()
     if(blocksExists()){
-      observeEvent(input$bootstrap_save, savePlot("connection.pdf", boot()))
-      boot()
+      observeEvent(input$bootstrap_save, savePlot("connection.pdf", plotBoot()))
+      plotBoot()
     }
   })
 

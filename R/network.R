@@ -1,6 +1,5 @@
 getNodes = function(blocks, tau = NULL, rgcca = NULL) {
 
-  print(c("rgcca", rgcca))
   if(any(tau == "optimal")){
   	if(!is.null(rgcca))
   		tau = unlist(lapply(1:ncol(rgcca$tau), function(x) Reduce(paste, round(rgcca$tau[, x],2))))
