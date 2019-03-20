@@ -139,8 +139,6 @@ server <- function(input, output) {
   getDynamicVariables = function(){
     # Refresh all the plots when any input is changed
 
-    print("mouais")
-
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
                 input$scale, input$bias, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt,
                 input$connection, input$nb_comp, input$adv_pars, input$adv_ana, input$adv_graph, input$names_block )
@@ -165,12 +163,18 @@ server <- function(input, output) {
              scaling(blocks_unscaled, input$scale, input$bias),
              .GlobalEnv)
 
-
       blocks = setSuperblock(blocks_without_superb, input$superblock)
 
 
       assign("blocks", blocks,
              .GlobalEnv)
+
+      setIdBlock()
+      setData()
+      # By default, the number of component is set to 2
+      assign("nb_comp", 2, .GlobalEnv)
+      setAnalysis()
+      setFuncs()
 
     }, error = function(e) {
 
@@ -265,8 +269,6 @@ server <- function(input, output) {
   blocksExists = function(){
     # Test if the blocks are loaded and contain any errors
 
-
-
     if(!is.null(input$blocks))
       if(!is.null(getInfile()))
         return(TRUE)
@@ -282,28 +284,25 @@ server <- function(input, output) {
       # By default, when a new dataset is loaded, the selected block is the last
       assign("id_block", length(blocks), .GlobalEnv)
     }
-
-    print(c("ID_BLOCK", id_block))
   })
 
   ################################################ Observe events ################################################
 
-  observeEvent(c(input$blocks, input$sep), {
-    # Observe the changes for parsing functionnalities (column separator,
-    # the header, the path for the blocks and the presence of a superblock)
-
-    if(blocksExists()){
-      # Update the id_block (the block used for visualization) when superblock option is disabled
-
-      setIdBlock()
-      setData()
-      # By default, the number of component is set to 2
-      assign("nb_comp", 2, .GlobalEnv)
-      setAnalysis()
-      setFuncs()
-      print("OK")
-    }
-})
+#   observeEvent(c(input$blocks, input$sep), {
+#     # Observe the changes for parsing functionnalities (column separator,
+#     # the header, the path for the blocks and the presence of a superblock)
+#
+#     if(blocksExists()){
+#       # Update the id_block (the block used for visualization) when superblock option is disabled
+#
+#       setIdBlock()
+#       setData()
+#       # By default, the number of component is set to 2
+#       assign("nb_comp", 2, .GlobalEnv)
+#       setAnalysis()
+#       setFuncs()
+#     }
+# })
 
   setTest = function(){
 
@@ -319,7 +318,9 @@ server <- function(input, output) {
 
   observeEvent(c(input$scale, input$bias), {
     if(blocksExists()){
-      blocks_without_superb = scaling(blocks_unscaled, input$scale, input$bias)
+      assign("blocks_without_superb",
+             scaling(blocks_unscaled, input$scale, input$bias),
+             .GlobalEnv)
       setTest()
     }
   })
@@ -357,14 +358,14 @@ server <- function(input, output) {
 
     if(blocksExists()){
       tryCatch({
-      connection = setConnection (blocks = blocks,
-                                  superblock = input$superblock,
-                                  file = input$connection$datapath,
-                                  sep = input$sep)
-      assign("connection", connection,
-            .GlobalEnv)
-      setAnalysis()
-      setFuncs()
+        connection = setConnection (blocks = blocks,
+                                    superblock = input$superblock,
+                                    file = input$connection$datapath,
+                                    sep = input$sep)
+        assign("connection", connection,
+              .GlobalEnv)
+        setAnalysis()
+        setFuncs()
       }, error = function(e) {
         message(e$message)
       })

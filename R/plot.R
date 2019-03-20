@@ -224,8 +224,6 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 
   x = y = selectedVar = NULL
 
-  print(c(comp_x, comp_y))
-
   if ( is.null(i_block) )
     i_block = length(blocks)
 
