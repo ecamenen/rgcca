@@ -162,7 +162,7 @@ server <- function(input, output) {
           .GlobalEnv)
   }
 
-  setAnalysis <- function() {
+  setRGCCA <- function() {
     # Load the analysis
 
     # Tau is set to optimal by default
@@ -197,7 +197,6 @@ server <- function(input, output) {
     assign("boot",
            bootstrap(blocks, input$boot, connection, tau, ncomp, input$scheme, input$scale, input$init, input$bias),
            .GlobalEnv)
-
 
   samples <- function() plotSamplesSpace(rgcca = rgcca.res,
                                          resp = response,
@@ -249,16 +248,15 @@ server <- function(input, output) {
     }
   }
 
-  setTest = function(){
+  setAnalysis = function(){
 
     assign("blocks",
            setSuperblock(blocks_without_superb, input$superblock),
            .GlobalEnv)
 
     setData()
-    setAnalysis()
+    setRGCCA()
     setIdBlock()
-
 
   }
 
@@ -293,8 +291,7 @@ server <- function(input, output) {
       setData()
       # By default, the number of component is set to 2
       assign("nb_comp", 2, .GlobalEnv)
-      setAnalysis()
-
+      setRGCCA()
 
     }, error = function(e) {
 
@@ -313,13 +310,13 @@ server <- function(input, output) {
       assign("blocks_without_superb",
              scaling(blocks_unscaled, input$scale, input$bias),
              .GlobalEnv)
-      setTest()
+      setAnalysis()
     }
   })
 
   observeEvent(input$superblock, {
     if(blocksExists()){
-      setTest()
+      setAnalysis()
     }
   })
 
@@ -356,7 +353,7 @@ server <- function(input, output) {
                                             file = input$connection$datapath,
                                             sep = input$sep),
               .GlobalEnv)
-        setAnalysis()
+        setRGCCA()
 
       }, error = function(e) {
         message(e$message)
@@ -370,10 +367,8 @@ server <- function(input, output) {
 
     if(blocksExists()){
       assign("nb_comp", input$nb_comp, .GlobalEnv)
-      setAnalysis()
-
+      setRGCCA()
     }
-
   })
 
 
@@ -383,13 +378,12 @@ server <- function(input, output) {
   })
 
 
-  observeEvent(c(input$names_block, input$nb_mark, input$axis1, input$axis2, id_block), {
+  observeEvent(input$names_block, {
     # Observe if graphical parameters are changed
 
     if(blocksExists()){
       i_block(as.integer(input$names_block))
       assign("id_block", i_block(), .GlobalEnv)
-
     }
 
   })
