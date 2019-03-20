@@ -1,15 +1,23 @@
-getNodes = function(opt, blocks, rgcca = NULL) {
+getNodes = function(blocks, tau = NULL, rgcca = NULL) {
 
-  if(any(opt$tau == "optimal")){
-	if(!is.null(rgcca))
-		opt$tau = unlist(lapply(1:ncol(rgcca$tau), function(x) Reduce(paste, round(rgcca$tau[, x],2))))
-	else
-    		opt$tau = rep(NA, length(blocks))
+  print(c("rgcca", rgcca))
+  if(any(tau == "optimal")){
+  	if(!is.null(rgcca))
+  		tau = unlist(lapply(1:ncol(rgcca$tau), function(x) Reduce(paste, round(rgcca$tau[, x],2))))
+  	else
+      tau = rep(NA, length(blocks))
   }
-	
+
+  if(is.null(tau)){
+    if(is.matrix(rgcca$tau))
+      tau = unlist(lapply(1:ncol(rgcca$tau), function(x) Reduce(paste, round(rgcca$tau[, x],2))))
+    else
+      tau = rgcca$tau
+  }
+
 	nrow = unlist(lapply(blocks, function(x) ifelse(is.null(attributes(x)$nrow), nrow(blocks[[1]]) , attributes(x)$nrow)))
 
-  values <- list( names(blocks), unlist(lapply(blocks, NCOL)), nrow, opt$tau )
+  values <- list( names(blocks), unlist(lapply(blocks, NCOL)), nrow, tau )
   nodes <- as.data.frame(matrix(unlist(values), length(blocks), length(values)))
   colnames(nodes) = c("id", "P", "nrow", "tau")
 

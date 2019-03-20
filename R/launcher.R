@@ -364,9 +364,10 @@ if(opt$type != "pca"){
   (ave = plotAVE(rgcca.out, opt$compx))
   savePlot(opt$output4, ave)
 
-  nodes <- getNodes(opt, blocks, rgcca.out)
+  nodes <- getNodes(blocks, rgcca = rgcca.out)
   edges <- getEdges(connection, blocks)
   conNet <- function() plotNetwork(nodes, edges, blocks)
+
   plotNetwork2(nodes, edges, blocks)
   savePlot(opt$output6, conNet)
 }

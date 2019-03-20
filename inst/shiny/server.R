@@ -13,6 +13,7 @@ server <- function(input, output) {
   source("../../R/parsing.R")
   source("../../R/plot.R")
   source("../../R/select.type.R")
+  source("../../R/network.R")
 
   # Assign reactive variables
   assign("i_block", reactiveVal(), .GlobalEnv)
@@ -164,8 +165,6 @@ server <- function(input, output) {
   setAnalysis <- function() {
     # Load the analysis
 
-    print(connection)
-
     # Tau is set to optimal by default
     if (input$tau_opt)
       tau = input$tau_opt
@@ -210,6 +209,15 @@ server <- function(input, output) {
   ave <- function() plotAVE(rgcca = rgcca.res,
                             comp = input$axis1)
 
+  setGraph = function() {
+    assign("nodes", getNodes(blocks, rgcca = rgcca.res), .GlobalEnv)
+    assign("edges", getEdges(connection, blocks), .GlobalEnv)
+  }
+
+  conNet <- function() plotNetwork(nodes, edges, blocks)
+  conNet2 <- function() plotNetwork2(nodes, edges, blocks)
+
+
   setFuncs = function(){
     # Set plotting functions
 
@@ -217,6 +225,9 @@ server <- function(input, output) {
     corcircle()
     fingerprint()
     ave()
+    setGraph()
+    conNet()
+    conNet2()
   }
 
   blocksExists = function(){
@@ -249,6 +260,7 @@ server <- function(input, output) {
     setAnalysis()
     setIdBlock()
     setFuncs()
+
   }
 
   ################################################ Observe events ################################################
@@ -416,6 +428,14 @@ server <- function(input, output) {
     if(blocksExists()){
       observeEvent(input$ave_save, savePlot("AVE.pdf", ave()))
       ave()
+    }
+  })
+
+  output$connectionPlot <- renderPlot({
+    getDynamicVariables()
+    if(blocksExists()){
+      observeEvent(input$connection_save, savePlot("connection.pdf", conNet()))
+      conNet()
     }
   })
 

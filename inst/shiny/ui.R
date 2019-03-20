@@ -124,7 +124,7 @@ ui <- fluidPage(
                  plotOutput("AVEPlot"),
                  actionButton("ave_save","Save")),
         tabPanel("Connection",
-                 plotOutput("connection"),
+                 plotOutput("connectionPlot"),
                  actionButton("connection_save","Save"))
       )
 
