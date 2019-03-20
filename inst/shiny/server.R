@@ -185,6 +185,13 @@ server <- function(input, output) {
 
     names(rgcca.res$a)  = names(blocks)
     assign("rgcca.res", rgcca.res, .GlobalEnv)
+    assign("tau", tau, .GlobalEnv)
+    assign("ncomp", ncomp, .GlobalEnv)
+  }
+
+  setGraph = function() {
+    assign("nodes", getNodes(blocks, rgcca = rgcca.res), .GlobalEnv)
+    assign("edges", getEdges(connection, blocks), .GlobalEnv)
   }
 
   samples <- function() plotSamplesSpace(rgcca = rgcca.res,
@@ -209,14 +216,11 @@ server <- function(input, output) {
   ave <- function() plotAVE(rgcca = rgcca.res,
                             comp = input$axis1)
 
-  setGraph = function() {
-    assign("nodes", getNodes(blocks, rgcca = rgcca.res), .GlobalEnv)
-    assign("edges", getEdges(connection, blocks), .GlobalEnv)
-  }
-
   conNet <- function() plotNetwork(nodes, edges, blocks)
   conNet2 <- function() plotNetwork2(nodes, edges, blocks)
 
+  boot <- function() plotBootstrap(bootstrap(blocks, 5, connection, tau, ncomp, input$scheme, input$scale, input$init, input$bias),
+                                        input$axis1, input$nb_mark, id_block)
 
   setFuncs = function(){
     # Set plotting functions
@@ -228,6 +232,7 @@ server <- function(input, output) {
     setGraph()
     conNet()
     conNet2()
+    #boot()
   }
 
   blocksExists = function(){
@@ -436,6 +441,14 @@ server <- function(input, output) {
     if(blocksExists()){
       observeEvent(input$connection_save, savePlot("connection.pdf", conNet()))
       conNet()
+    }
+  })
+
+  output$bootstrapPlot <- renderPlot({
+    getDynamicVariables()
+    if(blocksExists()){
+      observeEvent(input$bootstrap_save, savePlot("connection.pdf", boot()))
+      boot()
     }
   })
 

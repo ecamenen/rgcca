@@ -295,7 +295,6 @@ opt$superblock = !("superblock" %in% names(opt))
 opt$bias = !("bias" %in% names(opt))
 opt$scale = !("scale" %in% names(opt))
 opt$text = !("text" %in% names(opt))
-VERBOSE = FALSE
 
 if( ! is.null(opt$response) ){
   warnConnection("supervized method with a response")

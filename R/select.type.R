@@ -1,3 +1,5 @@
+VERBOSE = FALSE
+
 #' Translates the type string into the appropriate tau and function
 select.type <- function(opt, A = blocks){
 
