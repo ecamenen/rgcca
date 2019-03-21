@@ -325,6 +325,8 @@ bootstrap = function(blocks, n_boot = 5, connection = 1 - diag(length(blocks)), 
 #' list of list weights (one per bootstrap per blocks)
 plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
 
+  J = names(W[[1]])
+
   if ( is.null(i_block) )
     i_block = length(W[[1]])
 
@@ -334,21 +336,36 @@ plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
   W_select = Reduce(rbind, lapply(W, function(x) x[[i_block]][, comp]) )
   stats = apply(W_select, 2,  function(x) c(mean(x), sd(x)))
 
-  mat = cbind(stats[1, ],
+  df = data.frame(cbind(stats[1, ],
               stats[1, ] - stats[2, ],
-              stats[1, ] + stats[2, ])
-  mat = data.frame(getRankedValues(mat,  allCol = T),
-                   order = nrow(mat):1)
+              stats[1, ] + stats[2, ]))
 
-  if(nrow(mat) > n_mark)
-    mat = mat[1:n_mark, ]
+  if (  any(names(W[[1]]) == "Superblock") & i_block == length(J) )
+    df$color = getBlocsVariables(W[[1]])
 
-  p = ggplot(mat, aes(order,
-                      mat[, 1],
-                      fill = abs( mat[, 1])  ) )
-  plotHistogram(p, mat, "Average variable weights") +
-    geom_errorbar(aes(ymin = X2, ymax = X3), color ="gray40")
-}
+  df = data.frame(getRankedValues(df,  allCol = T), order = nrow(df):1)
+
+  if(nrow(df) > n_mark)
+    df = df[1:n_mark, ]
+
+  if (  any(names(W[[1]]) == "Superblock") & i_block == length(J) ){
+    color2 = factor(df$color); levels(color2) = colorGroup(color2)
+    p = ggplot(df,
+               aes(order,
+                   df[, 1],
+                   fill = as.factor(color)))
+  }else{
+    p = ggplot(df, aes(order,
+                        df[, 1],
+                        fill = abs( df[, 1])  ) )
+  }
+
+
+  plotHistogram(p, df, "Average variable weights", as.character(color2)) +
+    scale_fill_manual(values = colorGroup(J),
+                      limits = J[-length(J)],
+                      labels = J[-length(J)]) +
+    geom_errorbar(aes(ymin = X2, ymax = X3), color ="gray40")}
 
 scaling = function(blocks, scale = TRUE, bias = TRUE){
 

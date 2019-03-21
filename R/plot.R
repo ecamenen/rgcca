@@ -180,7 +180,7 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
 #'
 #' Get a vector of block names for each corresponding variable. The last block is considered as the superblock and ignored.
 #'
-#' @param rgcca A list giving the results of a R/SGCCA
+#' @param df A list of matrix where their names are those of the blocks and the superblock and their rows are named after their variables
 #' @return A vector of character giving block names for each corresponding variable.
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
@@ -189,10 +189,10 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
 #' getBlocsVariables(rgcca.res)
 #' # a, b, c
 #' @export getBlocsVariables
-getBlocsVariables = function(rgcca){
+getBlocsVariables = function(df){
 
-  rep( names(rgcca$a)[-length(rgcca$a)],
-       sapply(rgcca$a[1:(length(rgcca$a)-1)], NROW))
+  rep( names(df)[-length(df)],
+       sapply(df[1:(length(df)-1)], NROW))
 }
 
 #' Plot of variables space
@@ -247,7 +247,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
   # if superblock is selected, color by blocks
   if ( superblock & ( i_block == length(blocks)) ){
 
-    color = getBlocsVariables(rgcca)
+    color = getBlocsVariables(rgcca$a)
 
     if(class(rgcca)=="sgcca"){
       names(color) = row.names(df)
@@ -389,7 +389,7 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
 
   # Get a qualitative variable with which block is associated with each variables
   if (  superblock & ( i_block == length(rgcca$a) ) )
-    df = data.frame( df, color = getBlocsVariables(rgcca) )
+    df = data.frame( df, color = getBlocsVariables(rgcca$a) )
 
   # sort in decreasing order
   df = data.frame(getRankedValues(df, 1, T), order = nrow(df):1)
@@ -420,6 +420,8 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
 
   if(length(color2) != 1)
     p = p + scale_fill_manual(values = colorGroup(color2))
+                              labels = names(rgcca$a)[-length((rgcca$a))],
+                              limits = names(rgcca$a)[-length((rgcca$a))])
 
   if (  !superblock | i_block != length(rgcca$a) )
     p = p + theme(legend.position = "none")

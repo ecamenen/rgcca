@@ -443,7 +443,7 @@ server <- function(input, output) {
   output$bootstrapPlot <- renderPlot({
     getDynamicVariables()
     if(blocksExists()){
-      observeEvent(input$bootstrap_save, savePlot("connection.pdf", plotBoot()))
+      observeEvent(input$bootstrap_save, savePlot("bootstrap.pdf", plotBoot()))
       plotBoot()
     }
   })
