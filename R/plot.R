@@ -371,6 +371,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
 plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_block = NULL, type = "cor"){
 
   color = NULL
+  J = names(rgcca$a)
 
   # if no specific block is selected, by default, the superblock is selected (or the last one)
   if ( is.null(i_block) )
@@ -389,7 +390,7 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
 
   # Get a qualitative variable with which block is associated with each variables
   if (  superblock & ( i_block == length(rgcca$a) ) )
-    df = data.frame( df, color = getBlocsVariables(rgcca$a) )
+    df = data.frame( df, color = as.factor(getBlocsVariables(rgcca$a)) )
 
   # sort in decreasing order
   df = data.frame(getRankedValues(df, 1, T), order = nrow(df):1)
@@ -410,7 +411,8 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
   }
 
   if (  superblock & i_block == length(rgcca$a) ){
-    p = ggplot(df, aes(order, df[, 1], fill = as.factor(color)))
+    levels(df$color) = rev(levels(df$color))
+    p = ggplot(df, aes(order, df[, 1], fill = color))
   }else{
     p = ggplot(df, aes(order, df[, 1], fill = abs(df[, 1])))
   }
@@ -419,9 +421,9 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
   labs(subtitle = printAxis(rgcca, comp, i_block))
 
   if(length(color2) != 1)
-    p = p + scale_fill_manual(values = colorGroup(color2))
-                              labels = names(rgcca$a)[-length((rgcca$a))],
-                              limits = names(rgcca$a)[-length((rgcca$a))])
+    p = p + scale_fill_manual(values = colorGroup(J),
+                              limits = J[-length(J)],
+                              labels = rev(J[-length(J)]))
 
   if (  !superblock | i_block != length(rgcca$a) )
     p = p + theme(legend.position = "none")

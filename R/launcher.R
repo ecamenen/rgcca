@@ -262,7 +262,7 @@ opt = list(directory = ".",
            scheme = "factorial",
            tau = "optimal",
            init = "svd",
-           ncomp = "3, 3, 2",
+           ncomp = "3, 3, 2, 3, 2",
            block = 0,
            compx = 1,
            compy = 2,
@@ -273,7 +273,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv")
+           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Lipidomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Imagery.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -372,4 +372,4 @@ if(opt$type != "pca"){
 }
 
 boot = bootstrap(blocks, 5, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
-plotBootstrap(boot, opt$compx, opt$nmark, opt$block)
+plotBootstrap(boot, opt$compx, 10, opt$block)

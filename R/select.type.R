@@ -341,7 +341,7 @@ plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
               stats[1, ] + stats[2, ]))
 
   if (  any(names(W[[1]]) == "Superblock") & i_block == length(J) )
-    df$color = getBlocsVariables(W[[1]])
+    df$color = as.factor(getBlocsVariables(W[[1]]))
 
   df = data.frame(getRankedValues(df,  allCol = T), order = nrow(df):1)
 
@@ -350,10 +350,11 @@ plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
 
   if (  any(names(W[[1]]) == "Superblock") & i_block == length(J) ){
     color2 = factor(df$color); levels(color2) = colorGroup(color2)
+    levels(df$color) = rev(levels(df$color))
     p = ggplot(df,
                aes(order,
                    df[, 1],
-                   fill = as.factor(color)))
+                   fill = color))
   }else{
     p = ggplot(df, aes(order,
                         df[, 1],
@@ -364,8 +365,9 @@ plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
   plotHistogram(p, df, "Average variable weights", as.character(color2)) +
     scale_fill_manual(values = colorGroup(J),
                       limits = J[-length(J)],
-                      labels = J[-length(J)]) +
-    geom_errorbar(aes(ymin = X2, ymax = X3), color ="gray40")}
+                      labels = rev(J[-length(J)])) +
+    geom_errorbar(aes(ymin = X2, ymax = X3), color ="gray40")
+}
 
 scaling = function(blocks, scale = TRUE, bias = TRUE){
 
