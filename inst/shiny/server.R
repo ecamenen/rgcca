@@ -78,14 +78,14 @@ server <- function(input, output) {
     refresh <- input$nb_comp
     sliderInput(inputId = "axis1",
                 label = h5("Component for X-axis: "),
-                min = 1, max = getNbComp(), value = 1, step = 1)
+                min = 1, max = input$nb_comp, value = 1, step = 1)
   })
 
   output$axis2_custom <- renderUI({
     refresh <- input$nb_comp
     sliderInput(inputId = "axis2",
                 label = h5("Component for Y-axis: "),
-                min = 1, max = getNbComp(), value = 2, step = 1)
+                min = 1, max = input$nb_comp, value = 2, step = 1)
   })
 
   output$nb_mark_custom <- renderUI({
@@ -148,11 +148,6 @@ server <- function(input, output) {
       return (getMaxCol())
     else
       return (100)
-  }
-
-  getNbComp = function(){
-    refresh <- input$nb_comp
-    return(nb_comp)
   }
 
   getDynamicVariables = function(){
