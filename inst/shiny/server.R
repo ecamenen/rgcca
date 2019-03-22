@@ -24,15 +24,17 @@ server <- function(input, output) {
 
   #TODO: remove blocks, superblock from observeEvent
   output$blocks_names_custom_x <- renderUI({
+    refresh <- input$superblock
+    setNamesInput()
+  })
 
-    # Refresh the function when superblock option is changed
+  setNamesInput = function(){
     refesh = input$superblock
-
     selectInput(inputId = "names_block_x",
-                label = h5("Block in X-axis : "),
+                label = h5("Block for X-axis : "),
                 choices = getNames(),
                 selected = setBlockNames())
-  })
+  }
 
   output$blocks_names_custom_y <- renderUI({
 
@@ -40,18 +42,17 @@ server <- function(input, output) {
     refesh = input$superblock
 
     selectInput(inputId = "names_block_y",
-                label = h5("Block in Y-axis : "),
+                label = h5("Block for Y-axis : "),
                 choices = getNames(),
                 selected = setBlockNames())
   })
-
 
   # Define the names of the blocks and set by default on the last block
    setBlockNames = function(){
 
     if(!is.null(input$blocks)){
       # Set selected value on the last block
-      return(round(length(getInfile())))
+      return(round(length(blocks)))
     }else{
       # If any dataset is selected
       return(1)
@@ -74,14 +75,16 @@ server <- function(input, output) {
   })
 
   output$axis1_custom <- renderUI({
+    refresh <- input$nb_comp
     sliderInput(inputId = "axis1",
-                label = h5("Component X-axis: "),
+                label = h5("Component for X-axis: "),
                 min = 1, max = getNbComp(), value = 1, step = 1)
   })
 
   output$axis2_custom <- renderUI({
+    refresh <- input$nb_comp
     sliderInput(inputId = "axis2",
-                label = h5("Component Y-axis: "),
+                label = h5("Component for Y-axis: "),
                 min = 1, max = getNbComp(), value = 2, step = 1)
   })
 
@@ -100,21 +103,20 @@ server <- function(input, output) {
     if(!is.null(input$blocks)){
       blocks = getInfile()
       return( min(unlist(lapply(blocks, NCOL))) )
-    }else{
+    }else
       return(2)
-    }
+
   }
 
   getNames = function(){
     # Get the names of the blocks
 
     if(!is.null(input$blocks)){
-      blocks = getInfile()
       # Creates a list of nb_blocks dimension, each one containing a id from 1 to nb_blocks and having the same names as the blocks
       return( as.list(sapply(names(blocks), function(i) as.integer(which(names(blocks) == i)), USE.NAMES = TRUE)) )
-    }else{
+    }else
       return(list(" " = 0))
-    }
+
   }
 
   getMaxCol = function(){
@@ -123,9 +125,9 @@ server <- function(input, output) {
     if(!is.null(input$blocks)){
       blocks = getInfile()
       return( max(unlist(lapply(blocks, NCOL))) )
-    }else{
+    }else
       return(100)
-    }
+
   }
 
   getDefaultComp = function(){
@@ -338,6 +340,7 @@ server <- function(input, output) {
   observeEvent(input$superblock, {
     if(blocksExists()){
       setAnalysis()
+      setNamesInput()
     }
   })
 
@@ -392,12 +395,10 @@ server <- function(input, output) {
     }
   })
 
-
   observeEvent(input$boot, {
     if(blocksExists())
       getBoot()
   })
-
 
   observeEvent(input$names_block_x, {
     # Observe if graphical parameters are changed
