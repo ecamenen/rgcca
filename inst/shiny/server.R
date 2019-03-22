@@ -22,6 +22,9 @@ server <- function(input, output) {
   assign("n_comp", reactiveVal(), .GlobalEnv)
   assign("clickSep", FALSE, .GlobalEnv)
 
+  # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
+  # rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
+
   #TODO: remove blocks, superblock from observeEvent
   output$blocks_names_custom_x <- renderUI({
     refresh <- input$superblock
@@ -154,7 +157,7 @@ server <- function(input, output) {
     # Refresh all the plots when any input is changed
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
-                input$scale, input$bias, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt,
+                input$scale, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt,
                 input$connection, input$nb_comp, input$names_block_x, input$names_block_y, input$boot, input$text )
   }
 
@@ -192,7 +195,7 @@ server <- function(input, output) {
                  scheme = input$scheme,
                  ncomp = ncomp,
                  scale = FALSE,
-                 bias = input$bias,
+                 bias = TRUE,
                  init = input$init,
                  verbose = FALSE)
 
@@ -208,7 +211,7 @@ server <- function(input, output) {
 
   getBoot <- function()
     assign("boot",
-           bootstrap(blocks, input$boot, connection, tau, ncomp, input$scheme, input$scale, input$init, input$bias),
+           bootstrap(blocks, input$boot, connection, tau, ncomp, input$scheme, input$scale, input$init, TRUE),
            .GlobalEnv)
 
   samples <- function() plotSamplesSpace(rgcca = rgcca.res,
@@ -298,7 +301,7 @@ server <- function(input, output) {
              .GlobalEnv)
 
       assign("blocks_without_superb",
-             scaling(blocks_unscaled, input$scale, input$bias),
+             scaling(blocks_unscaled, input$scale, TRUE),
              .GlobalEnv)
 
       blocks = setSuperblock(blocks_without_superb, input$superblock)
@@ -323,10 +326,10 @@ server <- function(input, output) {
     return(blocks)
   })
 
-  observeEvent(c(input$scale, input$bias), {
+  observeEvent(c(input$scale), {
     if(blocksExists()){
       assign("blocks_without_superb",
-             scaling(blocks_unscaled, input$scale, input$bias),
+             scaling(blocks_unscaled, input$scale, TRUE),
              .GlobalEnv)
       setAnalysis()
     }
@@ -381,7 +384,7 @@ server <- function(input, output) {
 
   })
 
-  observeEvent(c(input$nb_comp, input$scheme, input$bias, input$init, input$tau, input$tau_opt), {
+  observeEvent(c(input$nb_comp, input$scheme, input$init, input$tau, input$tau_opt), {
     # Observe if analysis parameters are changed
 
     if(blocksExists()){
