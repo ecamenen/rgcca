@@ -18,29 +18,45 @@ server <- function(input, output) {
   # Assign reactive variables
   assign("i_block", reactiveVal(), .GlobalEnv)
   assign("id_block", NULL, .GlobalEnv)
+  assign("id_block_y", NULL, .GlobalEnv)
   assign("n_comp", reactiveVal(), .GlobalEnv)
   assign("clickSep", FALSE, .GlobalEnv)
 
   #TODO: remove blocks, superblock from observeEvent
-  output$blocks_names_custom <- renderUI({
-    # Define the names of the blocks and set by default on the last block
+  output$blocks_names_custom_x <- renderUI({
+
+    # Refresh the function when superblock option is changed
+    refesh = input$superblock
+
+    selectInput(inputId = "names_block_x",
+                label = h5("Block in X-axis : "),
+                choices = getNames(),
+                selected = setBlockNames())
+  })
+
+  output$blocks_names_custom_y <- renderUI({
+
+    # Refresh the function when superblock option is changed
+    refesh = input$superblock
+
+    selectInput(inputId = "names_block_y",
+                label = h5("Block in Y-axis : "),
+                choices = getNames(),
+                selected = setBlockNames())
+  })
+
+
+  # Define the names of the blocks and set by default on the last block
+   setBlockNames = function(){
 
     if(!is.null(input$blocks)){
-      # Refresh the function when superblock option is changed
-      refesh = input$superblock
-      # Get the blocks dynamically
-      blocks = getInfile()
       # Set selected value on the last block
-      n <- round(length(blocks))
+      return(round(length(getInfile())))
     }else{
       # If any dataset is selected
-      n <- 1
+      return(1)
     }
-
-    selectInput(inputId = "names_block",
-                label = h5("Block selected: "),
-                choices = getNames(), selected = n)
-  })
+  }
 
   output$nb_comp_custom <- renderUI({
     # Set dynamicly the maximum number of component that should be used in the analysis
@@ -142,7 +158,7 @@ server <- function(input, output) {
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
                 input$scale, input$bias, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt,
-                input$connection, input$nb_comp, input$names_block, input$boot, input$text )
+                input$connection, input$nb_comp, input$names_block_x, input$names_block_y, input$boot, input$text )
   }
 
   setData <- function() {
@@ -203,7 +219,8 @@ server <- function(input, output) {
                                          comp_x = input$axis1,
                                          comp_y = input$axis2,
                                          i_block = id_block,
-                                         text = input$text)
+                                         text = input$text,
+                                         i_block_y = id_block_y)
 
   corcircle <- function() plotVariablesSpace(rgcca = rgcca.res,
                                              blocks = blocks,
@@ -241,13 +258,16 @@ server <- function(input, output) {
 
   setIdBlock = function(){
 
-    if(!input$superblock && as.integer(input$names_block) > round(length(blocks)) ){
-      i_block(as.integer(input$names_block))
+    if(!input$superblock && as.integer(input$names_block_x) > round(length(blocks)) ){
+      i_block(as.integer(input$names_block_x))
       assign("id_block", i_block() - 1, .GlobalEnv)
+      assign("id_block_y", i_block() - 1, .GlobalEnv)
     }else{
       # By default, when a new dataset is loaded, the selected block is the last
       assign("id_block", length(blocks), .GlobalEnv)
+      assign("id_block_y", length(blocks), .GlobalEnv)
     }
+
   }
 
   setAnalysis = function(){
@@ -379,12 +399,22 @@ server <- function(input, output) {
   })
 
 
-  observeEvent(input$names_block, {
+  observeEvent(input$names_block_x, {
     # Observe if graphical parameters are changed
 
     if(blocksExists()){
-      i_block(as.integer(input$names_block))
+      i_block(as.integer(input$names_block_x))
       assign("id_block", i_block(), .GlobalEnv)
+    }
+
+  })
+
+  observeEvent(input$names_block_y, {
+    # Observe if graphical parameters are changed
+
+    if(blocksExists()){
+      i_block(as.integer(input$names_block_y))
+      assign("id_block_y", i_block(), .GlobalEnv)
     }
 
   })

@@ -401,7 +401,8 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
     n_mark = nvar_select
 
   # max threshold for n
-  if(NROW(df) >= n_mark) df = df[1:n_mark,]
+  if(NROW(df) >= n_mark)
+    df = df[1:n_mark,]
 
   # if the superblock is selected, color the text of the y-axis according to their belonging to each blocks
   if (  superblock & ( i_block == length(rgcca$a) ) ){

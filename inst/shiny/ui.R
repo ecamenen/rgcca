@@ -99,10 +99,11 @@ ui <- fluidPage(
                     value = FALSE),
       conditionalPanel(
         condition = "input.adv_graph == true",
-        uiOutput("blocks_names_custom"),
         checkboxInput(inputId = "text",
                       label = "Print names",
                       value = TRUE),
+        uiOutput("blocks_names_custom_x"),
+        uiOutput("blocks_names_custom_y"),
         uiOutput("axis1_custom"),
         uiOutput("axis2_custom"),
         uiOutput("nb_mark_custom")),
