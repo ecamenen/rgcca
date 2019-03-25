@@ -1,30 +1,32 @@
 VERBOSE = FALSE
 
 #' Translates the type string into the appropriate tau and function
-select.type <- function(opt, A = blocks){
+select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = rep(1, length(A)),
+                        ncomp = rep(1, length(A)), scheme = "centroid", superblock = TRUE, type  = "rgcca"){
 
   J = length(A)
 
-  scheme = opt$scheme; C = opt$connection;  superblock = opt$superblock; type = opt$type
+  if(!is.null(opt)){
+    scheme = opt$scheme; C = opt$connection;  superblock = opt$superblock; type = opt$type; tau = opt$tau; ncomp = opt$comp
+    ncomp = unlist(lapply(strsplit(gsub(" ", "", as.character(ncomp)), ","), as.double)[[1]])
+    l_tau = as.list(strsplit(gsub(" ", "", as.character(tau)), ",")[[1]])
 
-  ncomp = unlist(lapply(strsplit(gsub(" ", "", as.character(opt$ncomp)), ","), as.double)[[1]])
-
-  l_tau = as.list(strsplit(gsub(" ", "", as.character(opt$tau)), ",")[[1]])
-
-  tau = lapply(l_tau, function(x){
-    tryCatch({
-      as.double(x)
+    tau = unlist(lapply(l_tau, function(x){
+      tryCatch({
+        as.double(x)
       }, warning = function(w){
         "optimal"
       })
-  })
+    }))
+  }
 
   ### SETTINGS ###
 
   warnParam = function(param, x)
-    warning(paste("Because ", type, " was selected, ", paste(deparse(substitute(param))), " parameter was set to ",
-                  toString(x),"\n", sep=""),
-            call. = FALSE)
+    print("")
+    # warning(paste("Because ", type, " was selected, ", paste(deparse(substitute(param))), " parameter was set to ",
+    #               toString(x),"\n", sep=""),
+    #         call. = FALSE)
 
   setTau = function(x){
     warnParam(tau, x)
@@ -43,18 +45,17 @@ select.type <- function(opt, A = blocks){
 
   warnSuper = function(x){
     if(length(x) < (length(A))){
-      warning(paste("Because of the use of a superblock, ", paste(deparse(substitute(x))) ,
-                    " for the superblock was the one of the first block.\n", sep=""), call. = FALSE)
+      # warning(paste("Because of the use of a superblock, ", paste(deparse(substitute(x))) ,
+      #               " for the superblock was the one of the first block.\n", sep=""), call. = FALSE)
       return(c(x, x[1]))
-    }else{
+    }else
       return(x)
-    }
   }
 
   setSuperbloc = function(verbose = TRUE){
-    if(verbose)
-      warning(paste("Because ", type, " was set, a superblock was used.\n",
-                    sep=""), call. = FALSE)
+    # if(verbose)
+    #   warning(paste("Because ", type, " was set, a superblock was used.\n",
+    #                 sep=""), call. = FALSE)
     A = c(A, list(Reduce(cbind, A)))
     assign("A", A, envir = parent.frame())
     assign("superblock", TRUE, envir = parent.frame())
@@ -207,15 +208,15 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
 
   WARN = FALSE
 
-  for (i in 1:length(blocks)){
-    if( ncol(blocks[[i]]) > 1000 ){
-      if( (type == "sgcca" && tau > 0.3) || type != "sgcca" )
-        WARN = TRUE
-    }
-  }
+  # for (i in 1:length(blocks)){
+  #   if( ncol(blocks[[i]]) > 1000 ){
+  #     if( (type == "sgcca" && tau > 0.3) || type != "sgcca" )
+  #       WARN = TRUE
+  #   }
+  # }
 
-  if (WARN)
-    warning("Some blocks are too big. RGCCA could take some times......\n", immediate. = TRUE, call. = FALSE)
+  # if (WARN)
+  #   warning("Some blocks are too big. RGCCA could take some times......\n", immediate. = TRUE, call. = FALSE)
 
   if(type =="sgcca"){
     func = sgcca
@@ -234,9 +235,13 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
                              init = init,
                              bias = bias))
   func.complete[[par]] = tau
+
   func.res = eval(as.call(func.complete))
 
+
+
   names(func.res$a) = names(blocks)
+
   return(func.res)
 }
 

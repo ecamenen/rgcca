@@ -183,26 +183,32 @@ server <- function(input, output) {
 
     # Tau is set to optimal by default
     if (input$tau_opt)
-      tau = input$tau_opt
+      tau = "optimal"
     else
       # otherwise the tau value fixed by the user is used
       tau = input$tau
 
-    ncomp = rep(nb_comp, length(blocks))
-    rgcca.res = rgcca(A = blocks,
-                 C = connection,
-                 tau = rep(tau, length(blocks)),
-                 scheme = input$scheme,
-                 ncomp = ncomp,
-                 scale = FALSE,
-                 bias = TRUE,
-                 init = input$init,
-                 verbose = FALSE)
+    pars = select.type(A = blocks, C = connection, tau = rep(tau, length(blocks)),
+                       ncomp = rep(nb_comp, length(blocks)), scheme = input$scheme,
+                       superblock = input$superblock, type  = input$analysis_type)
 
-    names(rgcca.res$a)  = names(blocks)
+    if(input$superblock)
+      pars$connection = connection
+
+    rgcca.res = rgcca.analyze(blocks,
+                 connection = pars$connection,
+                 tau = pars$tau,
+                 ncomp = pars$ncomp,
+                 scheme = pars$scheme,
+                 scale = FALSE,
+                 init = input$init,
+                 bias = TRUE,
+                 type = input$analysis_type)
+
     assign("rgcca.res", rgcca.res, .GlobalEnv)
-    assign("tau", tau, .GlobalEnv)
-    assign("ncomp", ncomp, .GlobalEnv)
+    assign("tau", pars$tau, .GlobalEnv)
+    assign("ncomp", pars$ncomp, .GlobalEnv)
+    assign("connection", pars$connection, .GlobalEnv)
 
     assign("nodes", getNodes(blocks, rgcca = rgcca.res), .GlobalEnv)
     assign("edges", getEdges(connection, blocks), .GlobalEnv)
@@ -384,7 +390,7 @@ server <- function(input, output) {
 
   })
 
-  observeEvent(c(input$nb_comp, input$scheme, input$init, input$tau, input$tau_opt), {
+  observeEvent(c(input$nb_comp, input$scheme, input$init, input$tau, input$tau_opt, input$analysis_type), {
     # Observe if analysis parameters are changed
 
     if(blocksExists()){

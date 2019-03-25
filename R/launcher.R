@@ -127,7 +127,7 @@ checkArg = function(opt){
 # opt : an optionParser object
 # blocks : a list of matrix
 postCheckArg = function(opt, blocks){
-  opt = select.type(opt, blocks)
+  opt = select.type(blocks, opt)
 
   opt$ncomp = as.list(opt$ncomp)
 
@@ -315,7 +315,7 @@ if( ! is.null(opt$response) ){
 
 blocks = setSuperblock(blocks, opt$superblock, opt$type)
 
-opt = postCheckArg(opt, blocks)
+opt = postCheckArg(blocks, opt)
 
 connection = opt$connection
 if(!is.matrix(connection))
