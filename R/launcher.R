@@ -129,6 +129,9 @@ checkArg = function(opt){
 postCheckArg = function(opt, blocks){
   opt = select.type(blocks, opt)
 
+  if(opt$superblock | opt$type == "pca")
+    blocks = c(blocks, list(Reduce(cbind, blocks)))
+
   opt$ncomp = as.list(opt$ncomp)
 
   out = lapply(1:length(opt$ncomp), function(x){
@@ -244,6 +247,7 @@ warnConnection = function(x)
 # Under linux: sudo apt-get install default-jre default-jdk && sudo R CMD javareconf
 
 #Loading librairies
+#suppressPackageStartupMessages(expr)
 librairies = c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph", "ggrepel", "parallel")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
@@ -258,11 +262,11 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "rgcca",
+           type = "cca",
            scheme = "factorial",
            tau = "optimal",
            init = "svd",
-           ncomp = "3, 3, 2, 3, 2",
+           ncomp = "3, 3",
            block = 0,
            compx = 1,
            compy = 2,
@@ -273,7 +277,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Lipidomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Imagery.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv")
+           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -313,9 +317,9 @@ if( ! is.null(opt$response) ){
   blocks = opt$blocks
 }
 
-blocks = setSuperblock(blocks, opt$superblock, opt$type)
+opt = postCheckArg(opt, blocks)
 
-opt = postCheckArg(blocks, opt)
+blocks = setSuperblock(blocks, opt$superblock, opt$type)
 
 connection = opt$connection
 if(!is.matrix(connection))

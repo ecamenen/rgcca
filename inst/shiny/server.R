@@ -188,14 +188,17 @@ server <- function(input, output) {
       # otherwise the tau value fixed by the user is used
       tau = input$tau
 
-    pars = select.type(A = blocks, C = connection, tau = rep(tau, length(blocks)),
+    print(rep(nb_comp, length(blocks)))
+
+    pars = select.type(A = blocks_without_superb, C = connection, tau = rep(tau, length(blocks)),
                        ncomp = rep(nb_comp, length(blocks)), scheme = input$scheme,
                        superblock = input$superblock, type  = input$analysis_type)
 
-    if(input$superblock)
+
+    if(is.null(pars$connection))
       pars$connection = connection
 
-    rgcca.res = rgcca.analyze(blocks,
+    rgcca.res = rgcca.analyze(pars$blocks,
                  connection = pars$connection,
                  tau = pars$tau,
                  ncomp = pars$ncomp,
@@ -206,6 +209,7 @@ server <- function(input, output) {
                  type = input$analysis_type)
 
     assign("rgcca.res", rgcca.res, .GlobalEnv)
+    assign("blocks", pars$blocks, .GlobalEnv)
     assign("tau", pars$tau, .GlobalEnv)
     assign("ncomp", pars$ncomp, .GlobalEnv)
     assign("connection", pars$connection, .GlobalEnv)
@@ -277,11 +281,6 @@ server <- function(input, output) {
   }
 
   setAnalysis = function(){
-
-    assign("blocks",
-           setSuperblock(blocks_without_superb, input$superblock),
-           .GlobalEnv)
-
     setData()
     setRGCCA()
     setIdBlock()
@@ -310,15 +309,14 @@ server <- function(input, output) {
              scaling(blocks_unscaled, input$scale, TRUE),
              .GlobalEnv)
 
-      blocks = setSuperblock(blocks_without_superb, input$superblock)
-      assign("blocks", blocks,
-             .GlobalEnv)
+      blocks = setSuperblock(blocks_without_superb, input$superblock, input$analysis_type)
+      assign("blocks", blocks, .GlobalEnv)
 
-      setIdBlock()
       setData()
       # By default, the number of component is set to 2
       assign("nb_comp", 2, .GlobalEnv)
       setRGCCA()
+      setIdBlock()
 
     }, error = function(e) {
 
