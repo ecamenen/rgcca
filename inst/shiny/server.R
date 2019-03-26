@@ -157,29 +157,12 @@ server <- function(input, output) {
     # Refresh all the plots when any input is changed
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
-                input$scale, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt,
+                input$scale, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt, input$analysis_type,
                 input$connection, input$nb_comp, input$names_block_x, input$names_block_y, input$boot, input$text )
   }
 
-  setData <- function() {
-    # Load the blocks, the response and the connection matrix
 
-    # This function activated only when a new dataset is loaded, set the reponse
-    # and connection of the previous dataset to NULL
-    assign("response", setResponse (blocks = blocks,
-                        file = NULL,
-                        sep = input$sep,
-                        header = input$header),
-          .GlobalEnv)
-    assign("connection", setConnection (blocks = blocks,
-                          superblock = input$superblock,
-                          file = NULL,
-                          sep = input$sep),
-          .GlobalEnv)
-  }
-
-  setRGCCA <- function() {
-    # Load the analysis
+  setParRGCCA <- function(){
 
     # Tau is set to optimal by default
     if (input$tau_opt)
@@ -188,31 +171,57 @@ server <- function(input, output) {
       # otherwise the tau value fixed by the user is used
       tau = input$tau
 
-    print(rep(nb_comp, length(blocks)))
+    blocks = blocks_without_superb
 
-    pars = select.type(A = blocks_without_superb, C = connection, tau = rep(tau, length(blocks)),
+    pars = select.type(A = blocks, C = NULL, tau = rep(tau, length(blocks)),
                        ncomp = rep(nb_comp, length(blocks)), scheme = input$scheme,
                        superblock = input$superblock, type  = input$analysis_type)
 
+    assign("connection", pars$connection, .GlobalEnv)
+    assign("tau", pars$tau, .GlobalEnv)
+    assign("ncomp", pars$ncomp, .GlobalEnv)
+    assign("scheme", pars$scheme, .GlobalEnv)
+    assign("superblock", pars$superblock, .GlobalEnv)
 
-    if(is.null(pars$connection))
-      pars$connection = connection
+    return(pars$blocks)
+  }
 
-    rgcca.res = rgcca.analyze(pars$blocks,
-                 connection = pars$connection,
-                 tau = pars$tau,
-                 ncomp = pars$ncomp,
-                 scheme = pars$scheme,
+  setData <- function() {
+    # Load the blocks, the response and the connection matrix
+
+    # This function activated only when a new dataset is loaded, set the reponse
+    # and connection of the previous dataset to NULL
+    assign("response",
+           setResponse (blocks = blocks,
+                        file = NULL,
+                        sep = input$sep,
+                        header = input$header),
+          .GlobalEnv)
+
+    if(is.null(connection)){
+      assign("connection",
+             setConnection (blocks = blocks,
+                            superblock = superblock,
+                            file = NULL,
+                            sep = input$sep),
+            .GlobalEnv)
+    }
+  }
+
+  setRGCCA <- function() {
+    # Load the analysis
+
+    rgcca.res = rgcca.analyze(blocks,
+                 connection = connection,
+                 tau = tau,
+                 ncomp = ncomp,
+                 scheme = scheme,
                  scale = FALSE,
                  init = input$init,
                  bias = TRUE,
                  type = input$analysis_type)
 
     assign("rgcca.res", rgcca.res, .GlobalEnv)
-    assign("blocks", pars$blocks, .GlobalEnv)
-    assign("tau", pars$tau, .GlobalEnv)
-    assign("ncomp", pars$ncomp, .GlobalEnv)
-    assign("connection", pars$connection, .GlobalEnv)
 
     assign("nodes", getNodes(blocks, rgcca = rgcca.res), .GlobalEnv)
     assign("edges", getEdges(connection, blocks), .GlobalEnv)
@@ -236,13 +245,13 @@ server <- function(input, output) {
                                              blocks = blocks,
                                              comp_x = input$axis1,
                                              comp_y = input$axis2,
-                                             superblock = input$superblock,
+                                             superblock = superblock,
                                              i_block = id_block,
                                              text = input$text)
 
   fingerprint <- function() plotFingerprint(rgcca = rgcca.res,
                                             comp = input$axis1,
-                                            superblock = input$superblock,
+                                            superblock = superblock,
                                             n_mark = input$nb_mark,
                                             i_block = id_block)
 
@@ -268,7 +277,7 @@ server <- function(input, output) {
 
   setIdBlock = function(){
 
-    if(!input$superblock && as.integer(input$names_block_x) > round(length(blocks)) ){
+    if(!superblock && as.integer(input$names_block_x) > round(length(blocks)) ){
       i_block(as.integer(input$names_block_x))
       assign("id_block", i_block() - 1, .GlobalEnv)
       assign("id_block_y", i_block() - 1, .GlobalEnv)
@@ -281,7 +290,15 @@ server <- function(input, output) {
   }
 
   setAnalysis = function(){
-    setData()
+    assign("blocks", setParRGCCA(), .GlobalEnv)
+
+    if(is.null(connection))
+      assign("connection", setConnection (blocks = blocks,
+                                          superblock = input$superblock,
+                                          file = input$connection$datapath,
+                                          sep = input$sep),
+             .GlobalEnv)
+
     setRGCCA()
     setIdBlock()
   }
@@ -309,7 +326,7 @@ server <- function(input, output) {
              scaling(blocks_unscaled, input$scale, TRUE),
              .GlobalEnv)
 
-      blocks = setSuperblock(blocks_without_superb, input$superblock, input$analysis_type)
+      blocks = setParRGCCA()
       assign("blocks", blocks, .GlobalEnv)
 
       setData()
@@ -374,11 +391,12 @@ server <- function(input, output) {
     if(blocksExists()){
       tryCatch({
 
-        assign("connection", setConnection (blocks = blocks,
-                                            superblock = input$superblock,
-                                            file = input$connection$datapath,
-                                            sep = input$sep),
-              .GlobalEnv)
+        if(is.null(connection))
+          assign("connection", setConnection (blocks = blocks,
+                                              superblock = input$superblock,
+                                              file = input$connection$datapath,
+                                              sep = input$sep),
+                .GlobalEnv)
         setRGCCA()
 
       }, error = function(e) {
@@ -393,7 +411,7 @@ server <- function(input, output) {
 
     if(blocksExists()){
       assign("nb_comp", input$nb_comp, .GlobalEnv)
-      setRGCCA()
+      setAnalysis()
     }
   })
 

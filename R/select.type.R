@@ -57,16 +57,17 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
     # if(verbose)
     #   warning(paste("Because ", type, " was set, a superblock was used.\n",
     #                 sep=""), call. = FALSE)
-    A = c(A, Superblock = list(Reduce(cbind, A)))
-    assign("A", A, envir = parent.frame())
+    assign("A", c(A, Superblock = list(Reduce(cbind, A))), envir = parent.frame())
     assign("superblock", TRUE, envir = parent.frame())
     assign("C", NULL, envir = parent.frame())
     assign("ncomp", warnSuper(ncomp), envir = parent.frame())
   }
 
   set2Block = function(){
+
     if(length(A) != 2)
       stop(paste(length(A), " blocks used in the analysis. Two blocks are required for a CCA.\n", sep=""), call.=FALSE)
+
     assign("scheme", setScheme("horst"), envir = parent.frame())
     assign("C", setConnection(1-diag(2)), envir = parent.frame())
   }
@@ -78,9 +79,10 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
       setSuperbloc(FALSE)
       tau <- warnSuper(tau)
     }
-  }else{
+    else
+      superblock <- FALSE
+  }else
     superblock <- FALSE
-  }
 
   if(length(grep("pls-?pm", tolower(type))) == 1){
     scheme   <- setScheme("centroid")
@@ -95,15 +97,12 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
 
     scheme   <- setScheme("horst")
     tau      <- setTau(c(1, 1))
-    ncomp    <- rep(ncomp[1], 2)
-    C        <- setConnection(1-diag(2))
-    superblock <- T
+    setSuperbloc()
   }
 
   # 2 Blocks cases
   else if (tolower(type) %in% c("cca", "ra", "ifa", "pls")){
     set2Block()
-    superblock = F
 
     if (tolower(type) == "cca")
       tau      <- setTau(c(0, 0))
@@ -121,7 +120,6 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
                                 "sumcov-1", "maxbet", "sabscov")){
 
     C        <- setConnection(matrix(1, J, J))
-    superblock <- F
 
     # COR models
     if (tolower(type) %in% c("sumcor", "ssqcor", "sabscor")){
@@ -146,7 +144,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
 
       tau      <- setTau(rep(1, J))
 
-      else if (tolower(type) %in% c("sumcov", "sumcov-1", "maxbet"))
+      if (tolower(type) %in% c("sumcov", "sumcov-1", "maxbet"))
         scheme   <- setScheme("horst")
 
       else if (tolower(type) %in% c("ssqcov", "ssqcov-1", "maxbet-b"))
@@ -158,11 +156,12 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
     }
 
    # Design with 1 values everywhere and 0 on the diagonal
-  }else if (tolower(type) %in% c("sumcov-2", "maxdiff", "ssqcov", "ssqcov-1",
+  }
+
+  else if (tolower(type) %in% c("sumcov-2", "maxdiff", "ssqcov", "ssqcov-1",
                               "maxbet-b", "ssqcov-2", "maxdiff-b")){
 
     C        <- setConnection(1 - diag(J))
-    superblock <- F
 
     if (tolower(type) %in% c("sumcov-2", "maxdiff")){
       scheme   <- setScheme("horst")
@@ -174,8 +173,10 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
       tau      <- setTau(rep(1, J))
     }
 
+  }
+
   # Models with a superblock
-  }else if (tolower(type) %in% c("maxvar-b", "gcca", "niles", "maxvar", "hpca",
+  else if (tolower(type) %in% c("maxvar-b", "gcca", "niles", "maxvar", "hpca",
                               "maxvar-a", "cpca", "cpca-w", "mfa", "sum-pca", "mcoa",
                               "rcon-pca", "ridge-gca", "r-maxvar")){
 
@@ -196,6 +197,8 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
       tau      <- setTau(c(rep(1, J), 0))
     }
 
+    #TODO: verify these three last algo parameters
+
     else if (tolower(type) == "rcon-pca")
       tau <- warnSuper(tau)
 
@@ -209,7 +212,9 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
       tau <- warnSuper(tau)
     }
 
-  }else if(length(grep("[sr]gcca", tolower(type))) != 1){
+  }
+
+  else if(length(grep("[sr]gcca", tolower(type))) != 1){
     stop("Wrong type of analysis. Please select one among the following list: rgcca, cpca-w, gcca, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov., sabscov, plspm\n")
   }
 
