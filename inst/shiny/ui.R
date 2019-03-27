@@ -82,7 +82,7 @@ ui <- fluidPage(
                     choices = list(
                       `One block` = c(`Principal Component Analysis` = "PCA"),
                       `Two blocks` = c(`Canonical Correlation Analysis` = 'CCA', `Interbattery Factor Analysis` = "IFA", `Partial Least Squares Regression)` = 'PLS',  `Redundancy analysis` = 'RA'),
-                      `Multiblocks` = c(`Regularized Generalized CCA (RGCCA)` = 'RGCCA', `Sparse Generalized CCA (GCCA)` = 'SGCCA', `SUM of CORrelations method` = 'SUMCOR', `Sum of SQuared CORrelations method` = 'SSQCOR',
+                      `Multiblocks` = c(`Regularized Generalized CCA (RGCCA)` = 'RGCCA', `Sparse Generalized CCA (SGCCA)` = 'SGCCA', `SUM of CORrelations method` = 'SUMCOR', `Sum of SQuared CORrelations method` = 'SSQCOR',
                                         `Sum of ABSolute value CORrelations method` = 'SABSCOR',`SUM of COVariances method` = 'SUMCOV',`Sum of SQuared COVariances method` = 'SSQCOV',
                                         `Sum of ABSolute value COVariances method` = 'SABSCOV', `MAXBET` = 'MAXBET', `MAXBETB` = 'MAXBET-B',`PLS path modeling - mode B` = 'PLS_B'),
                       `Multiblocks with a superblock`= c(`Generalized CCA (GCCA)` = 'GCCA', `Hierarchical PCA` = 'HPCA', `Multiple Co-Inertia Analysis` = 'MCOA', `Concensus PCA` = 'CPCA_W', `Multiple Factor Analysis` = 'MFA')

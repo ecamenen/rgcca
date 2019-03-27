@@ -8,7 +8,6 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
 
   if(!is.null(opt)){
     scheme = opt$scheme; C = opt$connection;  superblock = opt$superblock; type = opt$type; tau = opt$tau; ncomp = opt$ncomp
-    print(ncomp)
     ncomp = unlist(lapply(strsplit(gsub(" ", "", as.character(ncomp)), ","), as.double)[[1]])
     l_tau = as.list(strsplit(gsub(" ", "", as.character(tau)), ",")[[1]])
 

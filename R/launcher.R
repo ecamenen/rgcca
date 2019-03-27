@@ -262,7 +262,7 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "cca",
+           type = "rgcca",
            scheme = "factorial",
            tau = "optimal",
            init = "svd",
@@ -346,14 +346,19 @@ if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
 if(opt$ncomp[opt$block] > 1){
   # Variables common space
   ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
-  ggplotly(corcircle) %>%
-    layout(xaxis = ax, yaxis = ax)
+  p = plotly_build( ggplotly(corcircle) %>%
+                      layout(xaxis = ax, yaxis = ax) %>%
+                      style(hoverinfo = "x"))
+  p$x$layout$annotations[[1]]$yanchor = "top"
+  p
   savePlot(opt$output2, corcircle)
 }
 
 # Fingerprint plot
 ( fingerprint = plotFingerprint(rgcca.out, opt$compx, opt$superblock, opt$nmark) )
 plotFingerprint(rgcca.out, opt$compy, opt$superblock, opt$nmark)
+  ggplotly(fingerprint) %>%
+    style(hoverinfo = "color")
 savePlot(opt$output3, fingerprint)
 
 if( ! is.null(opt$response) ){

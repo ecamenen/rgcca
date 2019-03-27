@@ -471,8 +471,11 @@ server <- function(input, output) {
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$corcircle_save, savePlot("corcircle.pdf", corcircle()))
-      ggplotly(corcircle()) %>%
-        layout(xaxis = ax, yaxis = ax)
+      p = plotly_build(ggplotly(corcircle()) %>%
+                          layout(xaxis = ax, yaxis = ax) %>%
+                          style(hoverinfo = "x"))
+      p$x$layout$annotations[[1]]$yanchor = "top"
+      p
     }
   })
 
@@ -481,7 +484,7 @@ server <- function(input, output) {
     if(blocksExists()){
       observeEvent(input$fingerprint_save, savePlot("fingerprint.pdf", fingerprint()))
       ggplotly(fingerprint()) %>%
-        layout(xaxis = ax, yaxis = ax)
+        layout(xaxis = ax, yaxis = ax, hoverinfo = "df[, 1]")
     }
   })
 
