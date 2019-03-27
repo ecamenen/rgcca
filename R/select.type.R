@@ -308,8 +308,9 @@ bootstrap_k = function(blocks, connection = 1 - diag(length(blocks)), tau = rep(
                                         ncomp[x],
                                         dimnames = list(missing_var[[x]], 1:ncomp[x]))
                                       )
-  w = mapply(rbind, w, missing_tab)
-  w = mapply(function(x, y) x[y, ], w, lapply(blocks, colnames))
+  # bug mapply with pca
+  w = lapply(1:length(w), function(x) rbind(w[[x]], missing_tab[[x]]))
+  w = lapply(1:length(w), function(x) w[[x]][ colnames(blocks[[x]]), ])
 
   return(w)
 }
@@ -359,6 +360,10 @@ plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
   if(comp > min(unlist(lapply(W, function(x) lapply(x, function(z) ncol(z))))))
     stop("Selected dimension was not associated to every blocks", call. = FALSE)
 
+  # print(i_block)
+  # print(W[[1]])
+  # print("test")
+
   W_select = Reduce(rbind, lapply(W, function(x) x[[i_block]][, comp]) )
   stats = apply(W_select, 2,  function(x) c(mean(x), sd(x)))
 
@@ -382,17 +387,22 @@ plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
                    df[, 1],
                    fill = color))
   }else{
+    color2 ="black"
     p = ggplot(df, aes(order,
                         df[, 1],
                         fill = abs( df[, 1])  ) )
   }
 
 
-  plotHistogram(p, df, "Average variable weights", as.character(color2)) +
-    scale_fill_manual(values = colorGroup(J),
-                      limits = J[-length(J)],
-                      labels = rev(J[-length(J)])) +
+  p = plotHistogram(p, df, "Average variable weights", as.character(color2)) +
     geom_errorbar(aes(ymin = X2, ymax = X3), color ="gray40")
+
+  if (  any(names(W[[1]]) == "Superblock") & i_block == length(J) )
+    p = p + scale_fill_manual(values = colorGroup(J),
+                      limits = J[-length(J)],
+                      labels = rev(J[-length(J)]))
+
+    p
 }
 
 scaling = function(blocks, scale = TRUE, bias = TRUE){

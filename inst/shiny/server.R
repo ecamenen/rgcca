@@ -161,7 +161,6 @@ server <- function(input, output) {
                 input$connection, input$nb_comp, input$names_block_x, input$names_block_y, input$boot, input$text )
   }
 
-
   setParRGCCA <- function(){
 
     # Tau is set to optimal by default
@@ -173,9 +172,15 @@ server <- function(input, output) {
 
     blocks = blocks_without_superb
 
+    if(length(blocks) == 1){
+      print("[WARNING]")
+      assign("analysis_type", "pca", .GlobalEnv)
+    }else
+      assign("analysis_type", input$analysis_type, .GlobalEnv)
+
     pars = select.type(A = blocks, C = NULL, tau = rep(tau, length(blocks)),
                        ncomp = rep(nb_comp, length(blocks)), scheme = input$scheme,
-                       superblock = input$superblock, type  = input$analysis_type)
+                       superblock = input$superblock, type  = analysis_type)
 
     assign("connection", pars$connection, .GlobalEnv)
     assign("tau", pars$tau, .GlobalEnv)
@@ -219,7 +224,7 @@ server <- function(input, output) {
                  scale = FALSE,
                  init = input$init,
                  bias = TRUE,
-                 type = input$analysis_type)
+                 type = analysis_type)
 
     assign("rgcca.res", rgcca.res, .GlobalEnv)
 
@@ -245,13 +250,13 @@ server <- function(input, output) {
                                              blocks = blocks,
                                              comp_x = input$axis1,
                                              comp_y = input$axis2,
-                                             superblock = superblock,
+                                             superblock = (superblock & tolower(analysis_type) != "pca"),
                                              i_block = id_block,
                                              text = input$text)
 
   fingerprint <- function() plotFingerprint(rgcca = rgcca.res,
                                             comp = input$axis1,
-                                            superblock = superblock,
+                                            superblock = (superblock & tolower(analysis_type) != "pca"),
                                             n_mark = input$nb_mark,
                                             i_block = id_block)
 
