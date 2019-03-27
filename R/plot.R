@@ -312,11 +312,11 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     f = "geom_text"
     func = quote(get(f)(aes(label = rownames(df)), size = PCH_TEXT_SIZE))
 
-    if(no_Overlap && nrow(df) <= 100){
-      f = paste0(f, "_repel")
-      func$force = 0.2
-      func$max.iter = 500
-    }
+    # if(no_Overlap && nrow(df) <= 100){
+    #   f = paste0(f, "_repel")
+    #   func$force = 0.2
+    #   func$max.iter = 500
+    # }
   }
 
   if(title == "Samples" && !is.null(p))

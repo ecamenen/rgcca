@@ -22,6 +22,8 @@ server <- function(input, output) {
   assign("n_comp", reactiveVal(), .GlobalEnv)
   assign("clickSep", FALSE, .GlobalEnv)
 
+  ax <- list(linecolor = toRGB("white"), ticks = "")
+
   # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
   # rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
 
@@ -456,51 +458,56 @@ server <- function(input, output) {
 
   ################################################ Outputs ################################################
 
-  output$samplesPlot <- renderPlot({
+  output$samplesPlot <- renderPlotly({
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$samples_save, savePlot("samples_plot.pdf", samples()))
-      samples()
+      ggplotly(samples()) %>%
+        layout(xaxis = ax, yaxis = ax)
     }
   })
 
-  output$corcirclePlot <- renderPlot({
+  output$corcirclePlot <- renderPlotly({
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$corcircle_save, savePlot("corcircle.pdf", corcircle()))
-      corcircle()
+      ggplotly(corcircle()) %>%
+        layout(xaxis = ax, yaxis = ax)
     }
   })
 
-  output$fingerprintPlot <- renderPlot({
+  output$fingerprintPlot <- renderPlotly({
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$fingerprint_save, savePlot("fingerprint.pdf", fingerprint()))
-      fingerprint()
+      ggplotly(fingerprint()) %>%
+        layout(xaxis = ax, yaxis = ax)
     }
   })
 
-  output$AVEPlot <- renderPlot({
+  output$AVEPlot <- renderPlotly({
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$ave_save, savePlot("AVE.pdf", ave()))
-      ave()
+      ggplotly(ave()) %>%
+        layout(xaxis = ax, yaxis = ax)
     }
   })
 
-  output$connectionPlot <- renderPlot({
+  output$connectionPlot <- renderVisNetwork({
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$connection_save, savePlot("connection.pdf", conNet()))
-      conNet()
+      conNet2()
     }
   })
 
-  output$bootstrapPlot <- renderPlot({
+  output$bootstrapPlot <- renderPlotly({
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$bootstrap_save, savePlot("bootstrap.pdf", plotBoot()))
-      plotBoot()
+      ggplotly(plotBoot()) %>%
+        layout(xaxis = ax, yaxis = ax)
     }
   })
 
