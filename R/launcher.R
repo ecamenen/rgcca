@@ -331,34 +331,36 @@ rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, FA
 
 ##########
 
-ax <- list(linecolor = toRGB("white"), ticks = "")
-
 # Samples common space
 if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
    warning("With a number of component of 1, a second block should be chosen to perform a samples plot", .call = FALSE)
 }else{
   ( samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y) )
-   ggplotly(samples_plot) %>%
-     layout(xaxis = ax, yaxis = ax)
+  p = changeHovertext( dynamicPlot(samples_plot, ax, "text", FALSE) )
    savePlot(opt$output1, samples_plot)
 }
 
 if(opt$ncomp[opt$block] > 1){
   # Variables common space
   ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
-  p = plotly_build( ggplotly(corcircle) %>%
-                      layout(xaxis = ax, yaxis = ax) %>%
-                      style(hoverinfo = "x"))
-  p$x$layout$annotations[[1]]$yanchor = "top"
-  p
+  p = changeHovertext( dynamicPlot(corcircle, ax, "text") )
+  n = length(p$x$data)
+  ( style(p, hoverinfo = "none", traces = c(n, n-1)) )
+
+
   savePlot(opt$output2, corcircle)
+
+  sub( "(rownames\\(df\\):).*", "", p$x$data[[1]]$hovertext[1] )
+
+ grep("rownames(df):", p$x$data[[1]]$hovertext[1])
 }
 
 # Fingerprint plot
 ( fingerprint = plotFingerprint(rgcca.out, opt$compx, opt$superblock, opt$nmark) )
 plotFingerprint(rgcca.out, opt$compy, opt$superblock, opt$nmark)
-  ggplotly(fingerprint) %>%
-    style(hoverinfo = "color")
+p = dynamicPlot(fingerprint, ax2, "text")
+p$x$data[[1]]$text = sub( "order: .*<br />df\\[, 1\\]: (.*)<.*", "\\1\\", p$x$data[[1]]$text )
+# TODO: avoid the scale, zoom in, zoom out, make stop unexpectivly
 savePlot(opt$output3, fingerprint)
 
 if( ! is.null(opt$response) ){
@@ -366,10 +368,22 @@ if( ! is.null(opt$response) ){
   savePlot(opt$output5, correlation)
 }
 
+p$x$data[[i]]$hovertext = sub( "rownames\\(df\\): (.*<br />)df\\[, 1\\](.*<br />)df\\[, 2\\](.*)<.*", "\\1\\x\\2\\y\\3\\", p$x$data[[i]]$hovertext )
+
+p$x$layout$yaxis$ticktext
+
+lapply(pp$x$data, function(x) x$text)
+
 # Average Variance Explained
 if(opt$type != "pca"){
 
   (ave = plotAVE(rgcca.out, opt$compx))
+  dynamicPlot(ave, ax, "none")
+  p = plotly_build( ggplotly(ave))
+
+  ggplotly(ave) %>%
+    style(hoverinfo = "x+y")
+
   savePlot(opt$output4, ave)
 
   nodes <- getNodes(blocks, rgcca = rgcca.out)
@@ -381,4 +395,6 @@ if(opt$type != "pca"){
 }
 
 boot = bootstrap(blocks, 5, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
-plotBootstrap(boot, opt$compx, 10, opt$block)
+ plotBootstrap(boot, opt$compx, 10, opt$block)
+
+ pp = plotly_build( plotBootstrap(boot, opt$compx, 10, opt$block) )

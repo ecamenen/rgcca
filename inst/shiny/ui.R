@@ -134,7 +134,7 @@ ui <- fluidPage(
                  plotlyOutput("corcirclePlot"),
                  actionButton("corcircle_save","Save")),
         tabPanel("Fingerprint",
-                 plotlyOutput("fingerprintPlot"),
+                 plotlyOutput("fingerprintPlot", height = 700),
                  actionButton("fingerprint_save","Save")),
         tabPanel("AVE",
                  plotlyOutput("AVEPlot"),

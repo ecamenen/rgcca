@@ -16,6 +16,36 @@ PCH_TEXT_SIZE = 3
 AXIS_FONT = "italic"
 SAMPLES_COL_DEFAULT = "brown3"
 
+
+ax <- list(linecolor = toRGB("white"), ticks = "", titlefont = list(size = 22))
+ax2 <- list(linecolor = toRGB("white"), tickfont = list(size = 9, color = "grey"))
+
+# Dynamic visualization of the outputs
+# f: ggplot2 function
+# ax: list object containing attributes of xaxis / yaxis parameter in plotly (https://plot.ly/javascript/reference/, xaxis/yaxis)
+# text: axis information to print (among y, x, x+y, text) (https://plot.ly/javascript/reference/, hoverinfo)
+# return a plotly object
+dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE) {
+  p = plotly_build( ggplotly(f) %>%
+                     layout(xaxis = ax, yaxis = ax) %>%
+                     style(hoverinfo = text))
+
+  if(legend){
+    p$x$layout$annotations[[1]]$yanchor = "top"
+    p$x$layout$annotations[[1]]$text = paste0("<i><b>", p$x$layout$annotations[[1]]$text, "<i><b>")
+  }
+
+  return(p)
+}
+
+changeHovertext = function(p){
+  l = unlist(lapply(p$x$data, function(x) is.null(x$hovertext)))
+  for (i in 1:length(l[l]))
+    p$x$data[[i]]$hovertext = sub( "rownames\\(df\\): (.*<br />)df\\[, 1\\](.*<br />)df\\[, 2\\](.*)<.*", "\\1\\x\\2\\y\\3\\", p$x$data[[i]]$hovertext)
+
+  return (p)
+}
+
 # Creates a circle
 circleFun = function(center = c(0, 0), diameter = 2, npoints = 100) {
 

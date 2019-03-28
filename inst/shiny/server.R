@@ -22,8 +22,6 @@ server <- function(input, output) {
   assign("n_comp", reactiveVal(), .GlobalEnv)
   assign("clickSep", FALSE, .GlobalEnv)
 
-  ax <- list(linecolor = toRGB("white"), ticks = "")
-
   # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
   # rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
 
@@ -149,10 +147,10 @@ server <- function(input, output) {
     # Set the maximum of biomarkers to the maximum
     # number of column among the blocks but not lower than 100
 
-    if (getMaxCol() < 100)
+    if (getMaxCol() < 50)
       return (getMaxCol())
     else
-      return (100)
+      return (50)
   }
 
   getDynamicVariables = function(){
@@ -462,8 +460,7 @@ server <- function(input, output) {
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$samples_save, savePlot("samples_plot.pdf", samples()))
-      ggplotly(samples()) %>%
-        layout(xaxis = ax, yaxis = ax)
+      dynamicPlot(samples(), ax, "x+y", FALSE)
     }
   })
 
@@ -471,11 +468,7 @@ server <- function(input, output) {
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$corcircle_save, savePlot("corcircle.pdf", corcircle()))
-      p = plotly_build(ggplotly(corcircle()) %>%
-                          layout(xaxis = ax, yaxis = ax) %>%
-                          style(hoverinfo = "x"))
-      p$x$layout$annotations[[1]]$yanchor = "top"
-      p
+      dynamicPlot(corcircle(), ax, "x+y")
     }
   })
 
@@ -483,8 +476,7 @@ server <- function(input, output) {
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$fingerprint_save, savePlot("fingerprint.pdf", fingerprint()))
-      ggplotly(fingerprint()) %>%
-        layout(xaxis = ax, yaxis = ax, hoverinfo = "df[, 1]")
+      dynamicPlot(fingerprint, ax2, "x")
     }
   })
 
