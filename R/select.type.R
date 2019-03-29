@@ -359,10 +359,6 @@ plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
   if(comp > min(unlist(lapply(W, function(x) lapply(x, function(z) ncol(z))))))
     stop("Selected dimension was not associated to every blocks", call. = FALSE)
 
-  # print(i_block)
-  # print(W[[1]])
-  # print("test")
-
   W_select = Reduce(rbind, lapply(W, function(x) x[[i_block]][, comp]) )
   stats = apply(W_select, 2,  function(x) c(mean(x), sd(x)))
 
@@ -392,7 +388,6 @@ plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
                         fill = abs( df[, 1])  ) )
   }
 
-
   p = plotHistogram(p, df, "Average variable weights", as.character(color2)) +
     geom_errorbar(aes(ymin = X2, ymax = X3), color ="gray40")
 
@@ -401,7 +396,7 @@ plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
                       limits = J[-length(J)],
                       labels = rev(J[-length(J)]))
 
-    p
+    return(p)
 }
 
 scaling = function(blocks, scale = TRUE, bias = TRUE){

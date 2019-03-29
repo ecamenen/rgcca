@@ -460,7 +460,7 @@ server <- function(input, output) {
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$samples_save, savePlot("samples_plot.pdf", samples()))
-      dynamicPlot(samples(), ax, "x+y", FALSE)
+      changeHovertext( dynamicPlot(samples(), ax, "text", FALSE) )
     }
   })
 
@@ -468,7 +468,9 @@ server <- function(input, output) {
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$corcircle_save, savePlot("corcircle.pdf", corcircle()))
-      dynamicPlot(corcircle(), ax, "x+y")
+      p = changeHovertext( dynamicPlot(corcircle(), ax, "text") )
+      n = length(p$x$data)
+      ( style(p, hoverinfo = "none", traces = c(n, n-1)) )
     }
   })
 
@@ -476,16 +478,17 @@ server <- function(input, output) {
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$fingerprint_save, savePlot("fingerprint.pdf", fingerprint()))
-      dynamicPlot(fingerprint, ax2, "x")
+      p = changeText ( dynamicPlot(fingerprint(), ax2, "text") )
+      p$x$data[[1]]$text = round( as.double(sub( "order: .*<br />df\\[, 1\\]: (.*)<.*", "\\1\\", p$x$data[[1]]$text )), 3)
+      p
     }
   })
 
-  output$AVEPlot <- renderPlotly({
+  output$AVEPlot <- renderPlot({
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$ave_save, savePlot("AVE.pdf", ave()))
-      ggplotly(ave()) %>%
-        layout(xaxis = ax, yaxis = ax)
+      ave()
     }
   })
 
@@ -501,8 +504,7 @@ server <- function(input, output) {
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$bootstrap_save, savePlot("bootstrap.pdf", plotBoot()))
-      ggplotly(plotBoot()) %>%
-        layout(xaxis = ax, yaxis = ax)
+      dynamicPlotBoot(plotBoot())
     }
   })
 

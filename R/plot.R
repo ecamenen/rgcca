@@ -27,7 +27,7 @@ ax2 <- list(linecolor = toRGB("white"), tickfont = list(size = 9, color = "grey"
 # return a plotly object
 dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE) {
   p = plotly_build( ggplotly(f) %>%
-                     layout(xaxis = ax, yaxis = ax) %>%
+                     layout(xaxis = ax, yaxis = ax, annotations = list(showarrow = F, text = "")) %>%
                      style(hoverinfo = text))
 
   if(legend){
@@ -38,10 +38,31 @@ dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE) {
   return(p)
 }
 
+dynamicPlotBoot = function(p){
+  p = dynamicPlot(p, ax2, "text")
+  n = length(p$x$data)
+  m = unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
+  j = length(m[m])
+  for (i in 1:j){
+    p$x$data[[i]]$text = paste( round(p$x$data[[i]]$x, 3), "+/-", round(p$x$data[[n]]$error_x$array[j], 3) )
+    j = j - 1
+  }
+
+  changeText ( p ) %>%
+    style(error_x = list( array = p$x$data[[n]]$error_x$array, color = "gray"), hoverinfo = "none", traces = n)
+}
+
 changeHovertext = function(p){
-  l = unlist(lapply(p$x$data, function(x) is.null(x$hovertext)))
-  for (i in 1:length(l[l]))
+  n = unlist(lapply(p$x$data, function(x) is.null(x$hovertext)))
+  for (i in 1:length(n[n]))
     p$x$data[[i]]$hovertext = sub( "rownames\\(df\\): (.*<br />)df\\[, 1\\](.*<br />)df\\[, 2\\](.*)<.*", "\\1\\x\\2\\y\\3\\", p$x$data[[i]]$hovertext)
+  return (p)
+}
+
+
+changeText = function(p){
+  for (i in 1:length(p$x$data))
+    p$x$data[[i]]$text = sub( "order: .*<br />df\\[, 1\\]: (.*)<.*", "\\1\\", p$x$data[[i]]$text)
 
   return (p)
 }

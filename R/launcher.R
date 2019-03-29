@@ -336,7 +336,7 @@ if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
    warning("With a number of component of 1, a second block should be chosen to perform a samples plot", .call = FALSE)
 }else{
   ( samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y) )
-  p = changeHovertext( dynamicPlot(samples_plot, ax, "text", FALSE) )
+  changeHovertext( dynamicPlot(samples_plot, ax, "text", FALSE) )
    savePlot(opt$output1, samples_plot)
 }
 
@@ -346,20 +346,15 @@ if(opt$ncomp[opt$block] > 1){
   p = changeHovertext( dynamicPlot(corcircle, ax, "text") )
   n = length(p$x$data)
   ( style(p, hoverinfo = "none", traces = c(n, n-1)) )
-
-
   savePlot(opt$output2, corcircle)
-
-  sub( "(rownames\\(df\\):).*", "", p$x$data[[1]]$hovertext[1] )
-
- grep("rownames(df):", p$x$data[[1]]$hovertext[1])
 }
 
 # Fingerprint plot
 ( fingerprint = plotFingerprint(rgcca.out, opt$compx, opt$superblock, opt$nmark) )
 plotFingerprint(rgcca.out, opt$compy, opt$superblock, opt$nmark)
-p = dynamicPlot(fingerprint, ax2, "text")
-p$x$data[[1]]$text = sub( "order: .*<br />df\\[, 1\\]: (.*)<.*", "\\1\\", p$x$data[[1]]$text )
+p = changeText ( dynamicPlot(fingerprint, ax2, "text") )
+p$x$data[[1]]$text = round( as.double(sub( "order: .*<br />df\\[, 1\\]: (.*)<.*", "\\1\\", p$x$data[[1]]$text )), 3)
+p
 # TODO: avoid the scale, zoom in, zoom out, make stop unexpectivly
 savePlot(opt$output3, fingerprint)
 
@@ -368,11 +363,7 @@ if( ! is.null(opt$response) ){
   savePlot(opt$output5, correlation)
 }
 
-p$x$data[[i]]$hovertext = sub( "rownames\\(df\\): (.*<br />)df\\[, 1\\](.*<br />)df\\[, 2\\](.*)<.*", "\\1\\x\\2\\y\\3\\", p$x$data[[i]]$hovertext )
-
-p$x$layout$yaxis$ticktext
-
-lapply(pp$x$data, function(x) x$text)
+# p$x$layout$yaxis$ticktext
 
 # Average Variance Explained
 if(opt$type != "pca"){
@@ -395,6 +386,4 @@ if(opt$type != "pca"){
 }
 
 boot = bootstrap(blocks, 5, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
- plotBootstrap(boot, opt$compx, 10, opt$block)
-
- pp = plotly_build( plotBootstrap(boot, opt$compx, 10, opt$block) )
+dynamicPlotBoot(plotBootstrap(boot, opt$compx, 10, opt$block))
