@@ -460,7 +460,7 @@ server <- function(input, output) {
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$samples_save, savePlot("samples_plot.pdf", samples()))
-      changeHovertext( dynamicPlot(samples(), ax, "text", FALSE) )
+      changeHovertext( dynamicPlot(samples(), ax, "text", FALSE), input$text )
     }
   })
 
@@ -468,7 +468,7 @@ server <- function(input, output) {
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$corcircle_save, savePlot("corcircle.pdf", corcircle()))
-      p = changeHovertext( dynamicPlot(corcircle(), ax, "text") )
+      p = changeHovertext( dynamicPlot(corcircle(), ax, "text"), input$text )
       n = length(p$x$data)
       ( style(p, hoverinfo = "none", traces = c(n, n-1)) )
     }
@@ -479,7 +479,9 @@ server <- function(input, output) {
     if(blocksExists()){
       observeEvent(input$fingerprint_save, savePlot("fingerprint.pdf", fingerprint()))
       p = changeText ( dynamicPlot(fingerprint(), ax2, "text") )
-      p$x$data[[1]]$text = round( as.double(sub( "order: .*<br />df\\[, 1\\]: (.*)<.*", "\\1\\", p$x$data[[1]]$text )), 3)
+      n = unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
+      for (i in 1:length(n[n]))
+        p$x$data[[i]]$text = round( as.double(sub( "order: .*<br />df\\[, 1\\]: (.*)<.*", "\\1\\", p$x$data[[i]]$text )), 3)
       p
     }
   })

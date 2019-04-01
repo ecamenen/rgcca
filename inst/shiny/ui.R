@@ -127,6 +127,9 @@ ui <- fluidPage(
       tabsetPanel(
         type = "tabs",
         id = "navbar",
+        tabPanel("Connection",
+                 visNetworkOutput("connectionPlot"),
+                 actionButton("connection_save","Save")),
         tabPanel("Samples",
                  plotlyOutput("samplesPlot"),
                  actionButton("samples_save","Save")),
@@ -141,10 +144,7 @@ ui <- fluidPage(
                  actionButton("ave_save","Save")),
         tabPanel("Bootstrap",
                  plotlyOutput("bootstrapPlot", height = 700),
-                 actionButton("bootstrap_save","Save")),
-        tabPanel("Connection",
-                 visNetworkOutput("connectionPlot"),
-                 actionButton("connection_save","Save"))
+                 actionButton("bootstrap_save","Save"))
       )
 
     )

@@ -52,13 +52,17 @@ dynamicPlotBoot = function(p){
     style(error_x = list( array = p$x$data[[n]]$error_x$array, color = "gray"), hoverinfo = "none", traces = n)
 }
 
-changeHovertext = function(p){
-  n = unlist(lapply(p$x$data, function(x) is.null(x$hovertext)))
-  for (i in 1:length(n[n]))
-    p$x$data[[i]]$hovertext = sub( "rownames\\(df\\): (.*<br />)df\\[, 1\\](.*<br />)df\\[, 2\\](.*)<.*", "\\1\\x\\2\\y\\3\\", p$x$data[[i]]$hovertext)
+changeHovertext = function(p, hovertext = TRUE){
+  attr = ifelse(hovertext, "hovertext", "text")
+  n = unlist(lapply(p$x$data, function(x) !is.null(x[attr][[1]])))
+  for (i in 1:length(n[n])){
+    for (j in 1:length(p$x$data[[i]][attr][[1]])){
+      p$x$data[[i]][attr][[1]][j] = sub( ".*df\\[, 1\\](.*<br />)df\\[, 2\\](.*[0-9.-])<br />.*", "x\\1\\y\\2\\3\\", p$x$data[[i]][attr][[1]][j])
+      #p$x$data[[i]]$hovertext = sub( "rownames\\(df\\): (.*)", "\\1\\", p$x$data[[i]]$hovertext)
+    }
+  }
   return (p)
 }
-
 
 changeText = function(p){
   for (i in 1:length(p$x$data))
