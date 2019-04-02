@@ -54,14 +54,21 @@ dynamicPlotBoot = function(p){
 
 changeHovertext = function(p, hovertext = TRUE){
   attr = ifelse(hovertext, "hovertext", "text")
+  traces = which(lapply(p$x$data, function(x) length(grep("intercept", x$text)) == 1) == T)
   n = unlist(lapply(p$x$data, function(x) !is.null(x[attr][[1]])))
   for (i in 1:length(n[n])){
     for (j in 1:length(p$x$data[[i]][attr][[1]])){
-      p$x$data[[i]][attr][[1]][j] = sub( ".*df\\[, 1\\](.*<br />)df\\[, 2\\](.*[0-9.-])<br />.*", "x\\1\\y\\2\\3\\", p$x$data[[i]][attr][[1]][j])
-      #p$x$data[[i]]$hovertext = sub( "rownames\\(df\\): (.*)", "\\1\\", p$x$data[[i]]$hovertext)
+      l_text  = lapply( as.list( strsplit( p$x$data[[i]][attr][[1]][j], "<br />" )[[1]] ), function(x) strsplit(x, ": ")[[1]] )
+      l_text = unlist(mapply( function(x, y) {
+        if(x[1] == paste0("df[, ", y, "]"))
+        round(as.numeric(x[2]), 3)
+        }, l_text, c(1,2)
+      ))
+
+      p$x$data[[i]][attr][[1]][j] = paste0("x: ", l_text[1], "<br />y: ", l_text[2])
     }
   }
-  traces = which(lapply(p$x$data, function(x) length(grep("intercept", x$text)) == 1) == T)
+  print(traces)
   ( style(p, hoverinfo = "none", traces = traces ) )
 }
 

@@ -339,7 +339,6 @@ if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
    changeHovertext( dynamicPlot(samples_plot, ax, "text", TRUE, TRUE), opt$text )  %>%
      layout(showlegend = FALSE)
    savePlot(opt$output1, samples_plot)
-
 }
 
 if(opt$ncomp[opt$block] > 1){
