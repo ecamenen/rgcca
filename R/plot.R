@@ -25,8 +25,8 @@ ax2 <- list(linecolor = toRGB("white"), tickfont = list(size = 9, color = "grey"
 # ax: list object containing attributes of xaxis / yaxis parameter in plotly (https://plot.ly/javascript/reference/, xaxis/yaxis)
 # text: axis information to print (among y, x, x+y, text) (https://plot.ly/javascript/reference/, hoverinfo)
 # return a plotly object
-dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE) {
-  p = plotly_build( ggplotly(f) %>%
+dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE, dynamicTicks = FALSE) {
+  p = plotly_build( ggplotly(f, dynamicTicks = dynamicTicks) %>%
                      layout(xaxis = ax, yaxis = ax, annotations = list(showarrow = F, text = "")) %>%
                      style(hoverinfo = text))
 
@@ -201,20 +201,19 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
       }
 
       resp = resp[row.names(blocks[[i_block]])]
+
     }
 
     if( ! unique(isCharacter(as.vector(resp != "NA"))) && length(levels(as.factor(as.vector(resp)))) > 5 ){
-      options(warn=-1)
-      resp = as.numeric(resp)
-      options(warn=0)
+
+      df = df[!is.na(resp), ]
+      resp = as.numeric(resp[!is.na(resp)])
+      alpha = (resp - min(resp)) / max(resp - min(resp))
 
       # add some transparency
-      p = ggplot(df, aes(df[, 1], df[, 2], alpha = (resp - min(resp, na.rm = T)) / max(resp - min(resp, na.rm = T), na.rm = T))) +
-      # get a color scale by quantile
-            scale_alpha_continuous(
-            name = "resp",
-            breaks = seq(0, 1, .25),
-            labels = round(quantile(as.matrix(resp), na.rm = T), 2)
+      p = ggplot(df, aes(df[, 1], df[, 2], alpha = as.factor(alpha), color =  alpha)) +
+        scale_alpha_manual(values = alpha,
+          guide = "none"
         )
 
     }else
@@ -354,7 +353,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
 #' plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
 #' @export plotSpace
-plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = 1, p = NULL, text = TRUE, i_block_y = NULL, no_Overlap = TRUE){
+plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = NULL, p = NULL, text = TRUE, i_block_y = NULL, no_Overlap = TRUE){
 
   if(is.null(i_block_y))
     i_block_y = i_block
@@ -374,31 +373,37 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     # }
   }
 
-  if(title == "Samples" && !is.null(p))
+  if(title == "Samples" && !is.null(p) && is.null(p$labels$alpha))
     func$colour = SAMPLES_COL_DEFAULT
 
   if (is.null(p)){
     p = ggplot(df, aes(df[,1], df[,2], colour = as.factor(group)))
   }
 
-  p + eval(as.call(func)) +
+  p = p + eval(as.call(func)) +
     theme_classic() +
     geom_vline(xintercept = 0, col = "grey", linetype = "dashed", size = 1) +
     geom_hline(yintercept = 0, col = "grey", linetype = "dashed", size = 1) +
     labs ( title = paste(title, "space"),
-		 x = printAxis(rgcca, comp_x, i_block),
-		y = printAxis(rgcca, comp_y, i_block_y),
-           color = name_group,
-           shape = name_group) +
+  		 x = printAxis(rgcca, comp_x, i_block),
+  		 y = printAxis(rgcca, comp_y, i_block_y),
+       color = name_group,
+       shape = name_group) +
     scale_y_continuous(breaks = NULL) +
     scale_x_continuous(breaks = NULL) +
-    scale_color_manual(values = colorGroup(group), na.translate = TRUE) +
     theme_perso() +
     theme(
       axis.text = element_blank(),
       axis.title.y = element_text(face = AXIS_FONT, margin = margin(0,20,0,0), size = AXIS_TITLE_SIZE),
       axis.title.x = element_text(face = AXIS_FONT, margin = margin(20,0,0,0), size = AXIS_TITLE_SIZE)
     )
+
+
+  if(is.null(p$labels$alpha))
+    p + scale_color_manual(values = colorGroup(group))
+  else
+    p + scale_color_gradient(low = "white", high = SAMPLES_COL_DEFAULT)
+
 }
 
 #' Histogram of a fingerprint

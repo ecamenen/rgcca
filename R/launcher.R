@@ -336,14 +336,15 @@ if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
    warning("With a number of component of 1, a second block should be chosen to perform a samples plot", .call = FALSE)
 }else{
   ( samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y) )
-   changeHovertext( dynamicPlot(samples_plot, ax, "text", FALSE), opt$text )
+   changeHovertext( dynamicPlot(samples_plot, ax, "text", TRUE, TRUE), opt$text )  %>%
+     layout(showlegend = FALSE)
    savePlot(opt$output1, samples_plot)
 }
 
 if(opt$ncomp[opt$block] > 1){
   # Variables common space
   ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
-  p4 = changeHovertext( dynamicPlot(corcircle, ax, "text"), opt$text)
+  p = changeHovertext( dynamicPlot(corcircle, ax, "text"), opt$text)
   n = length(p$x$data)
   ( style(p, hoverinfo = "none", traces = c(n, n-1)) )
   savePlot(opt$output2, corcircle)
@@ -389,3 +390,10 @@ if(opt$type != "pca"){
 
 boot = bootstrap(blocks, 5, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
 dynamicPlotBoot(plotBootstrap(boot, opt$compx, opt$nmark, opt$block))
+
+ggplot(df, aes(df[, 1], df[, 2], alpha = as.factor(alpha))) +
+  geom_text(aes(label = rownames(df))) +
+  # get a color scale by quantile
+  scale_alpha_manual(
+    values = alpha2,
+    name = "resp")
