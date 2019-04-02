@@ -61,7 +61,8 @@ changeHovertext = function(p, hovertext = TRUE){
       #p$x$data[[i]]$hovertext = sub( "rownames\\(df\\): (.*)", "\\1\\", p$x$data[[i]]$hovertext)
     }
   }
-  return (p)
+  traces = which(lapply(p$x$data, function(x) length(grep("intercept", x$text)) == 1) == T)
+  ( style(p, hoverinfo = "none", traces = traces ) )
 }
 
 changeText = function(p){
@@ -209,9 +210,13 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
       df = df[!is.na(resp), ]
       resp = as.numeric(resp[!is.na(resp)])
       alpha = (resp - min(resp)) / max(resp - min(resp))
+      resp2 = as.numeric(as.vector(cut(resp,
+                                        breaks = quantile(resp, probs = seq(0, 1, .2)),
+                                        labels = round(quantile(as.matrix(resp), na.rm = T), 2),
+                                        include.lowest = TRUE)))
 
       # add some transparency
-      p = ggplot(df, aes(df[, 1], df[, 2], alpha = as.factor(alpha), color =  alpha)) +
+      p = ggplot(df, aes(df[, 1], df[, 2], alpha = as.factor(alpha), color =  resp2)) +
         scale_alpha_manual(values = alpha,
           guide = "none"
         )
