@@ -40,10 +40,15 @@ dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE, dynamicTicks = 
     p$x$layout$annotations[[1]]$yanchor = "top"
     # set the font for this title
     p$x$layout$annotations[[1]]$text = paste0("<i><b>", p$x$layout$annotations[[1]]$text, "<i><b>")
-  }
-  print(f$data)
-  p$sample_names = lapply(levels(as.factor(f$data[, 3])), function(x) row.names(subset(f$data, f$data[, 3] == x)))
 
+    if(!is.null(f$labels$subtitle))
+      p$x$layout$title = paste0(p$x$layout$title, "<br><i>", f$labels$subtitle, "</i>")
+  }
+
+  if( ncol(f$data) == 3 )
+    p$sample_names = lapply(levels(as.factor(f$data[, 3])), function(x) row.names(subset(f$data, f$data[, 3] == x)))
+  else
+    p$sample_names = list(row.names(f$data))
 
   return(p)
 }
@@ -206,9 +211,9 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
   if ( is.null(i_block) )
     i_block = length(rgcca$Y)
 
-  if(is.null(i_block_y)){
+  if(is.null(i_block_y))
     df = data.frame(rgcca$Y[[i_block]][, c(comp_x, comp_y)])
-  }else
+  else
     df =  data.frame(rgcca$Y[[i_block]][, comp_x], rgcca$Y[[i_block_y]][, comp_y] )
 
   if(nrow(df) > 100)
@@ -239,12 +244,13 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
     if( ! unique(isCharacter(as.vector(resp != "NA"))) && length(levels(as.factor(as.vector(resp)))) > 5 ){
 
       df = df[!is.na(resp), ]
-      df$resp = as.numeric(resp[!is.na(resp) ])
-      alpha = (df$resp - min(df$resp)) / max(df$resp - min(df$resp))
+      resp = as.numeric(resp[!is.na(resp) ])
+      alpha = (resp - min(resp)) / max(resp - min(resp))
+      df$resp = resp
 
       # add some transparency
       p = ggplot(df, aes(df[, 1], df[, 2], alpha = as.factor(alpha), color =  resp)) +
-        scale_alpha_manual(values = alpha,
+          scale_alpha_manual(values = alpha,
           guide = "none"
         )
 
@@ -252,8 +258,6 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
       p = NULL
   }else
     p = NULL
-
-  df$resp = resp
 
   p = plotSpace(rgcca, df, "Samples", resp, "Response", comp_x, comp_y, i_block, p, text, i_block_y)
 
