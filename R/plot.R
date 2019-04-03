@@ -16,7 +16,7 @@ PCH_TEXT_SIZE = 3
 AXIS_FONT = "italic"
 SAMPLES_COL_DEFAULT = "brown3"
 
-
+# X- Y axis format for plotly objets : no axis, no ticks
 ax <- list(linecolor = toRGB("white"), ticks = "", titlefont = list(size = 22))
 ax2 <- list(linecolor = toRGB("white"), tickfont = list(size = 9, color = "grey"))
 
@@ -24,51 +24,75 @@ ax2 <- list(linecolor = toRGB("white"), tickfont = list(size = 9, color = "grey"
 # f: ggplot2 function
 # ax: list object containing attributes of xaxis / yaxis parameter in plotly (https://plot.ly/javascript/reference/, xaxis/yaxis)
 # text: axis information to print (among y, x, x+y, text) (https://plot.ly/javascript/reference/, hoverinfo)
+# dynamicTicks: a bolean giving the generation of axis tick labels (otherwhise samplesPlot which do not have traces could not be convereted in ggplotly)
 # return a plotly object
 dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE, dynamicTicks = FALSE) {
+
+  # Convert a ggplot into a plotly object
+  # add a layout with predefined formats for x- and y- axis
+  # set the style to show onMouseOver text
   p = plotly_build( ggplotly(f, dynamicTicks = dynamicTicks) %>%
                      layout(xaxis = ax, yaxis = ax, annotations = list(showarrow = F, text = "")) %>%
                      style(hoverinfo = text))
 
   if(legend){
+    # set on the top the position of the legend title
     p$x$layout$annotations[[1]]$yanchor = "top"
+    # set the font for this title
     p$x$layout$annotations[[1]]$text = paste0("<i><b>", p$x$layout$annotations[[1]]$text, "<i><b>")
   }
+  print(f$data)
+  p$sample_names = lapply(levels(as.factor(f$data[, 3])), function(x) row.names(subset(f$data, f$data[, 3] == x)))
+
 
   return(p)
 }
 
 dynamicPlotBoot = function(p){
+
   p = dynamicPlot(p, ax2, "text")
   n = length(p$x$data)
   m = unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
   j = length(m[m])
+
   for (i in 1:j){
     p$x$data[[i]]$text = paste( round(p$x$data[[i]]$x, 3), "+/-", round(p$x$data[[n]]$error_x$array[j], 3) )
     j = j - 1
   }
 
+  # Remove the onMouseOver for the last trace
   changeText ( p ) %>%
     style(error_x = list( array = p$x$data[[n]]$error_x$array, color = "gray"), hoverinfo = "none", traces = n)
 }
 
+# p: a ggplot function
+# hovertext : a boolean for the use of hovertext (if TRUE) as the attribute to parse the onMouseOver text ("text" attribute, if FALSE)
 changeHovertext = function(p, hovertext = TRUE){
-  attr = ifelse(hovertext, "hovertext", "text")
-  traces = which(lapply(p$x$data, function(x) length(grep("intercept", x$text)) == 1) == T)
-  n = unlist(lapply(p$x$data, function(x) !is.null(x[attr][[1]])))
-  for (i in 1:length(n[n])){
-    for (j in 1:length(p$x$data[[i]][attr][[1]])){
-      l_text  = lapply( as.list( strsplit( p$x$data[[i]][attr][[1]][j], "<br />" )[[1]] ), function(x) strsplit(x, ": ")[[1]] )
-      l_text = unlist(mapply( function(x, y) {
-        if(x[1] == paste0("df[, ", y, "]"))
-        round(as.numeric(x[2]), 3)
-        }, l_text, c(1,2)
-      ))
 
-      p$x$data[[i]][attr][[1]][j] = paste0("x: ", l_text[1], "<br />y: ", l_text[2])
+  attr = ifelse(hovertext, "hovertext", "text")
+  # identify the order / id of the traces which corresponds to x- and y-axis (should be befor the splitting function)
+  traces = which(lapply(p$x$data, function(x) length(grep("intercept", x$text)) == 1) == T)
+  # Get the list of traces to modify
+
+  for (i in 1:length(p$sample_names)){
+
+    for (j in 1:length(p$x$data[[i]][attr][[1]])){
+      # Distinguish each doublet by splitting with "<br>"  and separe them in key/value by splitting with ": " (like a dictionnary)
+      l_text  = lapply( as.list( strsplit( p$x$data[[i]][attr][[1]][j], "<br />" )[[1]] ), function(x) strsplit(x, ": ")[[1]] )
+      # keep only the (x, y) coordinates with the key df[, ] and the response if exists
+      l_text = unlist(lapply(l_text, function(x, y) {
+        if(x[1] %in% paste0("df[, ", c(1, 2), "]"))
+          round(as.numeric(x[2]), 3)
+        else if(x[1] == "resp")
+          x[2]
+        })
+      )
+
+      # Overwrite the onMouseOver text with the (x, y) coordinates and the response if exists
+      p$x$data[[i]][attr][[1]][j] = paste0("name: ", p$sample_names[[i]][j], "<br />x: ", l_text[1], "<br />y: ", l_text[2], ifelse(length(l_text)==3,  paste0("<br />response: ", l_text[3]) , ""))
     }
   }
-  print(traces)
+  # Remove the x- and y- axis onOverMouse
   ( style(p, hoverinfo = "none", traces = traces ) )
 }
 
@@ -215,15 +239,11 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
     if( ! unique(isCharacter(as.vector(resp != "NA"))) && length(levels(as.factor(as.vector(resp)))) > 5 ){
 
       df = df[!is.na(resp), ]
-      resp = as.numeric(resp[!is.na(resp)])
-      alpha = (resp - min(resp)) / max(resp - min(resp))
-      resp2 = as.numeric(as.vector(cut(resp,
-                                        breaks = quantile(resp, probs = seq(0, 1, .2)),
-                                        labels = round(quantile(as.matrix(resp), na.rm = T), 2),
-                                        include.lowest = TRUE)))
+      df$resp = as.numeric(resp[!is.na(resp) ])
+      alpha = (df$resp - min(df$resp)) / max(df$resp - min(df$resp))
 
       # add some transparency
-      p = ggplot(df, aes(df[, 1], df[, 2], alpha = as.factor(alpha), color =  resp2)) +
+      p = ggplot(df, aes(df[, 1], df[, 2], alpha = as.factor(alpha), color =  resp)) +
         scale_alpha_manual(values = alpha,
           guide = "none"
         )
@@ -232,6 +252,8 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
       p = NULL
   }else
     p = NULL
+
+  df$resp = resp
 
   p = plotSpace(rgcca, df, "Samples", resp, "Response", comp_x, comp_y, i_block, p, text, i_block_y)
 

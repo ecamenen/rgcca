@@ -336,7 +336,7 @@ if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
    warning("With a number of component of 1, a second block should be chosen to perform a samples plot", .call = FALSE)
 }else{
   ( samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y) )
-   changeHovertext( dynamicPlot(samples_plot, ax, "text", TRUE, TRUE), opt$text )  %>%
+   p = changeHovertext( dynamicPlot(samples_plot, ax, "text", TRUE, TRUE), opt$text )  %>%
      layout(showlegend = FALSE)
    savePlot(opt$output1, samples_plot)
 }
@@ -390,5 +390,3 @@ if(opt$type != "pca"){
 
 boot = bootstrap(blocks, 5, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
 dynamicPlotBoot(plotBootstrap(boot, opt$compx, opt$nmark, opt$block))
-
-
