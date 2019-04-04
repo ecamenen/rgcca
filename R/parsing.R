@@ -328,8 +328,6 @@ checkConnection = function(c, blocks) {
 #' @export setConnection
 setConnection = function(blocks, superblock = FALSE, file = NULL, sep = "\t") {
 
-  print(superblock)
-
   J = length(blocks)
 
   if(superblock){
@@ -526,15 +524,13 @@ setPosPar = function(opt, blocks, i_resp){
     opt[[par[i]]][[i_resp]] = temp
   }
 
-
   names(opt$blocks) = opt$block_names
-
-  print("ok5")
 
   return(opt)
 }
 
 checkSuperblock = function(opt){
+
   if( ! is.null(opt$response) ){
     #warnConnection("supervized method with a response")
     if( opt$superblock){
@@ -542,6 +538,6 @@ checkSuperblock = function(opt){
       # if("superblock" %in% names(opt))
       #   warning("In a supervised mode, the superblock corresponds to the response.\n", call. = FALSE)
     }
-    return(opt)
   }
+  return(opt)
 }

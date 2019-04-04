@@ -19,6 +19,7 @@ server <- function(input, output) {
   assign("i_block", reactiveVal(), .GlobalEnv)
   assign("id_block", NULL, .GlobalEnv)
   assign("id_block_y", NULL, .GlobalEnv)
+  assign("id_block_resp", NULL, .GlobalEnv)
   assign("n_comp", reactiveVal(), .GlobalEnv)
   assign("clickSep", FALSE, .GlobalEnv)
 
@@ -30,12 +31,12 @@ server <- function(input, output) {
     setNamesInput("x")
   })
 
-  setNamesInput = function(x){
+  setNamesInput = function(x, y = setBlockNames()){
     refesh = input$superblock
     selectInput(inputId = paste0("names_block_", x),
-                label = h5( paste0("Blockss for ", x ,"-axis : ")),
+                label = h5( paste0("Blocks for ", x ,"-axis : ")),
                 choices = getNames(),
-                selected = setBlockNames())
+                selected = y)
   }
 
   output$blocks_names_custom_y <- renderUI({
@@ -43,7 +44,7 @@ server <- function(input, output) {
   })
 
   output$response <- renderUI({
-    setNamesInput("response")
+    setNamesInput("response", 1)
   })
 
   # Define the names of the blocks and set by default on the last block
@@ -154,19 +155,22 @@ server <- function(input, output) {
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
                 input$scale, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt, input$analysis_type,
-                input$connection, input$nb_comp, input$names_block_x, input$names_block_y, input$boot, input$text, input$names_block_response )
+                input$connection, input$nb_comp, input$names_block_x, input$names_block_y, input$boot, input$text,
+                input$names_block_response, input$supervized )
   }
 
   setParRGCCA <- function(){
+
+    blocks = blocks_without_superb
+    ncomp = rep(nb_comp, length(blocks))
 
     # Tau is set to optimal by default
     if (input$tau_opt)
       tau = "optimal"
     else
       # otherwise the tau value fixed by the user is used
-      tau = input$tau
+      tau = rep(tau, length(blocks))
 
-    blocks = blocks_without_superb
 
     if(length(blocks) == 1){
       print("[WARNING]")
@@ -174,11 +178,20 @@ server <- function(input, output) {
     }else
       assign("analysis_type", input$analysis_type, .GlobalEnv)
 
-    pars = checkSuperblock(list(response = input$names_block_response, superblock = input$superblock))
-    pars = setPosPar(list(tau = rep(tau, length(blocks)), ncomp= rep(nb_comp, length(blocks)), superblock = pars$superblock), blocks, 1)
+    if(!input$supervized)
+      response = NULL
+    else
+      response = input$supervized
 
-    pars = select.type(A = pars$blocks, C = NULL, tau = pars$tau,
-                       ncomp = pars$ncomp, scheme = input$scheme,
+    pars = checkSuperblock(list(response = response, superblock = input$superblock))
+
+    if(input$supervized){
+      pars = setPosPar(list(tau = tau, ncomp = ncomp, superblock = pars$superblock), blocks, id_block_resp)
+      blocks = pars$blocks; tau = pars$tau; ncomp = pars$ncomp
+    }
+
+    pars = select.type(A = blocks, C = NULL, tau = tau,
+                       ncomp = ncomp, scheme = input$scheme,
                        superblock = pars$superblock, type  = analysis_type)
 
     assign("connection", pars$connection, .GlobalEnv)
@@ -204,7 +217,7 @@ server <- function(input, output) {
     if(is.null(connection)){
       assign("connection",
              setConnection (blocks = blocks,
-                            superblock = (superblock  | !is.null(input$names_block_response)),
+                            superblock = (superblock  | input$supervized),
                             file = NULL,
                             sep = input$sep),
             .GlobalEnv)
@@ -280,7 +293,7 @@ server <- function(input, output) {
 
   setIdBlock = function(){
 
-    if(!superblock && as.integer(input$names_block_x) > round(length(blocks)) ){
+    if( !superblock && as.integer(input$names_block_x) > round(length(blocks)) ){
       i_block(as.integer(input$names_block_x))
       assign("id_block", i_block() - 1, .GlobalEnv)
       assign("id_block_y", i_block() - 1, .GlobalEnv)
@@ -297,7 +310,7 @@ server <- function(input, output) {
 
     if(is.null(connection))
       assign("connection", setConnection (blocks = blocks,
-                                          superblock = input$superblock,
+                                          superblock = (superblock  | input$supervized),
                                           file = input$connection$datapath,
                                           sep = input$sep),
              .GlobalEnv)
@@ -329,6 +342,7 @@ server <- function(input, output) {
              scaling(blocks_unscaled, input$scale, TRUE),
              .GlobalEnv)
 
+      assign("id_block_resp", 1, .GlobalEnv)
       blocks = setParRGCCA()
       assign("blocks", blocks, .GlobalEnv)
 
@@ -359,10 +373,11 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(input$superblock, {
+  observeEvent(c(input$superblock, input$supervized), {
     if(blocksExists()){
+      setNamesInput("x")
+      setNamesInput("response", 1)
       setAnalysis()
-      setNamesInput()
     }
   })
 
@@ -396,7 +411,7 @@ server <- function(input, output) {
 
         if(is.null(connection))
           assign("connection", setConnection (blocks = blocks,
-                                              superblock = (superblock  | !is.null(input$names_block_response)),
+                                              superblock = (superblock  | input$supervized),
                                               file = input$connection$datapath,
                                               sep = input$sep),
                 .GlobalEnv)
@@ -442,6 +457,18 @@ server <- function(input, output) {
     }
 
   })
+
+  observeEvent(input$names_block_response, {
+    # Observe if graphical parameters are changed
+
+    if(blocksExists()){
+      i_block(as.integer(input$names_block_response))
+      assign("id_block_resp", i_block(), .GlobalEnv)
+      setAnalysis()
+    }
+
+  })
+
 
   observeEvent(input$save_all, {
     if(blocksExists()){

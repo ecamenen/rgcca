@@ -60,7 +60,13 @@ ui <- fluidPage(
                     value = FALSE),
       conditionalPanel(
         condition = "input.adv_ana == true",
-        uiOutput("response"),
+        checkboxInput("supervized",
+                      "Supervized analysis",
+                      value = FALSE),
+        conditionalPanel(
+          condition = "input.supervized == true",
+          uiOutput("response")
+          ),
         uiOutput("nb_comp_custom"),
         checkboxInput(inputId = "superblock",
                       label = "Use a superblock",
