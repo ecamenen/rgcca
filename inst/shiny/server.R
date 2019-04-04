@@ -27,27 +27,23 @@ server <- function(input, output) {
 
   #TODO: remove blocks, superblock from observeEvent
   output$blocks_names_custom_x <- renderUI({
-    refresh <- input$superblock
-    setNamesInput()
+    setNamesInput("x")
   })
 
-  setNamesInput = function(){
+  setNamesInput = function(x){
     refesh = input$superblock
-    selectInput(inputId = "names_block_x",
-                label = h5("Block for X-axis : "),
+    selectInput(inputId = paste0("names_block_", x),
+                label = h5( paste0("Blockss for ", x ,"-axis : ")),
                 choices = getNames(),
                 selected = setBlockNames())
   }
 
   output$blocks_names_custom_y <- renderUI({
+    setNamesInput("y")
+  })
 
-    # Refresh the function when superblock option is changed
-    refesh = input$superblock
-
-    selectInput(inputId = "names_block_y",
-                label = h5("Block for Y-axis : "),
-                choices = getNames(),
-                selected = setBlockNames())
+  output$response <- renderUI({
+    setNamesInput("response")
   })
 
   # Define the names of the blocks and set by default on the last block
@@ -158,7 +154,7 @@ server <- function(input, output) {
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
                 input$scale, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt, input$analysis_type,
-                input$connection, input$nb_comp, input$names_block_x, input$names_block_y, input$boot, input$text )
+                input$connection, input$nb_comp, input$names_block_x, input$names_block_y, input$boot, input$text, input$names_block_response )
   }
 
   setParRGCCA <- function(){
@@ -178,16 +174,18 @@ server <- function(input, output) {
     }else
       assign("analysis_type", input$analysis_type, .GlobalEnv)
 
-    pars = select.type(A = blocks, C = NULL, tau = rep(tau, length(blocks)),
-                       ncomp = rep(nb_comp, length(blocks)), scheme = input$scheme,
-                       superblock = input$superblock, type  = analysis_type)
+    pars = checkSuperblock(list(response = input$names_block_response, superblock = input$superblock))
+    pars = setPosPar(list(tau = rep(tau, length(blocks)), ncomp= rep(nb_comp, length(blocks)), superblock = pars$superblock), blocks, 1)
+
+    pars = select.type(A = pars$blocks, C = NULL, tau = pars$tau,
+                       ncomp = pars$ncomp, scheme = input$scheme,
+                       superblock = pars$superblock, type  = analysis_type)
 
     assign("connection", pars$connection, .GlobalEnv)
     assign("tau", pars$tau, .GlobalEnv)
     assign("ncomp", pars$ncomp, .GlobalEnv)
     assign("scheme", pars$scheme, .GlobalEnv)
     assign("superblock", pars$superblock, .GlobalEnv)
-
     return(pars$blocks)
   }
 
@@ -206,7 +204,7 @@ server <- function(input, output) {
     if(is.null(connection)){
       assign("connection",
              setConnection (blocks = blocks,
-                            superblock = superblock,
+                            superblock = (superblock  | !is.null(input$names_block_response)),
                             file = NULL,
                             sep = input$sep),
             .GlobalEnv)
@@ -398,7 +396,7 @@ server <- function(input, output) {
 
         if(is.null(connection))
           assign("connection", setConnection (blocks = blocks,
-                                              superblock = input$superblock,
+                                              superblock = (superblock  | !is.null(input$names_block_response)),
                                               file = input$connection$datapath,
                                               sep = input$sep),
                 .GlobalEnv)

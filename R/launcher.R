@@ -24,7 +24,7 @@ getArgs = function(){
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
     make_option(c("--group"), type="character", default ="/home/etienne.camenen/Documents/DATA/Nucleiparks/UPDRS_2.tsv",
                 help="Path of the group file (to color samples by group in the associated plot)"),
-    make_option(c("-r", "--response"), type="integer", metavar="integer",
+    make_option(c("-r", "--response"), type="integer", metavar="integer", default = 1,
                 help="Position of the response file in datasets (if not null, activate supervized method)"),
     make_option(c("--names"), type="character", metavar="character", help="List of the names for each block file separated by comma [default: filename]"),
     make_option(c("-H", "--header"), type="logical", action="store_false", help="DO NOT consider the first row as header of columns"),
@@ -208,27 +208,6 @@ postCheckArg = function(opt, blocks){
   return (opt)
 }
 
-setPosPar = function(opt, blocks, i_resp){
-
-  J = length(blocks)
-  opt$blocks = blocks
-  opt$block_names = names(blocks)
-
-  par = c("blocks", "block_names", "ncomp")
-  if (all(opt$tau != "optimal"))
-    par[length(par)+1] = "tau"
-
-  for (i in 1:length(par)){
-    temp = opt[[par[i]]][[J]]
-    opt[[par[i]]][[J]] = opt[[par[i]]][[i_resp]]
-    opt[[par[i]]][[i_resp]] = temp
-  }
-
-  names(opt$blocks) = opt$block_names
-
-  return(opt)
-}
-
 #' Launch a Shiny application for S/RGCCA
 #' @export
 runShiny = function()
@@ -266,7 +245,7 @@ opt = list(directory = ".",
            scheme = "factorial",
            tau = "optimal",
            init = "svd",
-           ncomp = "3, 3",
+           ncomp = "3, 3, 2",
            block = 0,
            compx = 1,
            compy = 2,
@@ -277,7 +256,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv")
+           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -300,24 +279,16 @@ opt$bias = !("bias" %in% names(opt))
 opt$scale = !("scale" %in% names(opt))
 opt$text = !("text" %in% names(opt))
 
-if( ! is.null(opt$response) ){
-  warnConnection("supervized method with a response")
-  if( opt$superblock){
-    opt$superblock = FALSE
-    if("superblock" %in% names(opt))
-      warning("In a supervised mode, the superblock corresponds to the response.\n", call. = FALSE)
-  }
-}
-
 blocks = setBlocks(opt$datasets, opt$names, opt$separator, opt$header)
 blocks = scaling(blocks, opt$scale, opt$bias)
+
+opt = checkSuperblock(opt)
+opt = postCheckArg(opt, blocks)
 
 if( ! is.null(opt$response) ){
   opt = setPosPar(opt, blocks, opt$response)
   blocks = opt$blocks
 }
-
-opt = postCheckArg(opt, blocks)
 
 blocks = setSuperblock(blocks, opt$superblock, opt$type)
 

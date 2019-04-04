@@ -39,7 +39,7 @@ dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE, dynamicTicks = 
     # set on the top the position of the legend title
     p$x$layout$annotations[[1]]$yanchor = "top"
     # set the font for this title
-    p$x$layout$annotations[[1]]$text = paste0("<i><b>", p$x$layout$annotations[[1]]$text, "<i><b>")
+    p$x$layout$annotations[[1]]$text = paste0("<i><b>", p$x$layout$annotations[[1]]$text, "<b></i>")
 
     if(!is.null(f$labels$subtitle))
       p$x$layout$title = paste0(p$x$layout$title, "<br><i>", f$labels$subtitle, "</i>")
