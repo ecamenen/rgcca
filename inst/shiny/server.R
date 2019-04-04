@@ -31,12 +31,12 @@ server <- function(input, output) {
     setNamesInput("x")
   })
 
-  setNamesInput = function(x, y = setBlockNames()){
-    refesh = input$superblock
+  setNamesInput = function(x){
+    refesh = c(input$superblock, input$supervized)
     selectInput(inputId = paste0("names_block_", x),
                 label = h5( paste0("Blocks for ", x ,"-axis : ")),
                 choices = getNames(),
-                selected = y)
+                selected = setBlockNames())
   }
 
   output$blocks_names_custom_y <- renderUI({
@@ -44,7 +44,7 @@ server <- function(input, output) {
   })
 
   output$response <- renderUI({
-    setNamesInput("response", 1)
+    setNamesInput("response")
   })
 
   # Define the names of the blocks and set by default on the last block
@@ -342,7 +342,7 @@ server <- function(input, output) {
              scaling(blocks_unscaled, input$scale, TRUE),
              .GlobalEnv)
 
-      assign("id_block_resp", 1, .GlobalEnv)
+      assign("id_block_resp", length(blocks_without_superb), .GlobalEnv)
       blocks = setParRGCCA()
       assign("blocks", blocks, .GlobalEnv)
 
@@ -374,9 +374,11 @@ server <- function(input, output) {
   })
 
   observeEvent(c(input$superblock, input$supervized), {
+
     if(blocksExists()){
+      print(input$supervized)
       setNamesInput("x")
-      setNamesInput("response", 1)
+      setNamesInput("response")
       setAnalysis()
     }
   })
