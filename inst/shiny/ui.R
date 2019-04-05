@@ -21,11 +21,13 @@ for (l in librairies) {
 ui <- fluidPage(
 
   titlePanel("R/SGCCA - Shiny graphical interface"),
-
+  useShinyjs(),
   sidebarLayout(
 
     sidebarPanel(
-      useShinyjs(),
+      tabsetPanel(id = "tabset",
+      tabPanel("Data",
+
       # Data loading
       fileInput(inputId = "blocks",
                 label = h5("Choose blocks : "),
@@ -39,10 +41,7 @@ ui <- fluidPage(
       ),
 
       # File parsing
-      checkboxInput("adv_pars",
-                    "Advanced parsing",
-                    value = FALSE),
-      conditionalPanel(
+
         condition = "input.adv_pars == true",
         checkboxInput(inputId = "header",
                       label = "Consider first row as header",
@@ -52,13 +51,12 @@ ui <- fluidPage(
                      choices = c(Comma = ",",
                                  Semicolon = ";",
                                  Tabulation = "\t"),
-                     selected = "\t")),
+                     selected = "\t")
+      ),
 
+
+      tabPanel("RGCCA",
       # Analysis parameters
-      checkboxInput("adv_ana",
-                    "Advanced analysis",
-                    value = FALSE),
-      conditionalPanel(
         condition = "input.adv_ana == true",
         checkboxInput("supervized",
                       "Supervized analysis",
@@ -110,11 +108,8 @@ ui <- fluidPage(
                      selected = "svd")),
 
       # Graphical parameters
-      checkboxInput("adv_graph",
-                    "Advanced graphics",
-                    value = FALSE),
-      conditionalPanel(
-        condition = "input.adv_graph == true",
+
+      tabPanel("Graphic",
         checkboxInput(inputId = "text",
                       label = "Print names",
                       value = TRUE),
@@ -127,7 +122,7 @@ ui <- fluidPage(
       actionButton(inputId = "save_all",
                    label = "Save all")
 
-    ),
+    )),
 
     mainPanel(
 
@@ -137,6 +132,9 @@ ui <- fluidPage(
         tabPanel("Connection",
                  visNetworkOutput("connectionPlot"),
                  actionButton("connection_save","Save")),
+        tabPanel("AVE",
+                 plotOutput("AVEPlot"),
+                 actionButton("ave_save","Save")),
         tabPanel("Samples",
                  plotlyOutput("samplesPlot"),
                  actionButton("samples_save","Save")),
@@ -146,9 +144,6 @@ ui <- fluidPage(
         tabPanel("Fingerprint",
                  plotlyOutput("fingerprintPlot", height = 700),
                  actionButton("fingerprint_save","Save")),
-        tabPanel("AVE",
-                 plotOutput("AVEPlot"),
-                 actionButton("ave_save","Save")),
         tabPanel("Bootstrap",
                  plotlyOutput("bootstrapPlot", height = 700),
                  actionButton("bootstrap_save","Save"))
@@ -157,3 +152,4 @@ ui <- fluidPage(
     )
   )
 )
+

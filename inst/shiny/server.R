@@ -243,13 +243,13 @@ server <- function(input, output) {
 
     assign("nodes", getNodes(blocks, rgcca = rgcca.res), .GlobalEnv)
     assign("edges", getEdges(connection, blocks), .GlobalEnv)
-    getBoot()
+    #getBoot()
   }
 
   getBoot <- function()
-    assign("boot",
-           bootstrap(blocks, input$boot, connection, tau, ncomp, input$scheme, input$scale, input$init, TRUE, input$analysis_type),
-           .GlobalEnv)
+  assign("boot",
+         bootstrap(blocks, input$boot, connection, tau, ncomp, input$scheme, input$scale, input$init, TRUE, analysis_type),
+         .GlobalEnv)
 
   samples <- function() plotSamplesSpace(rgcca = rgcca.res,
                                          resp = response,
@@ -535,8 +535,8 @@ server <- function(input, output) {
   output$bootstrapPlot <- renderPlotly({
     getDynamicVariables()
     if(blocksExists()){
-      observeEvent(input$bootstrap_save, savePlot("bootstrap.pdf", plotBoot()))
-      dynamicPlotBoot(plotBoot())
+      # observeEvent(input$bootstrap_save, savePlot("bootstrap.pdf", plotBoot()))
+      # dynamicPlotBoot(plotBoot())
     }
   })
 

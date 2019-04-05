@@ -322,6 +322,8 @@ bootstrap = function(blocks, n_boot = 5, connection = 1 - diag(length(blocks)), 
                        ncomp = rep(2, length(blocks)), scheme = 'factorial', scale = TRUE,
                        init = "svd", bias = TRUE, type = "rgcca", nb_cores = NULL){
 
+  print("NOOOOO")
+
   if(is.null(nb_cores) )
     nb_cores = detectCores() - 1
 

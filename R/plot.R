@@ -144,10 +144,11 @@ printAxis = function (rgcca, n, i = NULL, outer = FALSE){
     i = length(rgcca$AVE$AVE_X)
 
   nvar = varSelected(rgcca, i, n)
-  if(class(rgcca) !="sgcca" | nvar == length(rgcca$a[[i]][, n]) )
+
+  if(class(rgcca) != "sgcca" | nvar == length(rgcca$a[[i]][, n]) )
     varText = ""
   else
-    varText = paste(nvar, " variables, ", sep="")
+    varText = paste0(nvar, " variables, ")
 
   ave = quote(paste0(round(AVE[n] * 100 , 1),"%"))
 
