@@ -213,11 +213,6 @@ postCheckArg = function(opt, blocks){
 runShiny = function()
   shiny::runApp("inst/shiny")
 
-
-warnConnection = function(x)
-  warning(paste("By using a ", x , ", all blocks are connected to this block in the connection matrix and the connection file is ignored.\n", sep=""),
-          call. = FALSE)
-
 ##################
 #     Main
 ##################
@@ -241,7 +236,7 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "sgcca",
+           type = "rgcca",
            scheme = "factorial",
            tau = "0.7, 0.7, 0.7",
            init = "svd",
@@ -256,7 +251,8 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv")
+           datasets = "/home/etienne.camenen/bin/rgccaLauncher/data/blocks.xlsx")
+           #datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv")
            #datasets = "/home/etienne.camenen/Documents/DATA/Gliom/y.tsv, /home/etienne.camenen/Documents/DATA/Gliom/GE.tsv, /home/etienne.camenen/Documents/DATA/Gliom/CGH.tsv")
 
 tryCatch({

@@ -101,6 +101,8 @@ ui <- fluidPage(
         sliderInput(inputId = "boot",
                     label = h5("Number of boostrap : "),
                     min = 5, max = 100, value = 10, step = 5),
+      actionButton(inputId = "run_boot",
+                   label = "Run bootstrap"),
         radioButtons("init",
                      label = "Mode of initialization",
                      choices = c(SVD = "svd",

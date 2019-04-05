@@ -23,10 +23,9 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
   ### SETTINGS ###
 
   warnParam = function(param, x)
-    print("")
-    # warning(paste("Because ", type, " was selected, ", paste(deparse(substitute(param))), " parameter was set to ",
-    #               toString(x),"\n", sep=""),
-    #         call. = FALSE)
+    warning(paste("Because ", type, " was selected, ", paste(deparse(substitute(param))), " parameter was set to ",
+                  toString(x),"\n", sep=""),
+            call. = FALSE, immediate. = TRUE)
 
   setTau = function(x){
     warnParam(tau, x)
@@ -45,17 +44,17 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
 
   warnSuper = function(x){
     if(length(x) < (length(A))){
-      # warning(paste("Because of the use of a superblock, ", paste(deparse(substitute(x))) ,
-      #               " for the superblock was the one of the first block.\n", sep=""), call. = FALSE)
+      warning(paste("Because of the use of a superblock, ", paste(deparse(substitute(x))) ,
+                    " for the superblock was the one of the first block.\n", sep=""), call. = FALSE, immediate. = TRUE)
       return(c(x, x[1]))
     }else
       return(x)
   }
 
   setSuperbloc = function(verbose = TRUE){
-    # if(verbose)
-    #   warning(paste("Because ", type, " was set, a superblock was used.\n",
-    #                 sep=""), call. = FALSE)
+    if(verbose)
+      warning(paste("Because ", type, " was set, a superblock was used.\n",
+                    sep=""), call. = FALSE, immediate. = TRUE)
     assign("A", c(A, Superblock = list(Reduce(cbind, A))), envir = parent.frame())
     assign("superblock", TRUE, envir = parent.frame())
     assign("C", NULL, envir = parent.frame())
@@ -224,21 +223,19 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
 
 rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, length(blocks)),
                          ncomp = rep(2, length(blocks)), scheme = "factorial", scale = TRUE,
-                         init = "svd", bias = TRUE, type = "rgcca"){
+                         init = "svd", bias = TRUE, type = "rgcca", verbose = TRUE){
 
   WARN = FALSE
 
-  # for (i in 1:length(blocks)){
-  #   if( ncol(blocks[[i]]) > 1000 ){
-  #     if( (type == "sgcca" && tau > 0.3) || type != "sgcca" )
-  #       WARN = TRUE
-  #   }
-  # }
+  for (i in 1:length(blocks)){
+    if( ncol(blocks[[i]]) > 1000 ){
+      if( (type == "sgcca" && tau > 0.3) || type != "sgcca" )
+        WARN = TRUE
+    }
+  }
 
-  # if (WARN)
-  #   warning("Some blocks are too big. RGCCA could take some times......\n", immediate. = TRUE, call. = FALSE)
-
-  print(tolower(type))
+  if (WARN & verbose)
+    warning("Some blocks are too big. RGCCA could take some times......\n", immediate. = TRUE, call. = FALSE)
 
   if(tolower(type) =="sgcca"){
     func = sgcca
@@ -321,8 +318,6 @@ bootstrap_k = function(blocks, connection = 1 - diag(length(blocks)), tau = rep(
 bootstrap = function(blocks, n_boot = 5, connection = 1 - diag(length(blocks)), tau = rep(1, length(blocks)),
                        ncomp = rep(2, length(blocks)), scheme = 'factorial', scale = TRUE,
                        init = "svd", bias = TRUE, type = "rgcca", nb_cores = NULL){
-
-  print("NOOOOO")
 
   if(is.null(nb_cores) )
     nb_cores = detectCores() - 1

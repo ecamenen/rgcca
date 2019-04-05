@@ -397,7 +397,7 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
       } else {
         response = response[, 1]
         warning("There is multiple columns in the response file. By default, only the first one is taken in account.\n",
-                call. = FALSE)
+                call. = FALSE, immediate. = TRUE)
       }
     }
 
@@ -497,9 +497,8 @@ setSuperblock = function(blocks, superblock = FALSE, type = "rgcca"){
 
   if(superblock | tolower(type) == "pca"){
 
-# TODO: allowed warning in shiny
-#     if(type != "pca")
-#       warnConnection("superblock")
+    if(type != "pca")
+      warnConnection("superblock")
 
     blocks[["Superblock"]] = Reduce(cbind, blocks)
 
@@ -529,14 +528,19 @@ setPosPar = function(opt, blocks, i_resp){
   return(opt)
 }
 
+
+warnConnection = function(x)
+  warning(paste("By using a ", x , ", all blocks are connected to this block in the connection matrix and the connection file is ignored.\n", sep=""),
+          call. = FALSE, immediate. = TRUE)
+
 checkSuperblock = function(opt){
 
   if( ! is.null(opt$response) ){
-    #warnConnection("supervized method with a response")
+    warnConnection("supervized method with a response")
     if( opt$superblock){
       opt$superblock = FALSE
-      # if("superblock" %in% names(opt))
-      #   warning("In a supervised mode, the superblock corresponds to the response.\n", call. = FALSE)
+      if("superblock" %in% names(opt))
+        warning("In a supervised mode, the superblock corresponds to the response.\n", call. = FALSE, immediate. = TRUE)
     }
   }
   return(opt)

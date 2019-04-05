@@ -175,7 +175,7 @@ server <- function(input, output) {
       tau = rep(input$tau, length(blocks))
 
     if(length(blocks) == 1){
-      print("[WARNING]")
+      warning("Only one block is selected. By default, a PCA is performed.", call = FALSE, immediate. = TRUE)
       assign("analysis_type", "pca", .GlobalEnv)
     }else
       assign("analysis_type", input$analysis_type, .GlobalEnv)
@@ -437,7 +437,7 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(input$boot, {
+  observeEvent(input$run_boot, {
     if(blocksExists())
       getBoot()
   })
@@ -534,9 +534,9 @@ server <- function(input, output) {
 
   output$bootstrapPlot <- renderPlotly({
     getDynamicVariables()
-    if(blocksExists()){
-      # observeEvent(input$bootstrap_save, savePlot("bootstrap.pdf", plotBoot()))
-      # dynamicPlotBoot(plotBoot())
+    if(blocksExists() & input$run_boot){
+      observeEvent(input$bootstrap_save, savePlot("bootstrap.pdf", plotBoot()))
+      dynamicPlotBoot(plotBoot())
     }
   })
 
