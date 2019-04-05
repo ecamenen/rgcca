@@ -9,6 +9,7 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
+options(shiny.maxRequestSize = 30*1024^2)
 server <- function(input, output) {
   source("../../R/parsing.R")
   source("../../R/plot.R")
@@ -25,6 +26,8 @@ server <- function(input, output) {
 
   # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
   # rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
+
+  ################################################ User Interface ################################################
 
   #TODO: remove blocks, superblock from observeEvent
   output$blocks_names_custom_x <- renderUI({
@@ -169,8 +172,7 @@ server <- function(input, output) {
       tau = "optimal"
     else
       # otherwise the tau value fixed by the user is used
-      tau = rep(tau, length(blocks))
-
+      tau = rep(input$tau, length(blocks))
 
     if(length(blocks) == 1){
       print("[WARNING]")
@@ -246,7 +248,7 @@ server <- function(input, output) {
 
   getBoot <- function()
     assign("boot",
-           bootstrap(blocks, input$boot, connection, tau, ncomp, input$scheme, input$scale, input$init, TRUE),
+           bootstrap(blocks, input$boot, connection, tau, ncomp, input$scheme, input$scale, input$init, TRUE, input$analysis_type),
            .GlobalEnv)
 
   samples <- function() plotSamplesSpace(rgcca = rgcca.res,

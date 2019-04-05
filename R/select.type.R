@@ -238,7 +238,9 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
   # if (WARN)
   #   warning("Some blocks are too big. RGCCA could take some times......\n", immediate. = TRUE, call. = FALSE)
 
-  if(type =="sgcca"){
+  print(tolower(type))
+
+  if(tolower(type) =="sgcca"){
     func = sgcca
     par = "c1"
   }else{
@@ -257,9 +259,6 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
   func.complete[[par]] = tau
 
   func.res = eval(as.call(func.complete))
-
-
-
   names(func.res$a) = names(blocks)
 
   return(func.res)
