@@ -5,6 +5,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
                         ncomp = rep(1, length(A)), scheme = "centroid", superblock = TRUE, type  = "rgcca"){
 
   J = length(A)
+  warn.msg.super = character(0)
 
   if(!is.null(opt)){
     scheme = opt$scheme; C = opt$connection;  superblock = opt$superblock; type = opt$type; tau = opt$tau; ncomp = opt$ncomp
@@ -22,10 +23,11 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
 
   ### SETTINGS ###
 
-  warnParam = function(param, x)
+  warnParam = function(param, x){
     warning(paste("Because ", type, " was selected, ", paste(deparse(substitute(param))), " parameter was set to ",
                   toString(x),"\n", sep=""),
             call. = FALSE, immediate. = TRUE)
+  }
 
   setTau = function(x){
     warnParam(tau, x)
@@ -44,8 +46,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
 
   warnSuper = function(x){
     if(length(x) < (length(A))){
-      warning(paste("Because of the use of a superblock, ", paste(deparse(substitute(x))) ,
-                    " for the superblock was the one of the first block.\n", sep=""), call. = FALSE, immediate. = TRUE)
+      warn.msg.super <<- c(warn.msg.super, deparse(substitute(x)))
       return(c(x, x[1]))
     }else
       return(x)
@@ -76,8 +77,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
     if(superblock){
       setSuperbloc(FALSE)
       tau <- warnSuper(tau)
-    }
-    else
+    }else
       superblock <- FALSE
   }else
     superblock <- FALSE
@@ -214,6 +214,16 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
 
   else if(length(grep("[sr]gcca", tolower(type))) != 1){
     stop("Wrong type of analysis. Please select one among the following list: rgcca, cpca-w, gcca, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov., sabscov, plspm\n")
+  }
+
+  if(length(warn.msg.super) > 0){
+
+    if( length(warn.msg.super) > 1 )
+      warn.msg.super = paste(warn.msg.super, collapse = ", ")
+
+    warning(paste("Because of the use of a superblock, ", warn.msg.super,
+                  " for the superblock was the one of the first block.\n", sep=""),
+            call. = FALSE, immediate. = TRUE)
   }
 
   opt$blocks = A; opt$scheme = scheme;  opt$tau = tau;  opt$ncomp = ncomp;  opt$connection = C;  opt$superblock = superblock
