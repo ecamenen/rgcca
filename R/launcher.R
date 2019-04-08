@@ -222,7 +222,7 @@ runShiny = function()
 
 #Loading librairies
 #suppressPackageStartupMessages(expr)
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph", "ggrepel", "parallel")
+librairies = c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph", "ggrepel", "parallel", "xlsx")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
     install.packages(l, repos = "http://cran.us.r-project.org",
@@ -295,7 +295,11 @@ if(!is.matrix(connection))
 
 group = setResponse(blocks, "/home/etienne.camenen/Documents/DATA/Nucleiparks/UPDRS.tsv", opt$separator, opt$header)
 
-rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, FALSE, opt$init, opt$bias, opt$type)
+withCallingHandlers({
+  rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, FALSE, opt$init, opt$bias, opt$type)
+}, warning = function(w) {
+  print(w$message)
+})
 
 ##########
 

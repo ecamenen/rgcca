@@ -229,13 +229,13 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
 
   for (i in 1:length(blocks)){
     if( ncol(blocks[[i]]) > 1000 ){
-      if( (type == "sgcca" && tau > 0.3) || type != "sgcca" )
+      # if( (type == "sgcca" && tau > 0.3) || type != "sgcca" )
         WARN = TRUE
     }
   }
 
   if (WARN & verbose)
-    warning("Some blocks are too big. RGCCA could take some times......\n", immediate. = TRUE, call. = FALSE)
+    warning("RGCCA in progress ...\n", immediate. = TRUE, call. = FALSE)
 
   if(tolower(type) =="sgcca"){
     func = sgcca
@@ -263,7 +263,7 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
 
 bootstrap_k = function(blocks, connection = 1 - diag(length(blocks)), tau = rep(1, length(blocks)),
                        ncomp = rep(2, length(blocks)), scheme = 'factorial', scale = TRUE,
-                       init = "svd", bias = TRUE, type = "rgcca"){
+                       init = "svd", bias = TRUE, type = "rgcca", verbose = FALSE){
   # Shuffle rows
   id_boot = sample(NROW(blocks[[1]]), replace = T)
 
@@ -293,7 +293,7 @@ bootstrap_k = function(blocks, connection = 1 - diag(length(blocks)), tau = rep(
 
   # Get boostraped weights
   w = rgcca.analyze(boot_blocks, connection, tau = tau,  ncomp = ncomp, scheme = scheme,
-                scale = FALSE, init = init, bias = bias, type = type)$a
+                scale = FALSE, init = init, bias = bias, type = type, verbose = verbose)$a
 
   # Add removed variables
   missing_var = lapply(1:length(blocks), function(x) setdiff(colnames(blocks[[x]]), rownames(w[[x]])))
@@ -319,12 +319,17 @@ bootstrap = function(blocks, n_boot = 5, connection = 1 - diag(length(blocks)), 
                        ncomp = rep(2, length(blocks)), scheme = 'factorial', scale = TRUE,
                        init = "svd", bias = TRUE, type = "rgcca", nb_cores = NULL){
 
+  if(any(unlist(lapply(blocks, ncol) > 1000)))
+    verbose = TRUE
+
   if(is.null(nb_cores) )
     nb_cores = detectCores() - 1
 
   w1 = bootstrap_k(blocks, connection, tau, ncomp, scheme, scale, init, bias, type)
 
   W = parallel::mclapply(1:(n_boot-1), function(x) {
+
+    print(x)
 
     w = bootstrap_k(blocks, connection, tau, ncomp, scheme, scale, init, bias, type)
 

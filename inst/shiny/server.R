@@ -29,7 +29,6 @@ server <- function(input, output) {
 
   ################################################ User Interface ################################################
 
-  #TODO: remove blocks, superblock from observeEvent
   output$blocks_names_custom_x <- renderUI({
     setNamesInput("x")
   })
@@ -175,7 +174,7 @@ server <- function(input, output) {
       tau = rep(input$tau, length(blocks))
 
     if(length(blocks) == 1){
-      warning("Only one block is selected. By default, a PCA is performed.", call = FALSE, immediate. = TRUE)
+      showWarn(warning("Only one block is selected. By default, a PCA is performed.", call = FALSE, immediate. = TRUE))
       assign("analysis_type", "pca", .GlobalEnv)
     }else
       assign("analysis_type", input$analysis_type, .GlobalEnv)
@@ -185,16 +184,16 @@ server <- function(input, output) {
     else
       response = input$supervized
 
-    pars = checkSuperblock(list(response = response, superblock = input$superblock))
+    pars = showWarn(checkSuperblock(list(response = response, superblock = input$superblock)))
 
     if(input$supervized){
       pars = setPosPar(list(tau = tau, ncomp = ncomp, superblock = pars$superblock), blocks, id_block_resp)
       blocks = pars$blocks; tau = pars$tau; ncomp = pars$ncomp
     }
 
-    pars = select.type(A = blocks, C = NULL, tau = tau,
+    pars = showWarn(select.type(A = blocks, C = NULL, tau = tau,
                        ncomp = ncomp, scheme = input$scheme,
-                       superblock = pars$superblock, type  = analysis_type)
+                       superblock = pars$superblock, type  = analysis_type))
 
     assign("connection", pars$connection, .GlobalEnv)
     assign("tau", pars$tau, .GlobalEnv)
@@ -226,20 +225,42 @@ server <- function(input, output) {
     }
   }
 
+  showWarn = function(f, type = "warning", duration = 10){
+
+    ids <- character(0)
+
+    withCallingHandlers({
+        res = f
+      }, warning = function(w) {
+        id <- showNotification(w$message, type = type, duration = duration)
+        ids <<- c(ids, id)
+      }
+    )
+
+    if(is.null(duration) & length(ids) != 0){
+      for (id in ids)
+        removeNotification(id)
+    }
+
+    return(res)
+  }
+
   setRGCCA <- function() {
     # Load the analysis
 
-    rgcca.res = rgcca.analyze(blocks,
-                 connection = connection,
-                 tau = tau,
-                 ncomp = ncomp,
-                 scheme = scheme,
-                 scale = FALSE,
-                 init = input$init,
-                 bias = TRUE,
-                 type = analysis_type)
-
-    assign("rgcca.res", rgcca.res, .GlobalEnv)
+    assign("rgcca.res",
+           showWarn(
+             rgcca.analyze(blocks,
+                         connection = connection,
+                         tau = tau,
+                         ncomp = ncomp,
+                         scheme = scheme,
+                         scale = FALSE,
+                         init = input$init,
+                         bias = TRUE,
+                         type = analysis_type),
+           duration = NULL),
+      .GlobalEnv)
 
     assign("nodes", getNodes(blocks, rgcca = rgcca.res), .GlobalEnv)
     assign("edges", getEdges(connection, blocks), .GlobalEnv)
@@ -334,10 +355,12 @@ server <- function(input, output) {
 
     tryCatch({
       assign("blocks_unscaled",
-             setBlocks (file = paths,
+             showWarn(setBlocks (file = paths,
                         names = names,
                         sep = input$sep,
                         header = TRUE),
+                      duration = NULL
+                      ),
              .GlobalEnv)
 
       assign("blocks_without_superb",

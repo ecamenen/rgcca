@@ -35,7 +35,8 @@ getFileName = function(fi) {
 checkFileSize = function(filename){
   size = file.size(filename)
   if(size > 5E6)
-    warning(paste("The size of ", filename, " is over 5 Mo (", round(size / 1E6, 1), " Mo). File loading could take some times...\n", sep=""),
+    #warning(paste("The size of ", filename, " is over 5 Mo (", round(size / 1E6, 1), " Mo). File loading could take some times...\n", sep=""),
+    warning("File loading in progress ...",
             immediate. = TRUE,
             call. = FALSE)
 }
