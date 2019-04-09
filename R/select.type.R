@@ -5,7 +5,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
                         ncomp = rep(1, length(A)), scheme = "centroid", superblock = TRUE, type  = "rgcca"){
 
   J = length(A)
-  warn.msg.super = character(0)
+  warn.value.type = warn.par.type = warn.msg.super = character(0)
 
   if(!is.null(opt)){
     scheme = opt$scheme; C = opt$connection;  superblock = opt$superblock; type = opt$type; tau = opt$tau; ncomp = opt$ncomp
@@ -24,9 +24,8 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
   ### SETTINGS ###
 
   warnParam = function(param, x){
-    warning(paste("Because ", type, " was selected, ", paste(deparse(substitute(param))), " parameter was set to ",
-                  toString(x),"\n", sep=""),
-            call. = FALSE, immediate. = TRUE)
+    warn.par.type <<- c(warn.par.type, paste(deparse(substitute(param))))
+    warn.value.type <<- c(warn.value.type, toString(x))
   }
 
   setTau = function(x){
@@ -54,21 +53,20 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
 
   setSuperbloc = function(verbose = TRUE){
     if(verbose)
-      warning(paste("Because ", type, " was set, a superblock was used.\n",
-                    sep=""), call. = FALSE, immediate. = TRUE)
-    assign("A", c(A, Superblock = list(Reduce(cbind, A))), envir = parent.frame())
-    assign("superblock", TRUE, envir = parent.frame())
-    assign("C", NULL, envir = parent.frame())
-    assign("ncomp", warnSuper(ncomp), envir = parent.frame())
+      warning(paste0("By using a ", type, ", a superblock was used.\n"), call. = FALSE, immediate. = TRUE)
+    A <<- c(A, Superblock = list(Reduce(cbind, A)))
+    superblock <<- TRUE
+    C <<- NULL
+    ncomp <<- warnSuper(ncomp)
   }
 
   set2Block = function(){
 
     if(length(A) != 2)
-      stop(paste(length(A), " blocks used in the analysis. Two blocks are required for a CCA.\n", sep=""), call.=FALSE)
+      stop(paste0(length(A), " blocks used in the analysis. Two blocks are required for a CCA.\n"), call.=FALSE)
 
-    assign("scheme", setScheme("horst"), envir = parent.frame())
-    assign("C", setConnection(1-diag(2)), envir = parent.frame())
+    scheme <<- setScheme("horst")
+    C <<- setConnection(1-diag(2))
   }
 
   ### CHECK TYPES ###
@@ -91,7 +89,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
   else if (tolower(type) == "pca"){
 
     if(length(A) != 1)
-      stop(paste(length(A), " blocks used in the analysis. Only one block is required for a PCA.\n", sep=""), call.=FALSE)
+      stop(paste0(length(A), " blocks used in the analysis. Only one block is required for a PCA.\n"), call.=FALSE)
 
     scheme   <- setScheme("horst")
     tau      <- setTau(c(1, 1))
@@ -218,11 +216,40 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
 
   if(length(warn.msg.super) > 0){
 
-    if( length(warn.msg.super) > 1 )
-      warn.msg.super = paste(warn.msg.super, collapse = ", ")
+    if( length(warn.msg.super) > 1 ){
+      warn.msg.super = paste(warn.msg.super, collapse = " and ")
+      grammar = "were those"
+    }else
+      grammar = "was the one"
 
-    warning(paste("Because of the use of a superblock, ", warn.msg.super,
-                  " for the superblock was the one of the first block.\n", sep=""),
+    warning(paste0("By using a superblock, ", warn.msg.super,
+                  " of the superblock ", grammar," of the first block.\n"),
+            call. = FALSE, immediate. = TRUE)
+  }
+
+  n = length(warn.par.type)
+  if(n > 0){
+
+    setPlural = function(x = warn.par.type, y = warn.value.type, sep = " and "){
+      warn.par.type <<- paste0(x, collapse = sep)
+      warn.value.type <<- paste0(y, collapse = sep)
+    }
+
+    if(n > 1){
+      grammar = "s were respectively"
+      if(n == 2)
+        setPlural()
+      else{
+        warn.type = c(warn.par.type[n], warn.value.type[n])
+        setPlural(warn.par.type[-n], warn.value.type[-n], ", ")
+        setPlural(c(warn.par.type, warn.type[1]), c(warn.value.type, warn.type[2]))
+      }
+    }else
+      grammar = " was"
+
+    msg = paste0(", ", warn.par.type, " parameter", grammar, " set to ", warn.value.type, ".")
+
+    warning(paste0("By using a ", type, msg ,"\n"),
             call. = FALSE, immediate. = TRUE)
   }
 

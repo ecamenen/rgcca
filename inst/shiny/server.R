@@ -353,6 +353,9 @@ server <- function(input, output) {
     paths = paste(input$blocks$datapath, collapse = ',')
     names = paste(input$blocks$name, collapse = ',')
 
+    if(length(input$blocks$datapath) > 1)
+      print("YES")
+
     tryCatch({
       assign("blocks_unscaled",
              showWarn(setBlocks (file = paths,

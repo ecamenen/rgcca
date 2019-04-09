@@ -236,11 +236,11 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "rgcca",
+           type = "pca",
            scheme = "factorial",
-           tau = "0.7, 0.7, 0.7",
+           tau = "0.7",
            init = "svd",
-           ncomp = "2, 2, 2",
+           ncomp = "2",
            block = 0,
            compx = 1,
            compy = 2,
@@ -251,7 +251,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "/home/etienne.camenen/bin/rgccaLauncher/data/blocks.xlsx")
+           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv")
            #datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv")
            #datasets = "/home/etienne.camenen/Documents/DATA/Gliom/y.tsv, /home/etienne.camenen/Documents/DATA/Gliom/GE.tsv, /home/etienne.camenen/Documents/DATA/Gliom/CGH.tsv")
 
