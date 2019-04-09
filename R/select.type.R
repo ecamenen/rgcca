@@ -66,7 +66,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
   set2Block = function(){
 
     if(length(A) != 2)
-      stop(paste0(length(A), " blocks used in the analysis. Two blocks are required for a CCA."), call.=FALSE)
+      stop(paste0(length(A), " blocks used in the analysis. Two blocks are required for a CCA."), exit_code = 110)
 
     scheme <<- setScheme("horst")
     C <<- setConnection(1-diag(2))
@@ -92,7 +92,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
   else if (tolower(type) == "pca"){
 
     if(length(A) != 1)
-      stop(paste0(length(A), " blocks used in the analysis. Only one block is required for a PCA."), call. = FALSE)
+      stop(paste0(length(A), " blocks used in the analysis. Only one block is required for a PCA."), exit_code = 111)
 
     scheme   <- setScheme("horst")
     tau      <- setTau(c(1, 1))
@@ -215,7 +215,8 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
   }
 
   else if(length(grep("[sr]gcca", tolower(type))) != 1){
-    stop("Wrong type of analysis. Please select one among the following list: rgcca, cpca-w, gcca, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov., sabscov, plspm.")
+    stop("Wrong type of analysis. Please select one among the following list: rgcca, cpca-w, gcca, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov., sabscov, plspm.",
+         exit_code = 112)
   }
 
   ### WARNINGS ###
@@ -245,7 +246,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
     if(superblock & tolower(type) != "pca" )
       msg = paste0(msg, " and ", MSG_SUPER)
 
-    warning(paste0(MSG_TYPE, msg ,"."), call. = FALSE, immediate. = TRUE)
+    warning(paste0(MSG_TYPE, msg ,"."))
   }
 
   if(verbose & superblock){
@@ -262,8 +263,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
       grammar = "was the one"
 
     warning(paste0("By using a superblock, ", warn.msg.super,
-                   " of the superblock ", grammar," of the first block."),
-            call. = FALSE, immediate. = TRUE)
+                   " of the superblock ", grammar," of the first block."))
   }
 
   opt$blocks = A; opt$scheme = scheme;  opt$tau = tau;  opt$ncomp = ncomp;  opt$connection = C;  opt$superblock = superblock
@@ -285,7 +285,7 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
   }
 
   if (WARN & verbose)
-    warning("RGCCA in progress ...", immediate. = TRUE, call. = FALSE)
+    warning("RGCCA in progress ...")
 
   if(tolower(type) =="sgcca"){
     func = sgcca
@@ -408,7 +408,7 @@ plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
     i_block = length(W[[1]])
 
   if(comp > min(unlist(lapply(W, function(x) lapply(x, function(z) ncol(z))))))
-    stop("Selected dimension was not associated to every blocks", call. = FALSE)
+    stop("Selected dimension was not associated to every blocks", exit_code = 113)
 
   W_select = Reduce(rbind, lapply(W, function(x) x[[i_block]][, comp]) )
   stats = apply(W_select, 2,  function(x) c(mean(x), sd(x)))

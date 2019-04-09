@@ -9,16 +9,16 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
-condition <- function(subclass, message, call = sys.call(-1)){
-  structure(
-    class = c(subclass, "condition"),
-    list(message = message, call = call)
-  )
+warning <- function(message,  call = sys.call(-1)){
+  base::warning(message, call. = FALSE, immediate. = TRUE)
 }
 
-custom_stop <- function(subclass, message, call = sys.call(-1)) {
-  c <- condition(c(subclass, "error"), message, call = call)
-  stop(c)
+stop <- function(message, exit_code = "1", call = sys.call(-1)) {
+  base::stop(
+    structure(
+      class = c(exit_code, "simpleError", "error", "condition"),
+      list(message = message, call = call)
+    ))
 }
 
 #Global settings
@@ -48,9 +48,7 @@ checkFileSize = function(filename){
   size = file.size(filename)
   if(size > 5E6)
     #warning(paste("The size of ", filename, " is over 5 Mo (", round(size / 1E6, 1), " Mo). File loading could take some times...\n", sep=""),
-    warning("File loading in progress ...",
-            immediate. = TRUE,
-            call. = FALSE)
+    warning("File loading in progress ...")
 }
 
 #' Creates a matrix from loading a file
@@ -188,7 +186,7 @@ checkQuantitative = function(df, fo, h = FALSE) {
     if (!h)
       msg = paste(msg, MSG_HEADER, sep = "")
 
-    stop(paste(msg, "\n"), call. = FALSE)
+    stop(paste(msg, "\n"), exit_code = 100)
   }
 
 }
@@ -198,7 +196,7 @@ checkFile = function (f){
   # f: A character giving the path of a file
 
   if(!file.exists(f))
-    stop(paste(f, " file does not exist.", sep=""), call. = FALSE)
+    stop(paste(f, " file does not exist.", sep=""), exit_code = 101)
 
 }
 
@@ -271,8 +269,7 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
 
     #if one-column file, it is a tabulation error
     if (NCOL(df) == 0)
-      stop(paste(fo, "block file has an only-column. Check the separator [by default: tabulation].\n"),
-           call. = FALSE)
+      stop(paste(fo, "block file has an only-column. Check the separator [by default: tabulation].\n"), exit_code = 102)
 
     dimnames = list(row.names(df), colnames(df))
     options(warn = -1)
@@ -312,21 +309,21 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
 checkConnection = function(c, blocks) {
 
   if (!isSymmetric.matrix(unname(c)))
-    stop("The connection file must be a symmetric matrix.\n", call. = FALSE)
+    stop("The connection file must be a symmetric matrix.\n", exit_code = 103)
   n = length(blocks)
   if (NCOL(c) != n)
-    stop(paste("The number of rows/columns of the connection matrix file must be equals to ",
+    stop(paste0("The number of rows/columns of the connection matrix file must be equals to ",
                n,
-               " (the number of blocks in the dataset, +1 with a superblock by default).\n", sep = ""),
-         call. = FALSE)
+               " (the number of blocks in the dataset, +1 with a superblock by default).\n"),
+         exit_code = 104)
   d = unique(diag(c))
   if (length(d) != 1 || d != 0)
-    stop("The diagonal of the connection matrix file must be 0.\n", call. = FALSE)
+    stop("The diagonal of the connection matrix file must be 0.\n", exit_code = 105)
   x = unique(c %in% c(0, 1))
   if (length(x) != 1 || x != T)
-    stop("The connection file must contains only 0 or 1.\n", call. = FALSE)
+    stop("The connection file must contains only 0 or 1.\n", exit_code = 106)
   if(all(c==0))
-    stop("The connection file could not contain only 0.\n", call. = FALSE)
+    stop("The connection file could not contain only 0.\n", exit_code = 107)
 
   #TODO: warning if superblock = TRUE
 
@@ -414,8 +411,7 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
 
       } else {
         response = response[, 1]
-        warning("There is multiple columns in the response file. By default, only the first one is taken in account.\n",
-                call. = FALSE, immediate. = TRUE)
+        warning("There is multiple columns in the response file. By default, only the first one is taken in account.")
       }
     }
 
@@ -548,8 +544,7 @@ setPosPar = function(opt, blocks, i_resp){
 
 
 warnConnection = function(x)
-  warning(paste("By using a ", x , ", all blocks are connected to this block in the connection matrix and the connection file is ignored.\n", sep=""),
-          call. = FALSE, immediate. = TRUE)
+  warning(paste0("By using a ", x , ", all blocks are connected to this block in the connection matrix and the connection file is ignored."))
 
 checkSuperblock = function(opt){
 
@@ -558,7 +553,7 @@ checkSuperblock = function(opt){
     if( opt$superblock){
       opt$superblock = FALSE
       if("superblock" %in% names(opt))
-        warning("In a supervised mode, the superblock corresponds to the response.\n", call. = FALSE, immediate. = TRUE)
+        warning("In a supervised mode, the superblock corresponds to the response.")
     }
   }
   return(opt)

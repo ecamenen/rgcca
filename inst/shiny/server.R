@@ -174,7 +174,7 @@ server <- function(input, output) {
       tau = rep(input$tau, length(blocks))
 
     if(length(blocks) == 1){
-      showWarn(warning("Only one block is selected. By default, a PCA is performed.", call. = FALSE, immediate. = TRUE))
+      showWarn(warning("Only one block is selected. By default, a PCA is performed."))
       assign("analysis_type", "pca", .GlobalEnv)
     }else
       assign("analysis_type", input$analysis_type, .GlobalEnv)
@@ -195,12 +195,17 @@ server <- function(input, output) {
                        ncomp = ncomp, scheme = input$scheme,
                        superblock = pars$superblock, type  = analysis_type))
 
-    assign("connection", pars$connection, .GlobalEnv)
-    assign("tau", pars$tau, .GlobalEnv)
-    assign("ncomp", pars$ncomp, .GlobalEnv)
-    assign("scheme", pars$scheme, .GlobalEnv)
-    assign("superblock", pars$superblock, .GlobalEnv)
-    return(pars$blocks)
+    if(length(pars) > 1){
+
+      assign("connection", pars$connection, .GlobalEnv)
+      assign("tau", pars$tau, .GlobalEnv)
+      assign("ncomp", pars$ncomp, .GlobalEnv)
+      assign("scheme", pars$scheme, .GlobalEnv)
+      assign("superblock", pars$superblock, .GlobalEnv)
+      return(pars$blocks)
+    }else{
+      return(NULL)
+    }
   }
 
   setData <- function() {
@@ -225,37 +230,23 @@ server <- function(input, output) {
     }
   }
 
-  showWarn = function(f, type = "warning", duration = 10){
+  showWarn = function(f, duration = 10){
 
     ids <- character(0)
 
-    withCallingHandlers({
-        res = f
+    try(withCallingHandlers({
+        res <- f
       }, warning = function(w) {
-        id <- showNotification(w$message, type = type, duration = duration)
+
+        id <- showNotification(w$message, type = "warning", duration = duration)
         ids <<- c(ids, id)
-      }
-    )
 
-    if(is.null(duration) & length(ids) != 0){
-      for (id in ids)
-        removeNotification(id)
-    }
+      }, error = function(e) {
 
-    return(res)
-  }
-
-  showErr = function(f, type = "error", duration = 10){
-
-    ids <- character(0)
-
-    withCallingHandlers({
-      res = f
-    }, error = function(w) {
-      id <- showNotification(w$message, type = type, duration = duration)
-      ids <<- c(ids, id)
-    }
-    )
+        id <- showNotification(e$message, type = "error", duration = duration)
+        ids <<- c(ids, id)
+        res <<- class(e)[1]
+    }), silent = TRUE)
 
     if(is.null(duration) & length(ids) != 0){
       for (id in ids)
@@ -349,17 +340,20 @@ server <- function(input, output) {
   }
 
   setAnalysis = function(){
-    assign("blocks", setParRGCCA(), .GlobalEnv)
+    blocks <- setParRGCCA()
 
-    if(is.null(connection))
-      assign("connection", setConnection (blocks = blocks,
-                                          superblock = (superblock  | input$supervized),
-                                          file = input$connection$datapath,
-                                          sep = input$sep),
-             .GlobalEnv)
+    if(!is.null(blocks)){
+      blocks <<- blocks
+      if(is.null(connection))
+        assign("connection", setConnection (blocks = blocks,
+                                            superblock = (superblock  | input$supervized),
+                                            file = input$connection$datapath,
+                                            sep = input$sep),
+               .GlobalEnv)
 
-    setRGCCA()
-    setIdBlock()
+      setRGCCA()
+      setIdBlock()
+    }
   }
 
   ################################################ Observe events ################################################
@@ -429,7 +423,6 @@ server <- function(input, output) {
   observeEvent(c(input$superblock, input$supervized), {
 
     if(blocksExists()){
-      print(input$supervized)
       setNamesInput("x")
       setNamesInput("response")
       setAnalysis()

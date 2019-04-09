@@ -79,7 +79,7 @@ checkFile = function (f){
   # f: A character giving the path of a file
 
   if(!file.exists(f)){
-    stop(paste(f, " file does not exist\n", sep=""), call.=FALSE)
+    stop(paste0(f, " file does not exist."), exit_code = 120)
   }
 }
 
@@ -88,12 +88,12 @@ checkFile = function (f){
 checkArg = function(opt){
 
   if(is.null(opt$datasets))
-    stop(paste("--datasets is required\n", sep=""), call.=FALSE)
+    stop(paste0("--datasets is required."), exit_code = 121)
 
   if (is.null(opt$scheme))
     opt$scheme = "factorial"
   else if ((opt$scheme < 1) || (opt$scheme > 4)){
-    stop("--scheme must be comprise between 1 and 4 [by default: 2].\n", call.=FALSE)
+    stop("--scheme must be comprise between 1 and 4 [by default: 2].", exit_code = 122)
   }else{
     schemes = c("horst", "factorial", "centroid")
     if (opt$scheme == 4)
@@ -103,14 +103,14 @@ checkArg = function(opt){
   }
 
   if ((opt$separator < 1) || (opt$separator > 3)){
-    stop("--separator must be comprise between 1 and 2 (1: Tabulation, 2: Semicolon, 3: Comma) [by default: 2].\n", call.=FALSE)
+    stop("--separator must be comprise between 1 and 2 (1: Tabulation, 2: Semicolon, 3: Comma) [by default: 2].", exit_code = 123)
   }else{
     separators = c('\t', ';', ',')
     opt$separator = separators[opt$separator]
   }
 
   if ((opt$init < 1) || (opt$init > 2)){
-    stop("--init must be comprise between 1 and 2 (1: Singular Value Decompostion , 2: random) [by default: SVD].\n", call.=FALSE)
+    stop("--init must be comprise between 1 and 2 (1: Singular Value Decompostion , 2: random) [by default: SVD].", exit_code = 124)
   }else{
     opt$init = ifelse(opt$init == 1, "svd", "random")
   }
@@ -136,7 +136,7 @@ postCheckArg = function(opt, blocks){
 
   out = lapply(1:length(opt$ncomp), function(x){
     if ((opt$ncomp[x] < 1) || (opt$ncomp[x] > ncol(blocks[[x]]))){
-      stop("--ncomp must be comprise between 1 and ", ncol(blocks[[x]]) ,", the number of variables of the block (currently equals to ", opt$ncomp[x]  ,").\n", call.=FALSE)
+      stop("--ncomp must be comprise between 1 and ", ncol(blocks[[x]]) ,", the number of variables of the block (currently equals to ", opt$ncomp[x]  ,").\n", exit_code = 126)
     }
   })
 
@@ -144,17 +144,17 @@ postCheckArg = function(opt, blocks){
     opt$ncomp = rep(opt$ncomp[[1]], length(blocks))
   else
     if(length(opt$ncomp) != length(blocks))
-      stop(paste("--ncomp list must have the same size (", length(opt$ncomp), ") than the the number of blocks (", length(blocks), ").\n", sep=""), call.=FALSE)
+      stop(paste0("--ncomp list must have the same size (", length(opt$ncomp), ") than the the number of blocks (", length(blocks), ")."), exit_code = 127)
     else
       opt$ncomp = unlist(opt$ncomp)
 
   out = sapply(c("compx", "compy"), function (x){
     if ((opt[[x]] < 1) || (opt[[x]] > opt$ncomp )){
-      stop(paste("--", x, " must be comprise between 1 and ", opt$ncomp ," (the number of component selected).\n ", sep=""), call.=FALSE)
+      stop(paste0("--", x, " must be comprise between 1 and ", opt$ncomp ," (the number of component selected)."), exit_code = 128)
     }
   })
 
-  MSG = "--tau must be comprise between 0 and 1 or must correspond to the character 'optimal' for automatic setting.\n"
+  MSG = "--tau must be comprise between 0 and 1 or must correspond to the character 'optimal' for automatic setting."
   if(all(opt$tau!="optimal")){
     tryCatch({
 
@@ -162,7 +162,7 @@ postCheckArg = function(opt, blocks){
       # Check value of each tau
       out = lapply(list_tau, function(x){
         if(((x < 0) || (x > 1)) && x != "optimal")
-          stop(MSG, call.=FALSE)
+          stop(MSG, exit_code = 129)
       })
 
       # If there is only one common tau
@@ -170,12 +170,12 @@ postCheckArg = function(opt, blocks){
         opt$tau = rep(list_tau[[1]], length(blocks))
       else
         if(length(list_tau) != length(blocks))
-          stop(paste("--tau list must have the same size (", length(list_tau), ") than the the number of blocks (", length(blocks), ").\n", sep=""), call.=FALSE)
+          stop(paste0("--tau list must have the same size (", length(list_tau), ") than the the number of blocks (", length(blocks), ")."), exit_code = 130)
         else
           opt$tau = unlist(list_tau)
 
     }, warning = function(w) {
-      stop(MSG, call.=FALSE)
+      stop(MSG, exit_code = 131)
     })
   }else{
     opt$tau = "optimal"
@@ -191,17 +191,17 @@ postCheckArg = function(opt, blocks){
       # Check c1 varying between 1/sqrt(pj) and 1
       out = mapply(function(x, y){
         if(x < y | x > 1)
-          stop(paste("Sparsity parameter is equals to ", x,
+          stop(paste0("Sparsity parameter is equals to ", x,
                      ". For SGCCA, it must be comprise between 1/sqrt(number_column) (i.e., ",
                      toString(unlist(lapply(min_c1, function(x) ceiling(x * 100) / 100)))
-                     , ") and 1.\n", sep=""),
-               call. = FALSE)
+                     , ") and 1."),
+               exit_code = 132)
       }, opt$tau, min_c1)
   }
 
 
   if(opt$block > length(blocks))
-    stop(paste("--block must be lower than ", length(blocks), " (the maximum number of blocks).\n", sep=""), call.=FALSE)
+    stop(paste0("--block must be lower than ", length(blocks), " (the maximum number of blocks)."), exit_code = 133)
   else if(opt$block == 0)
     opt$block = length(blocks)
 
@@ -260,7 +260,7 @@ withCallingHandlers({
   opt = checkArg(opt)
 }, error = function(e) {
   if (length(grep("nextArg", e[[1]])) != 1)
-    stop(e[[1]], call.=FALSE)
+    stop(e[[1]], exit_code = 140)
 })
 
 setwd(opt$directory)
@@ -301,7 +301,7 @@ rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, FA
 
 # Samples common space
 if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
-   warning("With a number of component of 1, a second block should be chosen to perform a samples plot", .call = FALSE)
+   warning("With a number of component of 1, a second block should be chosen to perform a samples plot")
 }else{
   ( samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y) )
    p = changeHovertext( dynamicPlot(samples_plot, ax, "text", TRUE, TRUE), opt$text )  %>%
