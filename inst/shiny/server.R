@@ -174,7 +174,7 @@ server <- function(input, output) {
       tau = rep(input$tau, length(blocks))
 
     if(length(blocks) == 1){
-      showWarn(warning("Only one block is selected. By default, a PCA is performed.", call = FALSE, immediate. = TRUE))
+      showWarn(warning("Only one block is selected. By default, a PCA is performed.", call. = FALSE, immediate. = TRUE))
       assign("analysis_type", "pca", .GlobalEnv)
     }else
       assign("analysis_type", input$analysis_type, .GlobalEnv)
@@ -235,6 +235,26 @@ server <- function(input, output) {
         id <- showNotification(w$message, type = type, duration = duration)
         ids <<- c(ids, id)
       }
+    )
+
+    if(is.null(duration) & length(ids) != 0){
+      for (id in ids)
+        removeNotification(id)
+    }
+
+    return(res)
+  }
+
+  showErr = function(f, type = "error", duration = 10){
+
+    ids <- character(0)
+
+    withCallingHandlers({
+      res = f
+    }, error = function(w) {
+      id <- showNotification(w$message, type = type, duration = duration)
+      ids <<- c(ids, id)
+    }
     )
 
     if(is.null(duration) & length(ids) != 0){
@@ -353,10 +373,15 @@ server <- function(input, output) {
     paths = paste(input$blocks$datapath, collapse = ',')
     names = paste(input$blocks$name, collapse = ',')
 
-    if(length(input$blocks$datapath) > 1)
-      print("YES")
+    if(tolower(input$analysis_type) == "pca" & length(input$blocks$datapath) > 1){
+      print("ERROR 1")
+    #TODO: notification
+    }else if (tolower(input$analysis_type) %in% c("cca", "ra", "ifa", "pls") & ( length(input$blocks$datapath) < 2  |  length(input$blocks$datapath) > 2 ) ){
+      print("ERROR 2")
+      #TODO: notification
+    }
 
-    tryCatch({
+    withCallingHandlers({
       assign("blocks_unscaled",
              showWarn(setBlocks (file = paths,
                         names = names,
@@ -415,7 +440,7 @@ server <- function(input, output) {
     # Observe if a response is fixed
 
     if(blocksExists()){
-      tryCatch({
+      withCallingHandlers({
         assign("response", setResponse (blocks = blocks,
                             file = input$response$datapath,
                             sep = input$sep,
@@ -437,7 +462,7 @@ server <- function(input, output) {
     # Observe if a connection is fixed
 
     if(blocksExists()){
-      tryCatch({
+      withCallingHandlers({
 
         if(is.null(connection))
           assign("connection", setConnection (blocks = blocks,

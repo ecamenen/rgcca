@@ -2,10 +2,8 @@ VERBOSE = FALSE
 
 #' Translates the type string into the appropriate tau and function
 select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = rep(1, length(A)),
-                        ncomp = rep(1, length(A)), scheme = "centroid", superblock = TRUE, type  = "rgcca"){
-
-  J = length(A)
-  warn.value.type = warn.par.type = warn.msg.super = character(0)
+                        ncomp = rep(1, length(A)), scheme = "centroid", superblock = TRUE,
+                        type  = "rgcca", verbose = TRUE, quiet = FALSE){
 
   if(!is.null(opt)){
     scheme = opt$scheme; C = opt$connection;  superblock = opt$superblock; type = opt$type; tau = opt$tau; ncomp = opt$ncomp
@@ -21,11 +19,18 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
     }))
   }
 
+  J = length(A)
+  MSG_SUPER = "a superbloc is used"
+  MSG_TYPE = paste0("By using a ", toupper(type), ", ")
+  warn.type.value = warn.type.par = warn.msg.super = character(0)
+  if(quiet)
+    verbose = FALSE
+
   ### SETTINGS ###
 
   warnParam = function(param, x){
-    warn.par.type <<- c(warn.par.type, paste(deparse(substitute(param))))
-    warn.value.type <<- c(warn.value.type, toString(x))
+    warn.type.par <<- c(warn.type.par, paste(deparse(substitute(param))))
+    warn.type.value <<- c(warn.type.value, toString(x))
   }
 
   setTau = function(x){
@@ -52,8 +57,6 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
   }
 
   setSuperbloc = function(verbose = TRUE){
-    if(verbose)
-      warning(paste0("By using a ", type, ", a superblock was used.\n"), call. = FALSE, immediate. = TRUE)
     A <<- c(A, Superblock = list(Reduce(cbind, A)))
     superblock <<- TRUE
     C <<- NULL
@@ -63,7 +66,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
   set2Block = function(){
 
     if(length(A) != 2)
-      stop(paste0(length(A), " blocks used in the analysis. Two blocks are required for a CCA.\n"), call.=FALSE)
+      stop(paste0(length(A), " blocks used in the analysis. Two blocks are required for a CCA."), call.=FALSE)
 
     scheme <<- setScheme("horst")
     C <<- setConnection(1-diag(2))
@@ -89,7 +92,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
   else if (tolower(type) == "pca"){
 
     if(length(A) != 1)
-      stop(paste0(length(A), " blocks used in the analysis. Only one block is required for a PCA.\n"), call.=FALSE)
+      stop(paste0(length(A), " blocks used in the analysis. Only one block is required for a PCA."), call. = FALSE)
 
     scheme   <- setScheme("horst")
     tau      <- setTau(c(1, 1))
@@ -122,15 +125,16 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
 
       tau      <- setTau(rep(0, J))
 
-      if (tolower(type) == "sumcor")
-        scheme   <- setScheme("horst")
+      switch(tolower(type),
 
-      else if (tolower(type) == "ssqcor")
-        scheme   <- setScheme("factorial")
+      "sumcor" = {
+        scheme   <- setScheme("horst")},
 
-      else if (tolower(type) == "sabscor")
-        scheme   <- setScheme("centroid")
+      "ssqcor"= {
+        scheme   <- setScheme("factorial")},
 
+      "sabscor"= {
+        scheme   <- setScheme("centroid")})
     }
 
     # COV models
@@ -211,10 +215,45 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
   }
 
   else if(length(grep("[sr]gcca", tolower(type))) != 1){
-    stop("Wrong type of analysis. Please select one among the following list: rgcca, cpca-w, gcca, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov., sabscov, plspm\n")
+    stop("Wrong type of analysis. Please select one among the following list: rgcca, cpca-w, gcca, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov., sabscov, plspm.")
   }
 
-  if(length(warn.msg.super) > 0){
+  ### WARNINGS ###
+
+  n = length(warn.type.par)
+  if(verbose & n > 0){
+
+    setPlural = function(x = warn.type.par, y = warn.type.value, sep = " and "){
+      warn.type.par <<- paste0(x, collapse = sep)
+      warn.type.value <<- paste0(y, collapse = sep)
+    }
+
+    if(n > 1){
+      grammar = "s were respectively"
+      if(n == 2)
+        setPlural()
+      else{
+        warn.type = c(warn.type.par[n], warn.type.value[n])
+        setPlural(warn.type.par[-n], warn.type.value[-n], ", ")
+        setPlural(c(warn.type.par, warn.type[1]), c(warn.type.value, warn.type[2]))
+      }
+    }else
+      grammar = " was"
+
+    msg = paste0( warn.type.par, " parameter", grammar, " set to ", warn.type.value)
+
+    if(superblock & tolower(type) != "pca" )
+      msg = paste0(msg, " and ", MSG_SUPER)
+
+    warning(paste0(MSG_TYPE, msg ,"."), call. = FALSE, immediate. = TRUE)
+  }
+
+  if(verbose & superblock){
+    if(n < 0)
+      paste0(MSG_SUPER, MSG_SUPER)
+  }
+
+  if( !quiet & length(warn.msg.super) > 0){
 
     if( length(warn.msg.super) > 1 ){
       warn.msg.super = paste(warn.msg.super, collapse = " and ")
@@ -223,33 +262,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
       grammar = "was the one"
 
     warning(paste0("By using a superblock, ", warn.msg.super,
-                  " of the superblock ", grammar," of the first block.\n"),
-            call. = FALSE, immediate. = TRUE)
-  }
-
-  n = length(warn.par.type)
-  if(n > 0){
-
-    setPlural = function(x = warn.par.type, y = warn.value.type, sep = " and "){
-      warn.par.type <<- paste0(x, collapse = sep)
-      warn.value.type <<- paste0(y, collapse = sep)
-    }
-
-    if(n > 1){
-      grammar = "s were respectively"
-      if(n == 2)
-        setPlural()
-      else{
-        warn.type = c(warn.par.type[n], warn.value.type[n])
-        setPlural(warn.par.type[-n], warn.value.type[-n], ", ")
-        setPlural(c(warn.par.type, warn.type[1]), c(warn.value.type, warn.type[2]))
-      }
-    }else
-      grammar = " was"
-
-    msg = paste0(", ", warn.par.type, " parameter", grammar, " set to ", warn.value.type, ".")
-
-    warning(paste0("By using a ", type, msg ,"\n"),
+                   " of the superblock ", grammar," of the first block."),
             call. = FALSE, immediate. = TRUE)
   }
 
@@ -272,7 +285,7 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
   }
 
   if (WARN & verbose)
-    warning("RGCCA in progress ...\n", immediate. = TRUE, call. = FALSE)
+    warning("RGCCA in progress ...", immediate. = TRUE, call. = FALSE)
 
   if(tolower(type) =="sgcca"){
     func = sgcca

@@ -255,7 +255,7 @@ opt = list(directory = ".",
            #datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv")
            #datasets = "/home/etienne.camenen/Documents/DATA/Gliom/y.tsv, /home/etienne.camenen/Documents/DATA/Gliom/GE.tsv, /home/etienne.camenen/Documents/DATA/Gliom/CGH.tsv")
 
-tryCatch({
+withCallingHandlers({
   opt = parse_args(getArgs())
   opt = checkArg(opt)
 }, error = function(e) {
@@ -295,11 +295,7 @@ if(!is.matrix(connection))
 
 group = setResponse(blocks, "/home/etienne.camenen/Documents/DATA/Nucleiparks/UPDRS.tsv", opt$separator, opt$header)
 
-withCallingHandlers({
-  rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, FALSE, opt$init, opt$bias, opt$type)
-}, warning = function(w) {
-  print(w$message)
-})
+rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, FALSE, opt$init, opt$bias, opt$type)
 
 ##########
 

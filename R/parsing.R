@@ -9,6 +9,18 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
+condition <- function(subclass, message, call = sys.call(-1)){
+  structure(
+    class = c(subclass, "condition"),
+    list(message = message, call = call)
+  )
+}
+
+custom_stop <- function(subclass, message, call = sys.call(-1)) {
+  c <- condition(c(subclass, "error"), message, call = call)
+  stop(c)
+}
+
 #Global settings
 MSG_HEADER = " Possible mistake: header parameter is disabled, check if the file doesn't have one."
 ROW_NAMES = 1 # column of row names
@@ -167,22 +179,27 @@ parseList = function(s) {
 #' }
 #' @export checkQuantitative
 checkQuantitative = function(df, fo, h = FALSE) {
+
   qualitative = unique(unique(isCharacter(as.matrix(df))))
+
   if (length(qualitative) > 1 || qualitative) {
     msg = paste(fo, "file contains qualitative data. Please, transform them in a disjunctive table.")
+
     if (!h)
       msg = paste(msg, MSG_HEADER, sep = "")
+
     stop(paste(msg, "\n"), call. = FALSE)
   }
+
 }
 
 checkFile = function (f){
   # Check the existence of a path
   # f: A character giving the path of a file
 
-  if(!file.exists(f)){
-    stop(paste(f, " file does not exist\n", sep=""), call.=FALSE)
-  }
+  if(!file.exists(f))
+    stop(paste(f, " file does not exist.", sep=""), call. = FALSE)
+
 }
 
 #' Create a list of matrix from loading files corresponding to blocks
