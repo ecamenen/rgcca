@@ -213,8 +213,8 @@ server <- function(input, output) {
     # This function activated only when a new dataset is loaded, set the reponse
     # and connection of the previous dataset to NULL
 
-    assign("connection", setResponseShiny(), .GlobalEnv)
-    assign("connection", setConnectionShiny(), .GlobalEnv)
+    setResponseShiny()
+    setConnectionShiny()
 
   }
 
@@ -333,23 +333,28 @@ server <- function(input, output) {
 
     if(length(grep("[sr]gcca", tolower(analysis_type))) == 1){
       try(withCallingHandlers(
-       C <- showWarn(setConnection (blocks = blocks,
+        connection <- showWarn(setConnection (blocks = blocks,
                     superblock = (is.null(file) & ( superblock  | input$supervized) ),
                     file = file,
                     sep = input$sep))
       ))
 
       # Error due to the superblock disabling and the connection have not the same size than the number of blocks
-      if( identical(C, "104") )
-        C <- setConnection(blocks = blocks,
+      if( identical(connection, "104") )
+        connection <- showWarn(setConnection(blocks = blocks,
                    superblock = ( superblock  | input$supervized ),
                    file = NULL,
-                   sep = input$sep)
-      return(C)
+                   sep = input$sep))
 
-    }else
-      return(connection)
+    }
+
+    if(is.matrix(connection)){
+      assign("connection", connection, .GlobalEnv)
+      setRGCCA()
+    }
+
   }
+
 
   setAnalysis = function(){
 
@@ -357,11 +362,21 @@ server <- function(input, output) {
 
     if(!is.null(blocks)){
       assign("blocks", blocks, .GlobalEnv)
-      assign("connection", setConnectionShiny(), .GlobalEnv)
-      setRGCCA()
+      setConnectionShiny()
+      setIdBlock()
     }
 
   }
+
+  setResponseShiny = function(){
+    assign("response",
+           setResponse (blocks = blocks,
+                        file = input$response$datapath,
+                        sep = input$sep,
+                        header = input$header),
+           .GlobalEnv)
+  }
+
 
   ################################################ Observe events ################################################
 
@@ -404,9 +419,6 @@ server <- function(input, output) {
       assign("blocks", blocks, .GlobalEnv)
 
       setData()
-      # By default, the number of component is set to 2
-      assign("nb_comp", 2, .GlobalEnv)
-      setRGCCA()
       setIdBlock()
 
     }, error = function(e) {
@@ -436,20 +448,8 @@ server <- function(input, output) {
       setNamesInput("x")
       setNamesInput("response")
       setAnalysis()
-      setIdBlock()
     }
   })
-
-
-  setResponseShiny = function(){
-    assign("response",
-           setResponse (blocks = blocks,
-                        file = input$response$datapath,
-                        sep = input$sep,
-                        header = input$header),
-           .GlobalEnv)
-  }
-
 
   observeEvent(c(input$response, input$header), {
     # Observe if a response is fixed
@@ -464,14 +464,7 @@ server <- function(input, output) {
     # Observe if a connection is fixed
 
     if(blocksExists()){
-
-      C <- showWarn(setConnectionShiny())
-
-      if(is.matrix(C)){
-        assign("connection", C, .GlobalEnv)
-        setRGCCA()
-      }
-
+      setConnectionShiny()
     }
 
   })
