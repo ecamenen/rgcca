@@ -212,13 +212,8 @@ server <- function(input, output) {
 
     # This function activated only when a new dataset is loaded, set the reponse
     # and connection of the previous dataset to NULL
-    assign("response",
-           setResponse (blocks = blocks,
-                        file = NULL,
-                        sep = input$sep,
-                        header = input$header),
-          .GlobalEnv)
 
+    assign("connection", setResponseShiny(), .GlobalEnv)
     assign("connection", setConnectionShiny(), .GlobalEnv)
 
   }
@@ -344,11 +339,12 @@ server <- function(input, output) {
                     sep = input$sep))
       ))
 
+      # Error due to the superblock disabling and the connection have not the same size than the number of blocks
       if( identical(C, "104") )
-        C <- showWarn(setConnection(blocks = blocks,
+        C <- setConnection(blocks = blocks,
                    superblock = ( superblock  | input$supervized ),
                    file = NULL,
-                   sep = input$sep))
+                   sep = input$sep)
       return(C)
 
     }else
@@ -363,7 +359,6 @@ server <- function(input, output) {
       assign("blocks", blocks, .GlobalEnv)
       assign("connection", setConnectionShiny(), .GlobalEnv)
       setRGCCA()
-      setIdBlock()
     }
 
   }
@@ -441,27 +436,26 @@ server <- function(input, output) {
       setNamesInput("x")
       setNamesInput("response")
       setAnalysis()
+      setIdBlock()
     }
   })
+
+
+  setResponseShiny = function(){
+    assign("response",
+           setResponse (blocks = blocks,
+                        file = input$response$datapath,
+                        sep = input$sep,
+                        header = input$header),
+           .GlobalEnv)
+  }
+
 
   observeEvent(c(input$response, input$header), {
     # Observe if a response is fixed
 
     if(blocksExists()){
-      withCallingHandlers({
-        assign("response", setResponse (blocks = blocks,
-                            file = input$response$datapath,
-                            sep = input$sep,
-                            header = input$header),
-               .GlobalEnv)
-      }, error = function(e) {
-        #TODO: catch and english error also
-        if(e$message == "la ligne 1 n'avait pas 2 éléments"){
-          message ("The first line does not have a row name")
-        }
-        else
-          message(e$message)
-      })
+      setResponseShiny()
     }
 
   })

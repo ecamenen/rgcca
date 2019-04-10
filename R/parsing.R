@@ -66,11 +66,18 @@ checkFileSize = function(filename){
 loadData = function(f, sep = "\t", rownames = 1, h = TRUE) {
 
   if (!is.null(rownames) && rownames < 1)
-    rownames = NULL
+    rownames <- NULL
 
-  df = as.matrix(read.table(f, sep = sep, header = h, row.names = rownames, na.strings = "NA", dec=","))
-  # TODO: catch warning missing \n at the end of the file
-  return(df)
+  func <- function(x = rownames)
+    as.matrix(read.table(f, sep = sep, header = h, row.names = x, na.strings = "NA", dec=","))
+
+  tryCatch({
+      func()
+    }, error = function(e) {
+        if(e$message == "duplicate 'row.names' are not allowed")
+            func(NULL)
+    }
+  )
 }
 
 #' Creates a data frame from an Excel file loading
@@ -417,6 +424,16 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
         response = response[, 1]
         warning("There is multiple columns in the response file. By default, only the first one is taken in account.")
       }
+    }
+
+    if(length(response) < nrow(blocks[[1]])){
+
+      MSG <- ""
+
+      if( (length(response) + 1) == nrow(blocks[[1]]))
+        MSG <- "Please, check if the header is activated and the response does'nt have one."
+
+      stop(paste("The number of line of the response file is shorter than those of the blocks.", MSG), 108)
     }
 
     return(response)

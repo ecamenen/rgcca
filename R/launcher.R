@@ -12,9 +12,7 @@
 rm(list=ls())
 graphics.off()
 
-##################
-#     Arguments
-##################
+########## Arguments ##########
 
 # Parse the arguments from a command line launch
 getArgs = function(){
@@ -22,7 +20,7 @@ getArgs = function(){
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[18]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
-    make_option(c("--group"), type="character",
+    make_option(c("--group"), type="character", default = "/home/etienne.camenen/bin/rgccaLauncher/data/response4.tsv",
                 help="Path of the group file (to color samples by group in the associated plot)"),
     make_option(c("-r", "--response"), type="integer", metavar="integer",
                 help="Position of the response file in datasets (if not null, activate supervized method)"),
@@ -213,9 +211,7 @@ postCheckArg = function(opt, blocks){
 runShiny = function()
   shiny::runApp("inst/shiny")
 
-##################
-#     Main
-##################
+########## Main ##########
 
 # Pre-requisite: for xlsx inputs, java must be installed
 # Under linux: sudo apt-get install default-jre default-jdk && sudo R CMD javareconf
@@ -236,11 +232,11 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "pca",
+           type = "rgcca",
            scheme = "factorial",
-           tau = "0.7",
+           tau = "optimal",
            init = "svd",
-           ncomp = "2",
+           ncomp = "2, 2, 2",
            block = 0,
            compx = 1,
            compy = 2,
@@ -251,7 +247,8 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv")
+           datasets = "/home/etienne.camenen/bin/rgccaLauncher/data/politic.tsv, /home/etienne.camenen/bin/rgccaLauncher/data/industry.tsv, /home/etienne.camenen/bin/rgccaLauncher/data/agriculture.tsv")
+           #datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv")
            #datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv")
            #datasets = "/home/etienne.camenen/Documents/DATA/Gliom/y.tsv, /home/etienne.camenen/Documents/DATA/Gliom/GE.tsv, /home/etienne.camenen/Documents/DATA/Gliom/CGH.tsv")
 
@@ -293,11 +290,11 @@ connection = opt$connection
 if(!is.matrix(connection))
   connection = setConnection(blocks, (opt$superblock | !is.null(opt$response)), opt$connection, opt$separator)
 
-group = setResponse(blocks, "/home/etienne.camenen/Documents/DATA/Nucleiparks/UPDRS.tsv", opt$separator, opt$header)
+group = setResponse(blocks, opt$group, opt$separator, opt$header)
 
 rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, FALSE, opt$init, opt$bias, opt$type)
 
-##########
+########## Plot ##########
 
 # Samples common space
 if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
