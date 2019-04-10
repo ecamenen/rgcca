@@ -17,12 +17,12 @@ server <- function(input, output) {
   source("../../R/network.R")
 
   # Assign reactive variables
-  assign("i_block", reactiveVal(), .GlobalEnv)
-  assign("id_block", NULL, .GlobalEnv)
-  assign("id_block_y", NULL, .GlobalEnv)
-  assign("id_block_resp", NULL, .GlobalEnv)
-  assign("n_comp", reactiveVal(), .GlobalEnv)
-  assign("clickSep", FALSE, .GlobalEnv)
+  i_block  <<- reactiveVal()
+  id_block <<- NULL
+  id_block_y <<- NULL
+  id_block_resp <<- NULL
+  n_comp <<- reactiveVal()
+  clickSep <<- FALSE
 
   # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
   # rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
@@ -195,17 +195,16 @@ server <- function(input, output) {
                        ncomp = ncomp, scheme = input$scheme,
                        superblock = pars$superblock, type  = analysis_type))
 
-    if(length(pars) > 1){
-
-      assign("connection", pars$connection, .GlobalEnv)
-      assign("tau", pars$tau, .GlobalEnv)
-      assign("ncomp", pars$ncomp, .GlobalEnv)
-      assign("scheme", pars$scheme, .GlobalEnv)
-      assign("superblock", pars$superblock, .GlobalEnv)
-      return(pars$blocks)
-    }else{
+    if(length(pars) == 1)
       return(NULL)
-    }
+
+    assign("connection", pars$connection, .GlobalEnv)
+    assign("tau", pars$tau, .GlobalEnv)
+    assign("ncomp", pars$ncomp, .GlobalEnv)
+    assign("scheme", pars$scheme, .GlobalEnv)
+    assign("superblock", pars$superblock, .GlobalEnv)
+
+    return(pars$blocks)
   }
 
   setData <- function() {
@@ -220,14 +219,8 @@ server <- function(input, output) {
                         header = input$header),
           .GlobalEnv)
 
-    if(is.null(connection)){
-      assign("connection",
-             setConnection (blocks = blocks,
-                            superblock = (superblock  | input$supervized),
-                            file = NULL,
-                            sep = input$sep),
-            .GlobalEnv)
-    }
+    assign("connection", setConnectionShiny(), .GlobalEnv)
+
   }
 
   showWarn = function(f, duration = 10){
@@ -339,21 +332,40 @@ server <- function(input, output) {
 
   }
 
+  setConnectionShiny = function(){
+
+    file <- input$connection$datapath
+
+    if(length(grep("[sr]gcca", tolower(analysis_type))) == 1){
+      try(withCallingHandlers(
+       C <- showWarn(setConnection (blocks = blocks,
+                    superblock = (is.null(file) & ( superblock  | input$supervized) ),
+                    file = file,
+                    sep = input$sep))
+      ))
+
+      if( identical(C, "104") )
+        C <- showWarn(setConnection(blocks = blocks,
+                   superblock = ( superblock  | input$supervized ),
+                   file = NULL,
+                   sep = input$sep))
+      return(C)
+
+    }else
+      return(connection)
+  }
+
   setAnalysis = function(){
+
     blocks <- setParRGCCA()
 
     if(!is.null(blocks)){
-      blocks <<- blocks
-      if(is.null(connection))
-        assign("connection", setConnection (blocks = blocks,
-                                            superblock = (superblock  | input$supervized),
-                                            file = input$connection$datapath,
-                                            sep = input$sep),
-               .GlobalEnv)
-
+      assign("blocks", blocks, .GlobalEnv)
+      assign("connection", setConnectionShiny(), .GlobalEnv)
       setRGCCA()
       setIdBlock()
     }
+
   }
 
   ################################################ Observe events ################################################
@@ -384,6 +396,9 @@ server <- function(input, output) {
                       duration = NULL
                       ),
              .GlobalEnv)
+
+      if(length(blocks_unscaled) == 1)
+        return(NULL)
 
       assign("blocks_without_superb",
              scaling(blocks_unscaled, input$scale, TRUE),
@@ -455,19 +470,14 @@ server <- function(input, output) {
     # Observe if a connection is fixed
 
     if(blocksExists()){
-      withCallingHandlers({
 
-        if(is.null(connection))
-          assign("connection", setConnection (blocks = blocks,
-                                              superblock = (superblock  | input$supervized),
-                                              file = input$connection$datapath,
-                                              sep = input$sep),
-                .GlobalEnv)
+      C <- showWarn(setConnectionShiny())
+
+      if(is.matrix(C)){
+        assign("connection", C, .GlobalEnv)
         setRGCCA()
+      }
 
-      }, error = function(e) {
-        message(e$message)
-      })
     }
 
   })
@@ -516,7 +526,6 @@ server <- function(input, output) {
     }
 
   })
-
 
   observeEvent(input$save_all, {
     if(blocksExists()){

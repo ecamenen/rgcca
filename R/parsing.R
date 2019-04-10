@@ -184,7 +184,7 @@ checkQuantitative = function(df, fo, h = FALSE) {
     msg = paste(fo, "file contains qualitative data. Please, transform them in a disjunctive table.")
 
     if (!h)
-      msg = paste(msg, MSG_HEADER, sep = "")
+      msg = paste0(msg, MSG_HEADER)
 
     stop(paste(msg, "\n"), exit_code = 100)
   }
@@ -196,7 +196,7 @@ checkFile = function (f){
   # f: A character giving the path of a file
 
   if(!file.exists(f))
-    stop(paste(f, " file does not exist.", sep=""), exit_code = 101)
+    stop(paste0(f, " file does not exist."), exit_code = 101)
 
 }
 
@@ -310,18 +310,22 @@ checkConnection = function(c, blocks) {
 
   if (!isSymmetric.matrix(unname(c)))
     stop("The connection file must be a symmetric matrix.\n", exit_code = 103)
+
   n = length(blocks)
   if (NCOL(c) != n)
     stop(paste0("The number of rows/columns of the connection matrix file must be equals to ",
                n,
                " (the number of blocks in the dataset, +1 with a superblock by default).\n"),
          exit_code = 104)
+
   d = unique(diag(c))
   if (length(d) != 1 || d != 0)
     stop("The diagonal of the connection matrix file must be 0.\n", exit_code = 105)
+
   x = unique(c %in% c(0, 1))
   if (length(x) != 1 || x != T)
     stop("The connection file must contains only 0 or 1.\n", exit_code = 106)
+
   if(all(c==0))
     stop("The connection file could not contain only 0.\n", exit_code = 107)
 

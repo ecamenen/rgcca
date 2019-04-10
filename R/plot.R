@@ -304,7 +304,7 @@ getBlocsVariables = function(df){
 #' blocks = setMatrix(10, 5)
 #' blocks[[4]] = Reduce(cbind, blocks)
 #' for (i in 1:4)
-#'     colnames(blocks[[i]]) = paste( LETTERS[i], as.character(1:NCOL(blocks[[i]])), sep="" )
+#'     colnames(blocks[[i]]) = paste0( LETTERS[i], as.character(1:NCOL(blocks[[i]])))
 #' coord = setMatrix(10, 2, 4)
 #' a = setMatrix(5, 2)
 #' a[[4]] = matrix(runif(15 * 2), 15, 2)
@@ -601,7 +601,6 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
 
   p = p +
     geom_bar(stat = "identity", width = WIDTH) +
-    geom_hline(yintercept = 0, col = "gray40", size = 1) +
     coord_flip()  +
     labs(
       title = title,
