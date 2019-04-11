@@ -17,11 +17,8 @@ server <- function(input, output) {
   source("../../R/network.R")
 
   # Assign reactive variables
-  i_block  <<- reactiveVal()
-  id_block <<- NULL
-  id_block_y <<- NULL
-  id_block_resp <<- NULL
-  n_comp <<- reactiveVal()
+  i_block  <<- n_comp <<- reactiveVal()
+  id_block_y <<- id_block <<- id_block_resp <<- NULL
   clickSep <<- FALSE
 
   # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
@@ -96,7 +93,7 @@ server <- function(input, output) {
                 min = 10, max = getMaxCol(), value = getDefaultCol(), step = 1)
   })
 
-  ################################################ Set variables ################################################
+  ################################################ UI variables ################################################
 
   getMinComp = function(){
     # Get the maximum number of component allowed in an analysis based on the minimum
@@ -152,6 +149,55 @@ server <- function(input, output) {
       return (50)
   }
 
+  showWarn = function(f, duration = 10){
+
+    ids <- character(0)
+
+    try(withCallingHandlers({
+      res <- f
+    }, warning = function(w) {
+
+      id <- showNotification(w$message, type = "warning", duration = duration)
+      ids <<- c(ids, id)
+
+    }, error = function(e) {
+      message(paste("Error:", e$message))
+      id <- showNotification(e$message, type = "error", duration = duration)
+      ids <<- c(ids, id)
+      res <<- class(e)[1]
+    }), silent = TRUE)
+
+    if(is.null(duration) & length(ids) != 0){
+      for (id in ids)
+        removeNotification(id)
+    }
+
+    return(res)
+  }
+
+  blocksExists = function(){
+    # Test if the blocks are loaded and contain any errors
+
+    if(!is.null(input$blocks))
+      if(!is.null(getInfile()))
+        return(TRUE)
+    return(FALSE)
+  }
+
+  setIdBlock = function(){
+
+    if( !superblock && as.integer(input$names_block_x) > round(length(blocks)) ){
+      i_block(as.integer(input$names_block_x))
+      assign("id_block", i_block() - 1, .GlobalEnv)
+      assign("id_block_y", i_block() - 1, .GlobalEnv)
+    }else{
+      # By default, when a new dataset is loaded, the selected block is the last
+      assign("id_block", length(blocks), .GlobalEnv)
+      assign("id_block_y", length(blocks), .GlobalEnv)
+    }
+
+  }
+
   getDynamicVariables = function(){
     # Refresh all the plots when any input is changed
 
@@ -160,6 +206,46 @@ server <- function(input, output) {
                 input$connection, input$nb_comp, input$names_block_x, input$names_block_y, input$boot, input$text,
                 input$names_block_response, input$supervized )
   }
+
+
+  ################################################ Plots  ################################################
+
+
+  samples <- function() plotSamplesSpace(rgcca = rgcca.res,
+                                         resp = response,
+                                         comp_x = input$axis1,
+                                         comp_y = input$axis2,
+                                         i_block = id_block,
+                                         text = input$text,
+                                         i_block_y = id_block_y,
+                                         reponse_name = input$response$name)
+
+  corcircle <- function() plotVariablesSpace(rgcca = rgcca.res,
+                                             blocks = blocks,
+                                             comp_x = input$axis1,
+                                             comp_y = input$axis2,
+                                             superblock = (superblock & tolower(analysis_type) != "pca"),
+                                             i_block = id_block,
+                                             text = input$text)
+
+  fingerprint <- function() plotFingerprint(rgcca = rgcca.res,
+                                            comp = input$axis1,
+                                            superblock = (superblock & tolower(analysis_type) != "pca"),
+                                            n_mark = input$nb_mark,
+                                            i_block = id_block)
+
+  ave <- function() plotAVE(rgcca = rgcca.res,
+                            comp = input$axis1)
+
+  conNet <- function() plotNetwork(nodes, edges, blocks)
+  conNet2 <- function() plotNetwork2(nodes, edges, blocks)
+
+  plotBoot <- function() plotBootstrap(boot,
+                                       input$axis1,
+                                       input$nb_mark,
+                                       id_block)
+
+  ################################################ Analysis ################################################
 
   setParRGCCA <- function(){
 
@@ -207,32 +293,6 @@ server <- function(input, output) {
     return(pars$blocks)
   }
 
-  showWarn = function(f, duration = 10){
-
-    ids <- character(0)
-
-    try(withCallingHandlers({
-        res <- f
-      }, warning = function(w) {
-
-        id <- showNotification(w$message, type = "warning", duration = duration)
-        ids <<- c(ids, id)
-
-      }, error = function(e) {
-        message(paste("Error:", e$message))
-        id <- showNotification(e$message, type = "error", duration = duration)
-        ids <<- c(ids, id)
-        res <<- class(e)[1]
-    }), silent = TRUE)
-
-    if(is.null(duration) & length(ids) != 0){
-      for (id in ids)
-        removeNotification(id)
-    }
-
-    return(res)
-  }
-
   setRGCCA <- function() {
     # Load the analysis
 
@@ -260,69 +320,15 @@ server <- function(input, output) {
          bootstrap(blocks, input$boot, connection, tau, ncomp, input$scheme, input$scale, input$init, TRUE, analysis_type),
          .GlobalEnv)
 
-  samples <- function() plotSamplesSpace(rgcca = rgcca.res,
-                                         resp = response,
-                                         comp_x = input$axis1,
-                                         comp_y = input$axis2,
-                                         i_block = id_block,
-                                         text = input$text,
-                                         i_block_y = id_block_y)
-
-  corcircle <- function() plotVariablesSpace(rgcca = rgcca.res,
-                                             blocks = blocks,
-                                             comp_x = input$axis1,
-                                             comp_y = input$axis2,
-                                             superblock = (superblock & tolower(analysis_type) != "pca"),
-                                             i_block = id_block,
-                                             text = input$text)
-
-  fingerprint <- function() plotFingerprint(rgcca = rgcca.res,
-                                            comp = input$axis1,
-                                            superblock = (superblock & tolower(analysis_type) != "pca"),
-                                            n_mark = input$nb_mark,
-                                            i_block = id_block)
-
-  ave <- function() plotAVE(rgcca = rgcca.res,
-                            comp = input$axis1)
-
-  conNet <- function() plotNetwork(nodes, edges, blocks)
-  conNet2 <- function() plotNetwork2(nodes, edges, blocks)
-
-  plotBoot <- function() plotBootstrap(boot,
-                                       input$axis1,
-                                       input$nb_mark,
-                                       id_block)
-
-  blocksExists = function(){
-    # Test if the blocks are loaded and contain any errors
-
-    if(!is.null(input$blocks))
-      if(!is.null(getInfile()))
-        return(TRUE)
-    return(FALSE)
-  }
-
-  setIdBlock = function(){
-
-    if( !superblock && as.integer(input$names_block_x) > round(length(blocks)) ){
-      i_block(as.integer(input$names_block_x))
-      assign("id_block", i_block() - 1, .GlobalEnv)
-      assign("id_block_y", i_block() - 1, .GlobalEnv)
-    }else{
-      # By default, when a new dataset is loaded, the selected block is the last
-      assign("id_block", length(blocks), .GlobalEnv)
-      assign("id_block_y", length(blocks), .GlobalEnv)
-    }
-
-  }
 
   setResponseShiny = function(){
+
     response <- showWarn(setResponse (blocks = blocks,
                         file = input$response$datapath,
                         sep = input$sep,
                         header = input$header))
 
-    if(is.matrix(response))
+    if(length(response) > 1)
       assign("response", response, .GlobalEnv)
 
   }
@@ -369,9 +375,7 @@ server <- function(input, output) {
   }
 
 
-
-
-  ################################################ Observe events ################################################
+  ################################################ Events ################################################
 
   onclick("sep", function(e) assign("clickSep", TRUE, .GlobalEnv))
 

@@ -203,7 +203,7 @@ colorGroup = function(group){
 #' # Using the first block
 #' plotSamplesSpace(rgcca.res, runif(15, min=-15, max = 15), 1, 2, 1)
 #' @export plotSamplesSpace
-plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL, text = TRUE, i_block_y = NULL){
+plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL, text = TRUE, i_block_y = NULL, reponse_name = "Response"){
   # resp : color the points with a vector
 
   # Avoid random with ggrepel
@@ -260,7 +260,7 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
   }else
     p = NULL
 
-  p = plotSpace(rgcca, df, "Samples", resp, "Response", comp_x, comp_y, i_block, p, text, i_block_y)
+  p = plotSpace(rgcca, df, "Samples", resp, reponse_name, comp_x, comp_y, i_block, p, text, i_block_y)
 
   # remove legend if missing
   if ( length(unique(resp)) == 1){
