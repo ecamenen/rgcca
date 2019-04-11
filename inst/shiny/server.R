@@ -374,8 +374,20 @@ server <- function(input, output) {
 
   }
 
-
   ################################################ Events ################################################
+
+  setToggle = function(id)
+    toggle(condition = (input$analysis_type %in% c("RGCCA", "SGCCA")), id=id)
+
+
+  observe({
+    setToggle("tau_opt")
+    setToggle("scheme")
+    setToggle("superblock")
+    setToggle("supervized")
+    setToggle("connection")
+
+  })
 
   onclick("sep", function(e) assign("clickSep", TRUE, .GlobalEnv))
 

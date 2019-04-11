@@ -57,7 +57,6 @@ ui <- fluidPage(
 
       tabPanel("RGCCA",
       # Analysis parameters
-        condition = "input.adv_ana == true",
         checkboxInput("supervized",
                       "Supervized analysis",
                       value = FALSE),
