@@ -156,7 +156,7 @@ server <- function(input, output) {
     try(withCallingHandlers({
       res <- f
     }, message = function(w) {
-
+      duration <<- NULL
       id <- showNotification(w$message, type = "message", duration = duration)
       ids <<- c(ids, id)
     }, warning = function(w) {
@@ -283,9 +283,11 @@ server <- function(input, output) {
 
     pars = showWarn(select.type(A = blocks, C = NULL, tau = tau,
                        ncomp = ncomp, scheme = input$scheme,
-                       superblock = pars$superblock, type  = analysis_type))
+                       superblock = pars$superblock, type  = analysis_type, quiet = TRUE))
 
-    if(length(pars) == 1)
+    c1 = showWarn(checkC1(pars$blocks, pars$tau, analysis_type))
+
+    if(length(pars) == 1 | !is.null(c1))
       return(NULL)
 
     assign("connection", pars$connection, .GlobalEnv)
@@ -525,7 +527,7 @@ server <- function(input, output) {
     if(blocksExists()){
       observeEvent(input$samples_save, savePlot("samples_plot.pdf", samples()))
       p = changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), input$text )
-      if(!unique(isCharacter(response)))
+      if(!unique(isCharacter(na.omit(response))))
         p  = p  %>% layout(showlegend = FALSE)
       p
     }

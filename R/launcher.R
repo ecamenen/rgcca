@@ -182,20 +182,7 @@ postCheckArg = function(opt, blocks){
   # c1 : A vector of integer giving the spasity parameter for SGCCA (c1)
   # Stop the program if at least one c1 parameter is not in the required interval
 
-  if(opt$type == "sgcca"){
-      #the minimum value avalaible
-      min_c1 = lapply(blocks, function(x) 1 / sqrt(ncol(x)))
-
-      # Check c1 varying between 1/sqrt(pj) and 1
-      out = mapply(function(x, y){
-        if(x < y | x > 1)
-          stop(paste0("Sparsity parameter is equals to ", x,
-                     ". For SGCCA, it must be comprise between 1/sqrt(number_column) (i.e., ",
-                     toString(unlist(lapply(min_c1, function(x) ceiling(x * 100) / 100)))
-                     , ") and 1."),
-               exit_code = 132)
-      }, opt$tau, min_c1)
-  }
+  checkC1(blocks, opt$tau, opt$type)
 
 
   if(opt$block > length(blocks))
@@ -232,9 +219,9 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "rgcca",
+           type = "sgcca",
            scheme = "factorial",
-           tau = "optimal",
+           tau = "0.9, 0.9, 0.9",
            init = "svd",
            ncomp = "2, 2, 2",
            block = 0,
@@ -302,7 +289,7 @@ if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
 }else{
   ( samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y, getFileName(opt$group)) )
    p = changeHovertext( dynamicPlot(samples_plot, ax, "text", TRUE, TRUE), opt$text )
-     if(!unique(isCharacter(group)))
+     if(!unique(isCharacter(na.omit(group))))
        p  = p  %>% layout(showlegend = FALSE)
    p
    savePlot(opt$output1, samples_plot)
