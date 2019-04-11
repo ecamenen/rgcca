@@ -20,7 +20,7 @@ getArgs = function(){
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[18]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
-    make_option(c("--group"), type="character", default = "/home/etienne.camenen/bin/rgccaLauncher/data/response2.tsv",
+    make_option(c("--group"), type="character", default = "/home/etienne.camenen/Documents/DATA/Nucleiparks/UPDRS_2.tsv",
                 help="Path of the group file (to color samples by group in the associated plot)"),
     make_option(c("-r", "--response"), type="integer", metavar="integer",
                 help="Position of the response file in datasets (if not null, activate supervized method)"),
@@ -247,9 +247,9 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output5 = "connection.pdf",
-           datasets = "/home/etienne.camenen/bin/rgccaLauncher/data/politic.tsv, /home/etienne.camenen/bin/rgccaLauncher/data/industry.tsv, /home/etienne.camenen/bin/rgccaLauncher/data/agriculture.tsv")
+           #datasets = "/home/etienne.camenen/bin/rgccaLauncher/data/politic.tsv, /home/etienne.camenen/bin/rgccaLauncher/data/industry.tsv, /home/etienne.camenen/bin/rgccaLauncher/data/agriculture.tsv")
            #datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv")
-           #datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv")
+           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv")
            #datasets = "/home/etienne.camenen/Documents/DATA/Gliom/y.tsv, /home/etienne.camenen/Documents/DATA/Gliom/GE.tsv, /home/etienne.camenen/Documents/DATA/Gliom/CGH.tsv")
 
 withCallingHandlers({

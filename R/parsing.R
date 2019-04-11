@@ -421,7 +421,7 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
       return(rep(1, NROW(blocks[[1]])))
     }
 
-    qualitative = unique(isCharacter(response))
+    qualitative = unique(isCharacter(na.omit(response)))
 
     if (length(qualitative) > 1)
       stop("Please, select a response file with either qualitative data only or quantitative data only.",

@@ -31,7 +31,7 @@ server <- function(input, output) {
   })
 
   setNamesInput = function(x){
-    refesh = c(input$superblock, input$supervized)
+    refesh = c(input$superblock, input$supervized, input$analysis_type)
     selectInput(inputId = paste0("names_block_", x),
                 label = h5( paste0("Blocks for ", x ,"-axis : ")),
                 choices = getNames(),
@@ -387,11 +387,9 @@ server <- function(input, output) {
     names = paste(input$blocks$name, collapse = ',')
 
     if(tolower(input$analysis_type) == "pca" & length(input$blocks$datapath) > 1){
-      print("ERROR 1")
-    #TODO: notification
+      # TODO: notification
     }else if (tolower(input$analysis_type) %in% c("cca", "ra", "ifa", "pls") & ( length(input$blocks$datapath) < 2  |  length(input$blocks$datapath) > 2 ) ){
-      print("ERROR 2")
-      #TODO: notification
+      # TODO: Hide these analysis
     }
 
     withCallingHandlers({
@@ -439,15 +437,6 @@ server <- function(input, output) {
     }
   })
 
-  observeEvent(c(input$superblock, input$supervized), {
-
-    if(blocksExists()){
-      setNamesInput("x")
-      setNamesInput("response")
-      setAnalysis()
-    }
-  })
-
   observeEvent(c(input$response, input$header), {
     if(blocksExists())
       setResponseShiny()
@@ -458,10 +447,12 @@ server <- function(input, output) {
       setConnectionShiny()
   })
 
-  observeEvent(c(input$nb_comp, input$scheme, input$init, input$tau, input$tau_opt, input$analysis_type), {
+  observeEvent(c(input$superblock, input$supervized, input$nb_comp, input$scheme, input$init, input$tau, input$tau_opt, input$analysis_type), {
     # Observe if analysis parameters are changed
 
     if(blocksExists()){
+      setNamesInput("x")
+      setNamesInput("response")
       assign("nb_comp", input$nb_comp, .GlobalEnv)
       setAnalysis()
     }
@@ -479,7 +470,6 @@ server <- function(input, output) {
       i_block(as.integer(input$names_block_x))
       assign("id_block", i_block(), .GlobalEnv)
     }
-
   })
 
   observeEvent(input$names_block_y, {
