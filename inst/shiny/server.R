@@ -207,17 +207,6 @@ server <- function(input, output) {
     return(pars$blocks)
   }
 
-  setData <- function() {
-    # Load the blocks, the response and the connection matrix
-
-    # This function activated only when a new dataset is loaded, set the reponse
-    # and connection of the previous dataset to NULL
-
-    setResponseShiny()
-    setConnectionShiny()
-
-  }
-
   showWarn = function(f, duration = 10){
 
     ids <- character(0)
@@ -230,7 +219,7 @@ server <- function(input, output) {
         ids <<- c(ids, id)
 
       }, error = function(e) {
-
+        message(paste("Error:", e$message))
         id <- showNotification(e$message, type = "error", duration = duration)
         ids <<- c(ids, id)
         res <<- class(e)[1]
@@ -327,6 +316,17 @@ server <- function(input, output) {
 
   }
 
+  setResponseShiny = function(){
+    response <- showWarn(setResponse (blocks = blocks,
+                        file = input$response$datapath,
+                        sep = input$sep,
+                        header = input$header))
+
+    if(is.matrix(response))
+      assign("response", response, .GlobalEnv)
+
+  }
+
   setConnectionShiny = function(){
 
     file <- input$connection$datapath
@@ -368,14 +368,7 @@ server <- function(input, output) {
 
   }
 
-  setResponseShiny = function(){
-    assign("response",
-           setResponse (blocks = blocks,
-                        file = input$response$datapath,
-                        sep = input$sep,
-                        header = input$header),
-           .GlobalEnv)
-  }
+
 
 
   ################################################ Observe events ################################################
@@ -417,8 +410,8 @@ server <- function(input, output) {
       assign("id_block_resp", length(blocks_without_superb), .GlobalEnv)
       blocks = setParRGCCA()
       assign("blocks", blocks, .GlobalEnv)
-
-      setData()
+      setResponseShiny()
+      setConnectionShiny()
       setIdBlock()
 
     }, error = function(e) {
@@ -452,21 +445,13 @@ server <- function(input, output) {
   })
 
   observeEvent(c(input$response, input$header), {
-    # Observe if a response is fixed
-
-    if(blocksExists()){
+    if(blocksExists())
       setResponseShiny()
-    }
-
   })
 
   observeEvent(input$connection, {
-    # Observe if a connection is fixed
-
-    if(blocksExists()){
+    if(blocksExists())
       setConnectionShiny()
-    }
-
   })
 
   observeEvent(c(input$nb_comp, input$scheme, input$init, input$tau, input$tau_opt, input$analysis_type), {

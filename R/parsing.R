@@ -47,8 +47,15 @@ getFileName = function(fi) {
 checkFileSize = function(filename){
   size = file.size(filename)
   if(size > 5E6)
-    #warning(paste("The size of ", filename, " is over 5 Mo (", round(size / 1E6, 1), " Mo). File loading could take some times...\n", sep=""),
+    #warning(paste0("The size of ", filename, " is over 5 Mo (", round(size / 1E6, 1), " Mo). File loading could take some times..."),
     warning("File loading in progress ...")
+}
+
+convertMatrixNumeric <- function(df){
+  options(warn = -1)
+  df <- matrix( as.numeric(df), nrow(df), ncol(df), dimnames = list(row.names(df), colnames(df)))
+  options(warn = 0)
+  return(df)
 }
 
 #' Creates a matrix from loading a file
@@ -276,12 +283,11 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
 
     #if one-column file, it is a tabulation error
     if (NCOL(df) == 0)
-      stop(paste(fo, "block file has an only-column. Check the separator [by default: tabulation].\n"), exit_code = 102)
+      stop(paste(fo, "block file has an only-column. Check the separator [by default: tabulation]."), exit_code = 102)
+
 
     dimnames = list(row.names(df), colnames(df))
-    options(warn = -1)
-    df = matrix( as.numeric(df), nrow(df), ncol(df), dimnames = dimnames)
-    options(warn = 0)
+    df <- convertMatrixNumeric(df)
 
     if( any(is.na(df)) ){
       df = matrix(unlist(lapply(1:ncol(df),
@@ -316,25 +322,25 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
 checkConnection = function(c, blocks) {
 
   if (!isSymmetric.matrix(unname(c)))
-    stop("The connection file must be a symmetric matrix.\n", exit_code = 103)
+    stop("The connection file must be a symmetric matrix.", exit_code = 103)
 
   n = length(blocks)
   if (NCOL(c) != n)
     stop(paste0("The number of rows/columns of the connection matrix file must be equals to ",
                n,
-               " (the number of blocks in the dataset, +1 with a superblock by default).\n"),
+               " (the number of blocks in the dataset, +1 with a superblock by default)."),
          exit_code = 104)
 
   d = unique(diag(c))
   if (length(d) != 1 || d != 0)
-    stop("The diagonal of the connection matrix file must be 0.\n", exit_code = 105)
+    stop("The diagonal of the connection matrix file must be 0.", exit_code = 105)
 
   x = unique(c %in% c(0, 1))
   if (length(x) != 1 || x != T)
-    stop("The connection file must contains only 0 or 1.\n", exit_code = 106)
+    stop("The connection file must contains only 0 or 1.", exit_code = 106)
 
   if(all(c==0))
-    stop("The connection file could not contain only 0.\n", exit_code = 107)
+    stop("The connection file could not contain only 0.", exit_code = 107)
 
   #TODO: warning if superblock = TRUE
 
@@ -404,13 +410,16 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
       response = loadExcel(file, 1, rownames, h = header, num = FALSE)
     }
 
+    response = convertMatrixNumeric(response)
+
     qualitative = unique(isCharacter(response))
 
-    # if (length(qualitative) > 1)
-    #   stop("Please, select a response file with either qualitative data only or quantitative data only. The header must be disabled for quantitative data and activated for disjunctive table.\n",
-    #        call. = FALSE)
+    if (length(qualitative) > 1)
+      stop("Please, select a response file with either qualitative data only or quantitative data only.",
+           108)
 
     if (NCOL(response) > 1) {
+
       disjunctive = unique(apply(response, 1, sum))
 
       if (length(disjunctive) == 1 && unique(response %in% c(0, 1)) && disjunctive == 1) {
@@ -433,7 +442,8 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
       if( (length(response) + 1) == nrow(blocks[[1]]))
         MSG <- "Please, check if the header is activated and the response does'nt have one."
 
-      stop(paste("The number of line of the response file is shorter than those of the blocks.", MSG), 108)
+      warning(paste("The number of line of the response file is shorter than those of the blocks.", MSG))
+      return(rep(1, NROW(blocks[[1]])))
     }
 
     return(response)
