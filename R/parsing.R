@@ -410,13 +410,14 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
       response = loadExcel(file, 1, rownames, h = header, num = FALSE)
     }
 
-    response = convertMatrixNumeric(response)
-
     qualitative = unique(isCharacter(response))
 
     if (length(qualitative) > 1)
       stop("Please, select a response file with either qualitative data only or quantitative data only.",
            108)
+
+    if(!qualitative)
+      response = convertMatrixNumeric(response)
 
     if (NCOL(response) > 1) {
 

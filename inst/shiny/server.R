@@ -514,8 +514,10 @@ server <- function(input, output) {
     getDynamicVariables()
     if(blocksExists()){
       observeEvent(input$samples_save, savePlot("samples_plot.pdf", samples()))
-      changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), input$text )  %>%
-        layout(showlegend = FALSE)
+      p = changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), input$text )
+      if(!unique(isCharacter(response)))
+        p  = p  %>% layout(showlegend = FALSE)
+      p
     }
   })
 
