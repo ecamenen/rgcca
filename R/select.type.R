@@ -285,7 +285,7 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
   }
 
   if (WARN & verbose)
-    warning("RGCCA in progress ...")
+    message("RGCCA in progress ...")
 
   if(tolower(type) =="sgcca"){
     func = sgcca

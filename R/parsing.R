@@ -48,7 +48,7 @@ checkFileSize = function(filename){
   size = file.size(filename)
   if(size > 5E6)
     #warning(paste0("The size of ", filename, " is over 5 Mo (", round(size / 1E6, 1), " Mo). File loading could take some times..."),
-    warning("File loading in progress ...")
+    message("File loading in progress ...")
 }
 
 convertMatrixNumeric <- function(df){

@@ -155,6 +155,10 @@ server <- function(input, output) {
 
     try(withCallingHandlers({
       res <- f
+    }, message = function(w) {
+
+      id <- showNotification(w$message, type = "message", duration = duration)
+      ids <<- c(ids, id)
     }, warning = function(w) {
 
       id <- showNotification(w$message, type = "warning", duration = duration)
@@ -377,7 +381,7 @@ server <- function(input, output) {
   ################################################ Events ################################################
 
   setToggle = function(id)
-    toggle(condition = (input$analysis_type %in% c("RGCCA", "SGCCA")), id=id)
+    toggle(condition = (input$analysis_type %in% c("RGCCA", "SGCCA")), id = id)
 
 
   observe({
