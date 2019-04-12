@@ -206,11 +206,6 @@ colorGroup = function(group){
 plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL, text = TRUE, i_block_y = NULL, reponse_name = "Response"){
   # resp : color the points with a vector
 
-
-  print(c("comp_x", comp_x, "comp_y", comp_y, "i_block", i_block))
-
-  print(resp)
-  print(c(text, "ok", i_block_y))
   # Avoid random with ggrepel
   set.seed(1)
 

@@ -17,10 +17,13 @@ server <- function(input, output) {
   source("../../R/network.R")
 
   # Assign reactive variables
-  i_block  <<- n_comp <<- reactiveVal()
+  reac_var  <<- reactiveVal()
   id_block_y <<- id_block <<- id_block_resp <<- analysis <<- boot <<- NULL
   clickSep <<- FALSE
-  nb_comp <<- 2
+  if_text <<- TRUE
+  axis1 <<- 1
+  nb_comp <<- axis2 <<- 2
+  nb_mark <<- 100
 
   # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
   # rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
@@ -63,9 +66,9 @@ server <- function(input, output) {
     # Set dynamicly the maximum number of component that should be used in the analysis
 
     # Get the number minimum of columns among the whole blocks
-    n_comp(getMinComp())
+    reac_var(getMinComp())
     # Dynamically assign this number of component
-    assign("nb_comp", 2, .GlobalEnv)
+    assign("nb_comp", reac_var(), .GlobalEnv)
 
     sliderInput(inputId = "nb_comp",
                 label = h5("Number of Component: "),
@@ -192,9 +195,9 @@ server <- function(input, output) {
   setIdBlock = function(){
 
     if( !superblock && as.integer(input$names_block_x) > round(length(blocks)) ){
-      i_block(as.integer(input$names_block_x))
-      assign("id_block", i_block() - 1, .GlobalEnv)
-      assign("id_block_y", i_block() - 1, .GlobalEnv)
+      reac_var(as.integer(input$names_block_x))
+      assign("id_block", reac_var() - 1, .GlobalEnv)
+      assign("id_block_y", reac_var() - 1, .GlobalEnv)
     }else{
       # By default, when a new dataset is loaded, the selected block is the last
       assign("id_block", length(blocks), .GlobalEnv)
@@ -218,25 +221,25 @@ server <- function(input, output) {
 
   samples <- function() plotSamplesSpace(rgcca = rgcca.res,
                                          resp = response,
-                                         comp_x = input$axis1,
-                                         comp_y = input$axis2,
+                                         comp_x = axis1,
+                                         comp_y = axis2,
                                          i_block = id_block,
-                                         text = input$text,
+                                         text = if_text,
                                          i_block_y = id_block_y,
                                          reponse_name = input$response$name)
 
   corcircle <- function() plotVariablesSpace(rgcca = rgcca.res,
                                              blocks = blocks,
-                                             comp_x = input$axis1,
-                                             comp_y = input$axis2,
+                                             comp_x = axis1,
+                                             comp_y = axis2,
                                              superblock = (superblock & tolower(analysis_type) != "pca"),
                                              i_block = id_block,
-                                             text = input$text)
+                                             text = if_text)
 
   fingerprint <- function() plotFingerprint(rgcca = rgcca.res,
-                                            comp = input$axis1,
+                                            comp = axis1,
                                             superblock = (superblock & tolower(analysis_type) != "pca"),
-                                            n_mark = input$nb_mark,
+                                            n_mark = nb_mark,
                                             i_block = id_block)
 
   ave <- function() plotAVE(rgcca = rgcca.res)
@@ -245,8 +248,8 @@ server <- function(input, output) {
   conNet2 <- function() plotNetwork2(nodes, edges, blocks)
 
   plotBoot <- function() plotBootstrap(boot,
-                                       input$axis1,
-                                       input$nb_mark,
+                                       axis1,
+                                       nb_mark,
                                        id_block)
 
   ################################################ Analysis ################################################
@@ -491,8 +494,8 @@ server <- function(input, output) {
     # Observe if graphical parameters are changed
 
     if(blocksExists()){
-      i_block(as.integer(input$names_block_x))
-      assign("id_block", i_block(), .GlobalEnv)
+      reac_var(as.integer(input$names_block_x))
+      assign("id_block", reac_var(), .GlobalEnv)
     }
   })
 
@@ -500,8 +503,8 @@ server <- function(input, output) {
     # Observe if graphical parameters are changed
 
     if(blocksExists()){
-      i_block(as.integer(input$names_block_y))
-      assign("id_block_y", i_block(), .GlobalEnv)
+      reac_var(as.integer(input$names_block_y))
+      assign("id_block_y", reac_var(), .GlobalEnv)
     }
 
   })
@@ -510,8 +513,8 @@ server <- function(input, output) {
     # Observe if graphical parameters are changed
 
     if(blocksExists()){
-      i_block(as.integer(input$names_block_response))
-      assign("id_block_resp", i_block(), .GlobalEnv)
+      reac_var(as.integer(input$names_block_response))
+      assign("id_block_resp", reac_var(), .GlobalEnv)
       setAnalysis()
     }
 
@@ -526,13 +529,22 @@ server <- function(input, output) {
     }
   })
 
+  observeEvent(c(input$text, input$axis1, input$axis2, input$nb_mark), {
+    if(!is.null(analysis)){
+      assign("if_text", input$text, .GlobalEnv)
+      assign("axis1", input$axis1, .GlobalEnv)
+      assign("axis2", input$axis2, .GlobalEnv)
+      assign("nb_mark", input$nb_mark, .GlobalEnv)
+    }
+  })
+
   ################################################ Outputs ################################################
 
   output$samplesPlot <- renderPlotly({
     getDynamicVariables()
     if(!is.null(analysis)){
       observeEvent(input$samples_save, savePlot("samples_plot.pdf", samples()))
-      p = changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), input$text )
+      p = changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), if_text )
       if(!unique(isCharacter(na.omit(response))))
         p  = p  %>% layout(showlegend = FALSE)
       p
@@ -543,7 +555,7 @@ server <- function(input, output) {
     getDynamicVariables()
     if(!is.null(analysis)){
       observeEvent(input$corcircle_save, savePlot("corcircle.pdf", corcircle()))
-      p = changeHovertext( dynamicPlot(corcircle(), ax, "text"), input$text )
+      p = changeHovertext( dynamicPlot(corcircle(), ax, "text"), if_text )
       n = length(p$x$data)
       ( style(p, hoverinfo = "none", traces = c(n, n-1)) )
     }
