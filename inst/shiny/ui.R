@@ -53,30 +53,8 @@ ui <- fluidPage(
                                  Tabulation = "\t"),
                      selected = "\t")
       ),
-
-
       tabPanel("RGCCA",
       # Analysis parameters
-        checkboxInput("supervized",
-                      "Supervized analysis",
-                      value = FALSE),
-        conditionalPanel(
-          condition = "input.supervized == true",
-          uiOutput("response")
-          ),
-        uiOutput("nb_comp_custom"),
-        checkboxInput(inputId = "superblock",
-                      label = "Use a superblock",
-                      value = TRUE),
-        checkboxInput(inputId = "tau_opt",
-                      label = "Use an optimal tau",
-                      value = TRUE),
-        conditionalPanel(
-          condition = "input.tau_opt == false",
-          sliderInput(inputId = "tau",
-                      label = h5("Tau: "),
-                      min = 0, max = 1, value = .5, step = .1)
-          ),
         checkboxInput(inputId = "scale",
                       label = "Scale the blocks",
                       value = TRUE),
@@ -91,6 +69,31 @@ ui <- fluidPage(
                                         `Sum of ABSolute value COVariances method` = 'SABSCOV', `MAXBET` = 'MAXBET', `MAXBETB` = 'MAXBET-B',`PLS path modeling - mode B` = 'PLS_B'),
                       `Multiblocks with a superblock`= c(`Generalized CCA (GCCA)` = 'GCCA', `Hierarchical PCA` = 'HPCA', `Multiple Co-Inertia Analysis` = 'MCOA', `Concensus PCA` = 'CPCA_W', `Multiple Factor Analysis` = 'MFA')
                     )),
+         radioButtons("init",
+                   label = "Mode of initialization",
+                   choices = c(SVD = "svd",
+                               Random = "random"),
+                   selected = "svd"),
+         checkboxInput("supervized",
+                       "Supervized analysis",
+                       value = FALSE),
+         conditionalPanel(
+           condition = "input.supervized == true",
+           uiOutput("response")
+         ),
+         uiOutput("nb_comp_custom"),
+         checkboxInput(inputId = "superblock",
+                       label = "Use a superblock",
+                       value = TRUE),
+         checkboxInput(inputId = "tau_opt",
+                       label = "Use an optimal tau",
+                       value = TRUE),
+         conditionalPanel(
+           condition = "input.tau_opt == false",
+           sliderInput(inputId = "tau",
+                       label = h5("Tau: "),
+                       min = 0, max = 1, value = .5, step = .1)
+         ),
         radioButtons(inputId = "scheme",
                      label = "Scheme function",
                      choices = c(Horst = "horst",
@@ -100,13 +103,11 @@ ui <- fluidPage(
         sliderInput(inputId = "boot",
                     label = h5("Number of boostrap : "),
                     min = 5, max = 100, value = 10, step = 5),
-      actionButton(inputId = "run_boot",
+        actionButton(inputId = "run_boot",
                    label = "Run bootstrap"),
-        radioButtons("init",
-                     label = "Mode of initialization",
-                     choices = c(SVD = "svd",
-                                 Random = "random"),
-                     selected = "svd")),
+      actionButton(inputId = "run_analysis",
+                   label = "Run Analysis")
+      ),
 
       # Graphical parameters
 

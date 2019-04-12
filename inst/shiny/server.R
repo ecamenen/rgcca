@@ -18,7 +18,7 @@ server <- function(input, output) {
 
   # Assign reactive variables
   i_block  <<- n_comp <<- reactiveVal()
-  id_block_y <<- id_block <<- id_block_resp <<- NULL
+  id_block_y <<- id_block <<- id_block_resp <<- analysis <<- boot <<- NULL
   clickSep <<- FALSE
 
   # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
@@ -208,7 +208,7 @@ server <- function(input, output) {
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
                 input$scale, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt, input$analysis_type,
                 input$connection, input$nb_comp, input$names_block_x, input$names_block_y, input$boot, input$text,
-                input$names_block_response, input$supervized )
+                input$names_block_response, input$supervized, input$run_analysis )
   }
 
 
@@ -362,7 +362,8 @@ server <- function(input, output) {
 
     if(is.matrix(connection)){
       assign("connection", connection, .GlobalEnv)
-      setRGCCA()
+      assign("analysis", NULL, .GlobalEnv)
+      assign("boot", NULL, .GlobalEnv)
     }
 
   }
@@ -465,6 +466,11 @@ server <- function(input, output) {
       setConnectionShiny()
   })
 
+  observeEvent(input$run_analysis, {
+    if(is.matrix(connection))
+      assign("analysis", setRGCCA(), .GlobalEnv)
+  })
+
   observeEvent(c(input$superblock, input$supervized, input$nb_comp, input$scheme, input$init, input$tau, input$tau_opt, input$analysis_type), {
     # Observe if analysis parameters are changed
 
@@ -524,7 +530,7 @@ server <- function(input, output) {
 
   output$samplesPlot <- renderPlotly({
     getDynamicVariables()
-    if(blocksExists()){
+    if(!is.null(analysis)){
       observeEvent(input$samples_save, savePlot("samples_plot.pdf", samples()))
       p = changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), input$text )
       if(!unique(isCharacter(na.omit(response))))
@@ -535,7 +541,7 @@ server <- function(input, output) {
 
   output$corcirclePlot <- renderPlotly({
     getDynamicVariables()
-    if(blocksExists()){
+    if(!is.null(analysis)){
       observeEvent(input$corcircle_save, savePlot("corcircle.pdf", corcircle()))
       p = changeHovertext( dynamicPlot(corcircle(), ax, "text"), input$text )
       n = length(p$x$data)
@@ -545,7 +551,7 @@ server <- function(input, output) {
 
   output$fingerprintPlot <- renderPlotly({
     getDynamicVariables()
-    if(blocksExists()){
+    if(!is.null(analysis)){
       observeEvent(input$fingerprint_save, savePlot("fingerprint.pdf", fingerprint()))
       p = changeText ( dynamicPlot(fingerprint(), ax2, "text") )
       n = unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
@@ -557,7 +563,7 @@ server <- function(input, output) {
 
   output$AVEPlot <- renderPlot({
     getDynamicVariables()
-    if(blocksExists()){
+    if(!is.null(analysis)){
       observeEvent(input$ave_save, savePlot("AVE.pdf", ave()))
       ave()
     }
@@ -565,7 +571,7 @@ server <- function(input, output) {
 
   output$connectionPlot <- renderVisNetwork({
     getDynamicVariables()
-    if(blocksExists()){
+    if(!is.null(analysis)){
       observeEvent(input$connection_save, savePlot("connection.pdf", conNet()))
       conNet2()
     }
@@ -573,7 +579,7 @@ server <- function(input, output) {
 
   output$bootstrapPlot <- renderPlotly({
     getDynamicVariables()
-    if(blocksExists() & input$run_boot){
+    if(!is.null(analysis) & !is.null(boot)){
       observeEvent(input$bootstrap_save, savePlot("bootstrap.pdf", plotBoot()))
       dynamicPlotBoot(plotBoot())
     }
