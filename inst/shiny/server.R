@@ -20,6 +20,7 @@ server <- function(input, output) {
   i_block  <<- n_comp <<- reactiveVal()
   id_block_y <<- id_block <<- id_block_resp <<- analysis <<- boot <<- NULL
   clickSep <<- FALSE
+  nb_comp <<- 2
 
   # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
   # rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
@@ -114,7 +115,7 @@ server <- function(input, output) {
       # Creates a list of nb_blocks dimension, each one containing a id from 1 to nb_blocks and having the same names as the blocks
       return( as.list(sapply(names(blocks), function(i) as.integer(which(names(blocks) == i)), USE.NAMES = TRUE)) )
     }else
-      return(list(" " = 0))
+      return(list(" " = 1))
 
   }
 
@@ -238,8 +239,7 @@ server <- function(input, output) {
                                             n_mark = input$nb_mark,
                                             i_block = id_block)
 
-  ave <- function() plotAVE(rgcca = rgcca.res,
-                            comp = input$axis1)
+  ave <- function() plotAVE(rgcca = rgcca.res)
 
   conNet <- function() plotNetwork(nodes, edges, blocks)
   conNet2 <- function() plotNetwork2(nodes, edges, blocks)
@@ -467,7 +467,7 @@ server <- function(input, output) {
   })
 
   observeEvent(input$run_analysis, {
-    if(is.matrix(connection))
+    if(!is.null(getInfile()) & is.matrix(connection))
       assign("analysis", setRGCCA(), .GlobalEnv)
   })
 

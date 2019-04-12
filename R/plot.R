@@ -137,7 +137,7 @@ circleFun = function(center = c(0, 0), diameter = 2, npoints = 100) {
 #' printAxis(rgcca.res, 2, 1)
 #' # "Axis 2 (50%)"
 #' @export printAxis
-printAxis = function (rgcca, n, i = NULL, outer = FALSE){
+printAxis = function (rgcca, n = NULL, i = NULL, outer = FALSE){
 
   # by default, take the last block
   if ( is.null(i) )
@@ -206,6 +206,11 @@ colorGroup = function(group){
 plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL, text = TRUE, i_block_y = NULL, reponse_name = "Response"){
   # resp : color the points with a vector
 
+
+  print(c("comp_x", comp_x, "comp_y", comp_y, "i_block", i_block))
+
+  print(resp)
+  print(c(text, "ok", i_block_y))
   # Avoid random with ggrepel
   set.seed(1)
 
@@ -545,7 +550,7 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
 #' library("ggplot2")
 #' plotAVE(rgcca.res, 1)
 #' @export plotAVE
-plotAVE = function(rgcca, comp = 1){
+plotAVE = function(rgcca){
 
   ave = 100 * unlist(rgcca$AVE$AVE_X)
   blocks = factor(unlist(lapply(1:length(names(rgcca$a)), function(x) rep(names(rgcca$a)[x], rgcca$ncomp[x]))), levels = names(rgcca$a))
@@ -563,7 +568,7 @@ plotAVE = function(rgcca, comp = 1){
   p = plotHistogram(p, df, "Average Variance Explained") +
     scale_fill_manual(values=colorGroup(levels(df$ncomp)), labels = gsub("comp", " ", levels(df$ncomp))) +
     geom_col(position = position_stack(reverse = TRUE)) +
-    labs(subtitle = printAxis(rgcca, comp, outer = TRUE)) +
+    labs(subtitle = printAxis(rgcca, outer = TRUE)) +
     geom_text(aes(y = y_ave_cum), cex = 3.5, color = "white") +
     labs( fill = "Components" )
 
@@ -677,6 +682,7 @@ getCor = function(rgcca, blocks, comp_x = 1, comp_y = 2, i_block = NULL){
 #' getRankedValues(getCor(rgcca.out, blocks))
 #' getRankedValues(rgcca.out$Y[[1]], 2, F)
 getRankedValues = function(df, comp = 1, allCol = T){
+
   ordered = order(abs(df[, comp]), decreasing = T)
 
   if (allCol)
