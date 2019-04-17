@@ -4,10 +4,10 @@
 \alias{getBlocsVariables}
 \title{Get the blocs of each variables}
 \usage{
-getBlocsVariables(rgcca)
+getBlocsVariables(df)
 }
 \arguments{
-\item{rgcca}{A list giving the results of a R/SGCCA}
+\item{df}{A list of matrix where their names are those of the blocks and the superblock and their rows are named after their variables}
 }
 \value{
 A vector of character giving block names for each corresponding variable.

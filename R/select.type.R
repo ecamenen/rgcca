@@ -276,6 +276,7 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
                          init = "svd", bias = TRUE, type = "rgcca", verbose = TRUE){
 
   WARN = FALSE
+  A = NULL
 
   for (i in 1:length(blocks)){
     if( ncol(blocks[[i]]) > 1000 ){
@@ -373,13 +374,13 @@ bootstrap = function(blocks, n_boot = 5, connection = 1 - diag(length(blocks)), 
     verbose = TRUE
 
   if(is.null(nb_cores) )
-    nb_cores = detectCores() - 1
+    nb_cores = parallel::detectCores() - 1
 
   w1 = bootstrap_k(blocks, connection, tau, ncomp, scheme, scale, init, bias, type)
 
   W = parallel::mclapply(1:(n_boot-1), function(x) {
 
-    print(x)
+    print(paste("Bootstrap", x))
 
     w = bootstrap_k(blocks, connection, tau, ncomp, scheme, scale, init, bias, type)
 
@@ -400,9 +401,13 @@ bootstrap = function(blocks, n_boot = 5, connection = 1 - diag(length(blocks)), 
 }
 
 #' list of list weights (one per bootstrap per blocks)
+#'
+#' @param comp An integer giving the index of the analysis components
 plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
 
-  J = names(W[[1]])
+  J <- names(W[[1]])
+  color <- X2 <- X3 <- NULL
+
 
   if ( is.null(i_block) )
     i_block = length(W[[1]])

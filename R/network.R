@@ -56,6 +56,7 @@ plotNetwork = function(nodes, edges, blocks){
 
   # Avoid random
   set.seed(1)
+  V <- E <- NULL
 
   net <- graph_from_data_frame(d = edges, vertices = nodes, directed = FALSE)
 

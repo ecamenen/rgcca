@@ -5,7 +5,7 @@
 \title{Plot of samples space}
 \usage{
 plotSamplesSpace(rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL,
-  text = TRUE, i_block_y = NULL)
+  text = TRUE, i_block_y = NULL, reponse_name = "Response")
 }
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}

@@ -20,7 +20,7 @@ getArgs = function(){
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[18]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
-    make_option(c("--group"), type="character", default = "/home/etienne.camenen/Documents/DATA/Nucleiparks/UPDRS_2.tsv",
+    make_option(c("--group"), type="character",
                 help="Path of the group file (to color samples by group in the associated plot)"),
     make_option(c("-r", "--response"), type="integer", metavar="integer",
                 help="Position of the response file in datasets (if not null, activate supervized method)"),
@@ -219,9 +219,9 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "sgcca",
+           type = "rgcca",
            scheme = "factorial",
-           tau = "0.9, 0.9, 0.9",
+           tau = "optimal",
            init = "svd",
            ncomp = "2, 2, 2",
            block = 0,
@@ -233,13 +233,10 @@ opt = list(directory = ".",
            output3 = "fingerprint.pdf",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
-           output5 = "connection.pdf",
-           #datasets = "/home/etienne.camenen/bin/rgccaLauncher/data/politic.tsv, /home/etienne.camenen/bin/rgccaLauncher/data/industry.tsv, /home/etienne.camenen/bin/rgccaLauncher/data/agriculture.tsv")
-           #datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv")
-           datasets = "~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv, ~/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv")
-           #datasets = "/home/etienne.camenen/Documents/DATA/Gliom/y.tsv, /home/etienne.camenen/Documents/DATA/Gliom/GE.tsv, /home/etienne.camenen/Documents/DATA/Gliom/CGH.tsv")
+           output6 = "connection.pdf",
+           datasets = "data/politic.tsv, data/industry.tsv, data/agriculture.tsv")
 
-withCallingHandlers({
+tryCatch({
   opt = parse_args(getArgs())
   opt = checkArg(opt)
 }, error = function(e) {
@@ -305,8 +302,8 @@ if(opt$ncomp[opt$block] > 1){
 }
 
 # Fingerprint plot
-(  fingerprint = plotFingerprint(rgcca.out, opt$compx, opt$superblock, opt$nmark) )
-plotFingerprint(rgcca.out, opt$compy, opt$superblock, opt$nmark)
+(  fingerprint = plotFingerprint(rgcca.out, blocks, opt$compx, opt$superblock, opt$nmark) )
+plotFingerprint(rgcca.out, blocks, opt$compy, opt$superblock, opt$nmark)
 p = changeText ( dynamicPlot(fingerprint, ax2, "text") )
 n = unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
 for (i in 1:length(n[n]))
@@ -320,26 +317,20 @@ if( ! is.null(opt$response) ){
   savePlot(opt$output5, correlation)
 }
 
-# p$x$layout$yaxis$ticktext
-
-# Average Variance Explained
 if(opt$type != "pca"){
 
-  (ave = plotAVE(rgcca.out, opt$compx))
-  dynamicPlot(ave, ax, "none")
-  p = plotly_build( ggplotly(ave))
-
-  ggplotly(ave) %>%
-    style(hoverinfo = "x+y")
-
+  # Average Variance Explained
+  (ave = plotAVE(rgcca.out))
   savePlot(opt$output4, ave)
 
+
+  # Creates design scheme
   nodes <- getNodes(blocks, rgcca = rgcca.out)
   edges <- getEdges(connection, blocks)
   conNet <- function() plotNetwork(nodes, edges, blocks)
-
   plotNetwork2(nodes, edges, blocks)
   savePlot(opt$output6, conNet)
+
 }
 
 boot = bootstrap(blocks, 5, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)

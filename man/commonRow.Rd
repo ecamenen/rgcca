@@ -2,7 +2,7 @@
 % Please edit documentation in R/parsing.R
 \name{commonRow}
 \alias{commonRow}
-\title{Get the common row names}
+\title{Get the rows with the same names among a list of dataframe}
 \usage{
 commonRow(list_m)
 }
@@ -13,5 +13,5 @@ commonRow(list_m)
 A vector of character with the common rownames
 }
 \description{
-Get the common row names
+Get the rows with the same names among a list of dataframe
 }

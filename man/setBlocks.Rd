@@ -4,12 +4,10 @@
 \alias{setBlocks}
 \title{Create a list of matrix from loading files corresponding to blocks}
 \usage{
-setBlocks(superblock, file, names = NULL, sep = "\\t", header = TRUE,
+setBlocks(file, names = NULL, sep = "\\t", header = TRUE,
   rownames = ROW_NAMES)
 }
 \arguments{
-\item{superblock}{A boolean giving the presence (TRUE) / absence (FALSE) of a superblock}
-
 \item{file}{A character giving the path of a file used as a response}
 
 \item{names}{A character giving a list of names for the blocks}

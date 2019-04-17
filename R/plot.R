@@ -463,11 +463,11 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
 #' rgcca.res = list(a = weights)
 #' names(rgcca.res$a) = LETTERS[1:4]
 #' # With the 1rst component of the superblock
-#' plotFingerprint(rgcca.res, 1, TRUE)
+#' plotFingerprint(rgcca.res, 1, TRUE, type = "weigth")
 #' # With the 2nd component of the 1rst block by selecting the ten higher weights
-#' plotFingerprint(rgcca.res, 2, FALSE, 10, 1)
+#' plotFingerprint(rgcca.res, 2, FALSE, 10, 1, type = "weigth")
 #' @export plotFingerprint
-plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_block = NULL, type = "cor"){
+plotFingerprint = function(rgcca, blocks = NULL, comp = 1, superblock = TRUE, n_mark = 100, i_block = NULL, type = "cor"){
 
   color = NULL
   J = names(rgcca$a)
@@ -539,11 +539,13 @@ plotFingerprint = function(rgcca, comp = 1, superblock = TRUE, n_mark = 100, i_b
 #' @param comp An integer giving the index of the analysis components
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
-#' random_val = function() lapply(1:4, function(x) runif(1))
-#' rgcca.res = list(AVE = list(AVE_X = random_val()), a = random_val())
-#' names(rgcca.res$a) = LETTERS[1:4]
+#' random_val = function(y=1) lapply(1:4, function(x) matrix(runif(4), y, 2))
+#' rgcca.res = list(AVE = list(AVE_X = random_val()), a = random_val(2), ncomp = rep(2, 4))
+#' names(rgcca.res$a) <- LETTERS[1:4]
 #' library("ggplot2")
-#' plotAVE(rgcca.res, 1)
+#' for(i in seq(1,4))
+#' names(rgcca.res$AVE$AVE_X[[i]]) <- c(1,2)
+#' plotAVE(rgcca.res)
 #' @export plotAVE
 plotAVE = function(rgcca){
 
@@ -672,10 +674,9 @@ getCor = function(rgcca, blocks, comp_x = 1, comp_y = 2, i_block = NULL){
 
 #' Rank values of a dataframe in decreasing order
 #'
+#' @param df A dataframeZ
+#' @param comp An integer giving the index of the analysis components
 #' @param allCol A boolean to use all the column of the datafram
-#' @examples
-#' getRankedValues(getCor(rgcca.out, blocks))
-#' getRankedValues(rgcca.out$Y[[1]], 2, F)
 getRankedValues = function(df, comp = 1, allCol = T){
 
   ordered = order(abs(df[, comp]), decreasing = T)

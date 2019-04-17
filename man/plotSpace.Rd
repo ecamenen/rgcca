@@ -5,7 +5,8 @@
 \title{Plot of components space}
 \usage{
 plotSpace(rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2,
-  i_block = 1, p = NULL, text = TRUE, i_block_y = NULL)
+  i_block = NULL, p = NULL, text = TRUE, i_block_y = NULL,
+  no_Overlap = TRUE)
 }
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}

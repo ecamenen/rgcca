@@ -55,15 +55,15 @@ knitr::opts_chunk$set(
 
 ## ----blocks--------------------------------------------------------------
 # A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
-SUPERBLOCK =  TRUE
 
-blocks = setBlocks(superblock = SUPERBLOCK, 
-                   file = "data/agriculture.tsv,data/industry.tsv,data/politic.tsv")
+blocks = setBlocks(file = "data/agriculture.tsv,data/industry.tsv,data/politic.tsv")
+blocks[["Superblock"]] = Reduce(cbind, blocks)
 
-## ----connection----------------------------------------------------------
+## ----connection,  echo = TRUE, inlcude = TRUE----------------------------
 # Optional parameters
 RESPONSE = "data/response.tsv"
 CONNECTION = "data/connection.tsv"
+SUPERBLOCK =  TRUE
 # Uncomment the parameters below to try without default settings
 # RESPONSE <- CONNECTION <- NULL
 
@@ -87,8 +87,8 @@ for (x in 1:length(files)) {
 # Use two components in RGCCA to plot in a bidimensionnal space
 NB_COMP = c(2, 2, 3, 3)
 
-sgcca.res = sgcca(A = blocks,
-                  C = connection,
+sgcca.res = rgcca.analyze(blocks = blocks,
+                  connection = connection,
                   ncomp = NB_COMP)
 
 # Renames the elements of the list according to the block names
@@ -111,7 +111,8 @@ plotVariablesSpace(rgcca = sgcca.res,
 ## ------------------------------------------------------------------------
 plotFingerprint(rgcca = sgcca.res,
                 superblock = SUPERBLOCK,
-                n_mark = NB_MARK)
+                n_mark = NB_MARK,
+                type = "weigth")
 
 ## ------------------------------------------------------------------------
 plotAVE(rgcca = sgcca.res)
@@ -135,7 +136,8 @@ plotVariablesSpace(rgcca = sgcca.res,
 plotFingerprint(rgcca = sgcca.res,
                 comp = COMP1,
                 n_mark = NB_MARK, 
-                i_block = 3)
+                i_block = 3,
+                type = "weigth")
 
 ## ---- echo = FALSE-------------------------------------------------------
 # Remove the temp/ folder

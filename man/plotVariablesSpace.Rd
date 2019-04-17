@@ -5,7 +5,8 @@
 \title{Plot of variables space}
 \usage{
 plotVariablesSpace(rgcca, blocks, comp_x = 1, comp_y = 2,
-  superblock = TRUE, i_block = NULL, text = TRUE)
+  superblock = TRUE, i_block = NULL, text = TRUE,
+  removeVariable = TRUE)
 }
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}
@@ -21,6 +22,8 @@ plotVariablesSpace(rgcca, blocks, comp_x = 1, comp_y = 2,
 \item{i_block}{An integer giving the index of a list of blocks}
 
 \item{text}{A bolean to represent the points with their row names (TRUE) or with circles}
+
+\item{removeVariable}{A bolean to keep only the 100 variables of each component with the biggest correlation}
 }
 \description{
 Correlation circle highlighting the contribution of each variables to the construction of the RGCCA components
@@ -30,7 +33,7 @@ setMatrix = function(nrow, ncol, iter = 3) lapply(1:iter, function(x) matrix(run
 blocks = setMatrix(10, 5)
 blocks[[4]] = Reduce(cbind, blocks)
 for (i in 1:4)
-    colnames(blocks[[i]]) = paste( LETTERS[i], as.character(1:NCOL(blocks[[i]])), sep="" )
+    colnames(blocks[[i]]) = paste0( LETTERS[i], as.character(1:NCOL(blocks[[i]])))
 coord = setMatrix(10, 2, 4)
 a = setMatrix(5, 2)
 a[[4]] = matrix(runif(15 * 2), 15, 2)

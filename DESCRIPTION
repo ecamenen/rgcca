@@ -13,7 +13,11 @@ RoxygenNote: 6.1.0
 Imports: ggplot2,
     optparse,
     xlsx,
-    scales
+    scales,
+    plotly,
+    igraph,
+    parallel,
+    visNetwork
 Depends: RGCCA
 Suggests: testthat,
     knitr,

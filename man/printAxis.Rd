@@ -4,7 +4,7 @@
 \alias{printAxis}
 \title{Print the variance of a component}
 \usage{
-printAxis(rgcca, n, i = NULL)
+printAxis(rgcca, n = NULL, i = NULL, outer = FALSE)
 }
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}

@@ -150,20 +150,20 @@ The blocks are loaded with the function ```setBlocks```. The first argument of t
 
 ```{r blocks}
 # A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
-SUPERBLOCK =  TRUE
 
-blocks = setBlocks(superblock = SUPERBLOCK, 
-                   file = "data/agriculture.tsv,data/industry.tsv,data/politic.tsv")
+blocks = setBlocks(file = "data/agriculture.tsv,data/industry.tsv,data/politic.tsv")
+blocks[["Superblock"]] = Reduce(cbind, blocks)
 ```
 
 ## Load the groups of response and the connection between blocks
 
 The connection between the blocks will be used by the RGCCA and must be set by ```setConnection``` function. A group of samples will be used to color them in the samples plot and must be set by ```setResponse``` function. For both functions, the ```blocks``` parameter, set at the previous step, is required. The other parameters are optional. The user could import a file containing either (```file``` parameter) : (i) a symmetric matrix with 1 giving a connection between two blocs, or 0 otherwise; (ii) a univariate vector (qualitative or quantitative) or a disjunctive table for the response. By default, the column separator is the tabulation and could be set (```sep``` argument). For the ```setResponse```, a header could be specified (```header``` parameter).
 
-```{r connection}
+```{r connection,  echo = TRUE, inlcude = TRUE}
 # Optional parameters
 RESPONSE = "data/response.tsv"
 CONNECTION = "data/connection.tsv"
+SUPERBLOCK =  TRUE
 # Uncomment the parameters below to try without default settings
 # RESPONSE <- CONNECTION <- NULL
 
@@ -197,8 +197,8 @@ SGCCA is run from the RGCCA package by using two components for a biplot visuali
 # Use two components in RGCCA to plot in a bidimensionnal space
 NB_COMP = c(2, 2, 3, 3)
 
-sgcca.res = sgcca(A = blocks,
-                  C = connection,
+sgcca.res = rgcca.analyze(blocks = blocks,
+                  connection = connection,
                   ncomp = NB_COMP)
 
 # Renames the elements of the list according to the block names
@@ -237,7 +237,8 @@ plotVariablesSpace(rgcca = sgcca.res,
 ```{r}
 plotFingerprint(rgcca = sgcca.res,
                 superblock = SUPERBLOCK,
-                n_mark = NB_MARK)
+                n_mark = NB_MARK,
+                type = "weigth")
 ```
 
 ### Best explained blocks
@@ -271,7 +272,8 @@ plotVariablesSpace(rgcca = sgcca.res,
 plotFingerprint(rgcca = sgcca.res,
                 comp = COMP1,
                 n_mark = NB_MARK, 
-                i_block = 3)
+                i_block = 3,
+                type = "weigth")
 ```
 
 

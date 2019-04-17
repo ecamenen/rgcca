@@ -2,7 +2,7 @@
 % Please edit documentation in R/parsing.R
 \name{keepCommonRow}
 \alias{keepCommonRow}
-\title{Keep the common row names}
+\title{Keep only the rows with the same names among a list of dataframe}
 \usage{
 keepCommonRow(list_m)
 }
@@ -10,8 +10,8 @@ keepCommonRow(list_m)
 \item{list_m}{A list of dataframe}
 }
 \value{
-A list of datrame with the same number of row (those with the same name)
+A list of dataframe
 }
 \description{
-Keep the common row names
+Keep only the rows with the same names among a list of dataframe
 }

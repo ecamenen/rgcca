@@ -38,9 +38,11 @@ ROW_NAMES = 1 # column of row names
 #' @export getFileName
 getFileName = function(fi) {
 
-  fo = unlist(strsplit(fi, "/"))
-  fo = fo[length(fo)]
-  unlist(strsplit(fo, "[.]"))[1]
+  if(!is.null(fi)){
+    fo = unlist(strsplit(fi, "/"))
+    fo = fo[length(fo)]
+    unlist(strsplit(fo, "[.]"))[1]
+  }
 }
 
 # Print warning if file size over

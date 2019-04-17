@@ -4,7 +4,7 @@
 \alias{plotAVE}
 \title{Histogram of Average Variance Explained}
 \usage{
-plotAVE(rgcca, comp = 1)
+plotAVE(rgcca)
 }
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}
@@ -15,11 +15,13 @@ plotAVE(rgcca, comp = 1)
 Histogram of the model quality (based on Average Variance Explained) for each blocks and sorted in decreasing order
 }
 \examples{
-random_val = function() lapply(1:4, function(x) runif(1))
-rgcca.res = list(AVE = list(AVE_X = random_val()), a = random_val())
-names(rgcca.res$a) = LETTERS[1:4]
+random_val = function(y=1) lapply(1:4, function(x) matrix(runif(4), y, 2))
+rgcca.res = list(AVE = list(AVE_X = random_val()), a = random_val(2), ncomp = rep(2, 4))
+names(rgcca.res$a) <- LETTERS[1:4]
 library("ggplot2")
-plotAVE(rgcca.res, 1)
+for(i in seq(1,4))
+names(rgcca.res$AVE$AVE_X[[i]]) <- c(1,2)
+plotAVE(rgcca.res)
 }
 \seealso{
 \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}

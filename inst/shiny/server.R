@@ -237,6 +237,7 @@ server <- function(input, output) {
                                              text = if_text)
 
   fingerprint <- function() plotFingerprint(rgcca = rgcca.res,
+                                            blocks = blocks,
                                             comp = axis1,
                                             superblock = (superblock & tolower(analysis_type) != "pca"),
                                             n_mark = nb_mark,

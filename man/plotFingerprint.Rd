@@ -4,8 +4,8 @@
 \alias{plotFingerprint}
 \title{Histogram of a fingerprint}
 \usage{
-plotFingerprint(rgcca, comp = 1, superblock = TRUE, n_mark = 100,
-  i_block = NULL)
+plotFingerprint(rgcca, blocks = NULL, comp = 1, superblock = TRUE,
+  n_mark = 100, i_block = NULL, type = "cor")
 }
 \arguments{
 \item{rgcca}{A list giving the results of a R/SGCCA}
@@ -17,6 +17,9 @@ plotFingerprint(rgcca, comp = 1, superblock = TRUE, n_mark = 100,
 \item{n_mark}{An integer giving the number of top potential biomarkers to select}
 
 \item{i_block}{An integer giving the index of a list of blocks}
+
+\item{type}{A string giving the criterion to selects biomarkers : either "cor" for correlation between the component and the block
+or "weight" for the weight of the RGCCA}
 }
 \description{
 Histogram of the higher outer weight vectors for a component of a block (by default, the superblock or the last one) analysed by R/SGCCA
@@ -27,9 +30,9 @@ weights[[4]] = Reduce(rbind, weights)
 rgcca.res = list(a = weights)
 names(rgcca.res$a) = LETTERS[1:4]
 # With the 1rst component of the superblock
-plotFingerprint(rgcca.res, 1, TRUE)
+plotFingerprint(rgcca.res, 1, TRUE, type = "weigth")
 # With the 2nd component of the 1rst block by selecting the ten higher weights
-plotFingerprint(rgcca.res, 2, FALSE, 10, 1)
+plotFingerprint(rgcca.res, 2, FALSE, 10, 1, type = "weigth")
 }
 \seealso{
 \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
