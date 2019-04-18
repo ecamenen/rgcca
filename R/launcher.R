@@ -134,7 +134,7 @@ postCheckArg = function(opt, blocks){
 
   out = lapply(1:length(opt$ncomp), function(x){
     if ((opt$ncomp[x] < 1) || (opt$ncomp[x] > ncol(blocks[[x]]))){
-      stop("--ncomp must be comprise between 1 and ", ncol(blocks[[x]]) ,", the number of variables of the block (currently equals to ", opt$ncomp[x]  ,").\n", exit_code = 126)
+      stop(paste0("--ncomp must be comprise between 1 and ", ncol(blocks[[x]]) ,", the number of variables of the block (currently equals to ", opt$ncomp[x]  ,")"), exit_code = 126)
     }
   })
 
@@ -234,7 +234,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output6 = "connection.pdf",
-           datasets = "data/politic.tsv, data/industry.tsv, data/agriculture.tsv")
+           datasets = "inst/extdata/politic.tsv, inst/extdata/industry.tsv, inst/extdata/agriculture.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())

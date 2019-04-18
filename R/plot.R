@@ -458,14 +458,16 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
 #' or "weight" for the weight of the RGCCA
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
-#' weights = lapply(1:3, function(x) matrix(runif(10*2), 10, 2))
+#' weights = lapply(1:3, function(x) matrix(runif(7*2), 7, 2))
 #' weights[[4]] = Reduce(rbind, weights)
 #' rgcca.res = list(a = weights)
 #' names(rgcca.res$a) = LETTERS[1:4]
+#' for(i in seq(1,4))
+#' row.names(rgcca.res$a[[i]]) <- paste0(letters[i],letters[1:nrow(rgcca.res$a[[i]])])
 #' # With the 1rst component of the superblock
-#' plotFingerprint(rgcca.res, 1, TRUE, type = "weigth")
+#' plotFingerprint(rgcca.res, NULL, 1, TRUE, type = "weigth")
 #' # With the 2nd component of the 1rst block by selecting the ten higher weights
-#' plotFingerprint(rgcca.res, 2, FALSE, 10, 1, type = "weigth")
+#' plotFingerprint(rgcca.res, NULL, 2, FALSE, 10, 1, type = "weigth")
 #' @export plotFingerprint
 plotFingerprint = function(rgcca, blocks = NULL, comp = 1, superblock = TRUE, n_mark = 100, i_block = NULL, type = "cor"){
 

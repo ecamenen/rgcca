@@ -25,14 +25,16 @@ or "weight" for the weight of the RGCCA}
 Histogram of the higher outer weight vectors for a component of a block (by default, the superblock or the last one) analysed by R/SGCCA
 }
 \examples{
-weights = lapply(1:3, function(x) matrix(runif(10*2), 10, 2))
+weights = lapply(1:3, function(x) matrix(runif(7*2), 7, 2))
 weights[[4]] = Reduce(rbind, weights)
 rgcca.res = list(a = weights)
 names(rgcca.res$a) = LETTERS[1:4]
+for(i in seq(1,4))
+row.names(rgcca.res$a[[i]]) <- paste0(letters[i],letters[1:nrow(rgcca.res$a[[i]])])
 # With the 1rst component of the superblock
-plotFingerprint(rgcca.res, 1, TRUE, type = "weigth")
+plotFingerprint(rgcca.res, NULL, 1, TRUE, type = "weigth")
 # With the 2nd component of the 1rst block by selecting the ten higher weights
-plotFingerprint(rgcca.res, 2, FALSE, 10, 1, type = "weigth")
+plotFingerprint(rgcca.res, NULL, 2, FALSE, 10, 1, type = "weigth")
 }
 \seealso{
 \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
