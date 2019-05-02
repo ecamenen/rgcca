@@ -409,17 +409,20 @@ server <- function(input, output) {
     setToggle("scheme")
     setToggle("superblock")
     setToggle("supervized")
-    setToggle("connection")
     hide(selector = "#tabset li a[data-value=Graphic]")
-
-
-    print(is.null(unique(analysis)))
-    # reac_var(analysis)
-    # toggle(condition = !is.null(reac_var()), selector = "#tabset li a[data-value=Graphic]")
-
+    hide(selector = "#tabset li a[data-value=RGCCA]")
+    hide(id = "connection")
+    hide(id = "response")
   })
 
   onclick("sep", function(e) assign("clickSep", TRUE, .GlobalEnv))
+
+  observeEvent(c(input$blocks, input$sep), {
+    if(blocksExists()){
+      setToggle("connection")
+      show(id = "response")
+    }
+  })
 
   getInfile <- eventReactive(c(input$blocks, input$sep), {
     # Return the list of blocks
@@ -427,6 +430,7 @@ server <- function(input, output) {
     # Load the blocks
     paths = paste(input$blocks$datapath, collapse = ',')
     names = paste(input$blocks$name, collapse = ',')
+
 
     assign("blocks_unscaled",
            showWarn(setBlocks (file = paths,
@@ -439,6 +443,10 @@ server <- function(input, output) {
 
     if(length(blocks_unscaled) == 1)
       return(NULL)
+    else{
+      show(selector = "#tabset li a[data-value=RGCCA]")
+      setToggle("connection")
+    }
 
     assign("blocks_without_superb",
            scaling(blocks_unscaled, input$scale, TRUE),
