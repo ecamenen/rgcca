@@ -46,7 +46,7 @@ server <- function(input, output) {
     setNamesInput("y")
   })
 
-  output$response <- renderUI({
+  output$blocks_names_response<- renderUI({
     setNamesInput("response")
   })
 
@@ -406,10 +406,13 @@ server <- function(input, output) {
 
   observe({
     setToggle("tau_opt")
+    setToggle("tau")
     setToggle("scheme")
     setToggle("superblock")
+    setToggle("blocks_names_response")
     setToggle("supervized")
     hide(selector = "#tabset li a[data-value=Graphic]")
+    hide(id = "connection")
   })
 
   observe({
@@ -419,7 +422,6 @@ server <- function(input, output) {
     hide(id = "boot")
     hide(id = "init")
     hide(id = "response")
-    hide(id = "connection")
   })
 
   onclick("sep", function(e) assign("clickSep", TRUE, .GlobalEnv))

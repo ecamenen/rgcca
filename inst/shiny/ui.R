@@ -79,7 +79,7 @@ ui <- fluidPage(
                        value = FALSE),
          conditionalPanel(
            condition = "input.supervized == true",
-           uiOutput("response")
+           uiOutput("blocks_names_response")
          ),
          uiOutput("nb_comp_custom"),
          checkboxInput(inputId = "superblock",
