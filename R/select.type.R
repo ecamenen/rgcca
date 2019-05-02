@@ -486,7 +486,6 @@ checkC1 = function(blocks, tau, type){
     #the minimum value avalaible
     min_c1 = lapply(blocks, function(x) 1 / sqrt(ncol(x)))
 
-    print("HERE")
     # Check c1 varying between 1/sqrt(pj) and 1
     out = mapply(function(x, y){
       if(x < y | x > 1)

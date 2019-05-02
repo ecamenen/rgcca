@@ -88,12 +88,7 @@ ui <- fluidPage(
          checkboxInput(inputId = "tau_opt",
                        label = "Use an optimal tau",
                        value = TRUE),
-         conditionalPanel(
-           condition = "input.tau_opt == false",
-           sliderInput(inputId = "tau",
-                       label = h5("Tau: "),
-                       min = 0, max = 1, value = .5, step = .1)
-         ),
+         uiOutput("tau_custom"),
         radioButtons(inputId = "scheme",
                      label = "Scheme function",
                      choices = c(Horst = "horst",

@@ -34,6 +34,20 @@ server <- function(input, output) {
     setNamesInput("x")
   })
 
+  output$tau_custom <- renderUI({
+    if(input$analysis_type == "SGCCA")
+      cond = "input.analysis_type == SGCCA"
+    else
+      cond = "input.tau_opt == false"
+
+    conditionalPanel(
+      condition = cond,
+      sliderInput(inputId = "tau",
+                  label = h5("Tau: "),
+                  min = 0, max = 1, value = 1, step = .1)
+  )
+  })
+
   setNamesInput = function(x){
     refesh = c(input$superblock, input$supervized, input$analysis_type)
     selectInput(inputId = paste0("names_block_", x),
@@ -260,8 +274,9 @@ server <- function(input, output) {
     blocks = blocks_without_superb
     ncomp = rep(nb_comp, length(blocks))
 
+    #print(input$tau)
     # Tau is set to optimal by default
-    if (input$tau_opt)
+    if (input$tau_opt && input$analysis_type != "SGCCA")
       tau = "optimal"
     else
       # otherwise the tau value fixed by the user is used
@@ -305,7 +320,9 @@ server <- function(input, output) {
 
     c1 = showWarn(checkC1(pars$blocks, pars$tau, analysis_type))
 
-    if(length(pars) == 1 | !is.null(c1))
+    print(list("ok", !is.null(unlist(c1))))
+
+    if(length(pars) == 1 | !is.null(unlist(c1)))
       return(NULL)
 
     assign("connection", pars$connection, .GlobalEnv)
@@ -405,23 +422,27 @@ server <- function(input, output) {
     toggle(condition = (input$analysis_type %in% c("RGCCA", "SGCCA")), id = id)
 
   observe({
-    setToggle("tau_opt")
-    setToggle("tau")
+    # Event related to input$analysis_type
+    toggle(condition = (input$analysis_type == "RGCCA"), id = "tau_opt")
+    setToggle("tau_custom")
     setToggle("scheme")
     setToggle("superblock")
     setToggle("blocks_names_response")
     setToggle("supervized")
     hide(selector = "#tabset li a[data-value=Graphic]")
-    hide(id = "connection")
+    setToggle("connection")
   })
 
   observe({
+    # Initial events
+
     hide(selector = "#tabset li a[data-value=RGCCA]")
     hide(selector = "#navbar li a[data-value=Bootstrap]")
     hide(id = "run_boot")
     hide(id = "boot")
     hide(id = "init")
     hide(id = "response")
+    hide(id = "connection")
   })
 
   onclick("sep", function(e) assign("clickSep", TRUE, .GlobalEnv))
