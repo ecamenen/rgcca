@@ -410,6 +410,12 @@ server <- function(input, output) {
     setToggle("superblock")
     setToggle("supervized")
     setToggle("connection")
+    hide(selector = "#tabset li a[data-value=Graphic]")
+
+
+    print(is.null(unique(analysis)))
+    # reac_var(analysis)
+    # toggle(condition = !is.null(reac_var()), selector = "#tabset li a[data-value=Graphic]")
 
   })
 
@@ -470,6 +476,10 @@ server <- function(input, output) {
   observeEvent(input$run_analysis, {
     if(!is.null(getInfile()) & is.matrix(connection))
       assign("analysis", setRGCCA(), .GlobalEnv)
+
+    if(!is.null(analysis))
+      show(selector = "#tabset li a[data-value=Graphic]")
+
   })
 
   observeEvent(c(input$superblock, input$supervized, input$nb_comp, input$scheme, input$init, input$tau, input$tau_opt, input$analysis_type), {

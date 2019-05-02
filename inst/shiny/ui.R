@@ -20,7 +20,7 @@ for (l in librairies) {
 
 ui <- fluidPage(
 
-  titlePanel("R/SGCCA - Shiny graphical interface"),
+  titlePanel("R/SGCCA - The Shiny graphical interface"),
   useShinyjs(),
   sidebarLayout(
 
@@ -119,10 +119,12 @@ ui <- fluidPage(
         uiOutput("blocks_names_custom_y"),
         uiOutput("axis1_custom"),
         uiOutput("axis2_custom"),
-        uiOutput("nb_mark_custom")),
+        uiOutput("nb_mark_custom"),
 
-      actionButton(inputId = "save_all",
-                   label = "Save all")
+
+        actionButton(inputId = "save_all",
+                     label = "Save all")
+        )
 
     )),
 
