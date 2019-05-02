@@ -410,9 +410,16 @@ server <- function(input, output) {
     setToggle("superblock")
     setToggle("supervized")
     hide(selector = "#tabset li a[data-value=Graphic]")
+  })
+
+  observe({
     hide(selector = "#tabset li a[data-value=RGCCA]")
-    hide(id = "connection")
+    hide(selector = "#navbar li a[data-value=Bootstrap]")
+    hide(id = "run_boot")
+    hide(id = "boot")
+    hide(id = "init")
     hide(id = "response")
+    hide(id = "connection")
   })
 
   onclick("sep", function(e) assign("clickSep", TRUE, .GlobalEnv))
