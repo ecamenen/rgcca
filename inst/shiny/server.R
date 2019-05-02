@@ -18,7 +18,7 @@ server <- function(input, output) {
 
   # Assign reactive variables
   reac_var  <<- reactiveVal()
-  id_block_y <<- id_block <<- id_block_resp <<- analysis <<- boot <<- NULL
+  id_block_y <<- id_block <<- id_block_resp <<- analysis <<- boot <<- analysis_type <<- NULL
   clickSep <<- FALSE
   if_text <<- TRUE
   axis1 <<- 1
@@ -194,7 +194,7 @@ server <- function(input, output) {
 
   setIdBlock = function(){
 
-    if( !superblock && as.integer(input$names_block_x) > round(length(blocks)) ){
+    if( !superblock && !is.null(input$names_block_x) && as.integer(input$names_block_x) > round(length(blocks)) ){
       reac_var(as.integer(input$names_block_x))
       assign("id_block", reac_var() - 1, .GlobalEnv)
       assign("id_block_y", reac_var() - 1, .GlobalEnv)
@@ -267,9 +267,23 @@ server <- function(input, output) {
       # otherwise the tau value fixed by the user is used
       tau = rep(input$tau, length(blocks))
 
-    if(length(blocks) == 1){
+    setDefaultType <- function(){
+      showWarn(warning("By default, a RGCCA is performed."))
+      assign("analysis_type", "RGCCA", .GlobalEnv)
+    }
+
+    if(tolower(input$analysis_type) == "pca" & length(input$blocks$datapath) > 1){
+      showWarn(checkNbBlocks(blocks, input$analysis_type))
+      setDefaultType()
+    }else if (tolower(input$analysis_type) %in% c("cca", "ra", "ifa", "pls") & ( length(input$blocks$datapath) < 2  |  length(input$blocks$datapath) > 2 ) ){
+      showWarn(checkNbBlocks(blocks, input$analysis_type))
+      setDefaultType()
+    }else if(length(blocks) == 1){
       showWarn(warning("Only one block is selected. By default, a PCA is performed."))
-      assign("analysis_type", "pca", .GlobalEnv)
+      assign("analysis_type", "PCA", .GlobalEnv)
+    }else if(length(blocks) == 2){
+      showWarn(warning("Only two block is selected. By default, a PLS is performed."))
+      assign("analysis_type", "PLS", .GlobalEnv)
     }else
       assign("analysis_type", input$analysis_type, .GlobalEnv)
 
@@ -390,7 +404,6 @@ server <- function(input, output) {
   setToggle = function(id)
     toggle(condition = (input$analysis_type %in% c("RGCCA", "SGCCA")), id = id)
 
-
   observe({
     setToggle("tau_opt")
     setToggle("scheme")
@@ -409,45 +422,29 @@ server <- function(input, output) {
     paths = paste(input$blocks$datapath, collapse = ',')
     names = paste(input$blocks$name, collapse = ',')
 
-    if(tolower(input$analysis_type) == "pca" & length(input$blocks$datapath) > 1){
-      # TODO: notification
-    }else if (tolower(input$analysis_type) %in% c("cca", "ra", "ifa", "pls") & ( length(input$blocks$datapath) < 2  |  length(input$blocks$datapath) > 2 ) ){
-      # TODO: Hide these analysis
-    }
+    assign("blocks_unscaled",
+           showWarn(setBlocks (file = paths,
+                      names = names,
+                      sep = input$sep,
+                      header = TRUE),
+                    duration = 2
+                    ),
+           .GlobalEnv)
 
-    withCallingHandlers({
-      assign("blocks_unscaled",
-             showWarn(setBlocks (file = paths,
-                        names = names,
-                        sep = input$sep,
-                        header = TRUE),
-                      duration = NULL
-                      ),
-             .GlobalEnv)
+    if(length(blocks_unscaled) == 1)
+      return(NULL)
 
-      if(length(blocks_unscaled) == 1)
-        return(NULL)
+    assign("blocks_without_superb",
+           scaling(blocks_unscaled, input$scale, TRUE),
+           .GlobalEnv)
 
-      assign("blocks_without_superb",
-             scaling(blocks_unscaled, input$scale, TRUE),
-             .GlobalEnv)
+    assign("id_block_resp", length(blocks_without_superb), .GlobalEnv)
+    blocks = setParRGCCA()
+    assign("blocks", blocks, .GlobalEnv)
+    setResponseShiny()
+    setConnectionShiny()
+    setIdBlock()
 
-      assign("id_block_resp", length(blocks_without_superb), .GlobalEnv)
-      blocks = setParRGCCA()
-      assign("blocks", blocks, .GlobalEnv)
-      setResponseShiny()
-      setConnectionShiny()
-      setIdBlock()
-
-    }, error = function(e) {
-
-      assign("blocks", NULL, .GlobalEnv)
-      if(clickSep)
-        message(e$message)
-
-    })
-
-    assign("clickSep", FALSE, .GlobalEnv)
     return(blocks)
   })
 

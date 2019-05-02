@@ -1,5 +1,19 @@
 VERBOSE = FALSE
 
+checkNbBlocks <- function(blocks, type){
+
+  if(tolower(type) == "pca"){
+    msg <- "Only one block is"
+    exit_code <- 110
+  }else{
+    msg <- "Two blocks are"
+    exit_code <- 111
+  }
+
+  stop(paste0(length(blocks), " blocks used in the analysis. ", msg ," required for a ", type, "."), exit_code = exit_code)
+
+}
+
 #' Translates the type string into the appropriate tau and function
 select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = rep(1, length(A)),
                         ncomp = rep(1, length(A)), scheme = "centroid", superblock = TRUE,
@@ -63,10 +77,10 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
     ncomp <<- warnSuper(ncomp)
   }
 
-  set2Block = function(){
+  set2Block = function(type){
 
     if(length(A) != 2)
-      stop(paste0(length(A), " blocks used in the analysis. Two blocks are required for a CCA."), exit_code = 110)
+      checkNbBlocks(A, type)
 
     scheme <<- setScheme("horst")
     C <<- setConnection(1-diag(2))
@@ -92,7 +106,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
   else if (tolower(type) == "pca"){
 
     if(length(A) != 1)
-      stop(paste0(length(A), " blocks used in the analysis. Only one block is required for a PCA."), exit_code = 111)
+      checkNbBlocks(A, type)
 
     scheme   <- setScheme("horst")
     tau      <- setTau(c(1, 1))
@@ -101,7 +115,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
 
   # 2 Blocks cases
   else if (tolower(type) %in% c("cca", "ra", "ifa", "pls")){
-    set2Block()
+    set2Block(type)
 
     if (tolower(type) == "cca")
       tau      <- setTau(c(0, 0))

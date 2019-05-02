@@ -285,7 +285,7 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
 
     #if one-column file, it is a tabulation error
     if (NCOL(df) == 0)
-      stop(paste(fo, "block file has an only-column. Check the separator [by default: tabulation]."), exit_code = 102)
+      stop(paste(fo, "block file has an only-column. Check the separator."), exit_code = 102)
 
 
     dimnames = list(row.names(df), colnames(df))
