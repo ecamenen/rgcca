@@ -122,8 +122,10 @@ server <- function(input, output) {
 
     if(!is.null(input$blocks)){
       blocks = getInfile()
-      return( min(unlist(lapply(blocks, NCOL))) )
-    }else
+      if(!is.null(blocks))
+        return( min(unlist(lapply(blocks, NCOL))) )
+    }
+
       return(2)
 
   }
@@ -272,6 +274,9 @@ server <- function(input, output) {
   ################################################ Analysis ################################################
 
   setParRGCCA <- function(){
+
+    print(c("ok", nb_comp))
+    print(c("ok2", input$nb_comp))
 
     blocks = blocks_without_superb
     ncomp = rep(nb_comp, length(blocks))
