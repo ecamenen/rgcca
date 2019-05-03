@@ -1,26 +1,29 @@
 getNodes = function(blocks, tau = NULL, rgcca = NULL) {
 
+  if(attr(rgcca,"class") == "sgcca")
+    par = "c1"
+  else
+    par = "tau"
+
   if(any(tau == "optimal")){
   	if(!is.null(rgcca))
-  		tau = unlist(lapply(1:ncol(rgcca$tau), function(x) Reduce(paste, round(rgcca$tau[, x],2))))
+  		tau = unlist(lapply(1:ncol(rgcca[[par]]), function(x) Reduce(paste, round(rgcca[[par]][, x],2))))
   	else
       tau = rep(NA, length(blocks))
   }
 
   if(is.null(tau)){
-    if(is.matrix(rgcca$tau))
-      tau = unlist(lapply(1:ncol(rgcca$tau), function(x) Reduce(paste, round(rgcca$tau[, x],2))))
+    if(is.matrix(rgcca[[par]]))
+      tau = unlist(lapply(1:ncol(rgcca[[par]]), function(x) Reduce(paste, round(rgcca[[par]][, x],2))))
     else
-      tau = rgcca$tau
+      tau = rgcca[[par]]
   }
 
 	nrow = unlist(lapply(blocks, function(x) ifelse(is.null(attributes(x)$nrow), nrow(blocks[[1]]) , attributes(x)$nrow)))
 
   values <- list( names(blocks), unlist(lapply(blocks, NCOL)), nrow, tau )
   nodes <- as.data.frame(matrix(unlist(values), length(blocks), length(values)))
-  colnames(nodes) = c("id", "P", "nrow", "tau")
-
-  #nodes[, c(2, 3)] <- apply(nodes[, c(2, 3)], 2, as.numeric)
+  colnames(nodes) = c("id", "P", "nrow", par)
 
   return(nodes)
 }
@@ -58,15 +61,17 @@ plotNetwork = function(nodes, edges, blocks){
   set.seed(1)
   V <- E <- NULL
 
+  par = ifelse("c1" %in% names(nodes), "c1", "tau")
+
   net <- graph_from_data_frame(d = edges, vertices = nodes, directed = FALSE)
 
-  if(all(is.na(nodes$tau))){
-    nodes$tau = rep("optimal", length(blocks))
+  if(all(is.na(nodes[, par]))){
+    nodes[, par] = rep("optimal", length(blocks))
     V(net)$tau = rep(1, length(blocks))
   }
 
   V(net)$color <- "khaki2"
-  V(net)$label <- paste(nodes$id, "\nP =", nodes$P, "\ntau =", nodes$tau, "\nN =", nodes$nrow, sep=" ")
+  V(net)$label <- paste(nodes$id, "\nP =", nodes$P, paste0("\n", par, " ="), nodes[, par], "\nN =", nodes$nrow, sep=" ")
   V(net)$label.font <- 3
   V(net)$shape <- "square"
   E(net)$width <- E(net)$weight * 2
@@ -85,12 +90,13 @@ plotNetwork2 = function(nodes, edges, blocks){
 
   # Avoid random
   set.seed(1)
+  par = ifelse("c1" %in% names(nodes), "c1", "tau")
 
-  if(all(is.na(nodes$tau)))
-    nodes$tau = rep("optimal", length(blocks))
+  if(all(is.na(nodes[, par])))
+    nodes[, par] = rep("optimal", length(blocks))
 
   nodes$title  <- nodes$id
-  nodes$label  <- paste(nodes$id, "\nP =", nodes$P, "\ntau =", nodes$tau, "\nN =", nodes$nrow, sep=" ")
+  nodes$label  <- paste(nodes$id, "\nP =", nodes$P, paste0("\n", par, " ="), nodes[, par], "\nN =", nodes$nrow, sep=" ")
 
   edges$width <- edges$weight * 2
   nodes$color.background <- rep("#eee685", length(blocks))

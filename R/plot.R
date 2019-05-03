@@ -260,7 +260,7 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
   }else
     p = NULL
 
-  p = plotSpace(rgcca, df, "Samples", resp, reponse_name, comp_x, comp_y, i_block, p, text, i_block_y)
+  p = plotSpace(rgcca, df, "Sample", resp, reponse_name, comp_x, comp_y, i_block, p, text, i_block_y)
 
   # remove legend if missing
   if ( length(unique(resp)) == 1){
@@ -359,7 +359,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
   df = data.frame(df, color)
 
 
-  p = plotSpace(rgcca, df, "Variables", color, "Blocks", comp_x, comp_y, i_block, text = text) +
+  p = plotSpace(rgcca, df, "Variable", color, "Blocks", comp_x, comp_y, i_block, text = text) +
     geom_path(aes(x, y), data = circleFun(), col = "grey", size = 1) +
     geom_path(aes(x, y), data = circleFun()/2, col = "grey", size = 1, lty = 2)
 
@@ -479,7 +479,7 @@ plotFingerprint = function(rgcca, blocks = NULL, comp = 1, superblock = TRUE, n_
     i_block = length(rgcca$a)
 
   if(type == "cor"){
-    title = "Correlation with the block"
+    title = "Variable correlations with"
     criterion = getCor(rgcca, blocks, comp, comp, i_block)
   }else{
     title = "Variable weights"
@@ -520,7 +520,7 @@ plotFingerprint = function(rgcca, blocks = NULL, comp = 1, superblock = TRUE, n_
   }
 
   p = plotHistogram(p, df, title, as.character(color2)) +
-  labs(subtitle = printAxis(rgcca, comp, i_block))
+    labs(subtitle = printAxis(rgcca, comp, i_block))
 
   if(length(color2) != 1)
     p = p + scale_fill_manual(values = colorGroup(J),
@@ -612,7 +612,7 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
     theme_classic() +
     theme_perso() +
     theme(
-      axis.text.y = element_text(size = AXIS_TEXT_SIZE, face = AXIS_FONT, color = color),
+      axis.text.y = element_text(size = AXIS_TEXT_SIZE, face = AXIS_FONT, color = "gray40"),
       axis.text.x = element_text(size = AXIS_TEXT_SIZE, face = AXIS_FONT, color = "gray40"),
       axis.line = element_blank(),
       axis.ticks = element_blank(),

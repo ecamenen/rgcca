@@ -30,14 +30,14 @@ ui <- fluidPage(
 
       # Data loading
       fileInput(inputId = "blocks",
-                label = h5("Choose blocks : "),
+                label = h5("Choose blocks"),
                 multiple = TRUE
       ),
       fileInput(inputId = "connection",
-                label = h5("Choose a connection design : ")
+                label = h5("Choose a connection design")
       ),
       fileInput(inputId = "response",
-                label = h5("Choose a response : ")
+                label = h5("Choose a response")
       ),
 
       # File parsing
@@ -58,17 +58,18 @@ ui <- fluidPage(
         checkboxInput(inputId = "scale",
                       label = "Scale the blocks",
                       value = TRUE),
-        selectInput("analysis_type",
-                    h5("Analysis method: "),
-                    selected = "RGCCA",
-                    choices = list(
-                      `One block` = c(`Principal Component Analysis` = "PCA"),
-                      `Two blocks` = c(`Canonical Correlation Analysis` = 'CCA', `Interbattery Factor Analysis` = "IFA", `Partial Least Squares Regression` = 'PLS',  `Redundancy analysis` = 'RA'),
-                      `Multiblocks` = c(`Regularized Generalized CCA (RGCCA)` = 'RGCCA', `Sparse Generalized CCA (SGCCA)` = 'SGCCA', `SUM of CORrelations method` = 'SUMCOR', `Sum of SQuared CORrelations method` = 'SSQCOR',
-                                        `Sum of ABSolute value CORrelations method` = 'SABSCOR',`SUM of COVariances method` = 'SUMCOV',`Sum of SQuared COVariances method` = 'SSQCOV',
-                                        `Sum of ABSolute value COVariances method` = 'SABSCOV', `MAXBET` = 'MAXBET', `MAXBETB` = 'MAXBET-B'),
-                      `Multiblocks with a superblock`= c(`Generalized CCA (GCCA)` = 'GCCA', `Hierarchical PCA` = 'HPCA', `Concensus PCA` = 'CPCA_W', `Multiple Factor Analysis` = 'MFA')
-                    )),
+        #uiOutput("analysis_type_custom"),
+      selectInput(inputId = "analysis_type",
+                  h5("Analysis method"),
+                  selected = "RGCCA",
+                  choices = list(
+                    `One block` = c(`Principal Component Analysis` = "PCA"),
+                    `Two blocks` = c(`Canonical Correlation Analysis` = 'CCA', `Interbattery Factor Analysis` = "IFA", `Partial Least Squares Regression` = 'PLS',  `Redundancy analysis` = 'RA'),
+                    `Multiblocks` = c(`Regularized Generalized CCA (RGCCA)` = 'RGCCA', `Sparse Generalized CCA (SGCCA)` = 'SGCCA', `SUM of CORrelations method` = 'SUMCOR', `Sum of SQuared CORrelations method` = 'SSQCOR',
+                                      `Sum of ABSolute value CORrelations method` = 'SABSCOR',`SUM of COVariances method` = 'SUMCOV',`Sum of SQuared COVariances method` = 'SSQCOV',
+                                      `Sum of ABSolute value COVariances method` = 'SABSCOV', `MAXBET` = 'MAXBET', `MAXBETB` = 'MAXBET-B'),
+                    `Multiblocks with a superblock`= c(`Generalized CCA (GCCA)` = 'GCCA', `Hierarchical PCA` = 'HPCA', `Concensus PCA` = 'CPCA_W', `Multiple Factor Analysis` = 'MFA')
+                  )),
          radioButtons("init",
                    label = "Mode of initialization",
                    choices = c(SVD = "svd",
@@ -96,7 +97,7 @@ ui <- fluidPage(
                                  Factorial = "factorial"),
                      selected = "factorial"),
         sliderInput(inputId = "boot",
-                    label = h5("Number of boostrap : "),
+                    label = h5("Number of boostraps"),
                     min = 5, max = 100, value = 10, step = 5),
         actionButton(inputId = "run_boot",
                    label = "Run bootstrap"),

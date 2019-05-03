@@ -35,15 +35,18 @@ server <- function(input, output) {
   })
 
   output$tau_custom <- renderUI({
-    if(input$analysis_type == "SGCCA")
-      cond = "input.analysis_type == SGCCA"
-    else
-      cond = "input.tau_opt == false"
+    if(input$analysis_type == "SGCCA"){
+      par_name <- "C1"
+      cond <- "input.analysis_type == SGCCA"
+    }else{
+      par_name <- "Tau"
+      cond <- "input.tau_opt == false"
+    }
 
     conditionalPanel(
       condition = cond,
       sliderInput(inputId = "tau",
-                  label = h5("Tau: "),
+                  label = h5(par_name),
                   min = 0, max = 1, value = 1, step = .1)
   )
   })
@@ -51,7 +54,7 @@ server <- function(input, output) {
   setNamesInput = function(x){
     refesh = c(input$superblock, input$supervized, input$analysis_type)
     selectInput(inputId = paste0("names_block_", x),
-                label = h5( paste0("Blocks for ", x ,"-axis : ")),
+                label = h5( paste0("Block for the ", x ,"-axis")),
                 choices = getNames(),
                 selected = setBlockNames())
   }
@@ -85,7 +88,7 @@ server <- function(input, output) {
     assign("nb_comp", reac_var(), .GlobalEnv)
 
     sliderInput(inputId = "nb_comp",
-                label = h5("Number of Component: "),
+                label = h5("Number of components"),
                 min = 2, max = getDefaultComp(), value = 2, step = 1)
 
     # TODO: pas plusieurs sliderInput, découper en modules
@@ -94,20 +97,20 @@ server <- function(input, output) {
   output$axis1_custom <- renderUI({
     refresh <- input$nb_comp
     sliderInput(inputId = "axis1",
-                label = h5("Component for X-axis: "),
+                label = h5("Component for the X-axis"),
                 min = 1, max = input$nb_comp, value = 1, step = 1)
   })
 
   output$axis2_custom <- renderUI({
     refresh <- input$nb_comp
     sliderInput(inputId = "axis2",
-                label = h5("Component for Y-axis: "),
+                label = h5("Component for the Y-axis"),
                 min = 1, max = input$nb_comp, value = 2, step = 1)
   })
 
   output$nb_mark_custom <- renderUI({
     sliderInput(inputId = "nb_mark",
-                label = h5("Number of potential biomarkers: "),
+                label = h5("Number of potential biomarkers"),
                 min = 10, max = getMaxCol(), value = getDefaultCol(), step = 1)
   })
 
@@ -259,8 +262,7 @@ server <- function(input, output) {
 
   ave <- function() plotAVE(rgcca = rgcca.res)
 
-  conNet <- function() plotNetwork(nodes, edges, blocks)
-  conNet2 <- function() plotNetwork2(nodes, edges, blocks)
+  conNet <- function() plotNetwork2(nodes, edges, blocks)
 
   plotBoot <- function() plotBootstrap(boot,
                                        axis1,
@@ -274,7 +276,6 @@ server <- function(input, output) {
     blocks = blocks_without_superb
     ncomp = rep(nb_comp, length(blocks))
 
-    #print(input$tau)
     # Tau is set to optimal by default
     if (input$tau_opt && input$analysis_type != "SGCCA")
       tau = "optimal"
@@ -319,8 +320,6 @@ server <- function(input, output) {
                        superblock = pars$superblock, type  = analysis_type, quiet = TRUE))
 
     c1 = showWarn(checkC1(pars$blocks, pars$tau, analysis_type))
-
-    print(list("ok", !is.null(unlist(c1))))
 
     if(length(pars) == 1 | !is.null(unlist(c1)))
       return(NULL)
@@ -402,7 +401,6 @@ server <- function(input, output) {
     }
 
   }
-
 
   setAnalysis = function(){
 
@@ -630,8 +628,7 @@ server <- function(input, output) {
   output$connectionPlot <- renderVisNetwork({
     getDynamicVariables()
     if(!is.null(analysis)){
-      observeEvent(input$connection_save, savePlot("connection.pdf", conNet()))
-      conNet2()
+      conNet()
     }
   })
 
