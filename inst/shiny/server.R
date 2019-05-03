@@ -377,7 +377,7 @@ server <- function(input, output) {
 
     file <- input$connection$datapath
 
-    if(length(grep("[sr]gcca", tolower(analysis_type))) == 1){
+    if(length(grep("[sr]gcca", tolower(analysis_type))) == 1 | tolower(analysis_type) == "pca"){
       try(withCallingHandlers(
         connection <- showWarn(setConnection (blocks = blocks,
                     superblock = (is.null(file) & ( superblock  | input$supervized) ),
@@ -417,12 +417,13 @@ server <- function(input, output) {
   ################################################ Events ################################################
 
   setToggle = function(id)
-    toggle(condition = (input$analysis_type %in% c("RGCCA", "SGCCA")), id = id)
+    toggle(condition = (input$analysis_type %in% c("RGCCA", "SGCCA") & length(input$blocks$datapath) > 2), id = id)
 
   observe({
     # Event related to input$analysis_type
     toggle(condition = (input$analysis_type == "RGCCA"), id = "tau_opt")
     setToggle("tau_custom")
+    setToggle("tau_opt")
     setToggle("scheme")
     setToggle("superblock")
     setToggle("blocks_names_response")
@@ -469,7 +470,7 @@ server <- function(input, output) {
                     ),
            .GlobalEnv)
 
-    if(length(blocks_unscaled) == 1)
+    if(!is.list(blocks_unscaled))
       return(NULL)
     else{
       show(selector = "#tabset li a[data-value=RGCCA]")
