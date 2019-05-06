@@ -11,7 +11,6 @@ checkNbBlocks <- function(blocks, type){
   }
 
   stop(paste0(length(blocks), " blocks used in the analysis. ", msg ," required for a ", type, "."), exit_code = exit_code)
-
 }
 
 #' Translates the type string into the appropriate tau and function

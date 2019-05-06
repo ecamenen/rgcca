@@ -9,12 +9,11 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
-options(shiny.maxRequestSize = 30*1024^2)
 server <- function(input, output) {
-  source("../../R/parsing.R")
-  source("../../R/plot.R")
-  source("../../R/select.type.R")
-  source("../../R/network.R")
+  source("R/parsing.R")
+  source("R/plot.R")
+  source("R/select.type.R")
+  source("R/network.R")
 
   # Assign reactive variables
   reac_var  <<- reactiveVal()
@@ -275,9 +274,6 @@ server <- function(input, output) {
 
   setParRGCCA <- function(){
 
-    print(c("ok", nb_comp))
-    print(c("ok2", input$nb_comp))
-
     blocks = blocks_without_superb
     ncomp = rep(nb_comp, length(blocks))
 
@@ -444,6 +440,7 @@ server <- function(input, output) {
     hide(selector = "#navbar li a[data-value=Bootstrap]")
     hide(id = "run_boot")
     hide(id = "boot")
+    hide(id = "header")
     hide(id = "init")
     hide(id = "response")
     hide(id = "connection")

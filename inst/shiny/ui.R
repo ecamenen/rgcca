@@ -9,14 +9,6 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
-rm(list=ls())
-# Libraries loading
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "shiny", "shinyjs", "plotly", "visNetwork", "igraph", "ggrepel", "parallel")
-for (l in librairies) {
-  if (!(l %in% installed.packages()[, "Package"]))
-    install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
-  library(l, character.only = TRUE)
-}
 
 ui <- fluidPage(
 
@@ -63,12 +55,10 @@ ui <- fluidPage(
                   h5("Analysis method"),
                   selected = "RGCCA",
                   choices = list(
-                    `One block` = c(`Principal Component Analysis` = "PCA"),
-                    `Two blocks` = c(`Canonical Correlation Analysis` = 'CCA', `Interbattery Factor Analysis` = "IFA", `Partial Least Squares Regression` = 'PLS',  `Redundancy analysis` = 'RA'),
-                    `Multiblocks` = c(`Regularized Generalized CCA (RGCCA)` = 'RGCCA', `Sparse Generalized CCA (SGCCA)` = 'SGCCA', `SUM of CORrelations method` = 'SUMCOR', `Sum of SQuared CORrelations method` = 'SSQCOR',
-                                      `Sum of ABSolute value CORrelations method` = 'SABSCOR',`SUM of COVariances method` = 'SUMCOV',`Sum of SQuared COVariances method` = 'SSQCOV',
-                                      `Sum of ABSolute value COVariances method` = 'SABSCOV', `MAXBET` = 'MAXBET', `MAXBETB` = 'MAXBET-B'),
-                    `Multiblocks with a superblock`= c(`Generalized CCA (GCCA)` = 'GCCA', `Hierarchical PCA` = 'HPCA', `Multiple Factor Analysis` = 'MFA')
+                    `One block` = one_block,
+                    `Two blocks` = two_blocks,
+                    `Multiblocks` = multiple_blocks,
+                    `Multiblocks with a superblock`= multiple_blocks_super
                   )),
          radioButtons("init",
                    label = "Mode of initialization",
