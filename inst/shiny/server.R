@@ -17,9 +17,10 @@ server <- function(input, output) {
 
   # Assign reactive variables
   reac_var  <<- reactiveVal()
-  id_block_y <<- id_block <<- id_block_resp <<- analysis <<- boot <<- analysis_type <<- NULL
+  id_block_y <<- id_block <<- id_block_resp <<- analysis <<- boot <<- NULL
   clickSep <<- FALSE
   if_text <<- TRUE
+  analysis_type <<- "RGCCA"
   axis1 <<- 1
   nb_comp <<- axis2 <<- 2
   nb_mark <<- 100
@@ -34,7 +35,7 @@ server <- function(input, output) {
   })
 
   output$tau_custom <- renderUI({
-    if(input$analysis_type == "SGCCA"){
+    if(!is.null(input$analysis_type) && input$analysis_type == "SGCCA"){
       par_name <- "C1"
       cond <- "input.analysis_type == SGCCA"
     }else{
@@ -47,7 +48,7 @@ server <- function(input, output) {
       sliderInput(inputId = "tau",
                   label = h5(par_name),
                   min = 0, max = 1, value = 1, step = .1)
-  )
+   )
   })
 
   setNamesInput = function(x){
@@ -114,6 +115,19 @@ server <- function(input, output) {
   })
 
   ################################################ UI variables ################################################
+
+  output$analysis_type_custom <- renderUI({
+    selectInput(inputId = "analysis_type",
+              h5("Analysis method"),
+              selected = "RGCCA",
+              choices = list(
+                `One block` = one_block,
+                `Two blocks` = two_blocks,
+                `Multiblocks` = multiple_blocks,
+                `Multiblocks with a superblock`= multiple_blocks_super
+              ))
+  })
+
 
   getMinComp = function(){
     # Get the maximum number of component allowed in an analysis based on the minimum
@@ -210,6 +224,13 @@ server <- function(input, output) {
     return(FALSE)
   }
 
+  setAnalysisMenu <- function(){
+    assign("one_block", analyse_methods[[1]], .GlobalEnv)
+    assign("two_blocks", analyse_methods[[2]], .GlobalEnv)
+    assign("multiple_blocks", analyse_methods[[3]], .GlobalEnv)
+    assign("multiple_blocks_super", analyse_methods[[4]], .GlobalEnv)
+  }
+
   setIdBlock = function(){
 
     if( !superblock && !is.null(input$names_block_x) && as.integer(input$names_block_x) > round(length(blocks)) ){
@@ -235,7 +256,6 @@ server <- function(input, output) {
 
 
   ################################################ Plots  ################################################
-
 
   samples <- function() plotSamplesSpace(rgcca = rgcca.res,
                                          resp = response,
@@ -277,8 +297,13 @@ server <- function(input, output) {
     blocks = blocks_without_superb
     ncomp = rep(nb_comp, length(blocks))
 
+    if(!is.null(input$analysis_type))
+      analysis_type = input$analysis_type
+
+    print("HERE0")
+
     # Tau is set to optimal by default
-    if (input$tau_opt && input$analysis_type != "SGCCA")
+    if (input$tau_opt && analysis_type != "SGCCA")
       tau = "optimal"
     else
       # otherwise the tau value fixed by the user is used
@@ -289,20 +314,30 @@ server <- function(input, output) {
       assign("analysis_type", "RGCCA", .GlobalEnv)
     }
 
-    if(tolower(input$analysis_type) == "pca" & length(input$blocks$datapath) > 1){
-      showWarn(checkNbBlocks(blocks, input$analysis_type))
-      setDefaultType()
-    }else if (tolower(input$analysis_type) %in% c("cca", "ra", "ifa", "pls") & ( length(input$blocks$datapath) < 2  |  length(input$blocks$datapath) > 2 ) ){
-      showWarn(checkNbBlocks(blocks, input$analysis_type))
-      setDefaultType()
+    # setAnalysisMenu()
+
+    print("HERE")
+
+    if(tolower(analysis_type) == "pca" & length(input$blocks$datapath) > 1){
+      showWarn(checkNbBlocks(blocks, analysis_type))
+      #setDefaultType()
+    }else if (tolower(analysis_type) %in% c("cca", "ra", "ifa", "pls") & ( length(input$blocks$datapath) < 2  |  length(input$blocks$datapath) > 2 ) ){
+      showWarn(checkNbBlocks(blocks, analysis_type))
+      #setDefaultType()
     }else if(length(blocks) == 1){
       showWarn(warning("Only one block is selected. By default, a PCA is performed."))
       assign("analysis_type", "PCA", .GlobalEnv)
+      # assign("two_blocks", NULL, .GlobalEnv)
+      # assign("multiple_blocks", NULL, .GlobalEnv)
+      # assign("multiple_blocks_super", NULL, .GlobalEnv)
     }else if(length(blocks) == 2){
       showWarn(warning("Only two block is selected. By default, a PLS is performed."))
       assign("analysis_type", "PLS", .GlobalEnv)
+      # assign("one_block", NULL, .GlobalEnv)
     }else
-      assign("analysis_type", input$analysis_type, .GlobalEnv)
+      assign("analysis_type", analysis_type, .GlobalEnv)
+
+    # getNames()
 
     if(!input$supervized)
       response = NULL
@@ -418,7 +453,7 @@ server <- function(input, output) {
   ################################################ Events ################################################
 
   setToggle = function(id)
-    toggle(condition = (input$analysis_type %in% c("RGCCA", "SGCCA") & length(input$blocks$datapath) > 2), id = id)
+    toggle(condition = (!is.null(input$analysis_type) && input$analysis_type %in% c("RGCCA", "SGCCA") & length(input$blocks$datapath) > 2), id = id)
 
   observe({
     # Event related to input$analysis_type
@@ -431,6 +466,8 @@ server <- function(input, output) {
     setToggle("supervized")
     hide(selector = "#tabset li a[data-value=Graphic]")
     setToggle("connection")
+    toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_x")
+    toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_y")
   })
 
   observe({

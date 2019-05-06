@@ -31,7 +31,4 @@ for (l in librairies) {
   library(l, character.only = TRUE)
 }
 
-
 shinyApp(ui, server)
-
-
