@@ -17,10 +17,9 @@ server <- function(input, output) {
 
   # Assign reactive variables
   reac_var  <<- reactiveVal()
-  id_block_y <<- id_block <<- id_block_resp <<- analysis <<- boot <<- NULL
+  id_block_y <<- id_block <<- id_block_resp <<- analysis <<- boot <<- analysis_type <<- NULL
   clickSep <<- FALSE
   if_text <<- TRUE
-  analysis_type <<- "RGCCA"
   axis1 <<- 1
   nb_comp <<- axis2 <<- 2
   nb_mark <<- 100
@@ -135,8 +134,13 @@ server <- function(input, output) {
 
     if(!is.null(input$blocks)){
       blocks = getInfile()
-      if(!is.null(blocks))
-        return( min(unlist(lapply(blocks, NCOL))) )
+      if(!is.null(blocks)){
+        min = min(unlist(lapply(blocks, NCOL)))
+        if(min > 5)
+          return(5)
+        else
+          return(min)
+      }
     }
 
       return(2)
@@ -297,10 +301,12 @@ server <- function(input, output) {
     blocks = blocks_without_superb
     ncomp = rep(nb_comp, length(blocks))
 
-    if(!is.null(input$analysis_type))
-      analysis_type = input$analysis_type
+    if(is.null(analysis_type))
+      analysis_type <- "RGCCA"
+    else if(!is.null(input$analysis_type))
+      analysis_type <- input$analysis_type
 
-    print("HERE0")
+    # print(c("oooo", input$n))
 
     # Tau is set to optimal by default
     if (input$tau_opt && analysis_type != "SGCCA")
@@ -314,30 +320,28 @@ server <- function(input, output) {
       assign("analysis_type", "RGCCA", .GlobalEnv)
     }
 
-    # setAnalysisMenu()
+    setAnalysisMenu()
 
-    print("HERE")
-
-    if(tolower(analysis_type) == "pca" & length(input$blocks$datapath) > 1){
-      showWarn(checkNbBlocks(blocks, analysis_type))
-      #setDefaultType()
-    }else if (tolower(analysis_type) %in% c("cca", "ra", "ifa", "pls") & ( length(input$blocks$datapath) < 2  |  length(input$blocks$datapath) > 2 ) ){
-      showWarn(checkNbBlocks(blocks, analysis_type))
-      #setDefaultType()
-    }else if(length(blocks) == 1){
+    # if(tolower(analysis_type) == "pca" & length(input$blocks$datapath) > 1){
+    #   showWarn(checkNbBlocks(blocks, analysis_type))
+    #   setDefaultType()
+    # }else if (tolower(analysis_type) %in% c("cca", "ra", "ifa", "pls") & ( length(input$blocks$datapath) < 2  |  length(input$blocks$datapath) > 2 ) ){
+    #   showWarn(checkNbBlocks(blocks, analysis_type))
+    #   setDefaultType()
+    # }else
+    if(length(blocks) == 1){
       showWarn(warning("Only one block is selected. By default, a PCA is performed."))
-      assign("analysis_type", "PCA", .GlobalEnv)
-      # assign("two_blocks", NULL, .GlobalEnv)
-      # assign("multiple_blocks", NULL, .GlobalEnv)
-      # assign("multiple_blocks_super", NULL, .GlobalEnv)
-    }else if(length(blocks) == 2){
+      analysis_type <- "PCA"
+      assign("two_blocks", NULL, .GlobalEnv)
+      assign("multiple_blocks", NULL, .GlobalEnv)
+      assign("multiple_blocks_super", NULL, .GlobalEnv)
+    }else if(length(blocks) == 2){ # && tolower(analysis_type) !%in% c("cca", "ra", "ifa", "pls")
       showWarn(warning("Only two block is selected. By default, a PLS is performed."))
-      assign("analysis_type", "PLS", .GlobalEnv)
-      # assign("one_block", NULL, .GlobalEnv)
-    }else
-      assign("analysis_type", analysis_type, .GlobalEnv)
+      analysis_type <- "PLS"
+      assign("one_block", NULL, .GlobalEnv)
+    }
 
-    # getNames()
+    getNames()
 
     if(!input$supervized)
       response = NULL
@@ -365,12 +369,16 @@ server <- function(input, output) {
     assign("ncomp", pars$ncomp, .GlobalEnv)
     assign("scheme", pars$scheme, .GlobalEnv)
     assign("superblock", pars$superblock, .GlobalEnv)
+    assign("analysis_type", analysis_type, .GlobalEnv)
 
     return(pars$blocks)
   }
 
   setRGCCA <- function() {
     # Load the analysis
+
+
+    print(c("heeee",tau, ncomp))
 
     assign("rgcca.res",
            showWarn(
@@ -399,7 +407,7 @@ server <- function(input, output) {
 
   setResponseShiny = function(){
 
-    response <- showWarn(setResponse (blocks = blocks,
+    response <- showWarn(setResponse (blocks = blocks_without_superb,
                         file = input$response$datapath,
                         sep = input$sep,
                         header = input$header))
@@ -440,6 +448,7 @@ server <- function(input, output) {
 
   setAnalysis = function(){
 
+    assign("analysis_type", NULL, .GlobalEnv)
     blocks <- setParRGCCA()
 
     if(!is.null(blocks)){
@@ -487,6 +496,7 @@ server <- function(input, output) {
 
   observeEvent(c(input$blocks, input$sep), {
     if(blocksExists()){
+      #assign("analysis", NULL, .GlobalEnv)
       setToggle("connection")
       show(id = "response")
     }
@@ -498,7 +508,6 @@ server <- function(input, output) {
     # Load the blocks
     paths = paste(input$blocks$datapath, collapse = ',')
     names = paste(input$blocks$name, collapse = ',')
-
 
     assign("blocks_unscaled",
            showWarn(setBlocks (file = paths,
@@ -519,6 +528,11 @@ server <- function(input, output) {
     assign("blocks_without_superb",
            scaling(blocks_unscaled, input$scale, TRUE),
            .GlobalEnv)
+
+    # reactualiser l'analyse
+    assign("analysis", NULL, .GlobalEnv)
+    assign("nb_comp", 2, .GlobalEnv)
+    assign("analysis_type", NULL, .GlobalEnv)
 
     assign("id_block_resp", length(blocks_without_superb), .GlobalEnv)
     blocks = setParRGCCA()
@@ -550,6 +564,7 @@ server <- function(input, output) {
   })
 
   observeEvent(input$run_analysis, {
+
     if(!is.null(getInfile()) & is.matrix(connection))
       assign("analysis", setRGCCA(), .GlobalEnv)
 
