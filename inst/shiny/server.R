@@ -79,7 +79,7 @@ server <- function(input, output) {
   }
 
   output$nb_comp_custom <- renderUI({
-    # Set dynamicly the maximum number of component that should be used in the analysis
+    # Set dynamically the maximum number of component that should be used in the analysis
 
     # Get the number minimum of columns among the whole blocks
     reac_var(getMinComp())
@@ -604,6 +604,8 @@ server <- function(input, output) {
     if(blocksExists()){
       reac_var(as.integer(input$names_block_response))
       assign("id_block_resp", reac_var(), .GlobalEnv)
+      assign("nb_comp", input$nb_comp, .GlobalEnv)
+      print(input$nb_comp)
       setAnalysis()
     }
 
