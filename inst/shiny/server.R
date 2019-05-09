@@ -413,7 +413,7 @@ server <- function(input, output) {
 
     file <- input$connection$datapath
 
-    if(length(grep("[sr]gcca", tolower(analysis_type))) == 1 | tolower(analysis_type) == "pca"){
+    if(is.null(connection)){
       try(withCallingHandlers(
         connection <- showWarn(setConnection (blocks = blocks,
                     superblock = (is.null(file) & ( superblock  | input$supervized) ),
@@ -455,15 +455,20 @@ server <- function(input, output) {
   setToggle = function(id)
     toggle(condition = (input$analysis_type %in% c("RGCCA", "SGCCA") & length(input$blocks$datapath) > 2), id = id)
 
+  setToggle2 = function(id)
+    toggle(condition = (input$analysis_type %in% c("RA", "RGCCA", "SGCCA")), id = id)
+
+  #  | (input$analysis_type %in% c("RGCCA", "SGCCA") & input$superblock )
+
   observe({
     # Event related to input$analysis_type
     toggle(condition = (input$analysis_type == "RGCCA"), id = "tau_opt")
     setToggle("tau_custom")
     setToggle("scheme")
     setToggle("superblock")
-    setToggle("blocks_names_response")
-    setToggle("supervized")
     setToggle("connection")
+    setToggle2("blocks_names_response")
+    setToggle2("supervized")
     hide(selector = "#tabset li a[data-value=Graphic]")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_x")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_y")
