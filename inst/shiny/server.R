@@ -116,7 +116,7 @@ server <- function(input, output) {
   ################################################ UI variables ################################################
 
   output$analysis_type_custom <- renderUI({
-    refresh = c(input$blocks, input$sep, input$analysis_type)
+    refresh = c(input$blocks, input$sep)
     selectInput(inputId = "analysis_type",
               h5("Analysis method"),
               selected = analysis_type,
