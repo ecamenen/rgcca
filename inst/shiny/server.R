@@ -189,7 +189,7 @@ server <- function(input, output) {
       return (50)
   }
 
-  showWarn = function(f, duration = 10){
+  showWarn = function(f, duration = 10, show = TRUE){
 
     ids <- character(0)
 
@@ -197,18 +197,24 @@ server <- function(input, output) {
       res <- f
     }, message = function(w) {
       duration <<- NULL
-      id <- showNotification(w$message, type = "message", duration = duration)
-      ids <<- c(ids, id)
+      if(show){
+        id <- showNotification(w$message, type = "message", duration = duration)
+        ids <<- c(ids, id)
+      }
     }, warning = function(w) {
 
-      id <- showNotification(w$message, type = "warning", duration = duration)
-      ids <<- c(ids, id)
+      if(show){
+        id <- showNotification(w$message, type = "warning", duration = duration)
+        ids <<- c(ids, id)
+      }
 
     }, error = function(e) {
-      message(paste("Error:", e$message))
-      id <- showNotification(e$message, type = "error", duration = duration)
-      ids <<- c(ids, id)
-      res <<- class(e)[1]
+      if(show){
+        message(paste("Error:", e$message))
+        id <- showNotification(e$message, type = "error", duration = duration)
+        ids <<- c(ids, id)
+        res <<- class(e)[1]
+      }
     }), silent = TRUE)
 
     if(is.null(duration) & length(ids) != 0){
@@ -317,8 +323,8 @@ server <- function(input, output) {
     setAnalysisMenu()
 
     if(length(blocks) == 1){
-      if(verbose)
-        showWarn(warning("Only one block is selected. By default, a PCA is performed."))
+      # if(verbose)
+        # showWarn(warning("Only one block is selected. By default, a PCA is performed."))
       analysis_type <- "PCA"
       assign("two_blocks", NULL, .GlobalEnv)
       assign("multiple_blocks", NULL, .GlobalEnv)
@@ -328,7 +334,7 @@ server <- function(input, output) {
       assign("multiple_blocks", NULL, .GlobalEnv)
       assign("multiple_blocks_super", NULL, .GlobalEnv)
       if(!tolower(analysis_type) %in% c("cca", "ra", "ifa", "pls")){
-        showWarn(warning("Only two blocks are selected. By default, a PLS is performed."))
+        # showWarn(warning("Only two blocks are selected. By default, a PLS is performed."))
         analysis_type <- "PLS"
       }
     }else if(length(blocks) > 2){
@@ -343,7 +349,7 @@ server <- function(input, output) {
     else
       response = input$supervized
 
-    pars = showWarn(checkSuperblock(list(response = response, superblock = input$superblock)))
+    pars = showWarn(checkSuperblock(list(response = response, superblock = input$superblock)), show = FALSE)
 
     if(input$supervized){
       pars = setPosPar(list(tau = tau, ncomp = ncomp, superblock = pars$superblock), blocks, id_block_resp)
