@@ -602,10 +602,14 @@ server <- function(input, output) {
     # Observe if graphical parameters are changed
 
     if(blocksExists()){
-      reac_var(as.integer(input$names_block_response))
+
+      if(input$supervized)
+        reac_var(as.integer(input$names_block_response))
+      else
+        reac_var(as.integer(input$names_block_response) - 1)
+
       assign("id_block_resp", reac_var(), .GlobalEnv)
       assign("nb_comp", input$nb_comp, .GlobalEnv)
-      print(input$nb_comp)
       setAnalysis()
     }
 
