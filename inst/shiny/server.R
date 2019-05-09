@@ -302,9 +302,9 @@ server <- function(input, output) {
     blocks = blocks_without_superb
     ncomp = rep(nb_comp, length(blocks))
 
-    if(is.null(analysis_type))
+    if(is.null(analysis_type) | is.null(input$analysis_type))
       analysis_type <- "RGCCA"
-    else if(!is.null(input$analysis_type))
+    else
       analysis_type <- input$analysis_type
 
     # Tau is set to optimal by default
@@ -313,11 +313,6 @@ server <- function(input, output) {
     else
       # otherwise the tau value fixed by the user is used
       tau = rep(input$tau, length(blocks))
-
-    setDefaultType <- function(){
-      showWarn(warning("By default, a RGCCA is performed."))
-      assign("analysis_type", "RGCCA", .GlobalEnv)
-    }
 
     setAnalysisMenu()
 
@@ -340,7 +335,6 @@ server <- function(input, output) {
       assign("one_block", NULL, .GlobalEnv)
       assign("two_blocks", NULL, .GlobalEnv)
     }
-
 
     getNames()
 
@@ -459,19 +453,18 @@ server <- function(input, output) {
 ################################################ Events ################################################
 
   setToggle = function(id)
-    toggle(condition = (!is.null(input$analysis_type) && input$analysis_type %in% c("RGCCA", "SGCCA") & length(input$blocks$datapath) > 2), id = id)
+    toggle(condition = (input$analysis_type %in% c("RGCCA", "SGCCA") & length(input$blocks$datapath) > 2), id = id)
 
   observe({
     # Event related to input$analysis_type
     toggle(condition = (input$analysis_type == "RGCCA"), id = "tau_opt")
     setToggle("tau_custom")
-    setToggle("tau_opt")
     setToggle("scheme")
     setToggle("superblock")
     setToggle("blocks_names_response")
     setToggle("supervized")
-    hide(selector = "#tabset li a[data-value=Graphic]")
     setToggle("connection")
+    hide(selector = "#tabset li a[data-value=Graphic]")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_x")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_y")
   })
