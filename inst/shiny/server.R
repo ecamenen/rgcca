@@ -519,9 +519,10 @@ server <- function(input, output) {
                     ),
            .GlobalEnv)
 
-    if(!is.list(blocks_unscaled))
+    if(!is.list(blocks_unscaled)){
+      assign("analysis", NULL, .GlobalEnv)
       return(NULL)
-    else{
+    }else{
       show(selector = "#tabset li a[data-value=RGCCA]")
       setToggle("connection")
     }
@@ -534,6 +535,8 @@ server <- function(input, output) {
     assign("analysis", NULL, .GlobalEnv)
     assign("nb_comp", 2, .GlobalEnv)
     assign("analysis_type", NULL, .GlobalEnv)
+    assign("response", NULL, .GlobalEnv)
+    assign("connection", NULL, .GlobalEnv)
 
     assign("id_block_resp", length(blocks_without_superb), .GlobalEnv)
     blocks = setParRGCCA(FALSE)

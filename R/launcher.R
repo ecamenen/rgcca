@@ -229,7 +229,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output6 = "connection.pdf",
-           datasets = "inst/extdata/politic.tsv, inst/extdata/industry.tsv, inst/extdata/agriculture.tsv")
+           datasets = "/home/etienne.camenen/Documents/DATA/ZEUS/lipidomic_data_test.txt, /home/etienne.camenen/Documents/DATA/ZEUS/merged_data_transpose.txt, /home/etienne.camenen/Documents/DATA/ZEUS/Atrophy.txt")
 
 tryCatch({
   opt = parse_args(getArgs())
