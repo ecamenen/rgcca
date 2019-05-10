@@ -11,6 +11,20 @@
 
 ui <- fluidPage(
 
+  # CSS parameters
+
+  tags$head(
+    tags$style(
+      HTML(".shiny-notification {
+             position:fixed;
+             top: calc(100%);;
+             left: calc(50%);;
+             }
+             "
+        )
+      )
+    ),
+
   titlePanel("R/SGCCA - The Shiny graphical interface"),
   useShinyjs(),
   sidebarLayout(

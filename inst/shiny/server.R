@@ -196,7 +196,9 @@ server <- function(input, output, session) {
     try(withCallingHandlers({
       res <- f
     }, message = function(w) {
-      duration <<- NULL
+      if(show)
+        duration <<- NULL
+
       id <- showNotification(w$message, type = "message", duration = duration)
       ids <<- c(ids, id)
     }, warning = function(w) {
@@ -509,6 +511,7 @@ server <- function(input, output, session) {
     hide(id = "init")
     hide(id = "response")
     hide(id = "connection")
+    hide(id = "navbar")
   })
 
   onclick("sep", function(e) assign("clickSep", TRUE, .GlobalEnv))
@@ -587,11 +590,14 @@ server <- function(input, output, session) {
 
   observeEvent(input$run_analysis, {
 
-    if(!is.null(getInfile()) & is.matrix(connection))
+    if(!is.null(getInfile()) & is.matrix(connection)){
       assign("analysis", setRGCCA(), .GlobalEnv)
 
-    for (i in c("bootstrap_save", "fingerprint_save", "corcircle_save", "samples_save", "ave_save", "connection_save"))
-      setToggleSaveButton(i)
+      show(id = "navbar")
+
+      for (i in c("bootstrap_save", "fingerprint_save", "corcircle_save", "samples_save", "ave_save"))
+        setToggleSaveButton(i)
+    }
   })
 
   observeEvent(c(input$superblock, input$supervised, input$nb_comp, input$scheme, input$init, input$tau, input$tau_opt, input$analysis_type), {
@@ -601,6 +607,7 @@ server <- function(input, output, session) {
       setNamesInput("x")
       setNamesInput("response")
       assign("nb_comp", input$nb_comp, .GlobalEnv)
+      hide(id = "navbar")
       setAnalysis()
       for (i in c("bootstrap_save", "fingerprint_save", "corcircle_save", "samples_save", "ave_save", "connection_save"))
         hide(i)
@@ -654,8 +661,12 @@ server <- function(input, output, session) {
       savePlot("corcircle.pdf", corcircle())
       savePlot("fingerprint.pdf", fingerprint())
       savePlot("AVE.pdf", ave())
+      msgSave()
     }
   })
+
+  msgSave = function()
+    showWarn(message(paste("Save in", getwd())), show = FALSE)
 
   observeEvent(c(input$text, input$axis1, input$axis2, input$nb_mark), {
     if(!is.null(analysis)){
@@ -672,7 +683,10 @@ server <- function(input, output, session) {
   output$samplesPlot <- renderPlotly({
     getDynamicVariables()
     if(!is.null(analysis)){
-      observeEvent(input$samples_save, savePlot("samples_plot.pdf", samples()))
+      observeEvent(input$samples_save, {
+        savePlot("samples_plot.pdf", samples())
+        msgSave()
+        })
       p = changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), if_text )
       if(!unique(isCharacter(na.omit(response))))
         p  = p  %>% layout(showlegend = FALSE)
@@ -683,7 +697,10 @@ server <- function(input, output, session) {
   output$corcirclePlot <- renderPlotly({
     getDynamicVariables()
     if(!is.null(analysis)){
-      observeEvent(input$corcircle_save, savePlot("corcircle.pdf", corcircle()))
+      observeEvent(input$corcircle_save, {
+        savePlot("corcircle.pdf", corcircle())
+        msgSave()
+        })
       p = changeHovertext( dynamicPlot(corcircle(), ax, "text"), if_text )
       n = length(p$x$data)
       ( style(p, hoverinfo = "none", traces = c(n, n-1)) )
@@ -693,7 +710,10 @@ server <- function(input, output, session) {
   output$fingerprintPlot <- renderPlotly({
     getDynamicVariables()
     if(!is.null(analysis)){
-      observeEvent(input$fingerprint_save, savePlot("fingerprint.pdf", fingerprint()))
+      observeEvent(input$fingerprint_save, {
+        savePlot("fingerprint.pdf", fingerprint())
+        msgSave()
+        })
       p = changeText ( dynamicPlot(fingerprint(), ax2, "text") )
       n = unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
       for (i in 1:length(n[n]))
@@ -705,7 +725,10 @@ server <- function(input, output, session) {
   output$AVEPlot <- renderPlot({
     getDynamicVariables()
     if(!is.null(analysis)){
-      observeEvent(input$ave_save, savePlot("AVE.pdf", ave()))
+      observeEvent(input$ave_save, {
+        savePlot("AVE.pdf", ave())
+        msgSave()
+        })
       ave()
     }
   })
@@ -720,7 +743,10 @@ server <- function(input, output, session) {
   output$bootstrapPlot <- renderPlotly({
     getDynamicVariables()
     if(!is.null(analysis) & !is.null(boot)){
-      observeEvent(input$bootstrap_save, savePlot("bootstrap.pdf", plotBoot()))
+      observeEvent(input$bootstrap_save, {
+        savePlot("bootstrap.pdf", plotBoot())
+        msgSave()
+        })
       dynamicPlotBoot(plotBoot())
     }
   })
