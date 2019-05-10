@@ -48,10 +48,10 @@ ui <- fluidPage(
       tabPanel("RGCCA",
       # Analysis parameters
         uiOutput("analysis_type_custom"),
+        uiOutput("nb_comp_custom"),
         checkboxInput(inputId = "scale",
                       label = "Scale the blocks",
                       value = TRUE),
-        uiOutput("nb_comp_custom"),
         radioButtons("init",
                    label = "Mode of initialization",
                    choices = c(SVD = "svd",
@@ -65,7 +65,7 @@ ui <- fluidPage(
                        "Supervized analysis",
                        value = FALSE),
         conditionalPanel(
-           condition = "input.supervized == true",
+           condition = "input.supervized || input.analysis_type == 'RA'",
            uiOutput("blocks_names_response")
          ),
         checkboxInput(inputId = "tau_opt",

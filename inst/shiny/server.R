@@ -351,7 +351,7 @@ server <- function(input, output) {
 
     pars = showWarn(checkSuperblock(list(response = response, superblock = input$superblock)), show = FALSE)
 
-    if(input$supervized){
+    if(input$supervized || tolower(analysis_type) == "ra"){
       pars = setPosPar(list(tau = tau, ncomp = ncomp, superblock = pars$superblock), blocks, id_block_resp)
       blocks = pars$blocks; tau = pars$tau; ncomp = pars$ncomp
     }
@@ -459,12 +459,12 @@ server <- function(input, output) {
 ################################################ Events ################################################
 
   setToggle = function(id)
-    toggle(condition = (input$analysis_type %in% c("RGCCA", "SGCCA") & length(input$blocks$datapath) > 2), id = id)
+    toggle(condition = (input$analysis_type %in% c("RGCCA", "SGCCA") && length(input$blocks$datapath) > 2), id = id)
 
   setToggle2 = function(id)
     toggle(condition = (input$analysis_type %in% c("RA", "RGCCA", "SGCCA")), id = id)
 
-  #  | (input$analysis_type %in% c("RGCCA", "SGCCA") & input$superblock )
+  #  | (input$analysis_type %in% c("RGCCA", "SGCCA") & !input$superblock )
 
   observe({
     # Event related to input$analysis_type
@@ -474,7 +474,7 @@ server <- function(input, output) {
     setToggle("superblock")
     setToggle("connection")
     setToggle2("blocks_names_response")
-    setToggle2("supervized")
+    setToggle("supervized")
     hide(selector = "#tabset li a[data-value=Graphic]")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_x")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_y")
@@ -617,7 +617,7 @@ server <- function(input, output) {
 
     if(blocksExists()){
 
-      if(input$supervized)
+      if(input$supervized || input$analysis_type == "RA")
         reac_var(as.integer(input$names_block_response))
       else
         reac_var(as.integer(input$names_block_response) - 1)
