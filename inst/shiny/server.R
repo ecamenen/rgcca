@@ -480,9 +480,6 @@ server <- function(input, output, session) {
     hide(selector = "#tabset li a[data-value=Graphic]")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_x")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_y")
-    setToggleSaveButton('connection_save')
-    for (i in c("bootstrap_save", "fingerprint_save", "corcircle_save", "samples_save", "ave_save", "connection_save"))
-      setToggleSaveButton(i)
   })
 
   observeEvent(c(input$navbar, input$tabset), {
@@ -605,6 +602,8 @@ server <- function(input, output, session) {
       setNamesInput("response")
       assign("nb_comp", input$nb_comp, .GlobalEnv)
       setAnalysis()
+      for (i in c("bootstrap_save", "fingerprint_save", "corcircle_save", "samples_save", "ave_save", "connection_save"))
+        hide(i)
     }
   })
 

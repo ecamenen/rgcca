@@ -25,7 +25,7 @@ ui <- fluidPage(
                 multiple = TRUE
       ),
       fileInput(inputId = "response",
-                label = h5("Choose a response")
+                label = h5("[OPTIONAL] Color the samples according to groups of a qualitative univariate file")
       ),
 
       # File parsing
