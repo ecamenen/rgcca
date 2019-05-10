@@ -51,7 +51,7 @@ server <- function(input, output) {
   })
 
   setNamesInput = function(x){
-    refesh = c(input$superblock, input$supervized, input$analysis_type)
+    refesh = c(input$superblock, input$supervised, input$analysis_type)
     selectInput(inputId = paste0("names_block_", x),
                 label = h5( paste0("Block for the ", x ,"-axis")),
                 choices = getNames(),
@@ -262,7 +262,7 @@ server <- function(input, output) {
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
                 input$scale, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt, input$analysis_type,
                 input$connection, input$nb_comp, input$names_block_x, input$names_block_y, input$boot, input$text,
-                input$names_block_response, input$supervized, input$run_analysis )
+                input$names_block_response, input$supervised, input$run_analysis )
   }
 
 
@@ -344,14 +344,14 @@ server <- function(input, output) {
 
     getNames()
 
-    if(!input$supervized)
+    if(!input$supervised)
       response = NULL
     else
-      response = input$supervized
+      response = input$supervised
 
     pars = showWarn(checkSuperblock(list(response = response, superblock = input$superblock)), show = FALSE)
 
-    if(input$supervized || tolower(analysis_type) == "ra"){
+    if(input$supervised || tolower(analysis_type) == "ra"){
       pars = setPosPar(list(tau = tau, ncomp = ncomp, superblock = pars$superblock), blocks, id_block_resp)
       blocks = pars$blocks; tau = pars$tau; ncomp = pars$ncomp
     }
@@ -422,7 +422,7 @@ server <- function(input, output) {
     if(is.null(connection)){
       try(withCallingHandlers(
         connection <- showWarn(setConnection (blocks = blocks,
-                    superblock = (is.null(file) & ( superblock  | input$supervized) ),
+                    superblock = (is.null(file) & ( superblock  | input$supervised) ),
                     file = file,
                     sep = input$sep))
       ))
@@ -430,7 +430,7 @@ server <- function(input, output) {
       # Error due to the superblock disabling and the connection have not the same size than the number of blocks
       if( identical(connection, "104") )
         connection <- showWarn(setConnection(blocks = blocks,
-                   superblock = ( superblock  | input$supervized ),
+                   superblock = ( superblock  | input$supervised ),
                    file = NULL,
                    sep = input$sep))
 
@@ -474,7 +474,7 @@ server <- function(input, output) {
     setToggle("superblock")
     setToggle("connection")
     setToggle2("blocks_names_response")
-    setToggle("supervized")
+    setToggle("supervised")
     hide(selector = "#tabset li a[data-value=Graphic]")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_x")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_y")
@@ -577,7 +577,7 @@ server <- function(input, output) {
 
   })
 
-  observeEvent(c(input$superblock, input$supervized, input$nb_comp, input$scheme, input$init, input$tau, input$tau_opt, input$analysis_type), {
+  observeEvent(c(input$superblock, input$supervised, input$nb_comp, input$scheme, input$init, input$tau, input$tau_opt, input$analysis_type), {
     # Observe if analysis parameters are changed
 
     if(blocksExists()){
@@ -617,7 +617,7 @@ server <- function(input, output) {
 
     if(blocksExists()){
 
-      if(input$supervized || input$analysis_type == "RA")
+      if(input$supervised || input$analysis_type == "RA")
         reac_var(as.integer(input$names_block_response))
       else
         reac_var(as.integer(input$names_block_response) - 1)

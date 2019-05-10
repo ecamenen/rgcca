@@ -61,11 +61,11 @@ ui <- fluidPage(
         checkboxInput(inputId = "superblock",
                     label = "Use a superblock",
                     value = TRUE),
-        checkboxInput("supervized",
-                       "Supervized analysis",
+        checkboxInput("supervised",
+                       "Supervised analysis",
                        value = FALSE),
         conditionalPanel(
-           condition = "input.supervized || input.analysis_type == 'RA'",
+           condition = "input.supervised || input.analysis_type == 'RA'",
            uiOutput("blocks_names_response")
          ),
         checkboxInput(inputId = "tau_opt",
