@@ -483,9 +483,9 @@ server <- function(input, output, session) {
     print(c("here", input$navbar))
 
     toggle(condition = ( input$navbar == "Fingerprint"), id = "nb_mark_custom")
+    toggle(condition = ( input$navbar != "Fingerprint"), id = "text")
+    toggle(condition = ( input$navbar != "Fingerprint"), id = "axis2_custom")
     toggle(condition = ( input$navbar == "Samples"), id = "blocks_names_custom_y")
-    # toggle(condition = ( input$navbar == "Samples"), id = "nb_mark")
-    # toggle(condition = ( input$navbar %in% c("Samples", )), id = "nb_mark")
     toggle(condition = ( !is.null(analysis) && ! input$navbar %in% c("Connection", "AVE")), selector =  "#tabset li a[data-value=Graphic]" )
    })
 
