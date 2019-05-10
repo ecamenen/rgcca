@@ -483,7 +483,8 @@ server <- function(input, output, session) {
     print(c("here", input$navbar))
 
     toggle(condition = ( input$navbar == "Fingerprint"), id = "nb_mark_custom")
-    toggle(condition = ( input$navbar == "Fingerprint"), id = "nb_mark")
+    toggle(condition = ( input$navbar == "Samples"), id = "blocks_names_custom_y")
+    # toggle(condition = ( input$navbar == "Samples"), id = "nb_mark")
     # toggle(condition = ( input$navbar %in% c("Samples", )), id = "nb_mark")
     toggle(condition = ( !is.null(analysis) && ! input$navbar %in% c("Connection", "AVE")), selector =  "#tabset li a[data-value=Graphic]" )
    })
@@ -491,7 +492,7 @@ server <- function(input, output, session) {
   observeEvent(input$navbar, {
     if(!is.null(analysis) && input$navbar %in% c("Connection", "AVE"))
       updateTabsetPanel(session, "tabset", selected = "RGCCA")
-    else
+    else if(!is.null(analysis))
       updateTabsetPanel(session, "tabset", selected = "Graphic")
   })
 
