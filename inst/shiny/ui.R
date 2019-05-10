@@ -24,9 +24,6 @@ ui <- fluidPage(
                 label = h5("Choose blocks"),
                 multiple = TRUE
       ),
-      fileInput(inputId = "connection",
-                label = h5("Choose a connection design")
-      ),
       fileInput(inputId = "response",
                 label = h5("Choose a response")
       ),
@@ -57,6 +54,9 @@ ui <- fluidPage(
                                Random = "random"),
                    selected = "svd"),
 
+        fileInput(inputId = "connection",
+                  label = h5("Choose a connection design")
+        ),
         checkboxInput(inputId = "superblock",
                     label = "Use a superblock",
                     value = TRUE),

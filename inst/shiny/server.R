@@ -462,6 +462,9 @@ server <- function(input, output, session) {
   setToggle2 = function(id)
     toggle(condition = (input$analysis_type %in% c("RA", "RGCCA", "SGCCA")), id = id)
 
+  setToggleSaveButton = function(id)
+    toggle(condition = !is.null(analysis), id = id)
+
   #  | (input$analysis_type %in% c("RGCCA", "SGCCA") & !input$superblock )
 
   observe({
@@ -477,10 +480,12 @@ server <- function(input, output, session) {
     hide(selector = "#tabset li a[data-value=Graphic]")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_x")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_y")
+    setToggleSaveButton('connection_save')
+    for (i in c("bootstrap_save", "fingerprint_save", "corcircle_save", "samples_save", "ave_save", "connection_save"))
+      setToggleSaveButton(i)
   })
 
   observeEvent(c(input$navbar, input$tabset), {
-    print(c("here", input$navbar))
 
     toggle(condition = ( input$navbar == "Fingerprint"), id = "nb_mark_custom")
     toggle(condition = ( input$navbar != "Fingerprint"), id = "text")
@@ -588,6 +593,8 @@ server <- function(input, output, session) {
     if(!is.null(getInfile()) & is.matrix(connection))
       assign("analysis", setRGCCA(), .GlobalEnv)
 
+    for (i in c("bootstrap_save", "fingerprint_save", "corcircle_save", "samples_save", "ave_save", "connection_save"))
+      setToggleSaveButton(i)
   })
 
   observeEvent(c(input$superblock, input$supervised, input$nb_comp, input$scheme, input$init, input$tau, input$tau_opt, input$analysis_type), {
