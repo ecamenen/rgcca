@@ -9,7 +9,7 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
-server <- function(input, output) {
+server <- function(input, output, session) {
   source("R/parsing.R")
   source("R/plot.R")
   source("R/select.type.R")
@@ -484,6 +484,15 @@ server <- function(input, output) {
 
     toggle(condition = ( input$navbar == "Fingerprint"), id = "nb_mark_custom")
     toggle(condition = ( input$navbar == "Fingerprint"), id = "nb_mark")
+    # toggle(condition = ( input$navbar %in% c("Samples", )), id = "nb_mark")
+    toggle(condition = ( !is.null(analysis) && ! input$navbar %in% c("Connection", "AVE")), selector =  "#tabset li a[data-value=Graphic]" )
+   })
+
+  observeEvent(input$navbar, {
+    if(!is.null(analysis) && input$navbar %in% c("Connection", "AVE"))
+      updateTabsetPanel(session, "tabset", selected = "RGCCA")
+    else
+      updateTabsetPanel(session, "tabset", selected = "Graphic")
   })
 
   observe({
@@ -577,9 +586,6 @@ server <- function(input, output) {
 
     if(!is.null(getInfile()) & is.matrix(connection))
       assign("analysis", setRGCCA(), .GlobalEnv)
-
-    if(!is.null(analysis))
-      show(selector = "#tabset li a[data-value=Graphic]")
 
   })
 
