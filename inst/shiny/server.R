@@ -197,10 +197,8 @@ server <- function(input, output) {
       res <- f
     }, message = function(w) {
       duration <<- NULL
-      if(show){
-        id <- showNotification(w$message, type = "message", duration = duration)
-        ids <<- c(ids, id)
-      }
+      id <- showNotification(w$message, type = "message", duration = duration)
+      ids <<- c(ids, id)
     }, warning = function(w) {
 
       if(show){
@@ -467,6 +465,7 @@ server <- function(input, output) {
   #  | (input$analysis_type %in% c("RGCCA", "SGCCA") & !input$superblock )
 
   observe({
+
     # Event related to input$analysis_type
     toggle(condition = (input$analysis_type == "RGCCA"), id = "tau_opt")
     setToggle("tau_custom")
@@ -478,6 +477,13 @@ server <- function(input, output) {
     hide(selector = "#tabset li a[data-value=Graphic]")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_x")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_y")
+  })
+
+  observeEvent(c(input$navbar, input$tabset), {
+    print(c("here", input$navbar))
+
+    toggle(condition = ( input$navbar == "Fingerprint"), id = "nb_mark_custom")
+    toggle(condition = ( input$navbar == "Fingerprint"), id = "nb_mark")
   })
 
   observe({
@@ -643,7 +649,8 @@ server <- function(input, output) {
       assign("if_text", input$text, .GlobalEnv)
       assign("axis1", input$axis1, .GlobalEnv)
       assign("axis2", input$axis2, .GlobalEnv)
-      assign("nb_mark", input$nb_mark, .GlobalEnv)
+      if(!is.null(input$nb_mark))
+        assign("nb_mark", input$nb_mark, .GlobalEnv)
     }
   })
 

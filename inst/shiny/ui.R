@@ -9,7 +9,6 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
-
 ui <- fluidPage(
 
   titlePanel("R/SGCCA - The Shiny graphical interface"),
