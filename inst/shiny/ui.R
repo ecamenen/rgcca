@@ -16,6 +16,9 @@ setInfo <- function(., text){
   )
 }
 
+
+library("htmltools")
+
 ui <- fluidPage(
 
   # CSS parameters
@@ -31,6 +34,29 @@ ui <- fluidPage(
         )
       )
     ),
+
+  bs_modal(
+    id = "modal_connection",
+    title = "Help on connection",
+    body = "The design matrix is a symmetric matrix of NB_BLOCKS * NB_BLOCKS describing the connections between blocks.
+Two values are accepted : '1' for a connection between two blocks, or '0' otherwise.",
+    size = "medium"
+    ),
+
+  bs_modal(
+    id = "modal_superblock",
+    title = "Help on superblock",
+    body =  "If activated, add a supplementary block (the 'superblock') corresponding to a concatenation of all the blocks.
+    This block shynthesize the other blocks all together into a common space to better interpret the results.
+    If disabled, a connection file could be used if exists otherwise, all blocks are connected together.",
+    size = "medium"
+  ),
+
+# "The maximization of the sum of covariances between block components is calculated with : the identity function (horst scheme),
+# the absolute values (centroid scheme), the squared values (factorial scheme) or, more generally, maximizes the power of any integer."
+#
+# "A tau near 0 maximize the covariance in each blocks whereas a tau near 1 maximize the correlation."
+
 
   titlePanel("R/SGCCA - The Shiny graphical interface"),
   tags$a(href="https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/master/inst/shiny/tutorialShiny.md", "Go to the tutorial"),
@@ -48,7 +74,7 @@ ui <- fluidPage(
       ) %>%
         shinyInput_label_embed(
           icon("question") %>%
-            bs_embed_tooltip(title = "One or multiple CSV files containing a matrix with the samples in lines (should be labelled in the 1rst column) and variables in columns (should have a header)",
+            bs_embed_tooltip(title = "One or multiple CSV files containing a matrix with : (i) quantitative values only (decimal should be separated by '.'), (ii) the samples in lines (should be labelled in the 1rst column) and (iii) variables in columns (should have a header)",
                              placement = "bottom")
         ),
       fileInput(inputId = "response",
@@ -102,13 +128,18 @@ ui <- fluidPage(
                   label = "Connection design [OPTIONAL]"
         ) %>%
         shinyInput_label_embed(
-          icon("question") %>%
-            bs_embed_tooltip(title = "Character used to separate the column in the dataset")
+          shiny_iconlink() %>%
+            bs_attach_modal(id_modal = "modal_connection")
         ),
 
         checkboxInput(inputId = "superblock",
                     label = "Use a superblock",
-                    value = TRUE),
+                    value = TRUE)%>%
+          shinyInput_label_embed(
+            shiny_iconlink() %>%
+              bs_attach_modal(id_modal = "modal_superblock")
+          ),
+
         checkboxInput("supervised",
                        "Supervised analysis",
                        value = FALSE),
