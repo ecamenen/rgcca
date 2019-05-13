@@ -9,6 +9,13 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
+setInfo <- function(., text){
+  shinyInput_label_embed(
+    icon("question") %>%
+      bs_embed_tooltip(title = text)
+  )
+}
+
 ui <- fluidPage(
 
   # CSS parameters
@@ -26,6 +33,7 @@ ui <- fluidPage(
     ),
 
   titlePanel("R/SGCCA - The Shiny graphical interface"),
+  tags$a(href="https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/master/inst/shiny/tutorialShiny.md", "Go to the tutorial"),
   useShinyjs(),
   sidebarLayout(
 
@@ -35,33 +43,55 @@ ui <- fluidPage(
 
       # Data loading
       fileInput(inputId = "blocks",
-                label = h5("Choose blocks"),
+                label = "Blocks",
                 multiple = TRUE
-      ),
+      ) %>%
+        shinyInput_label_embed(
+          icon("question") %>%
+            bs_embed_tooltip(title = "One or multiple CSV files containing a matrix with the samples in lines (should be labelled in the 1rst column) and variables in columns (should have a header)",
+                             placement = "bottom")
+        ),
       fileInput(inputId = "response",
-                label = h5("[OPTIONAL] Color the samples according to groups of a qualitative univariate file")
-      ),
+                label = "Groups of modalities [OPTIONAL]"
+      ) %>%
+        shinyInput_label_embed(
+          icon("question") %>%
+            bs_embed_tooltip(title = "To color the sample plot. A CSV file containing either : (i) an only column with a qualitative or a quantitative variable; (ii) multiple columns corresponding to a disjunctive table")
+        ),
 
       # File parsing
 
-        condition = "input.adv_pars == true",
-        checkboxInput(inputId = "header",
-                      label = "Consider first row as header",
-                      value = TRUE),
         radioButtons(inputId = "sep",
-                     label = "Separator",
+                     label = "Column separator",
                      choices = c(Comma = ",",
                                  Semicolon = ";",
                                  Tabulation = "\t"),
-                     selected = "\t")
-      ),
-      tabPanel("RGCCA",
+                     selected = "\t") %>%
+        shinyInput_label_embed(
+          icon("question") %>%
+            bs_embed_tooltip(title = "Character used to separate the column in the dataset")
+        ),
+
+        checkboxInput(inputId = "header",
+                      label = "Consider first row as header",
+                      value = TRUE)
+        ),
+
+
       # Analysis parameters
+
+      tabPanel("RGCCA",
         uiOutput("analysis_type_custom"),
         uiOutput("nb_comp_custom"),
+
         checkboxInput(inputId = "scale",
                       label = "Scale the blocks",
-                      value = TRUE),
+                      value = TRUE) %>%
+        shinyInput_label_embed(
+          icon("question") %>%
+            bs_embed_tooltip(title = "A zero means translation is always performed. If activated, each block are standardized to unit variances and then divide them by the square root of its number of variables.")
+        ),
+
         radioButtons("init",
                    label = "Mode of initialization",
                    choices = c(SVD = "svd",
@@ -69,8 +99,13 @@ ui <- fluidPage(
                    selected = "svd"),
 
         fileInput(inputId = "connection",
-                  label = h5("Choose a connection design")
+                  label = "Connection design [OPTIONAL]"
+        ) %>%
+        shinyInput_label_embed(
+          icon("question") %>%
+            bs_embed_tooltip(title = "Character used to separate the column in the dataset")
         ),
+
         checkboxInput(inputId = "superblock",
                     label = "Use a superblock",
                     value = TRUE),
@@ -92,7 +127,7 @@ ui <- fluidPage(
                                  Factorial = "factorial"),
                      selected = "factorial"),
         sliderInput(inputId = "boot",
-                    label = h5("Number of boostraps"),
+                    label = "Number of boostraps",
                     min = 5, max = 100, value = 10, step = 5),
         actionButton(inputId = "run_boot",
                    label = "Run bootstrap"),
@@ -145,5 +180,7 @@ ui <- fluidPage(
       )
 
     )
-  )
+  ),
+
+  use_bs_tooltip()
 )

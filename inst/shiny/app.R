@@ -21,15 +21,17 @@ analyse_methods <- list(one_block, two_blocks, multiple_blocks, multiple_blocks_
 
 # Maximum size allowed : 30 MB
 options(shiny.maxRequestSize = 30*1024^2)
-source("inst/shiny/ui.R")
 source("inst/shiny/server.R")
+source("inst/shiny/ui.R")
 
 # Libraries loading
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "shiny", "shinyjs", "plotly", "visNetwork", "igraph", "ggrepel", "parallel")
+librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "shiny", "shinyjs", "plotly", "visNetwork", "igraph", "ggrepel", "parallel", "bsplus")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
     install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
   library(l, character.only = TRUE)
 }
 
-shinyApp(ui, server)
+app <- shinyApp(ui, server)
+
+runApp(app)

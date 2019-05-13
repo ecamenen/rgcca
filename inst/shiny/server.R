@@ -45,15 +45,20 @@ server <- function(input, output, session) {
     conditionalPanel(
       condition = cond,
       sliderInput(inputId = "tau",
-                  label = h5(par_name),
+                  label = par_name,
                   min = 0, max = 1, value = 1, step = .1)
    )
   })
 
-  setNamesInput = function(x){
+  setNamesInput = function(x, label = NULL){
+
     refesh = c(input$superblock, input$supervised, input$analysis_type)
+
+    if(is.null(label))
+      label <- paste0("Block for the ", x ,"-axis")
+
     selectInput(inputId = paste0("names_block_", x),
-                label = h5( paste0("Block for the ", x ,"-axis")),
+                label = label,
                 choices = getNames(),
                 selected = setBlockNames())
   }
@@ -63,7 +68,7 @@ server <- function(input, output, session) {
   })
 
   output$blocks_names_response<- renderUI({
-    setNamesInput("response")
+    setNamesInput("response", "Block used as a response")
   })
 
   # Define the names of the blocks and set by default on the last block
@@ -87,7 +92,7 @@ server <- function(input, output, session) {
     assign("nb_comp", reac_var(), .GlobalEnv)
 
     sliderInput(inputId = "nb_comp",
-                label = h5("Number of components"),
+                label = "Number of components",
                 min = 2, max = getDefaultComp(), value = 2, step = 1)
 
     # TODO: pas plusieurs sliderInput, découper en modules
@@ -96,20 +101,20 @@ server <- function(input, output, session) {
   output$axis1_custom <- renderUI({
     refresh <- input$nb_comp
     sliderInput(inputId = "axis1",
-                label = h5("Component for the X-axis"),
+                label = "Component for the X-axis",
                 min = 1, max = input$nb_comp, value = 1, step = 1)
   })
 
   output$axis2_custom <- renderUI({
     refresh <- input$nb_comp
     sliderInput(inputId = "axis2",
-                label = h5("Component for the Y-axis"),
+                label = "Component for the Y-axis",
                 min = 1, max = input$nb_comp, value = 2, step = 1)
   })
 
   output$nb_mark_custom <- renderUI({
     sliderInput(inputId = "nb_mark",
-                label = h5("Number of potential biomarkers"),
+                label = "Number of potential biomarkers",
                 min = 10, max = getMaxCol(), value = getDefaultCol(), step = 1)
   })
 
@@ -118,7 +123,7 @@ server <- function(input, output, session) {
   output$analysis_type_custom <- renderUI({
     refresh = c(input$blocks, input$sep)
     selectInput(inputId = "analysis_type",
-              h5("Analysis method"),
+              "Analysis method",
               selected = analysis_type,
               choices = list(
                 `One block` = one_block,
@@ -512,6 +517,7 @@ server <- function(input, output, session) {
     hide(id = "response")
     hide(id = "connection")
     hide(id = "navbar")
+    hide(id = "connection_save")
   })
 
   onclick("sep", function(e) assign("clickSep", TRUE, .GlobalEnv))
