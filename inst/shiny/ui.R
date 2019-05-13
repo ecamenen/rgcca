@@ -35,28 +35,15 @@ ui <- fluidPage(
       )
     ),
 
-  bs_modal(
-    id = "modal_connection",
-    title = "Help on connection",
-    body = "The design matrix is a symmetric matrix of NB_BLOCKS * NB_BLOCKS describing the connections between blocks.
-Two values are accepted : '1' for a connection between two blocks, or '0' otherwise.",
-    size = "medium"
-    ),
 
   bs_modal(
     id = "modal_superblock",
     title = "Help on superblock",
     body =  "If activated, add a supplementary block (the 'superblock') corresponding to a concatenation of all the blocks.
     This block shynthesize the other blocks all together into a common space to better interpret the results.
-    If disabled, a connection file could be used if exists otherwise, all blocks are connected together.",
+    If disabled, a connection file could be used. Otherwise, all blocks are connected together.",
     size = "medium"
   ),
-
-# "The maximization of the sum of covariances between block components is calculated with : the identity function (horst scheme),
-# the absolute values (centroid scheme), the squared values (factorial scheme) or, more generally, maximizes the power of any integer."
-#
-# "A tau near 0 maximize the covariance in each blocks whereas a tau near 1 maximize the correlation."
-
 
   titlePanel("R/SGCCA - The Shiny graphical interface"),
   tags$a(href="https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/master/inst/shiny/tutorialShiny.md", "Go to the tutorial"),
@@ -127,14 +114,14 @@ Two values are accepted : '1' for a connection between two blocks, or '0' otherw
         fileInput(inputId = "connection",
                   label = "Connection design [OPTIONAL]"
         ) %>%
-        shinyInput_label_embed(
-          shiny_iconlink() %>%
-            bs_attach_modal(id_modal = "modal_connection")
-        ),
+            shinyInput_label_embed(
+              icon("question") %>%
+                bs_embed_tooltip(title = "The design matrix is a symmetric matrix of the length of the number of blocks describing the connections between them. Two values are accepted : '1' for a connection between two blocks, or '0' otherwise.")
+          ),
 
         checkboxInput(inputId = "superblock",
                     label = "Use a superblock",
-                    value = TRUE)%>%
+                    value = TRUE) %>%
           shinyInput_label_embed(
             shiny_iconlink() %>%
               bs_attach_modal(id_modal = "modal_superblock")
@@ -149,14 +136,25 @@ Two values are accepted : '1' for a connection between two blocks, or '0' otherw
          ),
         checkboxInput(inputId = "tau_opt",
                        label = "Use an optimal tau",
-                       value = TRUE),
+                       value = TRUE)  %>%
+          shinyInput_label_embed(
+            icon("question") %>%
+              bs_embed_tooltip(title = "A tau near 0 maximize the covariance in each blocks whereas a tau near 1 maximize the correlation.")
+          ),
+
         uiOutput("tau_custom"),
         radioButtons(inputId = "scheme",
                      label = "Scheme function",
                      choices = c(Horst = "horst",
                                  Centroid = "centroid",
                                  Factorial = "factorial"),
-                     selected = "factorial"),
+                     selected = "factorial") %>%
+          shinyInput_label_embed(
+            icon("question") %>%
+              bs_embed_tooltip(title = "The maximization of the sum of covariances between block components is calculated with : the identity function (horst scheme),
+                               the absolute values (centroid scheme), the squared values (factorial scheme) or, more generally, with the power of any integer.")
+            ),
+
         sliderInput(inputId = "boot",
                     label = "Number of boostraps",
                     min = 5, max = 100, value = 10, step = 5),
