@@ -68,15 +68,6 @@ ui <- fluidPage(
             bs_embed_tooltip(title = "One or multiple CSV files containing a matrix with : (i) quantitative values only (decimal should be separated by '.'), (ii) the samples in lines (should be labelled in the 1rst column) and (iii) variables in columns (should have a header)",
                              placement = "bottom")
         ),
-      fileInput(inputId = "response",
-                label = "Groups of modalities [OPTIONAL]"
-      ) %>%
-        shinyInput_label_embed(
-          icon("question") %>%
-            bs_embed_tooltip(title = "To color the sample plot. A CSV file containing either : (i) an only column with a qualitative or a quantitative variable; (ii) multiple columns corresponding to a disjunctive table")
-        ),
-
-      # File parsing
 
         radioButtons(inputId = "sep",
                      label = "Column separator",
@@ -127,7 +118,7 @@ ui <- fluidPage(
                     label = "Use a superblock",
                     value = TRUE) %>%
           shinyInput_label_embed(
-            shiny_iconlink() %>%
+            shiny_iconlink(name = "question-circle") %>%
               bs_attach_modal(id_modal = "modal_superblock")
           ),
 
@@ -180,6 +171,13 @@ ui <- fluidPage(
         uiOutput("axis2_custom"),
         uiOutput("nb_mark_custom"),
 
+
+        fileInput(inputId = "response",
+                  label = "Groups of modalities [OPTIONAL]"
+        ) %>% shinyInput_label_embed(
+            icon("question") %>%
+              bs_embed_tooltip(title = "To color the sample plot. A CSV file containing either : (i) an only column with a qualitative or a quantitative variable; (ii) multiple columns corresponding to a disjunctive table")
+        ),
 
         actionButton(inputId = "save_all",
                      label = "Save all")

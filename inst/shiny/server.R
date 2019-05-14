@@ -35,7 +35,7 @@ server <- function(input, output, session) {
 
   output$tau_custom <- renderUI({
     if(!is.null(input$analysis_type) && input$analysis_type == "SGCCA"){
-      par_name <- "C1"
+      par_name <- "Degree of sparsity"
       cond <- "input.analysis_type == SGCCA"
     }else{
       par_name <- "Tau"
@@ -119,6 +119,12 @@ server <- function(input, output, session) {
   })
 
   ################################################ UI variables ################################################
+
+  output$connection_custom <- renderUI({
+    fileInput(inputId = "connection",
+              label = "Connection design [OPTIONAL]"
+    )
+  })
 
   output$analysis_type_custom <- renderUI({
     refresh = c(input$blocks, input$sep)
@@ -214,12 +220,10 @@ server <- function(input, output, session) {
       }
 
     }, error = function(e) {
-      if(show){
         message(paste("Error:", e$message))
         id <- showNotification(e$message, type = "error", duration = duration)
         ids <<- c(ids, id)
         res <<- class(e)[1]
-      }
     }), silent = TRUE)
 
     if(is.null(duration) & length(ids) != 0){
@@ -367,8 +371,10 @@ server <- function(input, output, session) {
 
     c1 = showWarn(checkC1(pars$blocks, pars$tau, analysis_type))
 
-    if(length(pars) == 1 | !is.null(unlist(c1)))
+    if(length(pars) == 1 | !is.null(unlist(c1))){
+      assign("analysis", NULL, .GlobalEnv)
       return(NULL)
+    }
 
     assign("connection", pars$connection, .GlobalEnv)
     assign("tau", pars$tau, .GlobalEnv)
@@ -495,6 +501,7 @@ server <- function(input, output, session) {
     toggle(condition = ( input$navbar != "Fingerprint"), id = "text")
     toggle(condition = ( input$navbar != "Fingerprint"), id = "axis2_custom")
     toggle(condition = ( input$navbar == "Samples"), id = "blocks_names_custom_y")
+    toggle(condition = ( input$navbar == "Samples"), id = "response")
     toggle(condition = ( !is.null(analysis) && ! input$navbar %in% c("Connection", "AVE")), selector =  "#tabset li a[data-value=Graphic]" )
    })
 
@@ -514,8 +521,6 @@ server <- function(input, output, session) {
     hide(id = "boot")
     hide(id = "header")
     hide(id = "init")
-    hide(id = "response")
-    hide(id = "connection")
     hide(id = "navbar")
     hide(id = "connection_save")
   })
@@ -524,10 +529,9 @@ server <- function(input, output, session) {
 
   observeEvent(c(input$blocks, input$sep), {
     if(blocksExists()){
-      #assign("analysis", NULL, .GlobalEnv)
-      setToggle("connection")
-      show(id = "response")
+
     }
+
   })
 
   getInfile <- eventReactive(c(input$blocks, input$sep), {
