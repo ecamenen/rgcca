@@ -207,7 +207,7 @@ server <- function(input, output, session) {
     try(withCallingHandlers({
       res <- f
     }, message = function(w) {
-      if(show)
+        if(show)
         duration <<- NULL
 
       id <- showNotification(w$message, type = "message", duration = duration)
@@ -227,6 +227,7 @@ server <- function(input, output, session) {
     }), silent = TRUE)
 
     if(is.null(duration) & length(ids) != 0){
+
       for (id in ids)
         removeNotification(id)
     }
@@ -529,7 +530,7 @@ server <- function(input, output, session) {
 
   observeEvent(c(input$blocks, input$sep), {
     if(blocksExists()){
-
+      ;
     }
 
   })
@@ -605,8 +606,8 @@ server <- function(input, output, session) {
 
       show(id = "navbar")
 
-      for (i in c("bootstrap_save", "fingerprint_save", "corcircle_save", "samples_save", "ave_save"))
-        setToggleSaveButton(i)
+      # for (i in c("bootstrap_save", "fingerprint_save", "corcircle_save", "samples_save", "ave_save"))
+      #   setToggleSaveButton(i)
     }
   })
 

@@ -27,14 +27,13 @@ ui <- fluidPage(
     tags$style(
       HTML(".shiny-notification {
              position:fixed;
-             top: calc(100%);;
+             top: calc(90%);;
              left: calc(50%);;
              }
              "
         )
       )
     ),
-
 
   bs_modal(
     id = "modal_superblock",
