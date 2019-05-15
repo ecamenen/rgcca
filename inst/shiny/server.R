@@ -452,12 +452,12 @@ server <- function(input, output, session) {
   setConnectionShiny = function(){
 
 
-    if(is.null(connection) | !is.null(file)){
+    if(is.null(connection) | !is.null(connection_file)){
       try(withCallingHandlers(
 
         connection <- showWarn(setConnection (blocks = blocks,
-                    superblock = (is.null(file) && ( superblock  | input$supervised) ),
-                    file = file,
+                    superblock = (is.null(connection_file) && ( superblock  | input$supervised) ),
+                    file = connection_file,
                     sep = input$sep))
 
       ))
@@ -491,7 +491,7 @@ server <- function(input, output, session) {
 
   }
 
-################################################ Events ################################################
+  ################################################ Events ################################################
 
   setToggle = function(id)
     toggle(condition = (input$analysis_type %in% c("RGCCA", "SGCCA") && length(input$blocks$datapath) > 2), id = id)
@@ -596,7 +596,7 @@ server <- function(input, output, session) {
     assign("id_block_resp", length(blocks_without_superb), .GlobalEnv)
     blocks = setParRGCCA(FALSE)
     assign("blocks", blocks, .GlobalEnv)
-    assign("file", input$connection$datapath, .GlobalEnv)
+    assign("connection_file", input$connection$datapath, .GlobalEnv)
     setResponseShiny()
     setConnectionShiny()
     setIdBlock()
@@ -620,11 +620,11 @@ server <- function(input, output, session) {
 
   observeEvent(input$connection, {
     if(blocksExists()){
-      assign("file", input$connection$datapath, .GlobalEnv)
+      assign("connection_file", input$connection$datapath, .GlobalEnv)
       setConnectionShiny()
       setUiConnection()
       showWarn(message("Connection file loaded."), show = FALSE)
-      assign("file", NULL, .GlobalEnv)
+      assign("connection_file", NULL, .GlobalEnv)
     }
   })
 
@@ -726,7 +726,7 @@ server <- function(input, output, session) {
       observeEvent(input$samples_save, {
         savePlot("samples_plot.pdf", samples())
         msgSave()
-        })
+      })
       p = changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), if_text )
       if(!unique(isCharacter(na.omit(response))))
         p  = p  %>% layout(showlegend = FALSE)

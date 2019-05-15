@@ -21,20 +21,6 @@ library("htmltools")
 
 ui <- fluidPage(
 
-  # CSS parameters
-
-  tags$head(
-    tags$style(
-      HTML(".shiny-notification {
-             position:fixed;
-             top: calc(90%);;
-             left: calc(50%);;
-             }
-             "
-        )
-      )
-    ),
-
   bs_modal(
     id = "modal_superblock",
     title = "Help on superblock",
