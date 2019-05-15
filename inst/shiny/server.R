@@ -20,8 +20,8 @@ server <- function(input, output, session) {
   id_block_y <<- id_block <<- id_block_resp <<- analysis <<- boot <<- analysis_type <<- NULL
   clickSep <<- FALSE
   if_text <<- TRUE
-  axis1 <<- 1
-  nb_comp <<- axis2 <<- 2
+  comp_x <<- 1
+  nb_comp <<- comp_y <<- 2
   nb_mark <<- 100
 
   # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
@@ -30,7 +30,7 @@ server <- function(input, output, session) {
   ################################################ User Interface ################################################
 
   output$blocks_names_custom_x <- renderUI({
-    setNamesInput("x")
+    setNamesInput("x", bool = input$navbar == "Samples")
   })
 
   output$tau_custom <- renderUI({
@@ -50,12 +50,17 @@ server <- function(input, output, session) {
    )
   })
 
-  setNamesInput = function(x, label = NULL){
+  setNamesInput = function(x, label = NULL, bool = TRUE){
 
     refesh = c(input$superblock, input$supervised, input$analysis_type)
 
-    if(is.null(label))
-      label <- paste0("Block for the ", x ,"-axis")
+    if(is.null(label)){
+      label <- "Block"
+
+      if(bool)
+        label <- paste0("Block for the ", x ,"-axis")
+
+    }
 
     selectInput(inputId = paste0("names_block_", x),
                 label = label,
@@ -98,19 +103,27 @@ server <- function(input, output, session) {
     # TODO: pas plusieurs sliderInput, découper en modules
   })
 
-  output$axis1_custom <- renderUI({
+  output$comp_x_custom <- renderUI({
     refresh <- input$nb_comp
-    sliderInput(inputId = "axis1",
-                label = "Component for the X-axis",
-                min = 1, max = input$nb_comp, value = 1, step = 1)
+    ui_comp("x", 1, input$navbar != "Fingerprint")
   })
 
-  output$axis2_custom <- renderUI({
+  output$comp_y_custom <- renderUI({
     refresh <- input$nb_comp
-    sliderInput(inputId = "axis2",
-                label = "Component for the Y-axis",
-                min = 1, max = input$nb_comp, value = 2, step = 1)
+    ui_comp("y", 2)
   })
+
+  ui_comp <- function(x, y, bool = TRUE){
+
+    label <- "Component"
+
+    if(bool)
+      label <- paste0("Component for the ", x, "-axis")
+
+    sliderInput(inputId = paste0("comp_", x),
+                label = label,
+                min = 1, max = input$nb_comp, value = y, step = 1)
+  }
 
   output$nb_mark_custom <- renderUI({
     sliderInput(inputId = "nb_mark",
@@ -270,7 +283,7 @@ server <- function(input, output, session) {
     # Refresh all the plots when any input is changed
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
-                input$scale, input$init, input$axis1, input$axis2, input$response, input$tau, input$tau_opt, input$analysis_type,
+                input$scale, input$init, input$comp_x, input$comp_y, input$response, input$tau, input$tau_opt, input$analysis_type,
                 input$connection, input$nb_comp, input$names_block_x, input$names_block_y, input$boot, input$text,
                 input$names_block_response, input$supervised, input$run_analysis )
   }
@@ -280,8 +293,8 @@ server <- function(input, output, session) {
 
   samples <- function() plotSamplesSpace(rgcca = rgcca.res,
                                          resp = response,
-                                         comp_x = axis1,
-                                         comp_y = axis2,
+                                         comp_x = comp_x,
+                                         comp_y = comp_y,
                                          i_block = id_block,
                                          text = if_text,
                                          i_block_y = id_block_y,
@@ -289,15 +302,15 @@ server <- function(input, output, session) {
 
   corcircle <- function() plotVariablesSpace(rgcca = rgcca.res,
                                              blocks = blocks,
-                                             comp_x = axis1,
-                                             comp_y = axis2,
+                                             comp_x = comp_x,
+                                             comp_y = comp_y,
                                              superblock = (superblock & tolower(analysis_type) != "pca"),
                                              i_block = id_block,
                                              text = if_text)
 
   fingerprint <- function() plotFingerprint(rgcca = rgcca.res,
                                             blocks = blocks,
-                                            comp = axis1,
+                                            comp = comp_x,
                                             superblock = (superblock & tolower(analysis_type) != "pca"),
                                             n_mark = nb_mark,
                                             i_block = id_block)
@@ -307,7 +320,7 @@ server <- function(input, output, session) {
   conNet <- function() plotNetwork2(nodes, edges, blocks)
 
   plotBoot <- function() plotBootstrap(boot,
-                                       axis1,
+                                       comp_x,
                                        nb_mark,
                                        id_block)
 
@@ -500,7 +513,7 @@ server <- function(input, output, session) {
 
     toggle(condition = ( input$navbar == "Fingerprint"), id = "nb_mark_custom")
     toggle(condition = ( input$navbar != "Fingerprint"), id = "text")
-    toggle(condition = ( input$navbar != "Fingerprint"), id = "axis2_custom")
+    toggle(condition = ( input$navbar != "Fingerprint"), id = "comp_y_custom")
     toggle(condition = ( input$navbar == "Samples"), id = "blocks_names_custom_y")
     toggle(condition = ( input$navbar == "Samples"), id = "response")
     toggle(condition = ( !is.null(analysis) && ! input$navbar %in% c("Connection", "AVE")), selector =  "#tabset li a[data-value=Graphic]" )
@@ -679,11 +692,11 @@ server <- function(input, output, session) {
   msgSave = function()
     showWarn(message(paste("Save in", getwd())), show = FALSE)
 
-  observeEvent(c(input$text, input$axis1, input$axis2, input$nb_mark), {
+  observeEvent(c(input$text, input$comp_x, input$comp_y, input$nb_mark), {
     if(!is.null(analysis)){
       assign("if_text", input$text, .GlobalEnv)
-      assign("axis1", input$axis1, .GlobalEnv)
-      assign("axis2", input$axis2, .GlobalEnv)
+      assign("comp_x", input$comp_x, .GlobalEnv)
+      assign("comp_y", input$comp_y, .GlobalEnv)
       if(!is.null(input$nb_mark))
         assign("nb_mark", input$nb_mark, .GlobalEnv)
     }

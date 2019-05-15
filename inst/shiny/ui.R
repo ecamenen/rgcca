@@ -166,8 +166,8 @@ ui <- fluidPage(
                       value = TRUE),
         uiOutput("blocks_names_custom_x"),
         uiOutput("blocks_names_custom_y"),
-        uiOutput("axis1_custom"),
-        uiOutput("axis2_custom"),
+        uiOutput("comp_x_custom"),
+        uiOutput("comp_y_custom"),
         uiOutput("nb_mark_custom"),
 
 
