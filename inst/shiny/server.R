@@ -152,6 +152,22 @@ server <- function(input, output, session) {
       )
   }
 
+  output$superblock_custom <- renderUI({
+    checkboxInput(inputId = "superblock",
+                  label = "Use a superblock",
+                  value = TRUE) %>%
+      shinyInput_label_embed(
+        shiny_iconlink(name = "question-circle") %>%
+          bs_attach_modal(id_modal = "modal_superblock")
+      )
+  })
+
+  output$supervised_custom <- renderUI({
+    checkboxInput(inputId = "supervised",
+                  label = "Supervised analysis",
+                  value = FALSE)
+  })
+
   setUiResponse <- function(){
     refresh <- c(input$response)
     fileInput(inputId = "response",
@@ -390,14 +406,15 @@ server <- function(input, output, session) {
 
     getNames()
 
-    if(!input$supervised)
-      response = NULL
-    else
+    if(!is.null(input$supervised) && input$supervised)
       response = input$supervised
+    else
+      response = NULL
 
-    pars = showWarn(checkSuperblock(list(response = response, superblock = input$superblock)), show = FALSE)
+    pars = showWarn(checkSuperblock(list(response = response, superblock = (!is.null(input$supervised) && input$superblock))),
+                    show = FALSE)
 
-    if(input$supervised || tolower(analysis_type) == "ra"){
+    if(!is.null(input$supervised) && (input$supervised || tolower(analysis_type) == "ra")){
       pars = setPosPar(list(tau = tau, ncomp = ncomp, superblock = pars$superblock), blocks, id_block_resp)
       blocks = pars$blocks; tau = pars$tau; ncomp = pars$ncomp
     }
@@ -467,11 +484,13 @@ server <- function(input, output, session) {
 
   setConnectionShiny = function(){
 
+    supervised = (!is.null(input$supervised) && input$supervised)
+
     if(is.null(connection) | !is.null(connection_file)){
       try(withCallingHandlers(
 
         connection <- showWarn(setConnection (blocks = blocks,
-                    superblock = (is.null(connection_file) && ( superblock  | input$supervised) ),
+                    superblock = (is.null(connection_file) && ( superblock  | supervised) ),
                     file = connection_file,
                     sep = input$sep))
 
@@ -480,7 +499,7 @@ server <- function(input, output, session) {
       # Error due to the superblock disabling and the connection have not the same size than the number of blocks
       if( identical(connection, "104") )
         connection <- showWarn(setConnection(blocks = blocks,
-                   superblock = ( superblock  | input$supervised ),
+                   superblock = ( superblock  | supervised ),
                    file = NULL,
                    sep = input$sep))
 
@@ -610,6 +629,7 @@ server <- function(input, output, session) {
 
     assign("id_block_resp", length(blocks_without_superb), .GlobalEnv)
     blocks = setParRGCCA(FALSE)
+    print("here")
     assign("blocks", blocks, .GlobalEnv)
     assign("connection_file", input$connection$datapath, .GlobalEnv)
     setConnectionShiny()

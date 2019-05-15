@@ -90,21 +90,6 @@ ui <- fluidPage(
 
         uiOutput("connection_custom"),
 
-        checkboxInput(inputId = "superblock",
-                    label = "Use a superblock",
-                    value = TRUE) %>%
-          shinyInput_label_embed(
-            shiny_iconlink(name = "question-circle") %>%
-              bs_attach_modal(id_modal = "modal_superblock")
-          ),
-
-        checkboxInput("supervised",
-                       "Supervised analysis",
-                       value = FALSE),
-        conditionalPanel(
-           condition = "input.supervised || input.analysis_type == 'RA'",
-           uiOutput("blocks_names_response")
-         ),
         checkboxInput(inputId = "tau_opt",
                        label = "Use an optimal tau",
                        value = TRUE)  %>%
@@ -112,8 +97,15 @@ ui <- fluidPage(
             icon("question") %>%
               bs_embed_tooltip(title = "A tau near 0 maximize the covariance in each blocks whereas a tau near 1 maximize the correlation.")
           ),
-
         uiOutput("tau_custom"),
+
+        uiOutput("superblock_custom"),
+        uiOutput("supervised_custom"),
+        conditionalPanel(
+          condition = "input.supervised || input.analysis_type == 'RA'",
+          uiOutput("blocks_names_response")
+        ),
+
         radioButtons(inputId = "scheme",
                      label = "Scheme function",
                      choices = c(Horst = "horst",
