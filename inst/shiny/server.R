@@ -134,10 +134,19 @@ server <- function(input, output, session) {
   ################################################ UI variables ################################################
 
   output$connection_custom <- renderUI({
+    setUiConnection()
+  })
+
+  setUiConnection <- function(){
+    refresh <- c(input$connection)
     fileInput(inputId = "connection",
               label = "Connection design [OPTIONAL]"
-    )
-  })
+    )  %>%
+      shinyInput_label_embed(
+        icon("question") %>%
+          bs_embed_tooltip(title = "The design matrix is a symmetric matrix of the length of the number of blocks describing the connections between them. Two values are accepted : '1' for a connection between two blocks, or '0' otherwise.")
+      )
+  }
 
   output$analysis_type_custom <- renderUI({
     refresh = c(input$blocks, input$sep)
@@ -442,14 +451,15 @@ server <- function(input, output, session) {
 
   setConnectionShiny = function(){
 
-    file <- input$connection$datapath
 
-    if(is.null(connection)){
+    if(is.null(connection) | !is.null(file)){
       try(withCallingHandlers(
+
         connection <- showWarn(setConnection (blocks = blocks,
-                    superblock = (is.null(file) & ( superblock  | input$supervised) ),
+                    superblock = (is.null(file) && ( superblock  | input$supervised) ),
                     file = file,
                     sep = input$sep))
+
       ))
 
       # Error due to the superblock disabling and the connection have not the same size than the number of blocks
@@ -586,6 +596,7 @@ server <- function(input, output, session) {
     assign("id_block_resp", length(blocks_without_superb), .GlobalEnv)
     blocks = setParRGCCA(FALSE)
     assign("blocks", blocks, .GlobalEnv)
+    assign("file", input$connection$datapath, .GlobalEnv)
     setResponseShiny()
     setConnectionShiny()
     setIdBlock()
@@ -608,8 +619,13 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$connection, {
-    if(blocksExists())
+    if(blocksExists()){
+      assign("file", input$connection$datapath, .GlobalEnv)
       setConnectionShiny()
+      setUiConnection()
+      showWarn(message("Connection file loaded."), show = FALSE)
+      assign("file", NULL, .GlobalEnv)
+    }
   })
 
   observeEvent(input$run_analysis, {

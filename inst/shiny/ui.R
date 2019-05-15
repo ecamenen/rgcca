@@ -105,13 +105,7 @@ ui <- fluidPage(
                                Random = "random"),
                    selected = "svd"),
 
-        fileInput(inputId = "connection",
-                  label = "Connection design [OPTIONAL]"
-        ) %>%
-            shinyInput_label_embed(
-              icon("question") %>%
-                bs_embed_tooltip(title = "The design matrix is a symmetric matrix of the length of the number of blocks describing the connections between them. Two values are accepted : '1' for a connection between two blocks, or '0' otherwise.")
-          ),
+        uiOutput("connection_custom"),
 
         checkboxInput(inputId = "superblock",
                     label = "Use a superblock",
