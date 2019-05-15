@@ -153,6 +153,7 @@ server <- function(input, output, session) {
   }
 
   setUiResponse <- function(){
+    refresh <- c(input$response)
     fileInput(inputId = "response",
               label = "Groups of modalities [OPTIONAL]"
     ) %>% shinyInput_label_embed(
@@ -453,17 +454,18 @@ server <- function(input, output, session) {
   setResponseShiny = function(){
 
     response <- showWarn(setResponse (blocks = blocks_without_superb,
-                        file = input$response$datapath,
+                        file = response_file,
                         sep = input$sep,
                         header = input$header))
 
     if(length(response) > 1)
       assign("response", response, .GlobalEnv)
+    else
+      assign("response", NULL, .GlobalEnv)
 
   }
 
   setConnectionShiny = function(){
-
 
     if(is.null(connection) | !is.null(connection_file)){
       try(withCallingHandlers(
@@ -728,13 +730,23 @@ server <- function(input, output, session) {
   ################################################ Outputs ################################################
 
   output$samplesPlot <- renderPlotly({
+
     getDynamicVariables()
+
     if(!is.null(analysis)){
+
       observeEvent(input$samples_save, {
         savePlot("samples_plot.pdf", samples())
         msgSave()
       })
+
+      assign("response_file", input$response$datapath, .GlobalEnv)
       setResponseShiny()
+      setUiResponse()
+      if(!is.null(response_file))
+        showWarn(message("Group file loaded."), show = FALSE)
+      assign("response_file", NULL, .GlobalEnv)
+
       p = changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), if_text )
       if(!unique(isCharacter(na.omit(response))))
         p  = p  %>% layout(showlegend = FALSE)
