@@ -137,6 +137,10 @@ server <- function(input, output, session) {
     setUiConnection()
   })
 
+  output$response_custom <- renderUI({
+    setUiResponse()
+  })
+
   setUiConnection <- function(){
     refresh <- c(input$connection)
     fileInput(inputId = "connection",
@@ -146,6 +150,15 @@ server <- function(input, output, session) {
         icon("question") %>%
           bs_embed_tooltip(title = "The design matrix is a symmetric matrix of the length of the number of blocks describing the connections between them. Two values are accepted : '1' for a connection between two blocks, or '0' otherwise.")
       )
+  }
+
+  setUiResponse <- function(){
+    fileInput(inputId = "response",
+              label = "Groups of modalities [OPTIONAL]"
+    ) %>% shinyInput_label_embed(
+      icon("question") %>%
+        bs_embed_tooltip(title = "To color the sample plot. A CSV file containing either : (i) an only column with a qualitative or a quantitative variable; (ii) multiple columns corresponding to a disjunctive table")
+    )
   }
 
   output$analysis_type_custom <- renderUI({
@@ -597,7 +610,6 @@ server <- function(input, output, session) {
     blocks = setParRGCCA(FALSE)
     assign("blocks", blocks, .GlobalEnv)
     assign("connection_file", input$connection$datapath, .GlobalEnv)
-    setResponseShiny()
     setConnectionShiny()
     setIdBlock()
 
@@ -611,11 +623,6 @@ server <- function(input, output, session) {
              .GlobalEnv)
       setAnalysis()
     }
-  })
-
-  observeEvent(c(input$response, input$header), {
-    if(blocksExists())
-      setResponseShiny()
   })
 
   observeEvent(input$connection, {
@@ -727,6 +734,7 @@ server <- function(input, output, session) {
         savePlot("samples_plot.pdf", samples())
         msgSave()
       })
+      setResponseShiny()
       p = changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), if_text )
       if(!unique(isCharacter(na.omit(response))))
         p  = p  %>% layout(showlegend = FALSE)

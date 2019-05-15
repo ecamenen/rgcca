@@ -16,9 +16,6 @@ setInfo <- function(., text){
   )
 }
 
-
-library("htmltools")
-
 ui <- fluidPage(
 
   bs_modal(
@@ -149,14 +146,7 @@ ui <- fluidPage(
         uiOutput("comp_x_custom"),
         uiOutput("comp_y_custom"),
         uiOutput("nb_mark_custom"),
-
-
-        fileInput(inputId = "response",
-                  label = "Groups of modalities [OPTIONAL]"
-        ) %>% shinyInput_label_embed(
-            icon("question") %>%
-              bs_embed_tooltip(title = "To color the sample plot. A CSV file containing either : (i) an only column with a qualitative or a quantitative variable; (ii) multiple columns corresponding to a disjunctive table")
-        ),
+        uiOutput("response_custom"),
 
         actionButton(inputId = "save_all",
                      label = "Save all")
