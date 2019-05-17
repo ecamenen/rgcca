@@ -513,7 +513,7 @@ plotFingerprint = function(rgcca, blocks = NULL, comp = 1, superblock = TRUE, n_
   }
 
   if (  superblock & i_block == length(rgcca$a) ){
-    levels(df$color) = rev(levels(df$color))
+    # levels(df$color) = rev(levels(df$color))
     p = ggplot(df, aes(order, df[, 1], fill = color))
   }else{
     p = ggplot(df, aes(order, df[, 1], fill = abs(df[, 1])))
@@ -522,16 +522,21 @@ plotFingerprint = function(rgcca, blocks = NULL, comp = 1, superblock = TRUE, n_
   p = plotHistogram(p, df, title, as.character(color2)) +
     labs(subtitle = printAxis(rgcca, comp, i_block))
 
-  if(length(color2) != 1)
-    p = p + scale_fill_manual(values = colorGroup(J),
-                              limits = J[-length(J)],
-                              labels = rev(J[-length(J)]))
+  matched <- match(rev(unique(df$color)), J[-length(J)])
 
+  # Force all the block names to appear on the legend
+  if(length(color2) != 1)
+    p = p + scale_fill_manual(values = colorGroup(J)[matched],
+                              limits = J[-length(J)][matched],
+                              labels = J[-length(J)][matched])
   if (  !superblock | i_block != length(rgcca$a) )
     p = p + theme(legend.position = "none")
 
   return(p)
 }
+
+
+J[-length(J)][matched ]
 
 #' Histogram of Average Variance Explained
 #'
@@ -585,14 +590,14 @@ plotAVE = function(rgcca){
 #' @param low_col A character giving the color used for the lowest part of the gradient
 #' @param high_col A character giving the color used for the highest part of the gradient
 #' @examples
-#' df = data.frame(x = runif(30), order = 30:1)
-#' library("ggplot2")
-#' p = ggplot(df, aes(order, x))
-#' plotHistogram(p, df, "This is my title")
-#' # Add colors per levels of a variable
-#' df$color = rep(c(1,2,3), each=10)
-#' p = ggplot(df, aes(order, x, fill = color))
-#' plotHistogram(p, df, "Histogram", as.character(df$color))
+df = data.frame(x = runif(30), order = 30:1)
+library("ggplot2")
+p = ggplot(df, aes(order, x))
+plotHistogram(p, df, "This is my title")
+# Add colors per levels of a variable
+df$color = rep(c(1,2,3), each=10)
+p = ggplot(df, aes(order, x, fill = color))
+plotHistogram(p, df, "Histogram", as.character(df$color))
 #' @export plotHistogram
 plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2", high_col = "coral3"){
 
