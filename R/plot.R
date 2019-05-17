@@ -439,10 +439,27 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
 
 
   if(is.null(p$labels$alpha))
-    p + scale_color_manual(values = colorGroup(group))
+    orderColorPerBlocs(rgcca, p)
   else
     p + scale_color_gradient(low = "white", high = SAMPLES_COL_DEFAULT)
 
+}
+
+orderColorPerBlocs <- function(rgcca, p, matched  = NULL){
+
+  J <- names(rgcca$a)
+
+  if(is.null(matched)){
+    matched <- 1:length(J)
+    f <- "color"
+  }else
+    f <- "fill"
+
+  func <- quote(get(paste("scale", f, "manual", sep = "_"))(values = colorGroup(J)[matched],
+                                                           limits = J[-length(J)][matched],
+                                                           labels = J[-length(J)][matched]))
+
+  return( p + eval(as.call(func)) )
 }
 
 #' Histogram of a fingerprint
@@ -522,21 +539,17 @@ plotFingerprint = function(rgcca, blocks = NULL, comp = 1, superblock = TRUE, n_
   p = plotHistogram(p, df, title, as.character(color2)) +
     labs(subtitle = printAxis(rgcca, comp, i_block))
 
+  # If some blocks have any variables in the top hit, selects the ones corresponding
   matched <- match(rev(unique(df$color)), J[-length(J)])
 
   # Force all the block names to appear on the legend
   if(length(color2) != 1)
-    p = p + scale_fill_manual(values = colorGroup(J)[matched],
-                              limits = J[-length(J)][matched],
-                              labels = J[-length(J)][matched])
+    p = orderColorPerBlocs(rgcca, p, matched)
   if (  !superblock | i_block != length(rgcca$a) )
     p = p + theme(legend.position = "none")
 
   return(p)
 }
-
-
-J[-length(J)][matched ]
 
 #' Histogram of Average Variance Explained
 #'
