@@ -646,6 +646,8 @@ server <- function(input, output, session) {
     assign("connection_file", input$connection$datapath, .GlobalEnv)
     setConnectionShiny()
     setIdBlock()
+    hide(id = "navbar")
+    updateTabsetPanel(session, "navbar", selected = "Connection")
 
     return(blocks)
   })
@@ -761,17 +763,12 @@ server <- function(input, output, session) {
 
   ################################################ Outputs ################################################
 
-  setResponse2 <- eventReactive(input$response, {
+  setResponseEvent <- eventReactive(input$response, {
 
-    print("ouuuu")
-    #if(!identical(response_file, response_file2)){
-      print("OK")
       assign("response_file", input$response$datapath, .GlobalEnv)
       assign("response", setResponseShiny(), .GlobalEnv)
       setUiResponse()
       showWarn(message("Group file loaded."), show = FALSE)
-      assign("response_file2", input$response$datapath, .GlobalEnv)
-    #}
   })
 
   output$samplesPlot <- renderPlotly({
@@ -787,19 +784,14 @@ server <- function(input, output, session) {
 
       assign("response", setResponseShiny(), .GlobalEnv)
       setUiResponse()
-      print(response)
+
       if(!is.null(input$response))
-      setResponse2()
+        setResponseEvent()
 
-      print("whhat")
-
-      # assign("response_file2", "", .GlobalEnv)
-      # assign("response_file", NULL, .GlobalEnv)
-
-        p = showWarn(changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), if_text ))
-        if( length(unique(na.omit(response))) < 2 || (length(unique(na.omit(response))) > 5 && !unique(isCharacter(na.omit(response))) ))
-          p  = p  %>% layout(showlegend = FALSE)
-        p
+      p = showWarn(changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), if_text ))
+      if( length(unique(na.omit(response))) < 2 || (length(unique(na.omit(response))) > 5 && !unique(isCharacter(na.omit(response))) ))
+        p  = p  %>% layout(showlegend = FALSE)
+      p
 
     }
   })
