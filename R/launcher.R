@@ -229,7 +229,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output6 = "connection.pdf",
-           datasets = "/home/etienne.camenen/Documents/DATA/ZEUS/DATA/lipidomic.txt, /home/etienne.camenen/Documents/DATA/ZEUS/DATA/metabolomic.txt, /home/etienne.camenen/Documents/DATA/ZEUS/DATA/atrophy.txt")
+           datasets = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/agriculture.tsv, /home/etienne.camenen/bin/rgccaLauncher/inst/extdata/industry.tsv, /home/etienne.camenen/bin/rgccaLauncher/inst/extdata/politic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -269,6 +269,10 @@ connection = opt$connection
 if(!is.matrix(connection))
   connection = setConnection(blocks, (opt$superblock | !is.null(opt$response)), opt$connection, opt$separator)
 
+opt$group = "/home/etienne.camenen/Documents/DATA/Nucleiparks/UPDRS_2.tsv"
+group2 = "/home/etienne.camenen/Documents/DATA/ZEUS/DATA/AMY_Staging_MA_quant.txt"
+opt$group = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/response.tsv"
+
 group = setResponse(blocks, opt$group, opt$separator, opt$header)
 
 rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, FALSE, opt$init, opt$bias, opt$type)
@@ -281,7 +285,7 @@ if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
 }else{
   ( samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y, getFileName(opt$group)) )
    p = changeHovertext( dynamicPlot(samples_plot, ax, "text", TRUE, TRUE), opt$text )
-     if(!unique(isCharacter(na.omit(group))))
+     if( length(unique(na.omit(group))) < 2 || (length(unique(na.omit(group))) > 5 && !unique(isCharacter(na.omit(group))) ))
        p  = p  %>% layout(showlegend = FALSE)
    p
    savePlot(opt$output1, samples_plot)

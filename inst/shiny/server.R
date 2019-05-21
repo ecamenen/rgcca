@@ -626,10 +626,10 @@ server <- function(input, output, session) {
     assign("analysis_type", NULL, .GlobalEnv)
     assign("response", NULL, .GlobalEnv)
     assign("connection", NULL, .GlobalEnv)
+    assign("response_file", NULL, .GlobalEnv)
 
     assign("id_block_resp", length(blocks_without_superb), .GlobalEnv)
     blocks = setParRGCCA(FALSE)
-    print("here")
     assign("blocks", blocks, .GlobalEnv)
     assign("connection_file", input$connection$datapath, .GlobalEnv)
     setConnectionShiny()
@@ -767,8 +767,8 @@ server <- function(input, output, session) {
         showWarn(message("Group file loaded."), show = FALSE)
       assign("response_file", NULL, .GlobalEnv)
 
-      p = changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), if_text )
-      if(!unique(isCharacter(na.omit(response))))
+      p = showWarn(changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), if_text ))
+      if( length(unique(na.omit(response))) < 2 || (length(unique(na.omit(response))) > 5 && !unique(isCharacter(na.omit(response))) ))
         p  = p  %>% layout(showlegend = FALSE)
       p
     }

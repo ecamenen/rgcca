@@ -229,16 +229,16 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
     if(!is.null(names)){
 
       resp = as.matrix(resp, row.names = names)
-      diff_column = setdiff(row.names(blocks[[i_block]]), names)
+      name_blocks = row.names(blocks[[i_block]])
+      same_column = intersect(name_blocks, names)
 
-      if(length(diff_column) > 1 ){
-        resp[diff_column ] <- 'NA'
-        names(resp)[names(resp)==""] <- names
+      if(length(same_column) == 0 ){
+        resp <- rep("NA", nrow(df))
+        warning("No match has been found with the row names of the group file.")
       }else{
-        names(resp) = names
+        resp <- resp[same_column,]
+        df <- df[same_column, ]
       }
-
-      resp = resp[row.names(blocks[[i_block]])]
 
     }
 
@@ -419,6 +419,9 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     p = ggplot(df, aes(df[,1], df[,2], colour = as.factor(group)))
   }
 
+  if(length(name_group) > 15)
+    name_group <- name_group[1:15]
+
   p = p + eval(as.call(func)) +
     theme_classic() +
     geom_vline(xintercept = 0, col = "grey", linetype = "dashed", size = 1) +
@@ -437,9 +440,12 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
       axis.title.x = element_text(face = AXIS_FONT, margin = margin(20,0,0,0), size = AXIS_TITLE_SIZE)
     )
 
-
-  if(is.null(p$labels$alpha))
-    orderColorPerBlocs(rgcca, p)
+  if(is.null(p$labels$alpha)){
+    if(length(unique(group)) != 1 && title == "Variable")
+      orderColorPerBlocs(rgcca, p)
+    else
+      p + scale_color_manual(values = colorGroup(group))
+  }
   else
     p + scale_color_gradient(low = "white", high = SAMPLES_COL_DEFAULT)
 
