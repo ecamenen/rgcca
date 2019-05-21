@@ -335,19 +335,23 @@ server <- function(input, output, session) {
 
   ################################################ Plots  ################################################
 
-  getExtension <- function(){
-    format <- unlist(strsplit(input$response$name, '.', fixed="T"))
-    return(paste(format[-length(format)], collapse = "."))
+  getExtension <- function(f){
+    if(!is.null(f)){
+      format <- unlist(strsplit(f, '.', fixed="T"))
+      return(paste(format[-length(format)], collapse = "."))
+    }else
+      return(f)
   }
 
-  samples <- function() plotSamplesSpace(rgcca = rgcca.res,
-                                         resp = response,
-                                         comp_x = comp_x,
-                                         comp_y = comp_y,
-                                         i_block = id_block,
-                                         text = if_text,
-                                         i_block_y = id_block_y,
-                                         reponse_name = input$response$name)
+  samples <- function()
+    plotSamplesSpace(rgcca = rgcca.res,
+                     resp = response,
+                     comp_x = comp_x,
+                     comp_y = comp_y,
+                     i_block = id_block,
+                     text = if_text,
+                     i_block_y = id_block_y,
+                     reponse_name = getExtension(input$response$name))
 
   corcircle <- function() plotVariablesSpace(rgcca = rgcca.res,
                                              blocks = blocks,
