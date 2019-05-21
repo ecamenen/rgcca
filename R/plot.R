@@ -75,26 +75,30 @@ dynamicPlotBoot = function(p){
 changeHovertext = function(p, hovertext = TRUE){
 
   attr = ifelse(hovertext, "hovertext", "text")
-  # identify the order / id of the traces which corresponds to x- and y-axis (should be befor the splitting function)
+  # identify the order / id of the traces which corresponds to x- and y-axis (should be before the splitting function)
   traces = which(lapply(p$x$data, function(x) length(grep("intercept", x$text)) == 1) == T)
-  # Get the list of traces to modify
 
-  for (i in 1:length(p$sample_names)){
+  for (i in 1:length(p$x$data)){
 
-    for (j in 1:length(p$x$data[[i]][attr][[1]])){
-      # Distinguish each doublet by splitting with "<br>"  and separe them in key/value by splitting with ": " (like a dictionnary)
-      l_text  = lapply( as.list( strsplit( p$x$data[[i]][attr][[1]][j], "<br />" )[[1]] ), function(x) strsplit(x, ": ")[[1]] )
-      # keep only the (x, y) coordinates with the key df[, ] and the response if exists
-      l_text = unlist(lapply(l_text, function(x, y) {
-        if(x[1] %in% paste0("df[, ", c(1, 2), "]"))
-          round(as.numeric(x[2]), 3)
-        else if(x[1] == "resp")
-          x[2]
-        })
-      )
+    # Use only traces corresponding to the dataframe rows
+    if(!is.null(p$x$data[[i]]$hovertext)){
+      for (j in 1:length(p$x$data[[i]][attr][[1]])){
+        # Distinguish each doublet by splitting with "<br>"  and separe them in key/value by splitting with ": " (like a dictionnary)
+        l_text  = lapply( as.list( strsplit( p$x$data[[i]][attr][[1]][j], "<br />" )[[1]] ), function(x) strsplit(x, ": ")[[1]] )
+        # keep only the (x, y) coordinates with the key df[, ] and the response if exists
+        l_text = unlist(lapply(l_text, function(x, y) {
+          if(x[1] %in% paste0("df[, ", c(1, 2), "]"))
+            round(as.numeric(x[2]), 3)
+          else if(x[1] == "resp")
+            x[2]
+          })
+        )
 
-      # Overwrite the onMouseOver text with the (x, y) coordinates and the response if exists
-      p$x$data[[i]][attr][[1]][j] = paste0("name: ", p$sample_names[[i]][j], "<br />x: ", l_text[1], "<br />y: ", l_text[2], ifelse(length(l_text)==3,  paste0("<br />response: ", l_text[3]) , ""))
+        name = ifelse(hovertext, p$x$data[[i]]$text[j], p$sample_names[[i]][j])
+        # Overwrite the onMouseOver text with the (x, y) coordinates and the response if exists
+        p$x$data[[i]][attr][[1]][j] = paste0("name: ", name, "<br />x: ", l_text[1], "<br />y: ", l_text[2], ifelse(length(l_text)==3,  paste0("<br />response: ", l_text[3]) , ""))
+
+      }
     }
   }
   # Remove the x- and y- axis onOverMouse
