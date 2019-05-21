@@ -80,8 +80,13 @@ server <- function(input, output, session) {
    setBlockNames = function(){
 
     if(!is.null(input$blocks)){
+
+      if(!is.null(id_block))
+        return(id_block)
+      else
+        return(round(length(blocks)))
       # Set selected value on the last block
-      return(round(length(blocks)))
+
     }else{
       # If any dataset is selected
       return(1)
@@ -322,13 +327,18 @@ server <- function(input, output, session) {
     # Refresh all the plots when any input is changed
 
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
-                input$scale, input$init, input$comp_x, input$comp_y, input$response, input$tau, input$tau_opt, input$analysis_type,
-                input$connection, input$nb_comp, input$names_block_x, input$names_block_y, input$boot, input$text,
+                input$scale, input$init, input$comp_x, input$comp_y, input$tau, input$tau_opt, input$analysis_type,
+                input$connection, input$nb_comp, input$response, input$names_block_x, input$names_block_y, input$boot, input$text,
                 input$names_block_response, input$supervised, input$run_analysis )
   }
 
 
   ################################################ Plots  ################################################
+
+  getExtension <- function(){
+    format <- unlist(strsplit(input$response$name, '.', fixed="T"))
+    return(paste(format[-length(format)], collapse = "."))
+  }
 
   samples <- function() plotSamplesSpace(rgcca = rgcca.res,
                                          resp = response,
@@ -475,10 +485,10 @@ server <- function(input, output, session) {
                         sep = input$sep,
                         header = input$header))
 
-    if(length(response) > 1)
-      assign("response", response, .GlobalEnv)
-    else
-      assign("response", NULL, .GlobalEnv)
+    if(length(response) < 1)
+      response -> NULL
+
+    return(response)
 
   }
 
@@ -586,6 +596,7 @@ server <- function(input, output, session) {
   onclick("sep", function(e) assign("clickSep", TRUE, .GlobalEnv))
 
   observeEvent(c(input$blocks, input$sep), {
+    # blockExists for having dynamic response to input$blocks
     if(blocksExists()){
       ;
     }
@@ -627,6 +638,7 @@ server <- function(input, output, session) {
     assign("response", NULL, .GlobalEnv)
     assign("connection", NULL, .GlobalEnv)
     assign("response_file", NULL, .GlobalEnv)
+    setUiResponse()
 
     assign("id_block_resp", length(blocks_without_superb), .GlobalEnv)
     blocks = setParRGCCA(FALSE)
@@ -749,6 +761,19 @@ server <- function(input, output, session) {
 
   ################################################ Outputs ################################################
 
+  setResponse2 <- eventReactive(input$response, {
+
+    print("ouuuu")
+    #if(!identical(response_file, response_file2)){
+      print("OK")
+      assign("response_file", input$response$datapath, .GlobalEnv)
+      assign("response", setResponseShiny(), .GlobalEnv)
+      setUiResponse()
+      showWarn(message("Group file loaded."), show = FALSE)
+      assign("response_file2", input$response$datapath, .GlobalEnv)
+    #}
+  })
+
   output$samplesPlot <- renderPlotly({
 
     getDynamicVariables()
@@ -760,17 +785,22 @@ server <- function(input, output, session) {
         msgSave()
       })
 
-      assign("response_file", input$response$datapath, .GlobalEnv)
-      setResponseShiny()
+      assign("response", setResponseShiny(), .GlobalEnv)
       setUiResponse()
-      if(!is.null(response_file))
-        showWarn(message("Group file loaded."), show = FALSE)
-      assign("response_file", NULL, .GlobalEnv)
+      print(response)
+      if(!is.null(input$response))
+      setResponse2()
 
-      p = showWarn(changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), if_text ))
-      if( length(unique(na.omit(response))) < 2 || (length(unique(na.omit(response))) > 5 && !unique(isCharacter(na.omit(response))) ))
-        p  = p  %>% layout(showlegend = FALSE)
-      p
+      print("whhat")
+
+      # assign("response_file2", "", .GlobalEnv)
+      # assign("response_file", NULL, .GlobalEnv)
+
+        p = showWarn(changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), if_text ))
+        if( length(unique(na.omit(response))) < 2 || (length(unique(na.omit(response))) > 5 && !unique(isCharacter(na.omit(response))) ))
+          p  = p  %>% layout(showlegend = FALSE)
+        p
+
     }
   })
 
