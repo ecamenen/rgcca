@@ -34,6 +34,10 @@ server <- function(input, output, session) {
   })
 
   output$tau_custom <- renderUI({
+
+    refresh <- c(input$superblock, input$supervised)
+
+
     if(!is.null(input$analysis_type) && input$analysis_type == "SGCCA"){
       par_name <- "Degree of sparsity"
       cond <- "input.analysis_type == SGCCA"
@@ -42,11 +46,15 @@ server <- function(input, output, session) {
       cond <- "input.tau_opt == false"
     }
 
+    print(length(blocks))
+
     conditionalPanel(
       condition = cond,
-      sliderInput(inputId = "tau",
-                  label = par_name,
-                  min = 0, max = 1, value = 1, step = .1)
+      lapply(1:length(blocks), function(i)
+        sliderInput(inputId = "tau",
+                    label = par_name,
+                    min = 0, max = 1, value = 1, step = .1)),
+      tags$div(id = 'placeholder')
    )
   })
 
@@ -257,7 +265,6 @@ server <- function(input, output, session) {
     }, warning = function(w) {
 
       if(show && warn){
-        print(w$message)
         id <- showNotification(w$message, type = "warning", duration = duration)
         ids <<- c(ids, id)
       }
@@ -378,9 +385,11 @@ server <- function(input, output, session) {
     # Tau is set to optimal by default
     if (input$tau_opt && analysis_type != "SGCCA")
       tau = "optimal"
-    else
+    else{
+      #print(input$tau)
       # otherwise the tau value fixed by the user is used
       tau = rep(input$tau, length(blocks))
+    }
 
     setAnalysisMenu()
 
