@@ -626,19 +626,23 @@ plotAVE = function(rgcca){
 #' @param low_col A character giving the color used for the lowest part of the gradient
 #' @param high_col A character giving the color used for the highest part of the gradient
 #' @examples
-df = data.frame(x = runif(30), order = 30:1)
-library("ggplot2")
-p = ggplot(df, aes(order, x))
-plotHistogram(p, df, "This is my title")
-# Add colors per levels of a variable
-df$color = rep(c(1,2,3), each=10)
-p = ggplot(df, aes(order, x, fill = color))
-plotHistogram(p, df, "Histogram", as.character(df$color))
+#' df = data.frame(x = runif(30), order = 30:1)
+#' library("ggplot2")
+#' p = ggplot(df, aes(order, x))
+#' plotHistogram(p, df, "This is my title")
+#' # Add colors per levels of a variable
+#' df$color = rep(c(1,2,3), each=10)
+#' p = ggplot(df, aes(order, x, fill = color))
+#' plotHistogram(p, df, "Histogram", as.character(df$color))
 #' @export plotHistogram
 plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2", high_col = "coral3"){
 
   if ( nrow(df) <= 10 || title == "Average Variance Explained" ){
     WIDTH = NULL
+    if(nrow(df) < 5)
+      AXIS_TEXT_SIZE = 13
+    if(nrow(df) < 3)
+      AXIS_TEXT_SIZE = 20
   }else{
     WIDTH = 1
     AXIS_TEXT_SIZE = 8
@@ -654,7 +658,7 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
     theme_perso() +
     theme(
       axis.text.y = element_text(size = AXIS_TEXT_SIZE, face = AXIS_FONT, color = "gray40"),
-      axis.text.x = element_text(size = AXIS_TEXT_SIZE, face = AXIS_FONT, color = "gray40"),
+      axis.text.x = element_text(size = 8, face = AXIS_FONT, color = "gray40"),
       axis.line = element_blank(),
       axis.ticks = element_blank(),
       plot.subtitle = element_text(hjust = 0.5, size = 16, face = "italic"))
