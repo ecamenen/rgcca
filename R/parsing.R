@@ -408,9 +408,8 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
 
     if(!isXls)
       response = loadData(file, sep, rownames, header)
-    else{
+    else
       response = loadExcel(file, 1, rownames, h = header, num = FALSE)
-    }
 
     if(length(response) < nrow(blocks[[1]])){
 
@@ -420,6 +419,7 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
         MSG <- "Please, check if the header is activated and the response does'nt have one."
 
       warning(paste("The number of line of the response file is shorter than those of the blocks.", MSG))
+
       return(rep(1, NROW(blocks[[1]])))
     }
 

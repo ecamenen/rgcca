@@ -269,8 +269,8 @@ connection = opt$connection
 if(!is.matrix(connection))
   connection = setConnection(blocks, (opt$superblock | !is.null(opt$response)), opt$connection, opt$separator)
 
-opt$group = "/home/etienne.camenen/Documents/DATA/Nucleiparks/UPDRS_2.tsv"
-group2 = "/home/etienne.camenen/Documents/DATA/ZEUS/DATA/AMY_Staging_MA_quant.txt"
+#opt$group = "/home/etienne.camenen/Documents/DATA/Nucleiparks/UPDRS_2.tsv"
+#group2 = "/home/etienne.camenen/Documents/DATA/ZEUS/DATA/AMY_Staging_MA_quant.txt"
 opt$group = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/response.tsv"
 
 group = setResponse(blocks, opt$group, opt$separator, opt$header)

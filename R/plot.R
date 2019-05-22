@@ -38,8 +38,16 @@ dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE, dynamicTicks = 
   if(legend){
     # set on the top the position of the legend title
     p$x$layout$annotations[[1]]$yanchor = "top"
+
+    # Deals with a too short name of modalities
+    if( !is.null(p$x$data[[1]]$legendgroup)
+      &&
+        max(unlist(lapply(p$x$data, function(z) nchar(z$legendgroup)  ))) < 5
+      )
+      p$x$layout$margin$r = nchar(p$x$layout$annotations[[1]]$text) * 13
+
     # set the font for this title
-    p$x$layout$annotations[[1]]$text = paste0("<i><b>", p$x$layout$annotations[[1]]$text, "<b></i>")
+    p$x$layout$annotations[[1]]$text = paste0("<i><b>", p$x$layout$annotations[[1]]$text, "</b></i>")
 
     if(!is.null(f$labels$subtitle))
       p$x$layout$title = paste0(p$x$layout$title, "<br><i>", f$labels$subtitle, "</i>")
@@ -52,6 +60,7 @@ dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE, dynamicTicks = 
 
   return(p)
 }
+
 
 dynamicPlotBoot = function(p){
 
@@ -426,6 +435,9 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
   if(length(name_group) > 15)
     name_group <- name_group[1:15]
 
+  if(is.null(name_group))
+    name_group <- 0
+
   p = p + eval(as.call(func)) +
     theme_classic() +
     geom_vline(xintercept = 0, col = "grey", linetype = "dashed", size = 1) +
@@ -439,6 +451,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     scale_x_continuous(breaks = NULL) +
     theme_perso() +
     theme(
+      legend.key.width = unit(nchar(name_group), "mm"),
       axis.text = element_blank(),
       axis.title.y = element_text(face = AXIS_FONT, margin = margin(0,20,0,0), size = AXIS_TITLE_SIZE),
       axis.title.x = element_text(face = AXIS_FONT, margin = margin(20,0,0,0), size = AXIS_TITLE_SIZE)

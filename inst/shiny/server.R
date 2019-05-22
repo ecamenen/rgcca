@@ -241,7 +241,7 @@ server <- function(input, output, session) {
       return (50)
   }
 
-  showWarn = function(f, duration = 10, show = TRUE){
+  showWarn = function(f, duration = 10, show = TRUE, warn = TRUE){
 
     ids <- character(0)
 
@@ -253,9 +253,11 @@ server <- function(input, output, session) {
 
       id <- showNotification(w$message, type = "message", duration = duration)
       ids <<- c(ids, id)
+
     }, warning = function(w) {
 
-      if(show){
+      if(show && warn){
+        print(w$message)
         id <- showNotification(w$message, type = "warning", duration = duration)
         ids <<- c(ids, id)
       }
@@ -471,7 +473,7 @@ server <- function(input, output, session) {
     response <- showWarn(setResponse (blocks = blocks_without_superb,
                         file = response_file,
                         sep = input$sep,
-                        header = input$header))
+                        header = input$header),  warn = FALSE)
 
     if(length(response) < 1)
       response -> NULL
@@ -706,7 +708,6 @@ server <- function(input, output, session) {
       updateSuperblock("supervised", TRUE)
   })
 
-
   observeEvent(input$run_boot, {
     if(blocksExists())
       getBoot()
@@ -776,7 +777,7 @@ server <- function(input, output, session) {
     assign("response_file", input$response$datapath, .GlobalEnv)
     assign("response", setResponseShiny(), .GlobalEnv)
     setUiResponse()
-    showWarn(message("Group file loaded."), show = FALSE)
+    showWarn(message("Group file loaded."))
   })
 
   ################################################ Outputs ################################################
