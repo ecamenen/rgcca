@@ -625,6 +625,7 @@ plotAVE = function(rgcca){
 #' @param color A vector of character giving the colors for the rows
 #' @param low_col A character giving the color used for the lowest part of the gradient
 #' @param high_col A character giving the color used for the highest part of the gradient
+#'
 #' @examples
 #' df = data.frame(x = runif(30), order = 30:1)
 #' library("ggplot2")
@@ -639,14 +640,17 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
 
   if ( nrow(df) <= 10 || title == "Average Variance Explained" ){
     WIDTH = NULL
-    if(nrow(df) < 5)
-      AXIS_TEXT_SIZE = 13
-    if(nrow(df) < 3)
-      AXIS_TEXT_SIZE = 20
   }else{
     WIDTH = 1
     AXIS_TEXT_SIZE = 8
   }
+
+  if(nrow(df) < 3)
+    MAR = 6
+  else if(nrow(df) < 5)
+    MAR = 3
+  else
+    MAR = 0
 
   p = p +
     geom_bar(stat = "identity", width = WIDTH) +
@@ -661,7 +665,8 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
       axis.text.x = element_text(size = 8, face = AXIS_FONT, color = "gray40"),
       axis.line = element_blank(),
       axis.ticks = element_blank(),
-      plot.subtitle = element_text(hjust = 0.5, size = 16, face = "italic"))
+      plot.subtitle = element_text(hjust = 0.5, size = 16, face = "italic"),
+      plot.margin = unit(c(0, 0, MAR, 0), "cm"))
 
   if(title != "Average Variance Explained"){
     p  = p +
@@ -672,6 +677,9 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
       theme(legend.position = "none")
     }
   }
+
+  # If changed, set the default graphical parameter
+ #par(mar = c(1, .8, .8, .4) + .2)
 
   return(p)
 }

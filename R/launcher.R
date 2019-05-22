@@ -301,7 +301,7 @@ if(opt$ncomp[opt$block] > 1){
 }
 
 # Fingerprint plot
-(  fingerprint = plotFingerprint(rgcca.out, blocks, opt$compx, opt$superblock, 3) )
+(  fingerprint = plotFingerprint(rgcca.out, blocks, opt$compx, opt$superblock, 2) )
 plotFingerprint(rgcca.out, blocks, opt$compy, opt$superblock, opt$nmark)
 p = changeText ( dynamicPlot(fingerprint, ax2, "text") )
 n = unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
