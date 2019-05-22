@@ -157,22 +157,6 @@ server <- function(input, output, session) {
       )
   }
 
-  output$superblock_custom <- renderUI({
-    checkboxInput(inputId = "superblock",
-                  label = "Use a superblock",
-                  value = TRUE) %>%
-      shinyInput_label_embed(
-        shiny_iconlink(name = "question-circle") %>%
-          bs_attach_modal(id_modal = "modal_superblock")
-      )
-  })
-
-  output$supervised_custom <- renderUI({
-    checkboxInput(inputId = "supervised",
-                  label = "Supervised analysis",
-                  value = FALSE)
-  })
-
   setUiResponse <- function(){
     refresh <- c(input$response)
     fileInput(inputId = "response",
@@ -701,6 +685,28 @@ server <- function(input, output, session) {
     }
   })
 
+  updateSuperblock <- function(id, value)
+    updateSelectizeInput(session,
+                       inputId = id,
+                       choices = value,
+                       selected = value,
+                       server = TRUE)
+
+  observeEvent(input$supervised, {
+    if(input$supervised)
+      updateSuperblock("superblock", FALSE)
+    else
+      updateSuperblock("superblock", TRUE)
+  })
+
+  observeEvent(input$superblock, {
+    if(input$superblock)
+      updateSuperblock("supervised", FALSE)
+    else
+      updateSuperblock("supervised", TRUE)
+  })
+
+
   observeEvent(input$run_boot, {
     if(blocksExists())
       getBoot()
@@ -765,15 +771,15 @@ server <- function(input, output, session) {
     }
   })
 
-  ################################################ Outputs ################################################
-
   setResponseEvent <- eventReactive(input$response, {
 
-      assign("response_file", input$response$datapath, .GlobalEnv)
-      assign("response", setResponseShiny(), .GlobalEnv)
-      setUiResponse()
-      showWarn(message("Group file loaded."), show = FALSE)
+    assign("response_file", input$response$datapath, .GlobalEnv)
+    assign("response", setResponseShiny(), .GlobalEnv)
+    setUiResponse()
+    showWarn(message("Group file loaded."), show = FALSE)
   })
+
+  ################################################ Outputs ################################################
 
   output$samplesPlot <- renderPlotly({
 

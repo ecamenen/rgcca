@@ -99,8 +99,18 @@ ui <- fluidPage(
           ),
         uiOutput("tau_custom"),
 
-        uiOutput("superblock_custom"),
-        uiOutput("supervised_custom"),
+        checkboxInput(inputId = "superblock",
+                      label = "Use a superblock",
+                      value = T) %>%
+          shinyInput_label_embed(
+            shiny_iconlink(name = "question-circle") %>%
+              bs_attach_modal(id_modal = "modal_superblock")
+        ),
+
+        checkboxInput(inputId = "supervised",
+                      label = "Supervised analysis",
+                      value = F),
+
         conditionalPanel(
           condition = "input.supervised || input.analysis_type == 'RA'",
           uiOutput("blocks_names_response")
