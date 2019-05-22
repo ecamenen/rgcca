@@ -33,10 +33,9 @@ server <- function(input, output, session) {
     setNamesInput("x", bool = input$navbar == "Samples")
   })
 
+  inserted <- c()
+
   output$tau_custom <- renderUI({
-
-    refresh <- c(input$superblock, input$supervised)
-
 
     if(!is.null(input$analysis_type) && input$analysis_type == "SGCCA"){
       par_name <- "Degree of sparsity"
@@ -46,17 +45,41 @@ server <- function(input, output, session) {
       cond <- "input.tau_opt == false"
     }
 
-    print(length(blocks))
-
     conditionalPanel(
       condition = cond,
-      lapply(1:length(blocks), function(i)
-        sliderInput(inputId = "tau",
-                    label = par_name,
-                    min = 0, max = 1, value = 1, step = .1)),
+      actionButton('insertBtn', 'Insert'),
+      actionButton('removeBtn', 'Remove'),
+      sliderInput(inputId = "tau",
+                  label = par_name,
+                  min = 0, max = 1, value = 1, step = .1),
       tags$div(id = 'placeholder')
    )
   })
+
+
+  observeEvent(input$insertBtn, {
+    btn <- input$insertBtn
+    id <- paste0('txt', btn)
+    insertUI(
+      selector = '#placeholder',
+      ## wrap element in a div with id for ease of removal
+      ui = sliderInput(inputId = paste0("tau", id),
+                       label = "Tau",
+                       min = 0, max = 1, value = 1, step = .1)
+    )
+    inserted <<- c(id, inserted)
+    print(inserted)
+  })
+
+  observeEvent(input$removeBtn, {
+    removeUI(
+      ## pass in appropriate div id
+      selector = paste0('#', inserted[length(inserted)])
+    )
+    inserted <<- inserted[-length(inserted)]
+  })
+
+
 
   setNamesInput = function(x, label = NULL, bool = TRUE){
 
@@ -385,11 +408,9 @@ server <- function(input, output, session) {
     # Tau is set to optimal by default
     if (input$tau_opt && analysis_type != "SGCCA")
       tau = "optimal"
-    else{
-      #print(input$tau)
+    else
       # otherwise the tau value fixed by the user is used
       tau = rep(input$tau, length(blocks))
-    }
 
     setAnalysisMenu()
 
