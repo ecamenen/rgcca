@@ -134,7 +134,7 @@ server <- function(input, output, session) {
 
     conditionalPanel(
       condition = cond,
-      lapply(1:length(blocks_without_superb), function(i){
+      lapply(1:(length(blocks_without_superb)+ ifelse(input$superblock, 1, 0)), function(i){
         sliderInput(inputId = paste0("tau", i),
                     label = par_name,
                     min = 0, max = 1, value = ifelse(is.null(input$tau1), 1, input[[paste0("tau", i)]]), step = .1)
@@ -217,7 +217,7 @@ server <- function(input, output, session) {
     if(!is.null(input$blocks)){
       blocks = getInfile()
       if(!is.null(blocks)){
-        min = min(unlist(lapply(blocks, NCOL)))
+        min = min(sapply(blocks, NCOL))
         if(min > 5)
           return(5)
         else
@@ -244,7 +244,7 @@ server <- function(input, output, session) {
 
     if(!is.null(input$blocks)){
       blocks = getInfile()
-      return( max(unlist(lapply(blocks, NCOL))) )
+      return( max(sapply(blocks, NCOL)) )
     }else
       return(100)
 
@@ -393,6 +393,16 @@ server <- function(input, output, session) {
 
   ################################################ Analysis ################################################
 
+  getTau <- function(){
+    tau <- integer(0)
+    for(i in 1:(length(blocks_without_superb)+ ifelse(input$superblock, 1, 0))){
+      tau <- c(tau, input[[paste0("tau", i)]])
+      print(tau)
+    }
+
+    return(tau)
+  }
+
   setParRGCCA <- function(verbose = TRUE){
 
     blocks = blocks_without_superb
@@ -408,11 +418,7 @@ server <- function(input, output, session) {
       tau = "optimal"
     else{
       # otherwise the tau value fixed by the user is used
-      tau <- integer(0)
-      for(i in 1:length(blocks_without_superb)){
-        tau <- c(tau, input[[paste0("tau", i)]])
-        print(tau)
-      }
+      getTau()
     }
 
     setAnalysisMenu()
@@ -477,6 +483,13 @@ server <- function(input, output, session) {
 
   setRGCCA <- function() {
     # Load the analysis
+
+    print(analysis_type)
+
+    if(length(grep("[SR]GCCA", analysis_type)) == 1 && !input$tau_opt)
+      tau <- getTau()
+
+    print(c("AHAHHH", tau))
 
     assign("rgcca.res",
            showWarn(
@@ -678,7 +691,7 @@ server <- function(input, output, session) {
     return(blocks)
   })
 
-  observeEvent(c(input$scale), {
+  observeEvent(input$scale, {
     if(blocksExists()){
       assign("blocks_without_superb",
              scaling(blocks_unscaled, input$scale, TRUE),
@@ -867,7 +880,7 @@ server <- function(input, output, session) {
         msgSave()
         })
       p = changeText ( dynamicPlot(fingerprint(), ax2, "text") )
-      n = unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
+      n = sapply(p$x$data, function(x) !is.null(x$orientation))
       for (i in 1:length(n[n]))
         p$x$data[[i]]$text = round( as.double(sub( "order: .*<br />df\\[, 1\\]: (.*)<.*", "\\1\\", p$x$data[[i]]$text )), 3)
       p
