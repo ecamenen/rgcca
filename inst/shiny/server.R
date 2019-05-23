@@ -33,9 +33,14 @@ server <- function(input, output, session) {
     setNamesInput("x", bool = input$navbar == "Samples")
   })
 
-  inserted <- c()
-
   output$tau_custom <- renderUI({
+
+    refresh <- c(input$superblock)
+    print(length(blocks))
+    setTauUI()
+  })
+
+  setTauUI <- function(){
 
     if(!is.null(input$analysis_type) && input$analysis_type == "SGCCA"){
       par_name <- "Degree of sparsity"
@@ -47,15 +52,12 @@ server <- function(input, output, session) {
 
     conditionalPanel(
       condition = cond,
-      actionButton('insertBtn', 'Insert'),
-      actionButton('removeBtn', 'Remove'),
-      sliderInput(inputId = "tau",
-                  label = par_name,
-                  min = 0, max = 1, value = 1, step = .1),
-      tags$div(id = 'placeholder')
-   )
-  })
-
+      lapply(1:length(blocks), function(i)
+        sliderInput(inputId = paste0("tau", i),
+                    label = par_name,
+                    min = 0, max = 1, value = 1, step = .1))
+    )
+  }
 
   observeEvent(input$insertBtn, {
     btn <- input$insertBtn
@@ -465,6 +467,8 @@ server <- function(input, output, session) {
     assign("superblock", pars$superblock, .GlobalEnv)
     assign("analysis_type", analysis_type, .GlobalEnv)
 
+    print(c("L", length(pars$blocks)))
+
     return(pars$blocks)
   }
 
@@ -714,6 +718,9 @@ server <- function(input, output, session) {
       for (i in c("bootstrap_save", "fingerprint_save", "corcircle_save", "samples_save", "ave_save", "connection_save"))
         hide(i)
     }
+
+    if(!input$tau_opt)
+      setTauUI()
   })
 
   updateSuperblock <- function(id, value)
