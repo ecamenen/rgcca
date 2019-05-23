@@ -27,7 +27,7 @@ server <- function(input, output, session) {
   # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
   # rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
 
-  ################################################ User Interface ################################################
+  ################################################ Render UI ################################################
 
   output$blocks_names_custom_x <- renderUI({
     setNamesInput("x", bool = input$navbar == "Samples")
@@ -40,24 +40,67 @@ server <- function(input, output, session) {
     setTauUI()
   })
 
-  setTauUI <- function(){
+  output$connection_custom <- renderUI({
+    setUiConnection()
+  })
 
-    if(!is.null(input$analysis_type) && input$analysis_type == "SGCCA"){
-      par_name <- "Degree of sparsity"
-      cond <- "input.analysis_type == SGCCA"
-    }else{
-      par_name <- "Tau"
-      cond <- "input.tau_opt == false"
-    }
+  output$response_custom <- renderUI({
+    setUiResponse()
+  })
 
-    conditionalPanel(
-      condition = cond,
-      lapply(1:length(blocks), function(i)
-        sliderInput(inputId = paste0("tau", i),
-                    label = par_name,
-                    min = 0, max = 1, value = 1, step = .1))
-    )
-  }
+  output$blocks_names_custom_y <- renderUI({
+    setNamesInput("y")
+  })
+
+  output$blocks_names_response<- renderUI({
+    setNamesInput("response", "Block used as a response")
+  })
+
+  output$nb_comp_custom <- renderUI({
+    # Set dynamically the maximum number of component that should be used in the analysis
+
+    # Get the number minimum of columns among the whole blocks
+    reac_var(getMinComp())
+    # Dynamically assign this number of component
+    assign("nb_comp", reac_var(), .GlobalEnv)
+
+    sliderInput(inputId = "nb_comp",
+                label = "Number of components",
+                min = 2, max = getDefaultComp(), value = 2, step = 1)
+
+    # TODO: pas plusieurs sliderInput, découper en modules
+  })
+
+  output$comp_x_custom <- renderUI({
+    refresh <- input$nb_comp
+    uiComp("x", 1, input$navbar != "Fingerprint")
+  })
+
+  output$comp_y_custom <- renderUI({
+    refresh <- input$nb_comp
+    uiComp("y", 2)
+  })
+
+  output$nb_mark_custom <- renderUI({
+    sliderInput(inputId = "nb_mark",
+                label = "Number of potential biomarkers",
+                min = 10, max = getMaxCol(), value = getDefaultCol(), step = 1)
+  })
+
+  output$analysis_type_custom <- renderUI({
+    refresh = c(input$blocks, input$sep)
+    selectInput(inputId = "analysis_type",
+                "Analysis method",
+                selected = analysis_type,
+                choices = list(
+                  `One block` = one_block,
+                  `Two blocks` = two_blocks,
+                  `Multiblocks` = multiple_blocks,
+                  `Multiblocks with a superblock`= multiple_blocks_super
+                ))
+  })
+
+  ################################################ UI function ################################################
 
   observeEvent(input$insertBtn, {
     btn <- input$insertBtn
@@ -79,7 +122,25 @@ server <- function(input, output, session) {
     )
   })
 
+  setTauUI <- function(){
 
+    if(!is.null(input$analysis_type) && input$analysis_type == "SGCCA"){
+      par_name <- "Degree of sparsity"
+      cond <- "input.analysis_type == SGCCA"
+    }else{
+      par_name <- "Tau"
+      cond <- "input.tau_opt == false"
+    }
+
+    conditionalPanel(
+      condition = cond,
+      lapply(1:length(blocks_without_superb), function(i){
+        sliderInput(inputId = paste0("tau", i),
+                    label = par_name,
+                    min = 0, max = 1, value = ifelse(is.null(input$tau1), 1, input[[paste0("tau", i)]]), step = .1)
+        })
+    )
+  }
 
   setNamesInput = function(x, label = NULL, bool = TRUE){
 
@@ -99,14 +160,6 @@ server <- function(input, output, session) {
                 selected = setBlockNames())
   }
 
-  output$blocks_names_custom_y <- renderUI({
-    setNamesInput("y")
-  })
-
-  output$blocks_names_response<- renderUI({
-    setNamesInput("response", "Block used as a response")
-  })
-
   # Define the names of the blocks and set by default on the last block
    setBlockNames = function(){
 
@@ -124,32 +177,7 @@ server <- function(input, output, session) {
     }
   }
 
-  output$nb_comp_custom <- renderUI({
-    # Set dynamically the maximum number of component that should be used in the analysis
-
-    # Get the number minimum of columns among the whole blocks
-    reac_var(getMinComp())
-    # Dynamically assign this number of component
-    assign("nb_comp", reac_var(), .GlobalEnv)
-
-    sliderInput(inputId = "nb_comp",
-                label = "Number of components",
-                min = 2, max = getDefaultComp(), value = 2, step = 1)
-
-    # TODO: pas plusieurs sliderInput, découper en modules
-  })
-
-  output$comp_x_custom <- renderUI({
-    refresh <- input$nb_comp
-    ui_comp("x", 1, input$navbar != "Fingerprint")
-  })
-
-  output$comp_y_custom <- renderUI({
-    refresh <- input$nb_comp
-    ui_comp("y", 2)
-  })
-
-  ui_comp <- function(x, y, bool = TRUE){
+  uiComp <- function(x, y, bool = TRUE){
 
     label <- "Component"
 
@@ -160,22 +188,6 @@ server <- function(input, output, session) {
                 label = label,
                 min = 1, max = input$nb_comp, value = y, step = 1)
   }
-
-  output$nb_mark_custom <- renderUI({
-    sliderInput(inputId = "nb_mark",
-                label = "Number of potential biomarkers",
-                min = 10, max = getMaxCol(), value = getDefaultCol(), step = 1)
-  })
-
-  ################################################ UI variables ################################################
-
-  output$connection_custom <- renderUI({
-    setUiConnection()
-  })
-
-  output$response_custom <- renderUI({
-    setUiResponse()
-  })
 
   setUiConnection <- function(){
     refresh <- c(input$connection)
@@ -197,20 +209,6 @@ server <- function(input, output, session) {
         bs_embed_tooltip(title = "To color the sample plot. A CSV file containing either : (i) an only column with a qualitative or a quantitative variable; (ii) multiple columns corresponding to a disjunctive table")
     )
   }
-
-  output$analysis_type_custom <- renderUI({
-    refresh = c(input$blocks, input$sep)
-    selectInput(inputId = "analysis_type",
-              "Analysis method",
-              selected = analysis_type,
-              choices = list(
-                `One block` = one_block,
-                `Two blocks` = two_blocks,
-                `Multiblocks` = multiple_blocks,
-                `Multiblocks with a superblock`= multiple_blocks_super
-              ))
-  })
-
 
   getMinComp = function(){
     # Get the maximum number of component allowed in an analysis based on the minimum
@@ -408,9 +406,14 @@ server <- function(input, output, session) {
     # Tau is set to optimal by default
     if (input$tau_opt && analysis_type != "SGCCA")
       tau = "optimal"
-    else
+    else{
       # otherwise the tau value fixed by the user is used
-      tau = rep(input$tau, length(blocks))
+      tau <- integer(0)
+      for(i in 1:length(blocks_without_superb)){
+        tau <- c(tau, input[[paste0("tau", i)]])
+        print(tau)
+      }
+    }
 
     setAnalysisMenu()
 
