@@ -36,7 +36,7 @@ server <- function(input, output, session) {
   output$tau_custom <- renderUI({
 
     refresh <- c(input$superblock)
-    print(length(blocks))
+    setAnalysis()
     setTauUI()
   })
 
@@ -125,7 +125,7 @@ server <- function(input, output, session) {
   setTauUI <- function(){
 
     if(!is.null(input$analysis_type) && input$analysis_type == "SGCCA"){
-      par_name <- "Degree of sparsity"
+      par_name <- "Sparsity"
       cond <- "input.analysis_type == SGCCA"
     }else{
       par_name <- "Tau"
@@ -395,16 +395,15 @@ server <- function(input, output, session) {
 
   getTau <- function(){
     tau <- integer(0)
-    for(i in 1:(length(blocks_without_superb)+ ifelse(input$superblock, 1, 0))){
+    for(i in 1:(length(blocks_without_superb)+ ifelse(input$superblock, 1, 0)))
       tau <- c(tau, input[[paste0("tau", i)]])
-      print(tau)
-    }
 
     return(tau)
   }
 
   setParRGCCA <- function(verbose = TRUE){
 
+    #isolate({
     blocks = blocks_without_superb
     ncomp = rep(nb_comp, length(blocks))
 
@@ -415,10 +414,10 @@ server <- function(input, output, session) {
 
     # Tau is set to optimal by default
     if (input$tau_opt && analysis_type != "SGCCA")
-      tau = "optimal"
+      tau <- "optimal"
     else{
       # otherwise the tau value fixed by the user is used
-      getTau()
+      tau <- getTau()
     }
 
     setAnalysisMenu()
@@ -445,6 +444,7 @@ server <- function(input, output, session) {
 
     getNames()
 
+    #isolate({
     if(!is.null(input$supervised) && input$supervised)
       response = input$supervised
     else
@@ -458,11 +458,14 @@ server <- function(input, output, session) {
       blocks = pars$blocks; tau = pars$tau; ncomp = pars$ncomp
     }
 
+    #})
+
     pars = showWarn(select.type(A = blocks, C = NULL, tau = tau,
-                       ncomp = ncomp, scheme = input$scheme,
-                       superblock = pars$superblock, type  = analysis_type, quiet = TRUE))
+                                ncomp = ncomp, scheme = input$scheme,
+                                superblock = pars$superblock, type  = analysis_type, quiet = TRUE))
 
     c1 = showWarn(checkC1(pars$blocks, pars$tau, analysis_type))
+
 
     if(length(pars) == 1 | !is.null(unlist(c1))){
       assign("analysis", NULL, .GlobalEnv)
@@ -476,20 +479,14 @@ server <- function(input, output, session) {
     assign("superblock", pars$superblock, .GlobalEnv)
     assign("analysis_type", analysis_type, .GlobalEnv)
 
-    print(c("L", length(pars$blocks)))
-
     return(pars$blocks)
   }
 
   setRGCCA <- function() {
     # Load the analysis
 
-    print(analysis_type)
-
     if(length(grep("[SR]GCCA", analysis_type)) == 1 && !input$tau_opt)
       tau <- getTau()
-
-    print(c("AHAHHH", tau))
 
     assign("rgcca.res",
            showWarn(
