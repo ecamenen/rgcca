@@ -59,24 +59,22 @@ server <- function(input, output, session) {
 
   observeEvent(input$insertBtn, {
     btn <- input$insertBtn
-    id <- paste0('txt', btn)
+    id <- paste0('tau', btn)
     insertUI(
       selector = '#placeholder',
       ## wrap element in a div with id for ease of removal
-      ui = sliderInput(inputId = paste0("tau", id),
+      ui = sliderInput(inputId = id,
                        label = "Tau",
                        min = 0, max = 1, value = 1, step = .1)
     )
-    inserted <<- c(id, inserted)
-    print(inserted)
   })
 
   observeEvent(input$removeBtn, {
     removeUI(
       ## pass in appropriate div id
-      selector = paste0('#', inserted[length(inserted)])
+      selector = '#tau_custom div[class="form-group shiny-input-container"]',
+      multiple = TRUE
     )
-    inserted <<- inserted[-length(inserted)]
   })
 
 
@@ -582,6 +580,7 @@ server <- function(input, output, session) {
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_x")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_y")
   })
+
 
   observeEvent(c(input$navbar, input$tabset), {
 
