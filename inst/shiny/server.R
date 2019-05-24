@@ -804,7 +804,7 @@ server <- function(input, output, session) {
     assign("response_file", input$response$datapath, .GlobalEnv)
     assign("response", setResponseShiny(), .GlobalEnv)
     setUiResponse()
-    showWarn(message("Group file loaded."))
+    showWarn(message(paste0(input$response$name, " loaded as a group file.")), show = FALSE)
   })
 
   ################################################ Outputs ################################################
