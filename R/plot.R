@@ -243,30 +243,33 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
 
       resp = as.matrix(resp, row.names = names)
       name_blocks = row.names(blocks[[i_block]])
-      same_column = intersect(name_blocks, names)
+      diff_column = setdiff(name_blocks, names)
 
-      if(length(same_column) == 0 ){
-        resp <- rep("NA", nrow(df))
+      if ( identical(diff_column, name_blocks ) ){
         warning("No match has been found with the row names of the group file.")
+        resp <- rep("NA", nrow(df))
       }else{
-        resp <- resp[same_column,]
-        df <- df[same_column, ]
-      }
+        if(length(diff_column) > 0 ){
+          resp[diff_column ] <- "NA"
+          names(resp)[names(resp) == ""] <- names
+        }else{
+          names(resp) = names
+        }
+      resp = resp[row.names(blocks[[i_block]])]
 
+      }
     }
 
-    if( ! unique(isCharacter(as.vector(resp != "NA"))) && length(levels(as.factor(as.vector(resp)))) > 5 ){
+    if( ! unique(isCharacter(as.vector(resp))) && length(levels(as.factor(as.vector(resp)))) > 5 ){
 
-      df = df[!is.na(resp), ]
-      resp = as.numeric(resp[!is.na(resp) ])
-      alpha = (resp - min(resp)) / max(resp - min(resp))
+      # df = df[!is.na(resp), ]
+      resp[resp == "NA"] <- NA
+      resp = as.numeric(resp)
+      # alpha = (resp - min(resp)) / max(resp - min(resp))
       df$resp = resp
 
       # add some transparency
-      p = ggplot(df, aes(df[, 1], df[, 2], alpha = as.factor(alpha), color =  resp)) +
-          scale_alpha_manual(values = alpha,
-          guide = "none"
-        )
+      p = ggplot(df, aes(df[, 1], df[, 2], color =  resp))
 
     }else
       p = NULL
@@ -425,8 +428,8 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     # }
   }
 
-  if(title == "Samples" && !is.null(p) && is.null(p$labels$alpha))
-    func$colour = SAMPLES_COL_DEFAULT
+  # if(title == "Samples" && !is.null(p) && is.null(p$labels$alpha))
+  #   func$colour = SAMPLES_COL_DEFAULT
 
   if (is.null(p)){
     p = ggplot(df, aes(df[,1], df[,2], colour = as.factor(group)))
@@ -457,14 +460,14 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
       axis.title.x = element_text(face = AXIS_FONT, margin = margin(20,0,0,0), size = AXIS_TITLE_SIZE)
     )
 
-  if(is.null(p$labels$alpha)){
-    if(length(unique(group)) != 1 && title == "Variable")
-      orderColorPerBlocs(rgcca, p)
-    else
-      p + scale_color_manual(values = colorGroup(group))
-  }
-  else
-    p + scale_color_gradient(low = "white", high = SAMPLES_COL_DEFAULT)
+  if(length(unique(group)) != 1 && title == "Variable"){
+    orderColorPerBlocs(rgcca, p)
+  # For qualitative response OR no response
+  }else if(isCharacter(group[!is.na(group)]) || length(unique(group)) <= 5 ){
+    p + scale_color_manual(values = colorGroup(group))
+  # For quantitative response
+  }else
+    p + scale_color_gradient(low = "blue", high = SAMPLES_COL_DEFAULT, na.value = "grey80")
 
 }
 

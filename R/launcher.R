@@ -229,7 +229,8 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output6 = "connection.pdf",
-           datasets = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/agriculture.tsv, /home/etienne.camenen/bin/rgccaLauncher/inst/extdata/industry.tsv, /home/etienne.camenen/bin/rgccaLauncher/inst/extdata/politic.tsv")
+          datasets = "/home/etienne.camenen/Documents/DATA/ZEUS/DATA/metabolomic.txt,/home/etienne.camenen/Documents/DATA/ZEUS/DATA/lipidomic.txt,/home/etienne.camenen/Documents/DATA/ZEUS/DATA/atrophy.txt")
+          # datasets = "/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Lipidomic_without_P7498.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic_without_23.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -270,8 +271,8 @@ if(!is.matrix(connection))
   connection = setConnection(blocks, (opt$superblock | !is.null(opt$response)), opt$connection, opt$separator)
 
 #opt$group = "/home/etienne.camenen/Documents/DATA/Nucleiparks/UPDRS_2.tsv"
-#group2 = "/home/etienne.camenen/Documents/DATA/ZEUS/DATA/AMY_Staging_MA_quant.txt"
-opt$group = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/response.tsv"
+opt$group = "/home/etienne.camenen/Documents/DATA/ZEUS/DATA/AMY_Staging_MA_qual2.txt"
+#opt$group = "/home/etienne.camenen/Documents/DATA/Nucleiparks/group_V3.tsv"
 
 group = setResponse(blocks, opt$group, opt$separator, opt$header)
 
