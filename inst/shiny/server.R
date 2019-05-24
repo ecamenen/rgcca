@@ -29,14 +29,10 @@ server <- function(input, output, session) {
 
   ################################################ Render UI ################################################
 
-  output$blocks_names_custom_x <- renderUI({
-    setNamesInput("x", bool = input$navbar == "Samples")
-  })
-
   output$tau_custom <- renderUI({
 
     refresh <- c(input$superblock)
-    setAnalysis()
+    isolate ( setAnalysis() )
     setTauUI()
   })
 
@@ -46,6 +42,10 @@ server <- function(input, output, session) {
 
   output$response_custom <- renderUI({
     setUiResponse()
+  })
+
+  output$blocks_names_custom_x <- renderUI({
+    setNamesInput("x", bool = input$navbar == "Samples")
   })
 
   output$blocks_names_custom_y <- renderUI({
@@ -101,26 +101,6 @@ server <- function(input, output, session) {
   })
 
   ################################################ UI function ################################################
-
-  observeEvent(input$insertBtn, {
-    btn <- input$insertBtn
-    id <- paste0('tau', btn)
-    insertUI(
-      selector = '#placeholder',
-      ## wrap element in a div with id for ease of removal
-      ui = sliderInput(inputId = id,
-                       label = "Tau",
-                       min = 0, max = 1, value = 1, step = .1)
-    )
-  })
-
-  observeEvent(input$removeBtn, {
-    removeUI(
-      ## pass in appropriate div id
-      selector = '#tau_custom div[class="form-group shiny-input-container"]',
-      multiple = TRUE
-    )
-  })
 
   setTauUI <- function(){
 
@@ -403,7 +383,6 @@ server <- function(input, output, session) {
 
   setParRGCCA <- function(verbose = TRUE){
 
-    #isolate({
     blocks = blocks_without_superb
     ncomp = rep(nb_comp, length(blocks))
 
@@ -444,7 +423,6 @@ server <- function(input, output, session) {
 
     getNames()
 
-    #isolate({
     if(!is.null(input$supervised) && input$supervised)
       response = input$supervised
     else
@@ -458,7 +436,6 @@ server <- function(input, output, session) {
       blocks = pars$blocks; tau = pars$tau; ncomp = pars$ncomp
     }
 
-    #})
 
     pars = showWarn(select.type(A = blocks, C = NULL, tau = tau,
                                 ncomp = ncomp, scheme = input$scheme,
@@ -485,8 +462,10 @@ server <- function(input, output, session) {
   setRGCCA <- function() {
     # Load the analysis
 
-    if(length(grep("[SR]GCCA", analysis_type)) == 1 && !input$tau_opt)
+    isolate({
+      if(length(grep("[SR]GCCA", analysis_type)) == 1 && !input$tau_opt)
       tau <- getTau()
+    })
 
     assign("rgcca.res",
            showWarn(
@@ -597,7 +576,6 @@ server <- function(input, output, session) {
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_x")
     toggle(condition = (length(input$blocks$datapath) > 1), id = "blocks_names_custom_y")
   })
-
 
   observeEvent(c(input$navbar, input$tabset), {
 
@@ -719,7 +697,7 @@ server <- function(input, output, session) {
     }
   })
 
-  observeEvent(c(input$superblock, input$supervised, input$nb_comp, input$scheme, input$init, input$tau, input$tau_opt, input$analysis_type), {
+  observeEvent(c(input$superblock, input$supervised, input$nb_comp, input$scheme, input$init, input$tau_opt, input$analysis_type), {
     # Observe if analysis parameters are changed
 
     if(blocksExists()){
@@ -732,8 +710,8 @@ server <- function(input, output, session) {
         hide(i)
     }
 
-    if(!input$tau_opt)
-      setTauUI()
+               if(!input$tau_opt)
+                 setTauUI()
   })
 
   updateSuperblock <- function(id, value)
