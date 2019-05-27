@@ -125,7 +125,7 @@ ui <- fluidPage(
           shinyInput_label_embed(
             icon("question") %>%
               bs_embed_tooltip(title = "The maximization of the sum of covariances between block components is calculated with : the identity function (horst scheme),
-                               the absolute values (centroid scheme), the squared values (factorial scheme) or, more generally, with the power of any integer.")
+                               the absolute values (centroid scheme), the squared values (factorial scheme).", placement = "bottom")
             ),
 
         sliderInput(inputId = "boot",
