@@ -432,6 +432,8 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
     if(!qualitative)
       response = convertMatrixNumeric(response)
 
+
+
     if (NCOL(response) > 1) {
 
       disjunctive = unique(apply(response, 1, sum))
@@ -442,6 +444,8 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
           levels(response2) = colnames(response)
         }
         response = as.character(response2)
+
+        print(3)
 
       } else {
         response = response[, 1]
@@ -470,19 +474,41 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
 #' @export isCharacter
 isCharacter = function(x) {
 
-  options(warn = -1)
   # is. character() consider a string with '1.2' as a character, not this
-  # function NA are produced by converting a character into an integer
+  # function. NA are produced by converting a character into an integer
   # as.vector, avoid factors of character in integer without NA
 
   # NA tolerance :
   # x = na.omit(x)
-  if (is.matrix(x))
-    test = sapply(1:NCOL(x), function(i) unique(is.na(as.integer(as.vector(x[, i])))))
-  else
-    test = unique(is.na(as.integer(as.vector(x))))
 
-  options(warn = 0)
+  if (is.matrix(x)){
+    test = sapply(
+      1:NCOL(x),
+      function(i) unique(
+        is.na(
+          tryCatch(
+            as.integer(
+              as.vector(x[, i])
+            ),
+            warning = function(w)
+              return(NA)
+          )
+        )
+      )
+    )
+  }else
+    test = unique(
+      is.na(
+        tryCatch(
+          as.integer(
+            as.vector(x)
+          ),
+          warning = function(w)
+            return(NA)
+        )
+      )
+    )
+
   return(test)
 }
 

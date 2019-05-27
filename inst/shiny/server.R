@@ -256,15 +256,18 @@ server <- function(input, output, session) {
 
     try(withCallingHandlers({
       res <- f
-    }, message = function(w) {
+    }, message = function(m) {
+
+      warning(m$message)
+
         if(show)
         duration <<- NULL
 
-      id <- showNotification(w$message, type = "message", duration = duration)
+      id <- showNotification(m$message, type = "message", duration = duration)
       ids <<- c(ids, id)
 
     }, warning = function(w) {
-
+        warning(w$message)
       if(show && warn){
         id <- showNotification(w$message, type = "warning", duration = duration)
         ids <<- c(ids, id)
@@ -494,7 +497,8 @@ server <- function(input, output, session) {
 
   setResponseShiny = function(){
 
-    response <- showWarn(setResponse (blocks = blocks_without_superb,
+    response <- showWarn(
+      setResponse (blocks = blocks_without_superb,
                         file = response_file,
                         sep = input$sep,
                         header = input$header),  warn = FALSE)
@@ -559,8 +563,6 @@ server <- function(input, output, session) {
 
   setToggleSaveButton = function(id)
     toggle(condition = !is.null(analysis), id = id)
-
-  #  | (input$analysis_type %in% c("RGCCA", "SGCCA") & !input$superblock )
 
   observe({
 
