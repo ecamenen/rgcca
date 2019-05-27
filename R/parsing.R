@@ -411,17 +411,17 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
     else
       response = loadExcel(file, 1, rownames, h = header, num = FALSE)
 
-    if(length(response) < nrow(blocks[[1]])){
-
-      MSG <- ""
-
-      if( (length(response) + 1) == nrow(blocks[[1]]))
-        MSG <- "Please, check if the header is activated and the response does'nt have one."
-
-      warning(paste("The number of line of the response file is shorter than those of the blocks.", MSG))
-
-      return(rep(1, NROW(blocks[[1]])))
-    }
+    # if(length(response) < nrow(blocks[[1]])){
+    #
+    #   MSG <- ""
+    #
+    #   if( (length(response) + 1) == nrow(blocks[[1]]))
+    #     MSG <- "Please, check if the header is activated and the response does'nt have one."
+    #
+    #   warning(paste("The number of line of the response file is shorter than those of the blocks.", MSG))
+    #
+    #   return(rep(1, NROW(blocks[[1]])))
+    # }
 
     qualitative = unique(isCharacter(na.omit(response)))
 
@@ -431,7 +431,6 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
 
     if(!qualitative)
       response = convertMatrixNumeric(response)
-
 
 
     if (NCOL(response) > 1) {

@@ -258,14 +258,15 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
       resp = resp[row.names(blocks[[i_block]])]
 
       }
+    }else{
+      warning("No row names have been found in the group file.")
+      resp <- rep("NA", nrow(df))
     }
 
     if( ! unique(isCharacter(as.vector(resp))) && length(levels(as.factor(as.vector(resp)))) > 5 ){
 
-      # df = df[!is.na(resp), ]
       resp[resp == "NA"] <- NA
       resp = as.numeric(resp)
-      # alpha = (resp - min(resp)) / max(resp - min(resp))
       df$resp = resp
 
       # add some transparency
@@ -408,7 +409,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
 #' plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
 #' @export plotSpace
-plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = NULL, p = NULL, text = TRUE, i_block_y = NULL, no_Overlap = TRUE){
+plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = NULL, p = NULL, text = TRUE, i_block_y = NULL, no_Overlap = TRUE, colours = c("blue", "yellow", SAMPLES_COL_DEFAULT)){
 
   if(is.null(i_block_y))
     i_block_y = i_block
@@ -427,9 +428,6 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     #   func$max.iter = 500
     # }
   }
-
-  # if(title == "Samples" && !is.null(p) && is.null(p$labels$alpha))
-  #   func$colour = SAMPLES_COL_DEFAULT
 
   if (is.null(p)){
     p = ggplot(df, aes(df[,1], df[,2], colour = as.factor(group)))
@@ -467,7 +465,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     p + scale_color_manual(values = colorGroup(group))
   # For quantitative response
   }else
-    p + scale_color_gradient(low = "blue", high = SAMPLES_COL_DEFAULT, na.value = "grey80")
+    p + scale_color_gradientn(colours = colours, na.value = "grey80")
 
 }
 
