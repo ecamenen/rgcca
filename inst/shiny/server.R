@@ -258,8 +258,6 @@ server <- function(input, output, session) {
       res <- f
     }, message = function(m) {
 
-      warning(m$message)
-
         if(show)
         duration <<- NULL
 

@@ -230,8 +230,8 @@ opt = list(directory = ".",
            output5 = "correlation.pdf",
            output6 = "connection.pdf",
           # datasets = "/home/etienne.camenen/Documents/DATA/ZEUS/DATA/metabolomic.txt,/home/etienne.camenen/Documents/DATA/ZEUS/DATA/lipidomic.txt,/home/etienne.camenen/Documents/DATA/ZEUS/DATA/atrophy.txt")
-          # datasets = "/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Lipidomic_without_P7498.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic_without_23.tsv")
-          datasets = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/agriculture.tsv,/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/industry.tsv, /home/etienne.camenen/bin/rgccaLauncher/inst/extdata/politic.tsv")
+          datasets = "/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Lipidomic_without_P7498.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic_without_23.tsv")
+          # datasets = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/agriculture.tsv,/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/industry.tsv, /home/etienne.camenen/bin/rgccaLauncher/inst/extdata/politic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -273,8 +273,8 @@ if(!is.matrix(connection))
 
 #opt$group = "/home/etienne.camenen/Documents/DATA/Nucleiparks/UPDRS_2.tsv"
 #opt$group = "/home/etienne.camenen/Documents/DATA/ZEUS/DATA/AMY_Staging_MA_qual2.txt"
-#opt$group = "/home/etienne.camenen/Documents/DATA/Nucleiparks/group_V3.tsv"
-opt$group = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/response3.tsv"
+opt$group = "/home/etienne.camenen/Documents/DATA/Nucleiparks/group_V3.tsv"
+#opt$group = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/response3.tsv"
 
 group = setResponse(blocks, opt$group, opt$separator, opt$header)
 
@@ -324,7 +324,6 @@ if(opt$type != "pca"){
   # Average Variance Explained
   (ave = plotAVE(rgcca.out))
   savePlot(opt$output4, ave)
-
 
   # Creates design scheme
   nodes <- getNodes(blocks, rgcca = rgcca.out)

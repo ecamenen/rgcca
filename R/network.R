@@ -6,9 +6,9 @@ getNodes = function(blocks, tau = NULL, rgcca = NULL) {
     par = "tau"
 
   if(any(tau == "optimal")){
-  	if(!is.null(rgcca))
-  		tau = unlist(lapply(1:ncol(rgcca[[par]]), function(x) Reduce(paste, round(rgcca[[par]][, x],2))))
-  	else
+    if(!is.null(rgcca))
+      tau = unlist(lapply(1:ncol(rgcca[[par]]), function(x) Reduce(paste, round(rgcca[[par]][, x],2))))
+    else
       tau = rep(NA, length(blocks))
   }
 
@@ -19,7 +19,7 @@ getNodes = function(blocks, tau = NULL, rgcca = NULL) {
       tau = rgcca[[par]]
   }
 
-	nrow = unlist(lapply(blocks, function(x) ifelse(is.null(attributes(x)$nrow), nrow(blocks[[1]]) , attributes(x)$nrow)))
+  nrow = unlist(lapply(blocks, function(x) ifelse(is.null(attributes(x)$nrow), nrow(blocks[[1]]) , attributes(x)$nrow)))
 
   values <- list( names(blocks), unlist(lapply(blocks, NCOL)), nrow, tau )
   nodes <- as.data.frame(matrix(unlist(values), length(blocks), length(values)))
@@ -82,7 +82,8 @@ plotNetwork = function(nodes, edges, blocks){
        vertex.frame.color = "gray50",
        vertex.label.color = "black",
        vertex.label.dist = 6,
-       vertex.label.degree = 1.5)
+       vertex.label.degree = 1.5,
+       main = paste0("Number of common rows between blocks : ", nrow(blocks[[1]]) , "."))
 
 }
 
@@ -101,7 +102,7 @@ plotNetwork2 = function(nodes, edges, blocks){
   edges$width <- edges$weight * 2
   nodes$color.background <- rep("#eee685", length(blocks))
 
-  visnet <- visNetwork(nodes, edges)
+  visnet <- visNetwork(nodes, edges, main = paste0("Number of common rows between blocks : ", nrow(blocks[[1]]) , "."))
 
   visnet <- visNodes(visnet,
                      borderWidth = 2,
@@ -111,12 +112,11 @@ plotNetwork2 = function(nodes, edges, blocks){
                                 highlight = list(background = "black", border = "darkred"))
   )
 
-  visnet <- visEdges(visnet,
-                     smooth = FALSE,
-                     shadow = TRUE,
-                     dashes = TRUE,
-                     color = list(color = "gray", highlight = "darkred")
+  visEdges(visnet,
+           smooth = FALSE,
+           shadow = TRUE,
+           dashes = TRUE,
+           color = list(color = "gray", highlight = "darkred")
   )
-  visnet
 
 }
