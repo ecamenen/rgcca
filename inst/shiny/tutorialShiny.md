@@ -14,7 +14,7 @@ analysis, correlation, visualisation
 arthur.tenenhaus@l2s.centralesupelec.fr
 
 ##### Short description
-Performs multi-variate analysis (PCA, CCA, PLS, RGCCA) and projects the variables and samples into a bi-dimensional space.
+Performs multi-variate analysis (PCA, CCA, PLS, R/SGCCA, etc.) and projects the variables and samples into a bi-dimensional space.
 
 ---
 
@@ -22,73 +22,49 @@ Performs multi-variate analysis (PCA, CCA, PLS, RGCCA) and projects the variable
 ## Description
 
 
-For the sake of comprehension of the use of the RGCCA package, the theoretical foundations of RGCCA and variations - 
-that were previously published (Tenenhaus and Tenenhaus 2011 ; Tenenhaus and Tenenhaus 2014 ; Tenenhaus, and Frouin 2015 ;
-Tenenhaus, Tenenhaus, and Groenen 2017).
+For the sake of comprehension of the use of the RGCCA package, the theoretical foundations of RGCCA and variations -  that were previously published (Tenenhaus and Tenenhaus 2011 ; Tenenhaus and Tenenhaus 2014 ; Tenenhaus, and Frouin 2015 ; Tenenhaus, Tenenhaus, and Groenen 2017).
 
-We consider J data matrices *X1, ..., XJ*. Each *n × pj* data matrix *Xj = [ xj1, ..., xjpj ]* is called a block and represents 
-a set of *pj* variables observed on *n* individuals.
-The number and the nature of the variables may differ from one block to another, but the individuals must be the same across blocks.
-We assume that all variables are centered. The objective of RGCCA is to find, for each block, a weighted composite of 
-variables (called block component) *yj = Xj * aj, j=1, ... , J* (where *aj* is a column-vector with  *pj* elements) 
-summarizing the relevant information between and within the blocks.
-The block components are obtained such that (i) block components explain well their own block and/or (ii) 
-block components that are assumed to be connected are highly correlated. 
-In addition, RGCCA integrates a variable selection procedure, called SGCCA, allowing the identification of the most 
-relevant features. Finally, as a component-based method, RGCCA/SGCCA can provide users with graphical 
-representations to visualize the sources of variability within blocks and the amount of correlation between blocks.
+We consider J data matrices *X1, ..., XJ*. Each *n × pj* data matrix *Xj = [ xj1, ..., xjpj ]* is called a block and represents a set of *pj* variables observed on *n* individuals. The number and the nature of the variables may differ from one block to another, but the individuals must be the same across blocks. We assume that all variables are centered. The objective of RGCCA is to find, for each block, a weighted composite of variables (called block component) *yj = Xj * aj, j=1, ... , J* (where *aj* is a column-vector with  *pj* elements) summarizing the relevant information between and within the blocks. The block components are obtained such that (i) block components explain well their own block and/or (ii) block components that are assumed to be connected are highly correlated. In addition, RGCCA integrates a variable selection procedure, called SGCCA, allowing the identification of the most relevant features. Finally, as a component-based method, RGCCA/SGCCA can provide users with graphical representations to visualize the sources of variability within blocks and the amount of correlation between blocks.
 
 
-## Load the inputs ('Data' tab)
+## Load the inputs ('Data' parameter tab)
 
 
-Download the pre-formatted files [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/master/data). 
-This folder includes three blocks with the same individuals (corresponding to the countries here) but different
-types of variables (agriculture, industry and politic). According to Russett (1964), a high agriculture inequality
-and a low industrial development lead to unstable political regime. 
-Load the three blocks ```agriculture.tsv```, ```industry.tsv``` and ```politic.tsv``` in the ```blocks``` box (**Fig. 1**) 
-(CTRL + click for multiple selection). The accepted format is one (for PCA) or multiple CSV files containing a matrix
- with :
+Download the pre-formatted files [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/master/data). This folder includes three blocks with the same individuals (corresponding to the countries here) but different types of variables (agriculture, industry and politic). According to Russett (1964), a high agriculture inequality and a low industrial development lead to unstable political regime. Load the three blocks ```agriculture.tsv```, ```industry.tsv``` and ```politic.tsv``` in the ```blocks``` box (**Fig. 1**)  (CTRL + click for multiple selection). The accepted format is one (for PCA) or multiple CSV files containing a matrix with :
 - quantitative values only, with decimal separated by '.' and missing values labelled as "NA"
-- samples in lines, labelled in the 1rst column with the same sample names between blocks (some samples could be missing in some
- blocks)
+- samples in lines, labelled in the 1rst column with the same sample names between blocks (some samples could be missing in some blocks)
 - variables in columns, labelled in the 1rst column without duplications in variable names between blocks
 
 This format recommendation could be viewed with **an overmouse on the question mark** on the right of the file loading box.
 
-By default, the character used in ```column separator``` parameter is the ```tabulation```. Change the separator to another one
-(e.g.,```Semicolon```) to observe an error notification : 
+By default, the character used in ```column separator``` parameter is the ```tabulation```. Change the separator to another one (e.g.,```Semicolon```) to observe an error notification : 
 > "politic block file has an only-column. Check the separator."
 
 ![Fig 1](img/loadData.png)
  
-*Fig. 1 : File loading panel (on the top right). The first box is used to load the blocks, the second one, to load the 
-connection file, and the last one, to select the column separator.*
+*Fig. 1 : File loading panel (on the top right). The first box is used to load the blocks, the second one, to load the connection file, and the last one, to select the column separator.*
 
 
-## Analysis parameters ('RGCCA' tab)
+## Analysis parameters ('RGCCA' parameter tab)
 
 
 #### Analysis methods
 
-After loading the data, a ```RGCCA``` tab will appear for an analyse. By default, the selected ```analysis method``` is set on ```RGCCA```. 
-Another methods could be selected. When only one block file is loaded in the previous step, a ```PCA``` will be performed. 
-By using two blocks, the interface will allow to select two-blocks analysis method (```PLS``` is selected by default). 
+After loading the data, a ```RGCCA``` tab will appear for an analyse (**Fig. 2**). By default, the selected ```analysis method``` is set on ```RGCCA```. This tutorial will be focused on the RGCCA case but another methods could be selected. When only one block file is loaded in the previous step, a ```PCA``` will be performed. By using two blocks, the interface will allow to select two-blocks analysis method (```PLS``` is selected by default). 
 
-The other analyse parameters are all set by default and the user could directly click on the ```run analysis``` 
-button. To directly visualize the outputs, see the last section of this tutorial.
+The other analyse parameters are all set by default and the user could directly click on the ```run analysis``` button. To directly visualize the outputs, see the last section of this tutorial.
+
+
+![Fig 2](img/analysis.png)
+ 
+*Fig. 2 : The second parameter panel shows various options to customize the analysis : choose the analysis, choose the number of components, scale the blocks, choose a shrinkage, use the superblock or a supervised approach, choose a link function. In this example, the overmouse on the question mark of scheme function parameter makes its associated help message appears*
+
 
 #### Number of components and scaling
 
-With all analysis method, the ```number of components``` could be changed. By default, it is set to two components (for biplots)
-and the maximum of components allowed is the minimum number of column between all dataset. In the case of Russet
-data, two components are allowed because of the two columns in the industry block. Five components is the maximum value
-allowed. 
+With all analysis method, the ```number of components``` could be changed. By default, it is set to two components (for biplots) and the maximum of components allowed is the minimum number of column between all dataset. In the case of Russet data, two components are allowed because of the two columns in the industry block. Five components is the maximum value allowed. 
  
-One could also ```scale [/ unscale] the blocks```. A zero means translation is always performed. If the parameter is
-selected, each block is standardized to unit variances and then divided by the square root of its number of variables.
-If the data are already scaled, this step could
-be avoided by disabling it.
+One could also ```scale [/ unscale] the blocks```. A zero means translation is always performed. If the parameter is selected, each block is standardized to unit variances and then divided by the square root of its number of variables. If the data are already scaled, this step could be avoided by disabling it.
 
 Other parameters are only accessible with R/SGCCA.
 
@@ -98,102 +74,111 @@ Other parameters are only accessible with R/SGCCA.
 
 ###### Loading a connection file
 
-The downloaded ```data/``` folder contains a symmetric matrix (```connection.tsv```) corresponding to the relationship
-between each block : 1 if two blocks are connected, 0 otherwise. The expected format should be tabulation-separated and
-do not have column and row names. This file allows to add *a priori* information of correlation hypothesis between the 
-blocks. This file is not taken in account with a superblock (Cf. corresponding section). After disabling the 
-```Use a superblock``` option, load this file into the  ```Connection design``` file box and observe the result on the 
-plots. This file contains 1 in all non-diagonal cells and make the assumption that all the blocks are connected together.
+The downloaded ```data/``` folder contains a symmetric matrix (```connection.tsv```) corresponding to the relationship between each block : 1 if two blocks are connected, 0 otherwise. The expected format should be tabulation-separated and do not have column and row names. This file allows to add *a priori* information of correlation hypothesis between the blocks. This file is not taken in account with a superblock (Cf. corresponding section). After disabling the ```Use a superblock``` option, load this file into the  ```Connection design``` file box and observe the result on the plots. This file contains 1 in all non-diagonal cells and make the assumption that all the blocks are connected together.
 
 ###### Superblock 
-By default, all the blocks are connected to a superblock, a concatenation of all the other blocks. 
-This superblock is used to visualize the data of all the blocks together in a common space. To visualize the blocks 
-without the superblock, disable the ```Use a superblock``` option.
+By default, all the blocks are connected to a superblock, a concatenation of all the other blocks. This superblock is used to visualize the data of all the blocks together in a common space. To visualize the blocks without the superblock, disable the ```Use a superblock``` option.
 
 ###### Supervised analysis
-By selecting ```supervised analysis``` option, a drop-down menu appear to select the block to predict. By selecting this
-block, all other blocks (predictors) will be only connected to this (response) block. For example, select the 
-```agriculture``` block to consider it as the response.
+By selecting ```supervised analysis``` option, a drop-down menu appear to select the block to predict. By selecting this block, all other blocks (predictors) will be only connected to this (response) block. For example, select the ```agriculture``` block to consider it as the response.
 
 If a superblock is used, supervised analysis is automatically disabled, and inversely.
 
 #### Other R/SGCCA parameters
 
 ###### Shrinkage parameter (Tau)
-By selecting a RGCCA,```Use an optimal tau``` is automatically set for each block (**Fig. 3**). When disabled, one could make ```tau``` varying
-for each block from 1 (maximize the correlation between the variables of the selected block) to 0 (maximize the covariance).
+By selecting a RGCCA,```Use an optimal tau``` is automatically set for each block (**Fig. 3**). When disabled, one could make ```tau``` varying for each block from 1 (maximize the correlation between the variables of the selected block) to 0 (maximize the covariance).
  
 ###### Sparsity coefficient
-By selecting a SGCCA, ``` Sparsity``` could be applied to each blocks. This coefficient vary from the inverse of the
-square root of the number of column of each block (the smaller set of variables) to 1 (all the variables are included). 
-Moove the cursor for the first block to a 0.4 sparsity coefficient to produce an error :
+By selecting a SGCCA, ``` Sparsity``` could be applied to each blocks. This coefficient vary from the inverse of the square root of the number of column of each block (the smaller set of variables) to 1 (all the variables are included).Moove the cursor for the first block to a 0.4 sparsity coefficient to produce an error :
 > "Sparsity parameter is equals to 0.4. For SGCCA, it must be comprise between 1/sqrt(number_column) (i.e., 0.41, 0.71, 0.58, 0.31) and 1."
 
 Move again the cursor on a upper spasity value to make it works again.
  
 ###### Scheme function (advanced users)
-```Scheme function``` allows to select the link function for the maximization of the sum of covariances between block 
-components among : 
+```Scheme function``` allows to select the link function for the maximization of the sum of covariances between block components among : 
 - identity (```Horst```)
 - absolute values (```centroid```)
 - squared values (```factorial```)
-          
-![Fig 2](img/analysis.png)
- 
-*Fig. 2 : The second parameter panel shows various options to customize the analysis : choose the analysis, 
-choose the number of components, scale the blocks, choose a shrinkage, use the superblock or a supervised approach, 
-choose a link function*
- 
-## Graphical parameters
 
-On the sample plot tab, in the right panel (see next section for more information about this plot), one could select
-a qualitative or a quantitative variable to color the samples according to different group of responses. 
-For this, load the ```response.tsv``` file in the corresponding ```Groups of modalities``` box to load a new plot.
 
-The graphics are projected in the "superblock" space (i.e., the concatenation of all blocs) to visualize all the blocs together. 
-Choose another block (e.g., "agriculture") to update the plots with your selection (**Fig. 3**). Similarly, the component used in X-axis
-in the biplots the one used in histograms and the component used in Y-axis in biplots are respectively set on the first 
-and the second components. The number maximum of component to select in graphics is set dynamically by the number of 
-components selected in the analysis (defined in the last section). If the number of components in RGCCA is greater than 
-three (it is not allowed in the Russet example), one could set for example the visualized axis to 1 for the X-axis in biplots
-and 3 for Y-axis. The number of potential biomarkers is also set dynamically : the maximum corresponds to the sum of the variables
-in all the blocks.
- 
-![Fig 3](img/advGraphic.png)
+## Graphical parameters ('Graphic' parameter tab)
 
-*Fig. 3 : On the last advanced panel, additional graphic options include the selected block and the components visualized in the 
-plots and the maximum number of markers to print*
 
-## Visualize the plots
+This parameter tab is available only for the ```samples```, ```variables``` and ```fingerprint``` plot tabs (**Fig. 3**).
 
-By navigating between the tabs, the user could visualize the output of the analysis in various format. 
-For each axis of the block, the corresponding percent of average explained variance is indicated.
+![Fig 3](img/graphicPar.png)
+
+*Fig. 3 : When the samples tab is selected a graphical option panel appears, that includes : (i) the possibility to hide/print the names of the variables, (ii) the selection of the block to visualize, (iii) the components used in the plots, (iv) the loading of groups of response to color the samples and (v) a button to save all the plot in the folder of the Shiny application. On this example, the agriculture block will be selected as the block for the Y-axis.*
+
+#### Block (for the x/y-axis)
+By default, if selected, the ```samples```, ```variables``` and ```fingerprint``` plot tabs are projected by using the ```superblock``` (i.e., the concatenation of all blocs; see corresponding section) to visualize all the blocs together. Otherwise, the last blocks in the drop-down menu ```block``` is used. In this menu, choose another block (e.g., ```agriculture```) to update the plots with your selection (**Fig. 3**). For the ```samples``` tab, a ```block for the x-axis``` and a ```block for the y-axis``` could be selected.
+
+#### Components (for the x/y-axis)
+The ```component``` of the analysis allow to the user to choose the space where the points are visualised. For ```samples``` and ```corcircle``` biplots tabs, the ```component for the x-axis``` and the ```component for the y-axis``` could be set. By default, they correspond respectively to the first and the second component of the analysis. The choices of components is limited by the number of component selected in the analysis (defined in the last section). If the number of components in RGCCA were greater than two (not allowed in the Russet example because of the industry block), the ```component for the x-axis```, for example, could be set to the third one.
+
+#### Colors the samples according to groups of response
+On the ```samples``` plot tab only, in the right panel (see next section for more information about this plot), one could select a qualitative or a quantitative variable to color the points according to different group of responses. For this, load the ```response.tsv``` file in the corresponding ```groups of modalities``` box to update the plot.
+
+#### Number of top variables
+Available only for ```fingerprint``` plot tabs, the ```number of top variables``` is automatically set to 100 or to the maximum number of variables in the selected blocks. For example, with Russet data, eleven "top" variables could be visualised by default on the superblock.
+
+#### Save the graphics
+All graphics could be saved in the tool folder by running the "Save all" button.
+
+
+## Visualize the plot tabs
+
+
+Please, make sure that these options are set to visualise the same plots than those in the next examples :
+- RGCCA method
+- two components
+- block scaled
+- optimal tau
+- a superblock
+- factorial scheme 
+
+By navigating between the tabs on the right, the user could visualize the output of the analysis in various format. For the ```samples```, ```variables``` and ```fingerprint``` plot tabs , for each axis of the selected block, the corresponding percent of average explained variance is indicated.
+
+
+#### Connection between blocks
+The first tab summarize the connection between each blocks : a link correspond to a "1" value, in the matrix connection file (**Fig. 4**; see the first section). For each blocks :
+- P is the number of variables
+- N is the number of lines
+- Tau is the shrinkage parameter (see the second section) and for each component if optimal is calculated
+
+![Fig 4](img/connection.png)
+
+*Fig. 4 : Connection between each blocks of the RGCCA and the superblock with 47 common rows between blocks*
+
+#### Average variance explained (AVE)
+In the second one, the average variance explained (AVE; in X-axis) is represented in percent for each blocks (in Y-axis) and each component (one color per component) (**Fig. 5**). The subtitle provides the AVE for the two first of the outer model (weighted average of the AVE of each blocks).
+
+![Fig 5](img/ave.png)
+
+*Fig. 5 : Average variance variance explained (in %) for each blocks and for the two first components of the RGCCA*
+
+#### Samples
 The first tab is the projection of individuals coordinates in the selected component of the analysis, by default, on the
-superblock (a concatenation of all the blocks) (**Fig. 5**). If a ```response``` file is loaded, each samples is colored according to
-this group of responses.
+superblock (a concatenation of all the blocks) (**Fig. 6**). If a ```response``` file is loaded, each samples is colored according to this group of responses. In the Russet example, the X-axis could discriminates a dictatorship (with upper values on this axis) than the two other political systems, whereas the Y axis discriminates an unstable democracy (with upper values) than the two other.
 
-![Fig 5](https://raw.githubusercontent.com/BrainAndSpineInstitute/rgcca_Rpackage/master/img/samples_space.png)
-*Fig. 5 : Samples coordinates on the two first components for the superblock of the RGCCA*
+![Fig 6](https://raw.githubusercontent.com/BrainAndSpineInstitute/rgcca_Rpackage/master/img/samples_space.png)
+*Fig. 6 : Samples coordinates on the two first components for the superblock of the RGCCA after loaded the response.tsv file*
 
-The second one corresponds to the Pearson correlation between the variables of the block and the
-selected components in the analysis (by default, the two first one) (**Fig. 6**).
-For this plot and the next one, if the superblock is selected for each variable, their belonging to each block is 
-illustrated by groups of color.
+#### Corcircle
+The second one corresponds to the Pearson correlation between the variables of the block and the selected components in the analysis (by default, the two first one) (**Fig. 7**). If the superblock is selected, colors correspond to the belonging of each variable to each blocks.
 
-![Fig 6](https://raw.githubusercontent.com/BrainAndSpineInstitute/rgcca_Rpackage/master/img/variables_space.png)
-*Fig. 6 : Correlation between each variable of each block (by using the superblock) and the two first components of RGCCA*
+![Fig 7](https://raw.githubusercontent.com/BrainAndSpineInstitute/rgcca_Rpackage/master/img/variables_space.png)
+*Fig. 7 : Correlation between each variable of each block (by using the superblock) and the two first components of the RGCCA*
 
-The next tab represents the weight of each variable ordered decreasingly on the RGCCA component selected in X-axis (1, by default) 
-and for the selected block (superblock, by default) (**Fig. 7**). The top potential biomarkers are in the top. Their number is set by the graphical 
-associated parameter.
+#### Top variables
+The next tab also represents the same correlation of the variable with the component (on the X-axis). The top variables are ordered decreasingly (on the Y-axis) in an histogram for the component (1, by default) and for the block selected(superblock, by default) (**Fig. 8**). 
 
-![Fig 7](https://raw.githubusercontent.com/BrainAndSpineInstitute/rgcca_Rpackage/master/img/best_biomarkers.png)
-*Fig. 7 : Top potential biomarkers among all the blocks with higher weight for the first component of RGCCA*
+![Fig 8](img/fingerprint.png)
 
-In the last one, the average variance explained of each variable in the selected block is ordered decreasingly (**Fig. 8**).
+*Fig. 8 : Top 11 variables among all the blocks (by using the superblock) with higher correlation with the first component of the RGCCA. The mouse over the "gnpr" variable (belonging to the industry block) shows a correlation of 0.859 with this component.*
 
-![Fig 8](img/ave.png)
-*Fig. 8 : Average variance explained in the first component of the superblock*
+Here, "labo" from the industry block (the amount of labor force in agriculture) is the variable the most negatively correlated to the X-axis. On the opposite, "gnpr" (gross national product) from the industry block and "demostab" (stable democracy) from the political block are the most positive correlated variables. In other terms, these variables have the upper variances on the first component of the RGCCA. Countries with an unstable democracy are more associated with a lower "rent" (percent of farmers that rent their land). Otherwise, countries with a dictatorship system are more associated with a higher labor force in agriculture values and a fewer gross national product (and inversely for the stable democracy case).
 
 ## References
 

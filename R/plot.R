@@ -17,8 +17,8 @@ AXIS_FONT = "italic"
 SAMPLES_COL_DEFAULT = "brown3"
 
 # X- Y axis format for plotly objets : no axis, no ticks
-ax <- list(linecolor = toRGB("white"), ticks = "", titlefont = list(size = 22))
-ax2 <- list(linecolor = toRGB("white"), tickfont = list(size = 9, color = "grey"))
+ax <- list(linecolor = toRGB("white"), ticks = "", titlefont = list(size = 23))
+ax2 <- list(linecolor = toRGB("white"), tickfont = list(size = 10, color = "grey"))
 
 # Dynamic visualization of the outputs
 # f: ggplot2 function
@@ -49,8 +49,10 @@ dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE, dynamicTicks = 
     # set the font for this title
     p$x$layout$annotations[[1]]$text = paste0("<i><b>", p$x$layout$annotations[[1]]$text, "</b></i>")
 
-    if(!is.null(f$labels$subtitle))
-      p$x$layout$title = paste0(p$x$layout$title, "<br><i>", f$labels$subtitle, "</i>")
+    if(!is.null(f$labels$subtitle)){
+      p$x$layout$title = paste0(p$x$layout$title, '<br><b>', "c" , substring(f$labels$subtitle, 2), '</b>')
+      p$x$layout$titlefont$size = 30
+    }
   }
 
   if( ncol(f$data) == 3 )
@@ -180,12 +182,13 @@ varSelected = function(rgcca, i_block, comp)
   sum(rgcca$a[[i_block]][,comp] != 0)
 
 #' Default font for plots
-theme_perso = function() {
+theme_perso = function(MAR = 0) {
 
   theme(
     legend.text = element_text(size = 13),
     legend.title = element_text(face="bold.italic", size=16),
-    plot.title = element_text(size = 25, face = "bold", hjust=0.5, margin = margin(0,0,20,0))
+    plot.title = element_text(size = 25, face = "bold", hjust=0.5, margin = margin(0,0,20,0)),
+    plot.margin = margin(12, 0, MAR, 0, "mm")
   )
 }
 
@@ -641,15 +644,15 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
 
   if ( nrow(df) <= 10 || title == "Average Variance Explained" ){
     WIDTH = NULL
-  }else{
+    if(title == "Average Variance Explained")
+      AXIS_TEXT_SIZE = 12
+  }else
     WIDTH = 1
-    AXIS_TEXT_SIZE = 8
-  }
 
   if(nrow(df) < 3)
-    MAR = 6
+    MAR = 60
   else if(nrow(df) < 5)
-    MAR = 3
+    MAR = 30
   else
     MAR = 0
 
@@ -660,14 +663,13 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
       title = title,
       x = "", y = "") +
     theme_classic() +
-    theme_perso() +
+    theme_perso(MAR) +
     theme(
       axis.text.y = element_text(size = AXIS_TEXT_SIZE, face = AXIS_FONT, color = "gray40"),
-      axis.text.x = element_text(size = 8, face = AXIS_FONT, color = "gray40"),
+      axis.text.x = element_text(size = AXIS_TEXT_SIZE, face = AXIS_FONT, color = "gray40"),
       axis.line = element_blank(),
       axis.ticks = element_blank(),
-      plot.subtitle = element_text(hjust = 0.5, size = 16, face = "italic"),
-      plot.margin = unit(c(0, 0, MAR, 0), "cm"))
+      plot.subtitle = element_text(hjust = 0.5, size = 16, face = "italic"))
 
   if(title != "Average Variance Explained"){
     p  = p +
@@ -679,13 +681,10 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
     }
   }
 
-  # If changed, set the default graphical parameter
- #par(mar = c(1, .8, .8, .4) + .2)
-
   return(p)
 }
 
-corResponse = function(rgcca, blocks, i_response = NULL, comp = 1, i_block = 1){
+ corResponse = function(rgcca, blocks, i_response = NULL, comp = 1, i_block = 1){
 
   if(is.null(i_response))
     response = blocks[[ length(rgcca$a) ]]

@@ -404,7 +404,7 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
 
   if (!is.null(file)) {
 
-    isXls <- (length(grep("xlsx?", file)) == 1)
+    isXls <- length(grep("xlsx?", file))
 
     if(!isXls)
       response = loadData(file, sep, rownames, header)
@@ -437,14 +437,12 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
 
       disjunctive = unique(apply(response, 1, sum))
 
-      if (length(disjunctive) == 1 && unique(response %in% c(0, 1)) && disjunctive == 1) {
+      if (length(disjunctive) && unique(response %in% c(0, 1)) && disjunctive) {
         response2 = factor(apply(response, 1, which.max))
         if (header) {
           levels(response2) = colnames(response)
         }
-        response = as.character(response2)
-
-        print(3)
+        response = as.matrix(data.frame(as.character(response2), row.names = rownames(response)))
 
       } else {
         response = response[, 1]
