@@ -40,11 +40,12 @@ dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE, dynamicTicks = 
     p$x$layout$annotations[[1]]$yanchor = "top"
 
     # Deals with a too short name of modalities
-    if( !is.null(p$x$data[[1]]$legendgroup)
-      &&
-        max(unlist(lapply(p$x$data, function(z) nchar(z$legendgroup)  ))) < 5
-      )
+    # if( !is.null(p$x$data[[1]]$legendgroup)
+    #   &&
+    #     max(unlist(lapply(p$x$data, function(z) nchar(z$legendgroup)  ))) < 5
+    #   )
       p$x$layout$margin$r = nchar(p$x$layout$annotations[[1]]$text) * 13
+      p$x$layout$margin$t = 100
 
     # set the font for this title
     p$x$layout$annotations[[1]]$text = paste0("<i><b>", p$x$layout$annotations[[1]]$text, "</b></i>")
@@ -89,12 +90,13 @@ changeHovertext = function(p, hovertext = TRUE){
   # identify the order / id of the traces which corresponds to x- and y-axis (should be before the splitting function)
   traces = which(lapply(p$x$data, function(x) length(grep("intercept", x$text)) == 1) == T)
 
-  for (i in 1:length(p$x$data)){
+  for (i in 1:length(p$x$data[-traces])){
 
     # Use only traces corresponding to the dataframe rows
-    if(!is.null(p$x$data[[i]]$hovertext)){
+    if(!is.null(p$x$data[[i]][attr])){
+      # For each lines of each group in the legend
       for (j in 1:length(p$x$data[[i]][attr][[1]])){
-        # Distinguish each doublet by splitting with "<br>"  and separe them in key/value by splitting with ": " (like a dictionnary)
+        # Distinguish each duplicate by splitting with "<br>"  and separe them in key/value by splitting with ": " (like a dictionnary)
         l_text  = lapply( as.list( strsplit( p$x$data[[i]][attr][[1]][j], "<br />" )[[1]] ), function(x) strsplit(x, ": ")[[1]] )
         # keep only the (x, y) coordinates with the key df[, ] and the response if exists
         l_text = unlist(lapply(l_text, function(x, y) {
@@ -105,7 +107,7 @@ changeHovertext = function(p, hovertext = TRUE){
           })
         )
 
-        name = ifelse(hovertext, p$x$data[[i]]$text[j], p$sample_names[[i]][j])
+        name = ifelse(hovertext, p$x$data[[i]]$text[j], ifelse(length(p$sample_names) > 1 , p$sample_names[[i]][j], p$sample_names[[1]][j]))
         # Overwrite the onMouseOver text with the (x, y) coordinates and the response if exists
         p$x$data[[i]][attr][[1]][j] = paste0("name: ", name, "<br />x: ", l_text[1], "<br />y: ", l_text[2], ifelse(length(l_text)==3,  paste0("<br />response: ", l_text[3]) , ""))
 
@@ -182,13 +184,12 @@ varSelected = function(rgcca, i_block, comp)
   sum(rgcca$a[[i_block]][,comp] != 0)
 
 #' Default font for plots
-theme_perso = function(MAR = 0) {
+theme_perso = function() {
 
   theme(
     legend.text = element_text(size = 13),
     legend.title = element_text(face="bold.italic", size=16),
-    plot.title = element_text(size = 25, face = "bold", hjust=0.5, margin = margin(0,0,20,0)),
-    plot.margin = margin(12, 0, MAR, 0, "mm")
+    plot.title = element_text(size = 25, face = "bold", hjust=0.5, margin = margin(0,0,20,0))
   )
 }
 
@@ -663,13 +664,14 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
       title = title,
       x = "", y = "") +
     theme_classic() +
-    theme_perso(MAR) +
+    theme_perso() +
     theme(
       axis.text.y = element_text(size = AXIS_TEXT_SIZE, face = AXIS_FONT, color = "gray40"),
       axis.text.x = element_text(size = AXIS_TEXT_SIZE, face = AXIS_FONT, color = "gray40"),
       axis.line = element_blank(),
       axis.ticks = element_blank(),
-      plot.subtitle = element_text(hjust = 0.5, size = 16, face = "italic"))
+      plot.subtitle = element_text(hjust = 0.5, size = 16, face = "italic"),
+      plot.margin = margin(0, 0, MAR, 0, "mm"))
 
   if(title != "Average Variance Explained"){
     p  = p +

@@ -168,7 +168,7 @@ ui <- fluidPage(
                  plotOutput("AVEPlot"),
                  actionButton("ave_save","Save")),
         tabPanel("Samples",
-                 plotlyOutput("samplesPlot"),
+                 plotlyOutput("samplesPlot", height = 700, width = 700),
                  actionButton("samples_save","Save")),
         tabPanel("Corcircle",
                  plotlyOutput("corcirclePlot"),
