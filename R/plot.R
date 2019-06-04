@@ -47,8 +47,13 @@ dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE, dynamicTicks = 
       p$x$layout$margin$r = nchar(p$x$layout$annotations[[1]]$text) * 13
       p$x$layout$margin$t = 100
 
-    # set the font for this title. for shiny corcircle, if text = TRUE, two legends will appear. only the first one will be selected
-    p$x$layout$annotations[[1]]$text = paste0("<i><b>", unlist(strsplit(p$x$layout$annotations[[1]]$text, "<br />"))[1], "</b></i>")
+    # for shiny corcircle, if text = TRUE, two legends will appear. only the first one will be selected
+    title = unlist(strsplit(p$x$layout$annotations[[1]]$text, "<br />"))[1]
+    # to prevent print a "NA" when there is no legend in plot
+    if(is.na(title))
+      title = ""
+    # set the font for this title
+    p$x$layout$annotations[[1]]$text = paste0("<i><b>", title, "</b></i>")
 
 
     if(!is.null(f$labels$subtitle)){

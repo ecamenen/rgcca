@@ -88,8 +88,6 @@ ui <- fluidPage(
                                Random = "random"),
                    selected = "svd"),
 
-        uiOutput("connection_custom"),
-
         checkboxInput(inputId = "tau_opt",
                        label = "Use an optimal tau",
                        value = TRUE)  %>%
@@ -106,6 +104,8 @@ ui <- fluidPage(
             shiny_iconlink(name = "question-circle") %>%
               bs_attach_modal(id_modal = "modal_superblock")
         ),
+
+        uiOutput("connection_custom"),
 
         checkboxInput(inputId = "supervised",
                       label = "Supervised analysis",

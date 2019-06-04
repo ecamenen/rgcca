@@ -171,6 +171,8 @@ server <- function(input, output, session) {
 
   setUiConnection <- function(){
     refresh <- c(input$connection)
+    conditionalPanel(
+      condition = "!input.superblock",
     fileInput(inputId = "connection",
               label = "Connection design [OPTIONAL]"
     )  %>%
@@ -178,6 +180,7 @@ server <- function(input, output, session) {
         icon("question") %>%
           bs_embed_tooltip(title = "The design matrix is a symmetric matrix of the length of the number of blocks describing the connections between them. Two values are accepted : '1' for a connection between two blocks, or '0' otherwise.")
       )
+    )
   }
 
   setUiResponse <- function(){
