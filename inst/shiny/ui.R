@@ -125,7 +125,7 @@ ui <- fluidPage(
           shinyInput_label_embed(
             icon("question") %>%
               bs_embed_tooltip(title = "The maximization of the sum of covariances between block components is calculated with : the identity function (horst scheme),
-                               the absolute values (centroid scheme), the squared values (factorial scheme).", placement = "bottom")
+                               the absolute values (centroid scheme), the squared values (factorial scheme).")
             ),
 
         sliderInput(inputId = "boot",
@@ -168,7 +168,7 @@ ui <- fluidPage(
                  plotOutput("AVEPlot"),
                  actionButton("ave_save","Save")),
         tabPanel("Samples",
-                 plotlyOutput("samplesPlot", height = 700, width = 700),
+                 plotlyOutput("samplesPlot", height = 700),
                  actionButton("samples_save","Save")),
         tabPanel("Corcircle",
                  plotlyOutput("corcirclePlot"),

@@ -183,7 +183,7 @@ server <- function(input, output, session) {
   setUiResponse <- function(){
     refresh <- c(input$response)
     fileInput(inputId = "response",
-              label = "Groups of modalities [OPTIONAL]"
+              label = "Color with a response [OPTIONAL]"
     ) %>% shinyInput_label_embed(
       icon("question") %>%
         bs_embed_tooltip(title = "To color the sample plot. A CSV file containing either : (i) an only column with a qualitative or a quantitative variable; (ii) multiple columns corresponding to a disjunctive table")

@@ -274,8 +274,8 @@ if(!is.matrix(connection))
 #opt$group = "/home/etienne.camenen/Documents/DATA/Nucleiparks/UPDRS_2.tsv"
 #opt$group = "/home/etienne.camenen/Documents/DATA/ZEUS/DATA/AMY_Staging_MA_qual2.txt"
 #opt$group = "/home/etienne.camenen/Documents/DATA/Nucleiparks/group_V3.tsv"
-#opt$group = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/response3.tsv"
-opt$group = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/political_system.tsv"
+opt$group = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/response3.tsv"
+#opt$group = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/political_system.tsv"
 
 group = setResponse(blocks, opt$group, opt$separator, opt$header)
 

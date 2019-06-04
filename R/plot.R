@@ -47,8 +47,9 @@ dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE, dynamicTicks = 
       p$x$layout$margin$r = nchar(p$x$layout$annotations[[1]]$text) * 13
       p$x$layout$margin$t = 100
 
-    # set the font for this title
-    p$x$layout$annotations[[1]]$text = paste0("<i><b>", p$x$layout$annotations[[1]]$text, "</b></i>")
+    # set the font for this title. for shiny corcircle, if text = TRUE, two legends will appear. only the first one will be selected
+    p$x$layout$annotations[[1]]$text = paste0("<i><b>", unlist(strsplit(p$x$layout$annotations[[1]]$text, "<br />"))[1], "</b></i>")
+
 
     if(!is.null(f$labels$subtitle)){
       p$x$layout$title = paste0(p$x$layout$title, '<br><b>', "c" , substring(f$labels$subtitle, 2), '</b>')
@@ -89,11 +90,11 @@ changeHovertext = function(p, hovertext = TRUE){
   attr = ifelse(hovertext, "hovertext", "text")
   # identify the order / id of the traces which corresponds to x- and y-axis (should be before the splitting function)
   traces = which(lapply(p$x$data, function(x) length(grep("intercept", x$text)) == 1) == T)
+  # length of groups of points without traces and circle points
+  n = which(sapply(p$x$data, function(x) match("xintercept: 0", x$text)==1)) -1
 
-  for (i in 1:length(p$x$data[-traces])){
+  for (i in 1:n) {
 
-    # Use only traces corresponding to the dataframe rows
-    if(!is.null(p$x$data[[i]][attr])){
       # For each lines of each group in the legend
       for (j in 1:length(p$x$data[[i]][attr][[1]])){
         # Distinguish each duplicate by splitting with "<br>"  and separe them in key/value by splitting with ": " (like a dictionnary)
@@ -107,12 +108,12 @@ changeHovertext = function(p, hovertext = TRUE){
           })
         )
 
-        name = ifelse(hovertext, p$x$data[[i]]$text[j], ifelse(length(p$sample_names) > 1 , p$sample_names[[i]][j], p$sample_names[[1]][j]))
+        # do not print names because text = FALSE plots have'nt names
+        name = ifelse(hovertext, paste0("name: ", p$x$data[[i]]$text[j], "<br />"), "")
         # Overwrite the onMouseOver text with the (x, y) coordinates and the response if exists
-        p$x$data[[i]][attr][[1]][j] = paste0("name: ", name, "<br />x: ", l_text[1], "<br />y: ", l_text[2], ifelse(length(l_text)==3,  paste0("<br />response: ", l_text[3]) , ""))
+        p$x$data[[i]][attr][[1]][j] = paste0(name, "x: ", l_text[1], "<br />y: ", l_text[2], ifelse(length(l_text)==3,  paste0("<br />response: ", l_text[3]) , ""))
 
       }
-    }
   }
   # Remove the x- and y- axis onOverMouse
   ( style(p, hoverinfo = "none", traces = traces ) )
@@ -413,7 +414,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
 #' plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
 #' @export plotSpace
-plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = NULL, p = NULL, text = TRUE, i_block_y = NULL, no_Overlap = TRUE, colours = c("blue", "yellow", SAMPLES_COL_DEFAULT)){
+plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = NULL, p = NULL, text = TRUE, i_block_y = NULL, no_Overlap = TRUE, colours = c("blue", "gray", SAMPLES_COL_DEFAULT)){
 
   if(is.null(i_block_y))
     i_block_y = i_block
@@ -469,7 +470,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
     p + scale_color_manual(values = colorGroup(group))
   # For quantitative response
   }else
-    p + scale_color_gradientn(colours = colours, na.value = "grey80")
+    p + scale_color_gradientn(colours = colours, na.value = "black")
 
 }
 

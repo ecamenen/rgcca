@@ -61,7 +61,7 @@ plotNetwork = function(nodes, edges, blocks){
   set.seed(1)
   V <- E <- NULL
 
-  par = ifelse("c1" %in% names(nodes), "c1", "tau")
+  par = ifelse("c1" %in% names(nodes), "sparsity", "tau")
 
   net <- graph_from_data_frame(d = edges, vertices = nodes, directed = FALSE)
 
@@ -91,7 +91,7 @@ plotNetwork2 = function(nodes, edges, blocks){
 
   # Avoid random
   set.seed(1)
-  par = ifelse("c1" %in% names(nodes), "c1", "tau")
+  par = ifelse("c1" %in% names(nodes), "sparsity", "tau")
 
   if(all(is.na(nodes[, par])))
     nodes[, par] = rep("optimal", length(blocks))
