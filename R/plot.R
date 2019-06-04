@@ -40,12 +40,8 @@ dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE, dynamicTicks = 
     p$x$layout$annotations[[1]]$yanchor = "top"
 
     # Deals with a too short name of modalities
-    # if( !is.null(p$x$data[[1]]$legendgroup)
-    #   &&
-    #     max(unlist(lapply(p$x$data, function(z) nchar(z$legendgroup)  ))) < 5
-    #   )
-      p$x$layout$margin$r = nchar(p$x$layout$annotations[[1]]$text) * 13
-      p$x$layout$margin$t = 100
+    p$x$layout$margin$r = nchar(p$x$layout$annotations[[1]]$text) * 13
+    p$x$layout$margin$t = 100
 
     # for shiny corcircle, if text = TRUE, two legends will appear. only the first one will be selected
     title = unlist(strsplit(p$x$layout$annotations[[1]]$text, "<br />"))[1]

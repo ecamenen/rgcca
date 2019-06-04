@@ -105,8 +105,6 @@ ui <- fluidPage(
               bs_attach_modal(id_modal = "modal_superblock")
         ),
 
-        uiOutput("connection_custom"),
-
         checkboxInput(inputId = "supervised",
                       label = "Supervised analysis",
                       value = F),
@@ -115,6 +113,8 @@ ui <- fluidPage(
           condition = "input.supervised || input.analysis_type == 'RA'",
           uiOutput("blocks_names_response")
         ),
+
+        uiOutput("connection_custom"),
 
         radioButtons(inputId = "scheme",
                      label = "Scheme function",

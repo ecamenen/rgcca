@@ -172,7 +172,7 @@ server <- function(input, output, session) {
   setUiConnection <- function(){
     refresh <- c(input$connection)
     conditionalPanel(
-      condition = "!input.superblock",
+      condition = "!input.superblock && !input.supervised",
     fileInput(inputId = "connection",
               label = "Connection design [OPTIONAL]"
     )  %>%
@@ -727,15 +727,11 @@ server <- function(input, output, session) {
   observeEvent(input$supervised, {
     if(input$supervised)
       updateSuperblock("superblock", FALSE)
-    else
-      updateSuperblock("superblock", TRUE)
   })
 
   observeEvent(input$superblock, {
     if(input$superblock)
       updateSuperblock("supervised", FALSE)
-    else
-      updateSuperblock("supervised", TRUE)
   })
 
   observeEvent(input$run_boot, {
