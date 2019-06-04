@@ -328,6 +328,9 @@ server <- function(input, output, session) {
                 input$scale, input$init, input$comp_x, input$comp_y, input$tau, input$tau_opt, input$analysis_type,
                 input$connection, input$nb_comp, input$response, input$names_block_x, input$names_block_y, input$boot, input$text,
                 input$names_block_response, input$supervised, input$run_analysis )
+
+    getIdBlockX()
+    getIdBlockY()
   }
 
 
@@ -742,19 +745,32 @@ server <- function(input, output, session) {
   observeEvent(input$names_block_x, {
     # Observe if graphical parameters are changed
 
-    if(blocksExists()){
-      reac_var(as.integer(input$names_block_x))
-      assign("id_block", reac_var(), .GlobalEnv)
-    }
+    getIdBlockX()
+
   })
+
+  getIdBlockX = function(){
+    isolate({
+      if(blocksExists() &&  !is.null(input$names_block_x)){
+        reac_var(as.integer(input$names_block_x))
+        assign("id_block", reac_var(), .GlobalEnv)
+      }
+    })
+  }
+
+  getIdBlockY = function(){
+    isolate({
+      if(blocksExists() && !is.null(input$names_block_y)){
+        reac_var(as.integer(input$names_block_y))
+        assign("id_block_y", reac_var(), .GlobalEnv)
+      }
+    })
+  }
 
   observeEvent(input$names_block_y, {
     # Observe if graphical parameters are changed
 
-    if(blocksExists()){
-      reac_var(as.integer(input$names_block_y))
-      assign("id_block_y", reac_var(), .GlobalEnv)
-    }
+    getIdBlockY()
 
   })
 
