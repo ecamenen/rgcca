@@ -36,6 +36,14 @@ server <- function(input, output, session) {
     setTauUI()
   })
 
+  output$nb_mark_custom <- renderUI({
+    refresh <- c(input$blocks_names_custom_x, input$names_block_x)
+    sliderInput(inputId = "nb_mark",
+                label = "Number of potential biomarkers",
+                min = 10, max = getMaxCol(), value = getDefaultCol(), step = 1)
+  })
+
+
   output$connection_custom <- renderUI({
     setUiConnection()
   })
@@ -79,12 +87,6 @@ server <- function(input, output, session) {
   output$comp_y_custom <- renderUI({
     refresh <- input$nb_comp
     uiComp("y", 2)
-  })
-
-  output$nb_mark_custom <- renderUI({
-    sliderInput(inputId = "nb_mark",
-                label = "Number of potential biomarkers",
-                min = 10, max = getMaxCol(), value = getDefaultCol(), step = 1)
   })
 
   output$analysis_type_custom <- renderUI({
@@ -227,7 +229,7 @@ server <- function(input, output, session) {
 
     if(!is.null(input$blocks)){
       blocks = getInfile()
-      return( max(sapply(blocks, NCOL)) )
+      return( ncol(blocks[[id_block]]) )
     }else
       return(100)
 
@@ -327,7 +329,7 @@ server <- function(input, output, session) {
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
                 input$scale, input$init, input$comp_x, input$comp_y, input$tau, input$tau_opt, input$analysis_type,
                 input$connection, input$nb_comp, input$response, input$names_block_x, input$names_block_y, input$boot, input$text,
-                input$names_block_response, input$supervised, input$run_analysis )
+                input$names_block_response, input$supervised, input$run_analysis, input$nb_mark_custom, input$blocks_names_custom_x )
 
     getIdBlockX()
     getIdBlockY()
@@ -750,13 +752,13 @@ server <- function(input, output, session) {
   })
 
   getIdBlockX = function(){
-    isolate({
+      isolate({
       if(blocksExists() &&  !is.null(input$names_block_x)){
-        reac_var(as.integer(input$names_block_x))
-        assign("id_block", reac_var(), .GlobalEnv)
-      }
-    })
-  }
+          reac_var(as.integer(input$names_block_x))
+          assign("id_block", reac_var(), .GlobalEnv)
+        }
+      })
+    }
 
   getIdBlockY = function(){
     isolate({
@@ -811,7 +813,7 @@ server <- function(input, output, session) {
       assign("comp_y", input$comp_y, .GlobalEnv)
       if(!is.null(input$nb_mark))
         assign("nb_mark", input$nb_mark, .GlobalEnv)
-    }
+      }
   })
 
   setResponseEvent <- eventReactive(input$response, {
