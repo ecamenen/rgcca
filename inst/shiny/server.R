@@ -118,8 +118,11 @@ server <- function(input, output, session) {
       condition = cond,
       lapply(1:(length(blocks_without_superb)+ ifelse(input$superblock, 1, 0)), function(i){
         sliderInput(inputId = paste0("tau", i),
-                    label = par_name,
-                    min = 0, max = 1, value = ifelse(is.null(input$tau1), 1, input[[paste0("tau", i)]]), step = .1)
+                    label = paste(par_name, "for", names(getNames())[i]),
+                    min = ifelse(par_name == "Tau", 0, ceiling( 1 / sqrt(ncol(blocks[[i]])) * 100) / 100),
+                    max = 1,
+                    value = ifelse(is.null(input$tau1), 1, input[[paste0("tau", i)]]),
+                    step = .01)
         })
     )
   }
