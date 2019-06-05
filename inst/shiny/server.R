@@ -453,10 +453,10 @@ server <- function(input, output, session) {
                                 ncomp = ncomp, scheme = input$scheme,
                                 superblock = pars$superblock, type  = analysis_type, quiet = TRUE))
 
-    c1 = showWarn(checkC1(pars$blocks, pars$tau, analysis_type))
+    #c1 = showWarn(checkC1(pars$blocks, pars$tau, analysis_type))
 
 
-    if(length(pars) == 1 | !is.null(unlist(c1))){
+    if(length(pars) == 1){
       assign("analysis", NULL, .GlobalEnv)
       return(NULL)
     }
