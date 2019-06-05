@@ -30,10 +30,10 @@ We consider J data matrices *X1, ..., XJ*. Each *n × pj* data matrix *Xj = [ xj
 ## 1. Load the inputs ('Data' parameter tab)
 
 
-Download the pre-formatted files [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/master/data). This folder includes three blocks with the same samples (corresponding to the countries here) but different types of variables (agriculture, industry and politic variables). In this dataset, according to Russett (1964), a high agriculture inequality and a low industrial development lead to an unstable political regime. Load the three working examples ```agriculture.tsv```, ```industry.tsv``` and ```politic.tsv``` in the ```blocks``` box (**Fig. 1**) (CTRL + click for multiple selections). The accepted format is one (for PCA) or multiple CSV files containing a matrix with:
+Download and extract the ZIP of the software [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/develop). Then, launch the ```inst/shiny/app.R``` file. The ```inst/extdata``` folder includes three blocks with the same samples (corresponding to the countries here) but different types of variables (agriculture, industry and politic variables). In this dataset, according to Russett (1964), a high agriculture inequality and a low industrial development lead to an unstable political regime. Load the three working examples ```agriculture.tsv```, ```industry.tsv``` and ```politic.tsv``` in the ```blocks``` box (**Fig. 1**) (CTRL + click for multiple selections). The accepted format is one (for PCA) or multiple CSV files containing a matrix with:
 - quantitative values only, with decimals separated by '.' and missing values labelled as "NA"
 - samples in lines, labelled in the 1rst column with the same sample names between blocks (some samples could be missing in some blocks)
-- variables in columns, labelled in the 1rst column without duplications in variable names between blocks
+- variables in columns, labelled in the 1rst line without duplications in variable names between blocks
 
 This format recommendation could be viewed with **the mouse over the question mark symbol** on the right of the file loading box.
 
@@ -86,8 +86,7 @@ If a superblock is used, supervised analysis is automatically disabled, and inve
 By selecting a RGCCA,```use an optimal tau``` is automatically set for each block (**Fig. 3**). When disabled, one could make ```tau``` varying for each block from 1 (maximize the correlation between the variables of the selected block) to 0 (maximize the covariance).
  
 #### 2.4.2. Sparsity coefficient
-By selecting a SGCCA, the ``` sparsity``` could be applied to each block. This coefficient varies from the inverse of the square root of the number of columns (the smaller set of variables) to 1 (all the variables are included). Move the cursor for the first block to a 0.4 sparsity coefficient to catch an error:
-> "Sparsity parameter is equals to 0.4. For SGCCA, it must be comprised between 1/sqrt(number_column) (i.e., 0.41, 0.71, 0.58, 0.31) and 1."
+By selecting a SGCCA, the ``` sparsity``` could be applied to each block. This coefficient varies from the inverse of the square root of the number of columns (the smaller set of variables) to 1 (all the variables are included).
 
 Move again the cursor to an upper sparsity value to make it works.
  

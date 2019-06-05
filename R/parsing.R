@@ -313,7 +313,10 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
 		attributes(blocks[[i]])$nrow = nrow[[i]]
 	}
 
-  return(blocks)
+  if(nrow(blocks[[1]]) > 0)
+    return(blocks)
+  else
+    stop("There is no rows in common between the blocks.", exit_code = 108)
 }
 
 #' Check the format of the connection matrix

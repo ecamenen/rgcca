@@ -32,7 +32,7 @@ ui <- fluidPage(
     tags$strong("Authors: "),
     tags$p("Arthur TENENHAUS (", tags$a(href="arthur.tenenhaus@l2s.centralesupelec.fr","arthur.tenenhaus@l2s.centralesupelec.fr"), "), Vincent GUILLEMOT, Etienne CAMENEN")
     ),
-  tags$a(href="https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/master/inst/shiny/tutorialShiny.md", "Go to the tutorial"),
+  tags$a(href="https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/develop/inst/shiny/tutorialShiny.md", "Go to the tutorial"),
   useShinyjs(),
   sidebarLayout(
 

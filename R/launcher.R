@@ -214,11 +214,11 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "sgcca",
+           type = "rgcca",
            scheme = "factorial",
-           tau = "0.71, 0.71, 0.71",
+           tau = "0.71, 0.71, 0.71, 0.71",
            init = "svd",
-           ncomp = "2, 2, 2",
+           ncomp = "2, 2, 2, 2",
            block = 0,
            compx = 1,
            compy = 2,
@@ -229,9 +229,9 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output6 = "connection.pdf",
-          datasets = "/home/etienne.camenen/Documents/DATA/ZEUS/DATA/metabolomic.txt,/home/etienne.camenen/Documents/DATA/ZEUS/DATA/lipidomic.txt,/home/etienne.camenen/Documents/DATA/ZEUS/DATA/atrophy.txt")
-          # datasets = "/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Lipidomic_without_P7498.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic_without_23.tsv")
-          # datasets = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/agriculture.tsv,/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/industry.tsv, /home/etienne.camenen/bin/rgccaLauncher/inst/extdata/politic.tsv")
+          # datasets = "/home/etienne.camenen/Documents/DATA/ZEUS/DATA/metabolomic.txt,/home/etienne.camenen/Documents/DATA/ZEUS/DATA/lipidomic.txt,/home/etienne.camenen/Documents/DATA/ZEUS/DATA/atrophy.txt")
+          datasets = "/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Lipidomic_without_P7498.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic_without_23.tsv, /home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Imagery3.tsv")
+          #datasets = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/agriculture.tsv,/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/industry.tsv, /home/etienne.camenen/bin/rgccaLauncher/inst/extdata/politic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
