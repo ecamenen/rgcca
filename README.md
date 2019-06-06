@@ -60,28 +60,35 @@ or multiple columns containing a disjunctive table.
 - ```ave``` (.pdf, .png, .tiff, .bmp or .jpeg) : average variance explained (in %) in the model for each block ranked decreasingly.
 ![ave](inst/shiny/img/ave.png)
 
-## Usage Instructions
 
-#### Installation
-
-- Softwares : java compiler (required); latex (suggested)
+## Installation
+- Softwares : R (required); java compiler (required for Excel); latex (suggested)
 - R libraries : see DESCRIPTION file
 
-For Linux :
+### Linux
 
 ```
 apt-get install -y --no-install-recommends git default-jre default-jdk && \
-    apt-get install -y r-base r-cran-ggplot2 r-cran-scales r-cran-optparse && \
+    apt-get install -y r-base r-cran-ggplot2 r-cran-scales r-cran-optparse r-cran-shiny r-cran-shiny-js r-cran-plotly r-cran-igraph && \
     R CMD javareconf && \
-    R -e 'install.packages(c("RGCCA", "rJava", "xlsxjars", "xlsx"))' && \
+    R -e 'install.packages(c("RGCCA", "parallel", "ggrepel", "visNetwork", "rJava", "xlsxjars", "xlsx"))' && \
     git clone https://github.com/BrainAndSpineInstitute/rgcca_Rpackage && \
 	cd rgcca_Rpackage
 	
 ( apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-fonts-extra texlive-science )
 ```
 
-#### Execution
+### Windows
+Please, find the software on [this website](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/develop). Click on the green button in the upper right corner ```Clone and Download``` and then ```Download the ZIP```. Extract the file.
 
+
+## Execution
+If the Linux dependencies installation step was not executed previously (for Windows users), their automatic installation could take several minutes during the first execution. If dependencies compatibility errors appear, the required (and suggested) librairies to import are listed in the [DESCRIPTION](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/develop/DESCRIPTION) files. ```xlsx``` has to be used with a java compiler and could be installed only if Excel files are used as inputs.
+
+### Shiny interface
+For shiny execution, open ```inst/shiny/app.R```. Execute the code without clicking the ```Run App button```.  For a tutorial, click [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/develop/inst/shiny/tutorialShiny.md).
+
+### Command line
 
 For direct usage (Example from Russet data from RGCCA package [3]) :
 
