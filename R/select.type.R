@@ -393,7 +393,7 @@ bootstrap = function(blocks, n_boot = 5, connection = 1 - diag(length(blocks)), 
 
   W = parallel::mclapply(1:(n_boot-1), function(x) {
 
-    print(paste("Bootstrap", x))
+    # print(paste("Bootstrap", x))
 
     w = bootstrap_k(blocks, connection, tau, ncomp, scheme, scale, init, bias, type)
 

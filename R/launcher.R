@@ -17,7 +17,7 @@ graphics.off()
 # Parse the arguments from a command line launch
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[18]),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)"),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
     make_option(c("--group"), type="character",
@@ -216,7 +216,7 @@ opt = list(directory = ".",
            separator = "\t",
            type = "rgcca",
            scheme = "factorial",
-           tau = "0.71, 0.71, 0.71, 0.71",
+           tau = "optimal",
            init = "svd",
            ncomp = "2, 2, 2, 2",
            block = 0,
@@ -229,9 +229,8 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output6 = "connection.pdf",
-          # datasets = "/home/etienne.camenen/Documents/DATA/ZEUS/DATA/metabolomic.txt,/home/etienne.camenen/Documents/DATA/ZEUS/DATA/lipidomic.txt,/home/etienne.camenen/Documents/DATA/ZEUS/DATA/atrophy.txt")
-          datasets = "/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Lipidomic_without_P7498.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic_without_23.tsv, /home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Imagery3.tsv")
-          #datasets = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/agriculture.tsv,/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/industry.tsv, /home/etienne.camenen/bin/rgccaLauncher/inst/extdata/politic.tsv")
+           #datasets = "/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Lipidomic_without_P7498.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic_without_23.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Imagery.tsv")
+           datasets = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/agriculture.tsv,/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/industry.tsv, /home/etienne.camenen/bin/rgccaLauncher/inst/extdata/politic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -270,12 +269,6 @@ blocks = setSuperblock(blocks, opt$superblock, opt$type)
 connection = opt$connection
 if(!is.matrix(connection))
   connection = setConnection(blocks, (opt$superblock | !is.null(opt$response)), opt$connection, opt$separator)
-
-#opt$group = "/home/etienne.camenen/Documents/DATA/Nucleiparks/UPDRS_2.tsv"
-opt$group = "/home/etienne.camenen/Documents/DATA/ZEUS/DATA/AMY_Staging_MA_qual2.txt"
-#opt$group = "/home/etienne.camenen/Documents/DATA/Nucleiparks/group_V3.tsv"
-#opt$group = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/response3.tsv"
-#opt$group = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/political_system.tsv"
 
 group = setResponse(blocks, opt$group, opt$separator, opt$header)
 
