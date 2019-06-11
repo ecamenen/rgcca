@@ -243,8 +243,10 @@ server <- function(input, output, session) {
     # Set the maximum of component to the minimum
     # number of column among the blocks but not higher than 5
 
-    if (getMinComp() < 5)
-      return (getMinComp())
+    min <- getMinComp()
+
+    if (min < 5)
+      return (min)
     else
       return (5)
   }
@@ -253,8 +255,10 @@ server <- function(input, output, session) {
     # Set the maximum of biomarkers to the maximum
     # number of column among the blocks but not lower than 100
 
-    if (getMaxCol() < 50)
-      return (getMaxCol())
+    max <- getMaxCol()
+
+    if (max < 50)
+      return (max)
     else
       return (50)
   }
@@ -556,6 +560,7 @@ server <- function(input, output, session) {
     blocks <- setParRGCCA()
 
     if(!is.null(blocks)){
+      assign("analysis", NULL, .GlobalEnv)
       assign("blocks", blocks, .GlobalEnv)
       setConnectionShiny()
       setIdBlock()
@@ -623,6 +628,8 @@ server <- function(input, output, session) {
 
   observeEvent(c(input$blocks, input$sep), {
     # blockExists for having dynamic response to input$blocks
+
+    hide(id = "navbar")
     if(blocksExists()){
       ;
     }
@@ -636,6 +643,9 @@ server <- function(input, output, session) {
     paths = paste(input$blocks$datapath, collapse = ',')
     names = paste(input$blocks$name, collapse = ',')
 
+    assign("analysis", NULL, .GlobalEnv)
+    hide(id = "navbar")
+
     assign("blocks_unscaled",
            showWarn(setBlocks (file = paths,
                       names = names,
@@ -645,10 +655,9 @@ server <- function(input, output, session) {
                     ),
            .GlobalEnv)
 
-    if(!is.list(blocks_unscaled)){
-      assign("analysis", NULL, .GlobalEnv)
+    if(!is.list(blocks_unscaled))
       return(NULL)
-    }else{
+    else{
       show(selector = "#tabset li a[data-value=RGCCA]")
       setToggle("connection")
     }
@@ -658,7 +667,6 @@ server <- function(input, output, session) {
            .GlobalEnv)
 
     # reactualiser l'analyse
-    assign("analysis", NULL, .GlobalEnv)
     assign("nb_comp", 2, .GlobalEnv)
     assign("analysis_type", NULL, .GlobalEnv)
     assign("response", NULL, .GlobalEnv)
@@ -669,10 +677,9 @@ server <- function(input, output, session) {
     assign("id_block_resp", length(blocks_without_superb), .GlobalEnv)
     blocks = setParRGCCA(FALSE)
     assign("blocks", blocks, .GlobalEnv)
-    assign("connection_file", input$connection$datapath, .GlobalEnv)
+    assign("connection_file", NULL, .GlobalEnv)
     setConnectionShiny()
     setIdBlock()
-    hide(id = "navbar")
     updateTabsetPanel(session, "navbar", selected = "Connection")
 
     return(blocks)
@@ -684,16 +691,19 @@ server <- function(input, output, session) {
              scaling(blocks_unscaled, input$scale, TRUE),
              .GlobalEnv)
       setAnalysis()
+      hide(id = "navbar")
     }
   })
 
   observeEvent(input$connection, {
+    hide(id = "navbar")
     if(blocksExists()){
       assign("connection_file", input$connection$datapath, .GlobalEnv)
       setConnectionShiny()
       setUiConnection()
       showWarn(message("Connection file loaded."), show = FALSE)
       assign("connection_file", NULL, .GlobalEnv)
+      assign("analysis", NULL, .GlobalEnv)
     }
   })
 
@@ -722,8 +732,8 @@ server <- function(input, output, session) {
         hide(i)
     }
 
-               if(!input$tau_opt)
-                 setTauUI()
+     if(!input$tau_opt)
+       setTauUI()
   })
 
   updateSuperblock <- function(id, value)
