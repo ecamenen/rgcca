@@ -200,7 +200,7 @@ postCheckArg = function(opt, blocks){
 
 #Loading librairies
 #suppressPackageStartupMessages(expr)
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph", "ggrepel", "parallel", "xlsx")
+librairies = c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph", "ggrepel", "parallel")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
     install.packages(l, repos = "http://cran.us.r-project.org",
@@ -229,8 +229,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output6 = "connection.pdf",
-           #datasets = "/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Lipidomic_without_P7498.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic_without_23.tsv,/home/etienne.camenen/Documents/DATA/Nucleiparks/Nucleiparks_selectedVar/Imagery.tsv")
-           datasets = "/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/agriculture.tsv,/home/etienne.camenen/bin/rgccaLauncher/inst/extdata/industry.tsv, /home/etienne.camenen/bin/rgccaLauncher/inst/extdata/politic.tsv")
+           datasets = "~/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv,~/DATA/Nucleiparks/Nucleiparks_selectedVar/Lipidomic_without_P7498.tsv,~/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic_without_23.tsv, ~/DATA/Nucleiparks/Nucleiparks_selectedVar/Imagery.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -328,5 +327,5 @@ if(opt$type != "pca"){
 
 }
 
-boot = bootstrap(blocks, 5, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
-dynamicPlotBoot(plotBootstrap(boot, opt$compx, opt$nmark, opt$block))
+#boot = bootstrap(blocks, 5, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
+#dynamicPlotBoot(plotBootstrap(boot, opt$compx, opt$nmark, opt$block))

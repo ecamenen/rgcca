@@ -50,11 +50,14 @@ dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE, dynamicTicks = 
       title = ""
     # set the font for this title
     p$x$layout$annotations[[1]]$text = paste0("<i><b>", title, "</b></i>")
-
+    
+    #Sys.info()[['sysname']]
 
     if(!is.null(f$labels$subtitle)){
-      p$x$layout$title = paste0(p$x$layout$title, '<br><b>', "c" , substring(f$labels$subtitle, 2), '</b>')
-      p$x$layout$titlefont$size = 30
+       if(packageVersion("plotly") < 4.8)
+         p$x$layout$title = paste0(p$x$layout$title, '<br><b>', "c" , substring(f$labels$subtitle, 2), '</b>')
+      else
+        p$x$layout$title$text = paste0(p$x$layout$title$text, '<br><b>', "c" , substring(f$labels$subtitle, 2), '</b>')
     }
   }
 

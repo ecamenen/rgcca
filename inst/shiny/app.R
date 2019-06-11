@@ -20,11 +20,15 @@ multiple_blocks_super <- c(`Generalized CCA (GCCA)` = 'GCCA', `Hierarchical PCA`
 analyse_methods <- list(one_block, two_blocks, multiple_blocks, multiple_blocks_super)
 
 # Libraries loading
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "shiny", "shinyjs", "plotly", "visNetwork", "igraph", "ggrepel", "parallel", "bsplus")
+librairies = c("RGCCA", "ggplot2", "optparse", "scales", "shiny", "shinyjs", "plotly", "visNetwork", "igraph", "ggrepel", "parallel", "bsplus", "devtools")
 for (l in librairies) {
-  if (!(l %in% installed.packages()[, "Package"]))
-    install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
-  library(l, character.only = TRUE)
+  if (!(l %in% installed.packages()[, "Package"])){
+    if("bsplus")
+      devtools::install_github("ijlyttle/bsplus", upgrade = "never")
+    else
+      install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
+  }
+  library(l, character.only = TRUE, quiet = T)
 }
 
 # Maximum size allowed : 30 MB

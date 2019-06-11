@@ -180,7 +180,7 @@ server <- function(input, output, session) {
       condition = "!input.superblock && !input.supervised",
     fileInput(inputId = "connection",
               label = "Connection design [OPTIONAL]"
-    )  %>%
+    ) %>%
       shinyInput_label_embed(
         icon("question") %>%
           bs_embed_tooltip(title = "The design matrix is a symmetric matrix of the length of the number of blocks describing the connections between them. Two values are accepted : '1' for a connection between two blocks, or '0' otherwise.")
@@ -192,7 +192,8 @@ server <- function(input, output, session) {
     refresh <- c(input$response)
     fileInput(inputId = "response",
               label = "Color with a response [OPTIONAL]"
-    ) %>% shinyInput_label_embed(
+    ) %>%
+      shinyInput_label_embed(
       icon("question") %>%
         bs_embed_tooltip(title = "To color the sample plot. A CSV file containing either : (i) an only column with a qualitative or a quantitative variable; (ii) multiple columns corresponding to a disjunctive table")
     )
