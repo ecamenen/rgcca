@@ -54,9 +54,15 @@ checkFileSize = function(filename){
 }
 
 convertMatrixNumeric <- function(df){
-  options(warn = -1)
-  df <- matrix( as.numeric(df), nrow(df), ncol(df), dimnames = list(row.names(df), colnames(df)))
-  options(warn = 0)
+  df <- matrix( lapply(1:(nrow(df) * ncol(df) ),
+                       function(i)
+                         tryCatch({
+                           as.numeric(df[i])
+                          }, warning = function(e) NA
+                         )),
+                nrow(df),
+                ncol(df),
+                dimnames = list(row.names(df), colnames(df)))
   return(df)
 }
 
@@ -294,7 +300,7 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
     if( any(is.na(df)) ){
       df = matrix(unlist(lapply(1:ncol(df),
                                     function(x) unlist(lapply(as.list(df[,x]),
-                                                                           function(y) ifelse(is.na(y),  mean(df[, x], na.rm = T), y))))),
+                                                                           function(y) ifelse(is.na(y),  mean(unlist(df[, x]), na.rm = T), y))))),
                       nrow(df), ncol(df))
     }
 

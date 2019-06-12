@@ -700,10 +700,10 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
     diff_column = setdiff(row.names(blocks[[i_block]]), row.names(response))
     response[diff_column, ] <- NA
     response = response[row.names(rgcca$Y[[i_block]]),]
-    options(warn = -1)
+    #options(warn = -1)
     # Disabling automatic factor conversion for some columns
     response = apply(response, 2, as.double)
-    options(warn = 0)
+    #options(warn = 0)
   }
 
   cor.res = matrix(cor(rgcca$Y[[i_block]][, comp],
