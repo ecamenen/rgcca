@@ -135,7 +135,7 @@ loadExcel = function(f, sheet, rownames = 1, h = TRUE, num = TRUE) {
 #' library("ggplot2")
 #' df = as.data.frame(matrix(runif(20), 10, 2))
 #' p = ggplot(df, aes(df[, 1], df[, 2]))
-#' savePlot("Rplot.png", p)
+#' #savePlot("Rplot.png", p)
 #' @export savePlot
 savePlot = function(f, p) {
 

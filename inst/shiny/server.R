@@ -319,15 +319,8 @@ server <- function(input, output, session) {
 
   setIdBlock = function(){
 
-    if( !superblock && !is.null(input$names_block_x) && as.integer(input$names_block_x) > round(length(blocks)) ){
-      reac_var(as.integer(input$names_block_x))
-      assign("id_block", reac_var() - 1, .GlobalEnv)
-      assign("id_block_y", reac_var() - 1, .GlobalEnv)
-    }else{
-      # By default, when a new dataset is loaded, the selected block is the last
-      assign("id_block", length(blocks), .GlobalEnv)
-      assign("id_block_y", length(blocks), .GlobalEnv)
-    }
+    assign("id_block", length(blocks), .GlobalEnv)
+    assign("id_block_y", length(blocks), .GlobalEnv)
 
   }
 
@@ -337,10 +330,7 @@ server <- function(input, output, session) {
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
                 input$scale, input$init, input$comp_x, input$comp_y, input$tau, input$tau_opt, input$analysis_type,
                 input$connection, input$nb_comp, input$response, input$names_block_x, input$names_block_y, input$boot, input$text,
-                input$names_block_response, input$supervised, input$run_analysis, input$nb_mark_custom, input$blocks_names_custom_x )
-
-    getIdBlockX()
-    getIdBlockY()
+                input$names_block_response, input$supervised, input$run_analysis, input$nb_mark_custom, input$blocks_names_custom_x)
   }
 
 
@@ -759,36 +749,38 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$names_block_x, {
-    # Observe if graphical parameters are changed
-
-    getIdBlockX()
-
-  })
-
-  getIdBlockX = function(){
-      isolate({
+    isolate({
       if(blocksExists() &&  !is.null(input$names_block_x)){
+        if(as.integer(input$names_block_x) > round(length(blocks))){
+          reac_var(length(blocks))
+          assign("id_block", reac_var(), .GlobalEnv)
+        }else{
           reac_var(as.integer(input$names_block_x))
           assign("id_block", reac_var(), .GlobalEnv)
         }
-      })
-    }
-
-  getIdBlockY = function(){
-    isolate({
-      if(blocksExists() && !is.null(input$names_block_y)){
-        reac_var(as.integer(input$names_block_y))
-        assign("id_block_y", reac_var(), .GlobalEnv)
       }
     })
-  }
+  }, priority = 30)
+
+  observeEvent(c(input$superblock, input$supervised), {
+    reac_var(length(blocks))
+    assign("id_block", reac_var(), .GlobalEnv)
+    assign("id_block_y", reac_var(), .GlobalEnv)
+  }, priority = 20)
 
   observeEvent(input$names_block_y, {
-    # Observe if graphical parameters are changed
-
-    getIdBlockY()
-
-  })
+    isolate({
+      if(blocksExists() && !is.null(input$names_block_y)){
+        if(as.integer(input$names_block_y) > round(length(blocks))){
+          reac_var(length(blocks))
+          assign("id_block_y", reac_var(), .GlobalEnv)
+        }else{
+          reac_var(as.integer(input$names_block_y))
+          assign("id_block_y", reac_var(), .GlobalEnv)
+        }
+      }
+    })
+  }, priority = 30)
 
   observeEvent(input$names_block_response, {
     # Observe if graphical parameters are changed
