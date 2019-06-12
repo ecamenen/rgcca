@@ -79,13 +79,16 @@ server <- function(input, output, session) {
     # TODO: pas plusieurs sliderInput, découper en modules
   })
 
+  refreshAnalysis <- function()
+    c(input$nb_comp, input$block, input$sep, input$scheme, input$scale, input$superblock, input$supervised)
+
   output$comp_x_custom <- renderUI({
-    refresh <- input$nb_comp
-    uiComp("x", 1, input$navbar != "Fingerprint")
+    refresh <- refreshAnalysis()
+    isolate(uiComp("x", 1, input$navbar != "Fingerprint"))
   })
 
   output$comp_y_custom <- renderUI({
-    refresh <- input$nb_comp
+    refresh <- refreshAnalysis()
     uiComp("y", 2)
   })
 
