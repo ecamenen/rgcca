@@ -195,17 +195,11 @@ postCheckArg = function(opt, blocks){
 
 ########## Main ##########
 
-# Pre-requisite: for xlsx inputs, java must be installed
-# Under linux: sudo apt-get install default-jre default-jdk && sudo R CMD javareconf
-
-#Loading librairies
-#suppressPackageStartupMessages(expr)
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph", "ggrepel", "parallel")
+# Libraries loading
+librairies = c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph", "parallel")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
-    install.packages(l, repos = "http://cran.us.r-project.org",
-                     warn.conflicts = FALSE,
-                     quiet = TRUE)
+    install.packages(l, repos = "http://cran.us.r-project.org")
   library(l, character.only = TRUE,
           warn.conflicts = FALSE,
           quiet = TRUE)

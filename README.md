@@ -37,8 +37,8 @@ of variability within blocks and the amount of correlation between blocks.
 ## Input files 
 (see data/ folder for a working example at [https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/master/data])
 - ```blocks``` (.tsv, .csv, .txt or .xls, xlsx) : file(s) containing variables to analyse together.
-The samples should be in lines and labelled and variables in columns with a header. With an Excel format, each block must be
-in a separated sheet. For other format, each blocks must be in a separated file.
+The samples should be in lines and labelled and variables in columns with a header. With an Excel format, each block 
+must be in a separated sheet. For other format, each blocks must be in a separated file.
 - ```connection``` (.tsv, .csv, .txt or .xls, xlsx) : file without header, containing a symmetric matrix
 of non-negative elements describing the network of connections between blocks that the user wants to take into account.
 Its dimension should be NB_BLOCKS + 1) * (NB_BLOCKS + 1). + 1 corresponds for the use of a supplementary block 
@@ -62,31 +62,39 @@ or multiple columns containing a disjunctive table.
 
 
 ## Installation
-- Softwares : R (required); java compiler (required for Excel); latex (suggested)
-- R libraries : see DESCRIPTION file
+- Softwares : R, [Rstudio](https://www.rstudio.com/products/rstudio/download/#download)
+- R libraries : see the [DESCRIPTION](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/develop/DESCRIPTION)
+ file
 
 ### Linux
 
 ```
-apt-get install -y --no-install-recommends git default-jre default-jdk && \
+sudo apt-get install -y --no-install-recommends git && \
     apt-get install -y r-base r-cran-ggplot2 r-cran-scales r-cran-optparse r-cran-shiny r-cran-shiny-js r-cran-plotly r-cran-igraph && \
-    R CMD javareconf && \
-    R -e 'install.packages(c("RGCCA", "parallel", "ggrepel", "visNetwork", "rJava", "xlsxjars", "xlsx"))' && \
+    R -e 'install.packages(c("RGCCA", "parallel", "ggrepel", "visNetwork"))' && \
     git clone https://github.com/BrainAndSpineInstitute/rgcca_Rpackage && \
 	cd rgcca_Rpackage
 	
 ( apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-fonts-extra texlive-science )
 ```
 
+On Ubuntu, if dependencies errors appear for igraph and plotly, try :
+```
+sudo apt-get install -y libcurl4-openssl-dev libssl-dev liblapack-dev && \
+    apt-get update
+```
+
 ### Windows
-Please, find the software on [this website](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/develop). Click on the green button in the upper right corner ```Clone and Download``` and then ```Download the ZIP```. Extract the file.
+Please, find the software on [Github](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/develop). Click on the green button in the upper right corner ```Clone and Download``` and then ```Download the ZIP```. Extract the file.
 
 
 ## Execution
-If the Linux dependencies installation step was not executed previously (for Windows users), their automatic installation could take several minutes during the first execution. If dependencies compatibility errors appear, the required (and suggested) librairies to import are listed in the [DESCRIPTION](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/develop/DESCRIPTION) files. ```xlsx``` has to be used with a java compiler and could be installed only if Excel files are used as inputs.
+If the Linux dependencies installation step was not executed previously (for Windows users), their automatic 
+installation could take several minutes during the first execution. If dependencies compatibility errors appear, the required (and suggested) librairies to import are listed in the [DESCRIPTION](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/develop/DESCRIPTION) file.
 
 ### Shiny interface
-For shiny execution, open ```inst/shiny/app.R```. Execute the code without clicking the ```Run App button```.  For a tutorial, click [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/develop/inst/shiny/tutorialShiny.md).
+Open ```inst/shiny/app.R``` with RStudio to execute Shiny. Execute the code without clicking the ```Run App button```.  Click [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/develop/inst/shiny/tutorialShiny.md) to read
+ the tutorial.
 
 ### Command line
 
