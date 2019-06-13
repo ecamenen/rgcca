@@ -10,19 +10,13 @@ rgccaLauncher\.Rproj
 
 temp/
 \.idea/
-data3/
-results/
 
 functional_tests\.sh
 
-data/blocks\.xlsx
-
-data/response2\.tsv
-
-data/response3\.tsv
-
-out\.png
-
 vignettes/data/
+vignettes/images/
 
 inst/shiny/tutorialShiny\.html
+inst/doc/
+
+vignettes/vignette_rgcca\.html

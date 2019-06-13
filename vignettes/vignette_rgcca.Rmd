@@ -1,17 +1,19 @@
 ---
-title: "The RGCCA package for Regularized/Sparse Generalized Canonical Correlation Analysis"
+title: The RGCCA package for Regularized/Sparse Generalized Canonical Correlation
+  Analysis
 author: "Etienne CAMENEN"
-date: '`r Sys.Date()`'
-output: 
+date: "`r Sys.Date()`"
+output:
   pdf_document:
-   number_sections: yes
-   toc: yes
-   fig_height: 6
-   fig_width: 6
-vignette: >
-  %\VignetteIndexEntry{The RGCCA package for Regularized/Sparse Generalized Canonical Correlation Analysis} 
-  %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+    fig_height: 6
+    fig_width: 6
+    number_sections: yes
+    toc: yes
+  word_document:
+    toc: yes
+  html_document:
+    df_print: paged
+    toc: yes
 header-includes:
 - \usepackage{amsfonts}
 - \usepackage{algorithm2e}
@@ -51,6 +53,8 @@ header-includes:
 - \usepackage{pgfplots}
 - \usepackage{microtype}
 bibliography: biblio.bib
+vignette: |
+  %\VignetteIndexEntry{The RGCCA package for Regularized/Sparse Generalized Canonical Correlation Analysis}  %\VignetteEngine{knitr::rmarkdown} \usepackage[utf8]{inputenc}
 ---
 
 \newcommand{\ma}[1]{\ensuremath{\mathbf{#1}}}
@@ -84,18 +88,25 @@ bibliography: biblio.bib
 
 For the sake of comprehension of the use of the RGCCA package, the theoretical fundations of RGCCA and variations - that were previously published [@Tenenhaus2011 ; @Tenenhaus2014 ; @Tenenhaus2015 ; @Tenenhaus2017] - are described. 
 
-We consider $J$ data matrices $\X_1, \ldots, \X_J$. Each $n \times p_j$ data matrix $\X_j = [\ma x_{j1}, \ldots, \ma x_{jp_j}]$ is called a block and represents a set of $p_j$ variables observed on $n$ individuals. The number and the nature of the variables may differ from one block to another, but the individuals must be the same across blocks. We assume that all variables are centered. The objective of RGCCA is to find, for each block, a weighted composite of variables (called block component) $\y_j= \X_j \ma a_j,j=1, \ldots,J$ (where $\ma a_j$ is a column-vector with  $p_j$ elements) summarizing the relevant information between and within the blocks. The block components are obtained such that (i) block components explain well their own block and/or (ii) block components that are assumed to be connected are highly correlated. In addition, RGCCA integrates a variable selection procedure, called SGCCA, allowing the identification of the most relevant features. Finally, as a component-based method, RGCCA/SGCCA can provide users with graphical representations to visualize the sources of variability within blocks and the amount of correlation between blocks.
+We consider J data matrices X1, ..., XJ. Each n * pj data matrix $\X_j = [\ma x_{j1}, \ldots, \ma x_{jp_j}]$ is called a block and represents a set of $p_j$ variables observed on n individuals. The number and the nature of the variables may differ from one block to another, but the individuals must be the same across blocks. We assume that all variables are centered. The objective of RGCCA is to find, for each block, a weighted composite of variables (called block component) $\y_j= \X_j \ma a_j,j=1, \ldots,J$ (where $\ma a_j$ is a column-vector with  $p_j$ elements) summarizing the relevant information between and within the blocks. The block components are obtained such that (i) block components explain well their own block and/or (ii) block components that are assumed to be connected are highly correlated. In addition, RGCCA integrates a variable selection procedure, called SGCCA, allowing the identification of the most relevant features. Finally, as a component-based method, RGCCA/SGCCA can provide users with graphical representations to visualize the sources of variability within blocks and the amount of correlation between blocks.
 
 ```{r setup, include = FALSE, echo = FALSE, warning = FALSE, message = FALSE}
 
 # Importing libraries
-librairies = c("RGCCA", "ggplot2", "scales", "rgccaLauncher", "knitr", "pander")
+librairies = c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph", "parallel")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
-    install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
-  library(l, character.only = TRUE)
+    install.packages(l, repos = "http://cran.us.r-project.org")
+  library(l, character.only = TRUE,
+          warn.conflicts = FALSE,
+          quiet = TRUE)
 }
 
+# Load functions
+source("../R/parsing.R")
+source("../R/select.type.R")
+source("../R/plot.R")
+source("../R/network.R")
 
 # Load the data
 data("Russett")
@@ -283,4 +294,3 @@ plotFingerprint(rgcca = sgcca.res,
 # Remove the temp/ folder
 unlink("data", recursive = TRUE)
 ```
-

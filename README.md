@@ -74,8 +74,6 @@ sudo apt-get install -y --no-install-recommends git && \
     R -e 'install.packages(c("RGCCA", "parallel", "ggrepel", "visNetwork"))' && \
     git clone https://github.com/BrainAndSpineInstitute/rgcca_Rpackage && \
 	cd rgcca_Rpackage
-	
-( apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-fonts-extra texlive-science )
 ```
 
 On Ubuntu, if dependencies errors appear for igraph and plotly, try :
@@ -91,6 +89,19 @@ Please, find the software on [Github](https://github.com/BrainAndSpineInstitute/
 ## Execution
 If the Linux dependencies installation step was not executed previously (for Windows users), their automatic 
 installation could take several minutes during the first execution. If dependencies compatibility errors appear, the required (and suggested) librairies to import are listed in the [DESCRIPTION](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/develop/DESCRIPTION) file.
+
+
+### Vignette
+- Required : pander R-package
+- Suggested : LateX
+
+On linux :
+```	
+R -e 'install.packages("pandoc")' && \
+    sudo apt-get install -y texlive-latex-base texlive-latex-extra texlive-fonts-recommended texlive-fonts-extra texlive-science
+```
+
+Please, find the Rmarkdown working example at ```vignettes/vignette_rgcca.Rmd```.
 
 ### Shiny interface
 Open ```inst/shiny/app.R``` with RStudio to execute Shiny. Execute the code without clicking the ```Run App button```.  Click [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/develop/inst/shiny/tutorialShiny.md) to read
