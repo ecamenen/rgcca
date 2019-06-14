@@ -20,19 +20,6 @@ multiple_blocks <- c(`Regularized Generalized CCA (RGCCA)` = 'RGCCA', `Sparse Ge
 multiple_blocks_super <- c(`Generalized CCA (GCCA)` = 'GCCA', `Hierarchical PCA` = 'HPCA', `Multiple Factor Analysis` = 'MFA')
 analyse_methods <- list(one_block, two_blocks, multiple_blocks, multiple_blocks_super)
 
-# Libraries loading
-librairies = c("RGCCA", "ggplot2", "scales", "shiny", "shinyjs", "visNetwork", "devtools", "plotly", "igraph", "bsplus")
-for (l in librairies) {
-  if (!(l %in% installed.packages()[, "Package"])){
-    if(l == "bsplus")
-      devtools::install_github("ijlyttle/bsplus", upgrade = "never")
-    else
-      install.packages(l, repos = "http://cran.us.r-project.org")
-  }
-  library(l, character.only = TRUE,
-          warn.conflicts = FALSE,
-          quiet = TRUE)
-}
 
 # Maximum size allowed : 30 MB
 options(shiny.maxRequestSize = 30*1024^2)
