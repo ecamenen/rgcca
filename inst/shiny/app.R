@@ -10,6 +10,7 @@
 # of the most explicative variables and the explained variance for each blocks.
 
 rm(list=ls())
+setwd(strsplit(rstudioapi::getActiveDocumentContext()$path, "/app.R")[[1]])
 
 one_block <- c(`Principal Component Analysis` = "PCA")
 two_blocks <- c(`Canonical Correlation Analysis` = 'CCA', `Interbattery Factor Analysis` = "IFA", `Partial Least Squares Regression` = 'PLS',  `Redundancy analysis` = 'RA')
@@ -35,9 +36,4 @@ for (l in librairies) {
 
 # Maximum size allowed : 30 MB
 options(shiny.maxRequestSize = 30*1024^2)
-source("inst/shiny/server.R")
-source("inst/shiny/ui.R")
-
-app <- shinyApp(ui, server)
-
-runApp(app)
+runApp()

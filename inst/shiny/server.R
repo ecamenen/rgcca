@@ -10,10 +10,10 @@
 # of the most explicative variables and the explained variance for each blocks.
 
 server <- function(input, output, session) {
-  source("R/parsing.R")
-  source("R/plot.R")
-  source("R/select.type.R")
-  source("R/network.R")
+  source("../../R/parsing.R")
+  source("../../R/plot.R")
+  source("../../R/select.type.R")
+  source("../../R/network.R")
 
   # Assign reactive variables
   reac_var  <<- reactiveVal()

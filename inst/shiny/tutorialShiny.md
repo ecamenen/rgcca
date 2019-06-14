@@ -29,8 +29,8 @@ We consider J data matrices *X1, ..., XJ*. Each *n × pj* data matrix *Xj = [ xj
 
 ## 1. Load the inputs ('Data' parameter tab)
 
-
-Download and extract the ZIP of the software [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/develop). Then, launch the ```inst/shiny/app.R``` file. The ```inst/extdata``` folder includes three blocks with the same samples (corresponding to the countries here) but different types of variables (agriculture, industry and politic variables). In this dataset, according to Russett (1964), a high agriculture inequality and a low industrial development lead to an unstable political regime. Load the three working examples ```agriculture.tsv```, ```industry.tsv``` and ```politic.tsv``` in the ```blocks``` box (**Fig. 1**) (CTRL + click for multiple selections). The accepted format is one (for PCA) or multiple CSV files containing a matrix with:
+Before reading this tutorial, the Shiny application have to be [installed](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/release/3.0#installation) and [executed](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/release/3.0#shiny-interface).
+The ```inst/extdata``` folder includes three blocks with the same samples (corresponding to the countries here) but different types of variables (agriculture, industry and politic variables). In this dataset, according to Russett (1964), a high agriculture inequality and a low industrial development lead to an unstable political regime. Load the three working examples ```agriculture.tsv```, ```industry.tsv``` and ```politic.tsv``` in the ```blocks``` box (**Fig. 1**) (CTRL + click for multiple selections). The accepted format is one (for PCA) or multiple CSV files containing a matrix with:
 - quantitative values only, with decimals separated by '.' and missing values labelled as "NA"
 - samples in lines, labelled in the 1rst column with the same sample names between blocks (some samples could be missing in some blocks)
 - variables in columns, labelled in the 1rst line without duplications in variable names between blocks
@@ -40,7 +40,7 @@ This format recommendation could be viewed with **the mouse over the question ma
 By default, the character used in ```column separator``` parameter is the ```tabulation```. Change the separator to another one (e.g.,```semicolon```) to observe an error notification: 
 > "politic block file has only one column. Check the separator."
 
-![](img/loadData.png)
+![](../../img/loadData.png)
  
 *Fig. 1 : File loading panel (on the top right). The browsing box is used to load the blocks and the last one, to select the column separator.*
 
@@ -53,7 +53,7 @@ The analyse parameters are all set by default and the user could directly click 
 
 After loading the data, a ```RGCCA``` tab will appear (**Fig. 2**). By default, the selected ```analysis method``` is set on ```RGCCA```. This tutorial will be focused on the RGCCA case, but another methods could be selected. When only one block file is loaded in the previous step, a ```PCA``` will be performed. By using two blocks, the interface will allow to select two-blocks analysis method (```PLS``` is selected by default). 
 
-![](img/analysis.png)
+![](../../img/analysis.png)
 
 *Fig. 2 : The second parameter panel shows various options to customize the analysis: choose the analysis and the number of components, scale the blocks, choose a shrinkage, use the superblock or a supervised approach, choose a link function. In this example, the mouse over the question mark of scheme function parameter makes a help message appears*
 
@@ -102,7 +102,7 @@ Move again the cursor to an upper sparsity value to make it works.
 
 This parameter tab is observed only with the ```samples```, ```corcircle``` and ```fingerprint``` plot tabs (**Fig. 3**).
 
-![](img/graphicPar.png)
+![](../../img/graphicPar.png)
 
 *Fig. 3 : When the samples tab is selected a graphical option panel appears, that includes: (i) the possibility to hide/print the names of the variables, (ii) the selection of the block to visualize, (iii) the components used in the plots, (iv) the loading of groups of response to color the samples and (v) a button to save all the plot in the folder of the Shiny application. In this example, the agriculture block will be selected as the block for the Y-axis.*
 
@@ -165,14 +165,14 @@ The first tab summarizes the connection between each block: a link corresponds t
 - "N" is the number of lines (here, each block has the same number of line)
 - "tau" is the shrinkage parameter and "sparsity" is the sparsity coefficient (see the 2.4.1 & 2.4.2 sections). The tau parameter could be shown for each component if the optimal option is selected
 
-![](img/connection.png)
+![](../../img/connection.png)
 
 *Fig. 4 : Connection between each block of the RGCCA and the superblock with 47 common rows between blocks*
 
 ### 4.2. Average variance explained (AVE)
 In the second tab on the right panel, the average variance explained (AVE; in X-axis) is represented in percent for each block (in Y-axis) and each component (one color per component) (**Fig. 5**). The subtitle informs about the AVE for the two first of the outer model (weighted average of the AVE of each block).
 
-![](img/ave.png)
+![](../../img/ave.png)
 
 *Fig. 5 : Average variance variance explained (in %) for each block and for the two first components of the RGCCA*
 
@@ -180,21 +180,21 @@ In the second tab on the right panel, the average variance explained (AVE; in X-
 The first tab is the projection of the sample coordinates in the selected component of the analysis and, by default, on the
 superblock (a concatenation of all the blocks) (**Fig. 6**). If a ```response``` file is loaded, each sample is colored according to this group of responses. In the Russet example, the X-axis could discriminate a dictatorship (with upper values on this axis than the two other political systems), whereas the Y axis discriminates an unstable democracy (with upper values than the others).
 
-![](img/samples.png)
+![](../../img/samples.png)
 
 *Fig. 6 : Samples coordinates on the two first components for the superblock of the RGCCA after loading the " political_system.tsv" file. By selecting the option in the header of the plot, a zoom could be done on a selected part of the graph (e.g., the upper right part). Then, all the modifications could be reset with the "house" icon.*
 
 ### 4.4. Corcircle
 The second one corresponds to the Pearson correlation between the variables of the block and the selected components in the analysis (by default, on the two first components) (**Fig. 7**). If the superblock is selected, colors correspond to the belonging of each variable to each block.
 
-![](img/corcircle.png)
+![](../../img/corcircle.png)
 
 *Fig. 7 : Correlation between each variable of each block (by using the superblock) and the two first components of the RGCCA. The  "print names" parameter in the graphical parameter panel is disabled. By flying over a point, an informational label appears. This label gives the name and the X and Y coordinates of the point.*
 
 ### 4.5. Top variables
 The next tab also represents the same correlation of the variable with the selected component (on the X-axis; 1 by default). The top variables are ordered decreasingly (on the Y-axis) in a histogram among the selected block (superblock, by default) (**Fig. 8**). 
 
-![](img/fingerprint.png)
+![](../../img/fingerprint.png)
 
 *Fig. 8 : Top 11 variables among all the blocks (by using the superblock) with higher correlation with the first component of the RGCCA. "Gnpr" (belonging to the industry block) shows a correlation of 0.859 with this component.*
 
