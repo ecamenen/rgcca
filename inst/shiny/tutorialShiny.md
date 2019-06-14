@@ -185,7 +185,7 @@ superblock (a concatenation of all the blocks) (**Fig. 6**). If a ```response```
 *Fig. 6 : Samples coordinates on the two first components for the superblock of the RGCCA after loading the " political_system.tsv" file. By selecting the option in the header of the plot, a zoom could be done on a selected part of the graph (e.g., the upper right part). Then, all the modifications could be reset with the "house" icon.*
 
 ### 4.4. Corcircle
-The second one corresponds to the Pearson correlation between the variables of the block and the selected components in the analysis (by default, on the two first components) (**Fig. 7**). If the superblock is selected, colors correspond to the belonging of each variable to each block.
+The second one corresponds to the Pearson correlation between the variables of the block and the selected components in the analysis (by default, on the two first components) (**Fig. 7**). If the superblock is selected, colors correspond to the belonging of each variable to each block. Only the 100th variables the most correlated to each axis are printed.
 
 ![](../../img/corcircle.png)
 
