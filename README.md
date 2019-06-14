@@ -109,19 +109,21 @@ R -e 'install.packages(c("markdown", "pander"))' && \
 
 On Windows:
 - Install [MikTeX](https://miktex.org/download) (All downloads >> Net Installer).
-- In the RStudio upper menu, go to "Tools", then "Install packages" and write "markdown" in the textual field. Do the same for "pander".
+- In the RStudio upper menu, go to "Tools", "Install packages" and write "markdown" in the textual field. Do the same for "pander".
 
 Please, find the Rmarkdown working example at ```vignettes/vignette_rgcca.Rmd```.
 
 ### Shiny interface
-Open ```inst/shiny/app.R``` with RStudio to execute Shiny. By default, the script will appear in the upper left window. The first time, you will need to execute this script manually for installing the dependencies (CTRL + A to select all the code, ENTER to execute it). The other times, after the shiny dependency will be installed, the application could be launched by clicking on the ```Run App button``` in the upper right corner of the script menu bar. Click [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/inst/shiny/tutorialShiny.md) to read the tutorial.
+- Required: shiny (R package)
+
+Open ```inst/shiny/app.R``` with RStudio to execute Shiny. In the RStudio upper menu, go to "Tools", "Install packages" and write "shiny" in the textual field. Then, the application could be launched by clicking on the ```Run App button``` in the upper right corner of the script menu bar. Click [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/inst/shiny/tutorialShiny.md) to read the tutorial.
 
 ### Command line
 
 For direct usage (Example from Russet data from RGCCA package [3]) :
 
 ```
-Rscript R/launcher.R -d data/agriculture.tsv,data/industry.tsv,data/politic.tsv
+Rscript R/launcher.R -d inst/extdata/agriculture.tsv,inst/extdata/industry.tsv,inst/extdata/politic.tsv
 ```
 
 With parameters :
