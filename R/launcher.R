@@ -17,7 +17,7 @@ graphics.off()
 # Parse the arguments from a command line launch
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)"),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[18]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
     make_option(c("--group"), type="character",
@@ -291,15 +291,15 @@ if(opt$ncomp[opt$block] > 1){
 }
 
 # Fingerprint plot
-(  fingerprint = plotFingerprint(rgcca.out, blocks, opt$compx, opt$superblock, opt$nmark) )
-plotFingerprint(rgcca.out, blocks, opt$compy, opt$superblock, opt$nmark)
+fingerprint = plotFingerprint(rgcca.out, blocks, opt$compx, opt$superblock, opt$nmark)
+#plotFingerprint(rgcca.out, blocks, opt$compy, opt$superblock, opt$nmark)
 p = changeText ( dynamicPlot(fingerprint, ax2, "text") )
 n = unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
 for (i in 1:length(n[n]))
   p$x$data[[i]]$text = round( as.double(sub( "order: .*<br />df\\[, 1\\]: (.*)<.*", "\\1\\", p$x$data[[i]]$text )), 3)
 p
 # TODO: avoid the scale, zoom in, zoom out, make stop unexpectivly
- savePlot(opt$output3, fingerprint)
+savePlot(opt$output3, fingerprint)
 
 if( ! is.null(opt$response) ){
   ( correlation = corResponse(rgcca.out, blocks, opt$response, comp = opt$compx, i_block = opt$block) )

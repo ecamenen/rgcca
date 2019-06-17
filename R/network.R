@@ -73,18 +73,19 @@ plotNetwork = function(nodes, edges, blocks){
 
   V(net)$color <- "khaki2"
   V(net)$label <- paste(nodes$id, "\nP =", nodes$P, paste0("\n", par, " ="), nodes[, par], "\nN =", nodes$nrow, sep=" ")
-  V(net)$label.font <- 3
   V(net)$shape <- "square"
   E(net)$width <- E(net)$weight * 2
 
   plot(net,
+       cex.main = 5,
        edge.color = "gray70",
        edge.lty = 2,
        vertex.frame.color = "gray50",
        vertex.label.color = "black",
        vertex.label.dist = 6,
        vertex.label.degree = 1.5,
-       main = paste0("Number of common rows between blocks : ", nrow(blocks[[1]]) , "."))
+       vertex.size = 23,
+       main = paste0("Common rows between blocks : ", nrow(blocks[[1]])))
 
 }
 
@@ -103,18 +104,18 @@ plotNetwork2 = function(nodes, edges, blocks){
   edges$width <- edges$weight * 2
   nodes$color.background <- rep("#eee685", length(blocks))
 
-  visnet <- visNetwork(nodes, edges, main = paste0("Number of common rows between blocks : ", nrow(blocks[[1]]) , "."))
-
-  visnet <- visNodes(visnet,
-                     borderWidth = 2,
-                     shape = "square",
-                     shadow = TRUE,
-                     color=list(border = "gray",
-                                highlight = list(background = "black", border = "darkred"))
-  )
-
-  visEdges(visnet,
-           smooth = FALSE,
+  visNetwork(nodes,
+             edges,
+             main = list(text = paste0("Common rows between blocks : ", nrow(blocks[[1]])),
+                         style = "font-family:sans;font-weight:bold;font-size:28px;text-align:center;")
+  ) %>%
+  visNodes(borderWidth = 2,
+           shape = "square",
+           shadow = TRUE,
+           color=list(border = "gray",
+                      highlight = list(background = "black", border = "darkred"))
+  ) %>%
+  visEdges(smooth = FALSE,
            shadow = TRUE,
            dashes = TRUE,
            color = list(color = "gray", highlight = "darkred")
