@@ -432,7 +432,7 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
     #   return(rep(1, NROW(blocks[[1]])))
     # }
 
-    qualitative = unique(isCharacter(na.omit(response)))
+    qualitative = unique(isCharacter(response))
 
     if (length(qualitative) > 1)
       stop("Please, select a response file with either qualitative data only or quantitative data only.",
@@ -485,7 +485,6 @@ isCharacter = function(x) {
   # as.vector, avoid factors of character in integer without NA
 
   # NA tolerance :
-  # x = na.omit(x)
 
   if (is.matrix(x)){
     test = sapply(
@@ -494,10 +493,10 @@ isCharacter = function(x) {
         is.na(
           tryCatch(
             as.integer(
-              as.vector(x[, i])
+              na.omit(as.vector(x[, i])[as.vector(x[, i]) != "NA"])
             ),
             warning = function(w)
-              return("NA")
+              return(NA)
           )
         )
       )
@@ -507,10 +506,10 @@ isCharacter = function(x) {
       is.na(
         tryCatch(
           as.integer(
-            as.vector(x)
+            na.omit(as.vector(x)[as.vector(x) != "NA"])
           ),
           warning = function(w)
-            return("NA")
+            return(NA)
         )
       )
     )
