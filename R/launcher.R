@@ -223,7 +223,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output6 = "connection.pdf",
-           datasets = "~/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv,~/DATA/Nucleiparks/Nucleiparks_selectedVar/Lipidomic.tsv,~/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv")
+           datasets = "/home/etienne.camenen/DATA/ZEUS/DATA/metabolomic.txt,/home/etienne.camenen/DATA/ZEUS/DATA/lipidomic.txt,/home/etienne.camenen/DATA/ZEUS/DATA/atrophy.txt")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -263,6 +263,7 @@ connection = opt$connection
 if(!is.matrix(connection))
   connection = setConnection(blocks, (opt$superblock | !is.null(opt$response)), opt$connection, opt$separator)
 
+opt$group = "/home/etienne.camenen/DATA/ZEUS/DATA/AMY_Staging_MA_quant.txt"
 group = setResponse(blocks, opt$group, opt$separator, opt$header)
 
 rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, FALSE, opt$init, opt$bias, opt$type)
@@ -275,7 +276,7 @@ if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
 }else{
   ( samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y, getFileName(opt$group)) )
    p = changeHovertext( dynamicPlot(samples_plot, ax, "text", TRUE, TRUE), opt$text )
-     if( length(unique(na.omit(group))) < 2 || (length(unique(na.omit(group))) > 5 && !unique(isCharacter(na.omit(group))) ))
+     if( length(unique(na.omit(group))) < 2 || (length(unique(group)) > 5 && !unique(isCharacter(group)) ))
        p  = p  %>% layout(showlegend = FALSE)
    p
    savePlot(opt$output1, samples_plot)
@@ -324,3 +325,5 @@ if(opt$type != "pca"){
 saveVars(rgcca.out, blocks, 1, 2)
 saveInds(rgcca.out, blocks, 1, 2)
 save(rgcca.out, file = "rgcca.result.RData")
+
+samples_plot

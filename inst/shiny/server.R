@@ -347,15 +347,18 @@ server <- function(input, output, session) {
       return(f)
   }
 
-  samples <- function()
-    plotSamplesSpace(rgcca = rgcca.res,
-                     resp = response,
-                     comp_x = comp_x,
-                     comp_y = comp_y,
-                     i_block = id_block,
-                     text = if_text,
-                     i_block_y = id_block_y,
+  samples <- function(){
+    isolate({
+      plotSamplesSpace(rgcca = rgcca.res,
+                       resp = response,
+                       comp_x = comp_x,
+                       comp_y = comp_y,
+                       i_block = id_block,
+                       text = if_text,
+                       i_block_y = id_block_y,
                      reponse_name = getExtension(input$response$name))
+    })
+  }
 
   corcircle <- function() plotVariablesSpace(rgcca = rgcca.res,
                                              blocks = blocks,
@@ -511,7 +514,7 @@ server <- function(input, output, session) {
                         header = input$header),  warn = FALSE)
 
     if(length(response) < 1)
-      response -> NULL
+      response <- NULL -> response_file
 
     return(response)
 
@@ -665,7 +668,7 @@ server <- function(input, output, session) {
     assign("response", NULL, .GlobalEnv)
     assign("connection", NULL, .GlobalEnv)
     assign("response_file", NULL, .GlobalEnv)
-    setUiResponse()
+    assign("response", setResponseShiny(), .GlobalEnv)
 
     assign("id_block_resp", length(blocks_without_superb), .GlobalEnv)
     blocks = setParRGCCA(FALSE)
@@ -828,13 +831,17 @@ server <- function(input, output, session) {
       }
   })
 
-  setResponseEvent <- eventReactive(input$response, {
+  observeEvent(input$response, {
 
-    assign("response_file", input$response$datapath, .GlobalEnv)
-    assign("response", setResponseShiny(), .GlobalEnv)
-    setUiResponse()
-    showWarn(message(paste0(input$response$name, " loaded as a group file.")), show = FALSE)
-  })
+    if(!is.null(input$response)){
+      assign("response_file", input$response$datapath, .GlobalEnv)
+      assign("response", setResponseShiny(), .GlobalEnv)
+      setUiResponse()
+      showWarn(samples(), warn = TRUE)
+      showWarn(message(paste0(input$response$name, " loaded as a group file.")), show = FALSE)
+    }
+
+  }, priority = 10)
 
   ################################################ Outputs ################################################
 
@@ -849,14 +856,8 @@ server <- function(input, output, session) {
         msgSave()
       })
 
-      assign("response", setResponseShiny(), .GlobalEnv)
-      setUiResponse()
-
-      if(!is.null(input$response))
-        setResponseEvent()
-
-      p = showWarn(changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), if_text ))
-      if( length(unique(na.omit(response))) < 2 || (length(unique(na.omit(response))) > 5 && !unique(isCharacter(na.omit(response))) ))
+      p = showWarn(changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), if_text ), warn = FALSE)
+      if( length(unique(na.omit(response))) < 2 || (length(unique(response)) > 5 && !unique(isCharacter(na.omit(response))) ))
         p  = p  %>% layout(showlegend = FALSE)
       p
 

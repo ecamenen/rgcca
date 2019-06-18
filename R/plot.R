@@ -272,7 +272,7 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
       resp <- rep("NA", nrow(df))
     }
 
-    if( ! unique(isCharacter(as.vector(resp))) && length(levels(as.factor(as.vector(resp)))) > 5 ){
+    if( ! unique(isCharacter(as.vector(resp))) && length(unique(resp)) > 5 ){
 
       resp[resp == "NA"] <- NA
       resp = as.numeric(resp)
