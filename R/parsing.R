@@ -497,7 +497,7 @@ isCharacter = function(x) {
               as.vector(x[, i])
             ),
             warning = function(w)
-              return(NA)
+              return("NA")
           )
         )
       )
@@ -510,7 +510,7 @@ isCharacter = function(x) {
             as.vector(x)
           ),
           warning = function(w)
-            return(NA)
+            return("NA")
         )
       )
     )

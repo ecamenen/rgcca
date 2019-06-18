@@ -360,8 +360,8 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
       n_mark = nrow(df)
 
     if(removeVariable & nrow(df) > 2 * n_mark){
-      selectedVar = as.vector (unique( sapply(c(1, 2),
-                                         function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:n_mark,]))))
+      selectedVar = unique( as.vector (unique( sapply(c(1, 2),
+                                         function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:n_mark,])))))
   	df = df[selectedVar, ]
     }
   }

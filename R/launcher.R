@@ -17,7 +17,7 @@ graphics.off()
 # Parse the arguments from a command line launch
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[18]),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)"),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
     make_option(c("--group"), type="character",
@@ -216,14 +216,14 @@ opt = list(directory = ".",
            block = 0,
            compx = 1,
            compy = 2,
-           nmark = 50,
+           nmark = 100,
            output1 = "samples_plot.pdf",
            output2 = "corcircle.pdf",
            output3 = "fingerprint.pdf",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output6 = "connection.pdf",
-           datasets = "~/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv,~/DATA/Nucleiparks/Nucleiparks_selectedVar/Lipidomic_without_P7498.tsv,~/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic_without_23.tsv, ~/DATA/Nucleiparks/Nucleiparks_selectedVar/Imagery.tsv")
+           datasets = "~/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv,~/DATA/Nucleiparks/Nucleiparks_selectedVar/Lipidomic.tsv,~/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -324,3 +324,6 @@ if(opt$type != "pca"){
 saveVars(rgcca.out, blocks, 1, 2)
 saveInds(rgcca.out, blocks, 1, 2)
 save(rgcca.out, file = "rgcca.result.RData")
+
+corcircle
+
