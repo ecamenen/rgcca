@@ -283,7 +283,7 @@ if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
 
 if(opt$ncomp[opt$block] > 1){
   # Variables common space
-  ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text) )
+  ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text, n_mark = opt$nmark) )
   p = changeHovertext( dynamicPlot(corcircle, ax, "text"), opt$text)
   n = length(p$x$data)
   ( style(p, hoverinfo = "none", traces = c(n, n-1)) )
@@ -321,5 +321,6 @@ if(opt$type != "pca"){
 
 }
 
-#boot = bootstrap(blocks, 5, connection, opt$tau, opt$ncomp, opt$scheme, opt$scale, opt$init, opt$bias, opt$type)
-#dynamicPlotBoot(plotBootstrap(boot, opt$compx, opt$nmark, opt$block))
+saveVars(rgcca.out, blocks, 1, 2)
+saveInds(rgcca.out, blocks, 1, 2)
+save(rgcca.out, file = "rgcca.result.RData")

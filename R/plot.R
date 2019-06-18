@@ -342,23 +342,26 @@ getBlocsVariables = function(df){
 #' # Using the first block
 #' plotVariablesSpace(rgcca.res, blocks, 1, 2, FALSE, 1)
 #' @export plotVariablesSpace
-plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock = TRUE, i_block = NULL, text = TRUE, removeVariable = TRUE){
+plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock = TRUE, i_block = NULL, text = TRUE, removeVariable = TRUE, n_mark = 100){
 
   x = y = selectedVar = NULL
 
   if ( is.null(i_block) )
     i_block = length(blocks)
 
-  df =  getCor(rgcca, blocks, comp_x, comp_y, i_block)
+  df =  getVar(rgcca, blocks, comp_x, comp_y, i_block, "cor")
 
   if(class(rgcca)=="sgcca"){
     selectedVar = rgcca$a[[i_block]][,comp_x] != 0 | rgcca$a[[i_block]][,comp_y] != 0
     df = df[selectedVar, ]
   }else{
 
-    if(removeVariable & nrow(df) > 200){
+    if(n_mark < 2)
+      n_mark = nrow(df)
+
+    if(removeVariable & nrow(df) > 2 * n_mark){
       selectedVar = as.vector (unique( sapply(c(1, 2),
-                                         function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:100,]))))
+                                         function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:n_mark,]))))
   	df = df[selectedVar, ]
     }
   }
@@ -528,13 +531,8 @@ plotFingerprint = function(rgcca, blocks = NULL, comp = 1, superblock = TRUE, n_
   if ( is.null(i_block) )
     i_block = length(rgcca$a)
 
-  if(type == "cor"){
-    title = "Variable correlations with"
-    criterion = getCor(rgcca, blocks, comp, comp, i_block)
-  }else{
-    title = "Variable weights"
-    criterion = rgcca$a[[i_block]][, c(comp, comp)]
-  }
+  title = ifelse(type == "cor", "Variable correlations with", "Variable weights")
+  criterion = getVar(rgcca, blocks, comp, comp, i_block, type)
 
   # select the weights (var to add a column to work with comp = 1)
   df = data.frame(criterion, var = row.names(criterion))
@@ -722,16 +720,22 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
     theme(legend.position = "none")
 }
 
-getCor = function(rgcca, blocks, comp_x = 1, comp_y = 2, i_block = NULL){
+getVar = function(rgcca, blocks, comp_x = 1, comp_y = 2, i_block = NULL, type = "cor"){
 
   if ( is.null(i_block) )
     i_block = length(blocks)
 
+  if(type == "cor")
+    f = function(x) cor( blocks[[i_block]], rgcca$Y[[i_block]][, x] )
+  else
+    f = function(x) rgcca$a[[i_block]][, x]
+
   return(  data.frame(
     #correlation matrix within a block for each variables and each component selected
-    sapply ( c(comp_x, comp_y), function(x) cor( blocks[[i_block]], rgcca$Y[[i_block]][, x] ) ) ,
+    sapply ( c(comp_x, comp_y), function(x) f(x)) ,
     row.names = colnames(blocks[[i_block]])
   ))
+
 }
 
 #' Rank values of a dataframe in decreasing order
@@ -752,4 +756,27 @@ getRankedValues = function(df, comp = 1, allCol = T){
     names(res) = row.names(df)[ordered]
 
   return(res)
+}
+
+
+# Print variables analysis attributes
+saveVars <- function(rgcca, blocks, comp_x = 1, comp_y= 2, file = "vars.tsv"){
+
+  indexes <- c("cor", "weight")
+
+  vars <- Reduce(rbind, lapply( 1: length(blocks), function(i)
+    data.frame(Reduce(cbind, lapply(indexes, function(x) getVar(rgcca, blocks, comp_x, comp_y, i, x) )), names(blocks)[i])
+  ))
+
+  colnames(vars) <- c(as.vector(sapply(indexes, function(x) paste0(x, ".", paste0("axis.", c(comp_x, comp_y))))), "block")
+  write.table(vars, file, sep = "\t")
+  invisible(vars)
+}
+
+saveInds <- function(rgcca, blocks, comp_x = 1, comp_y = 2, file = "inds.tsv"){
+
+  inds <- Reduce(cbind,lapply(rgcca$Y, function(x) x[, c(comp_x, comp_y)]))
+  colnames(inds) <- as.vector(sapply(names(blocks), function(x) paste0(x, ".axis", c(comp_x, comp_y))))
+  write.table(inds, file, sep = "\t")
+  invisible(inds)
 }

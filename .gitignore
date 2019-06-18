@@ -1,7 +1,11 @@
 *.pdf
 *.iml
 *.log
-resultRuns.log
+*.sh
+*.html
+*.tex
+*.RData
+
 .Rhistory
 .Rproj.user
 .RData
@@ -13,13 +17,10 @@ tests/
 temp/
 \.idea/
 
-functional_tests\.sh
-
 vignettes/data/
 vignettes/images/
 
-inst/shiny/tutorialShiny\.html
 inst/doc/
 
-vignettes/vignette_rgcca\.html
-vignettes/vignette_rgcca.tex
+*inds\.tsv
+*vars\.tsv

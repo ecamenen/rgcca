@@ -808,6 +808,9 @@ server <- function(input, output, session) {
       savePlot("corcircle.pdf", corcircle())
       savePlot("fingerprint.pdf", fingerprint())
       savePlot("AVE.pdf", ave())
+      saveVars(rgcca.res, blocks, 1, 2)
+      saveInds(rgcca.res, blocks, 1, 2)
+      save(analysis, file = "rgcca.result.RData")
       msgSave()
     }
   })
