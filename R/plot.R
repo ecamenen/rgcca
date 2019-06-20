@@ -350,6 +350,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
     i_block = length(blocks)
 
   df =  getVar(rgcca, blocks, comp_x, comp_y, i_block, "cor")
+  df_temp <- df
 
   if(class(rgcca)=="sgcca"){
     selectedVar = rgcca$a[[i_block]][,comp_x] != 0 | rgcca$a[[i_block]][,comp_y] != 0
@@ -362,7 +363,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
     if(removeVariable & nrow(df) > 2 * n_mark){
       selectedVar = unique( as.vector (unique( sapply(c(1, 2),
                                          function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:n_mark,])))))
-  	df = df[selectedVar, ]
+  	  df = df[selectedVar, ]
     }
   }
 
@@ -372,11 +373,9 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
     color = getBlocsVariables(rgcca$a)
 
     if(class(rgcca)=="sgcca"){
-      names(color) = row.names(df)
-      color = color[row.names(df[selectedVar, ])]
-    }
-
-    else{
+      names(color) = row.names(df_temp)
+      color = color[row.names(df)]
+    }else{
     	if(!is.null(selectedVar))
     		color = color[unlist(lapply(1:length(selectedVar), function(x) which(colnames(blocks[[length(blocks)]]) == selectedVar[x])))]
     }

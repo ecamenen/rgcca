@@ -208,9 +208,9 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "rgcca",
+           type = "sgcca",
            scheme = "factorial",
-           tau = "optimal",
+           tau = "1, 1, 1, 0.05",
            init = "svd",
            ncomp = "2, 2, 2, 2",
            block = 0,
@@ -223,7 +223,7 @@ opt = list(directory = ".",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
            output6 = "connection.pdf",
-           datasets = "/home/etienne.camenen/DATA/ZEUS/DATA/metabolomic.txt,/home/etienne.camenen/DATA/ZEUS/DATA/lipidomic.txt,/home/etienne.camenen/DATA/ZEUS/DATA/atrophy.txt")
+           datasets = "/home/etienne.camenen/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv,/home/etienne.camenen/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv,/home/etienne.camenen/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
