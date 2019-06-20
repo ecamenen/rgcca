@@ -107,7 +107,8 @@ server <- function(input, output, session) {
 
   ################################################ UI function ################################################
 
-  setTauUI <- function(){
+  setTauUI <- function(superblock = NULL){
+    refresh <- c(input$superblock, input$supervised)
 
     if(!is.null(input$analysis_type) && input$analysis_type == "SGCCA"){
       par_name <- "Sparsity"
@@ -119,7 +120,7 @@ server <- function(input, output, session) {
 
     conditionalPanel(
       condition = cond,
-      lapply(1:(length(blocks_without_superb)+ ifelse(input$superblock, 1, 0)), function(i){
+      lapply(1:(length(blocks)), function(i){
         sliderInput(inputId = paste0("tau", i),
                     label = paste(par_name, "for", names(getNames())[i]),
                     min = ifelse(par_name == "Tau", 0, ceiling( 1 / sqrt(ncol(blocks[[i]])) * 100) / 100),
@@ -719,6 +720,7 @@ server <- function(input, output, session) {
     # Observe if analysis parameters are changed
 
     if(blocksExists()){
+
       setNamesInput("x")
       setNamesInput("response")
       assign("nb_comp", input$nb_comp, .GlobalEnv)
@@ -730,7 +732,8 @@ server <- function(input, output, session) {
 
      if(!input$tau_opt)
        setTauUI()
-  })
+
+  }, priority = 10)
 
   updateSuperblock <- function(id, value)
     updateSelectizeInput(session,

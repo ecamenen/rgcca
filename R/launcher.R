@@ -263,7 +263,7 @@ connection = opt$connection
 if(!is.matrix(connection))
   connection = setConnection(blocks, (opt$superblock | !is.null(opt$response)), opt$connection, opt$separator)
 
-opt$group = "/home/etienne.camenen/DATA/ZEUS/DATA/AMY_Staging_MA_quant.txt"
+#opt$group = "/home/etienne.camenen/DATA/ZEUS/DATA/AMY_Staging_MA_quant.txt"
 group = setResponse(blocks, opt$group, opt$separator, opt$header)
 
 rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, FALSE, opt$init, opt$bias, opt$type)
