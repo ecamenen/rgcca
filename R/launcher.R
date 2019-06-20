@@ -17,7 +17,7 @@ graphics.off()
 # Parse the arguments from a command line launch
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)", default = opt[18]),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)"),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
     make_option(c("--group"), type="character",
@@ -208,9 +208,9 @@ for (l in librairies) {
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
            separator = "\t",
-           type = "sgcca",
+           type = "rgcca",
            scheme = "factorial",
-           tau = "1, 1, 1, 0.05",
+           tau = "optimal",
            init = "svd",
            ncomp = "2, 2, 2, 2",
            block = 0,
@@ -222,8 +222,7 @@ opt = list(directory = ".",
            output3 = "fingerprint.pdf",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
-           output6 = "connection.pdf",
-           datasets = "/home/etienne.camenen/DATA/Nucleiparks/Nucleiparks_selectedVar/Transcriptomic.tsv,/home/etienne.camenen/DATA/Nucleiparks/Nucleiparks_selectedVar/Metabolomic.tsv,/home/etienne.camenen/DATA/Nucleiparks/Nucleiparks_selectedVar/Clinic.tsv")
+           output6 = "connection.pdf")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -263,7 +262,6 @@ connection = opt$connection
 if(!is.matrix(connection))
   connection = setConnection(blocks, (opt$superblock | !is.null(opt$response)), opt$connection, opt$separator)
 
-#opt$group = "/home/etienne.camenen/DATA/ZEUS/DATA/AMY_Staging_MA_quant.txt"
 group = setResponse(blocks, opt$group, opt$separator, opt$header)
 
 rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, FALSE, opt$init, opt$bias, opt$type)
@@ -293,7 +291,6 @@ if(opt$ncomp[opt$block] > 1){
 
 # Fingerprint plot
 fingerprint = plotFingerprint(rgcca.out, blocks, opt$compx, opt$superblock, opt$nmark)
-#plotFingerprint(rgcca.out, blocks, opt$compy, opt$superblock, opt$nmark)
 p = changeText ( dynamicPlot(fingerprint, ax2, "text") )
 n = unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
 for (i in 1:length(n[n]))
@@ -325,5 +322,3 @@ if(opt$type != "pca"){
 saveVars(rgcca.out, blocks, 1, 2)
 saveInds(rgcca.out, blocks, 1, 2)
 save(rgcca.out, file = "rgcca.result.RData")
-
-samples_plot

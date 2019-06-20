@@ -17,7 +17,7 @@ stop <- function(message, exit_code = "1", call = sys.call(-1)) {
   base::stop(
     structure(
       class = c(exit_code, "simpleError", "error", "condition"),
-      list(message = message, call = call)
+      list(message = message, call. = NULL)
     ))
 }
 

@@ -12,14 +12,14 @@ LazyData: true
 RoxygenNote: 6.1.0
 Imports: ggplot2,
     optparse,
-    xlsx,
     scales,
     plotly,
     igraph,
-    parallel,
     visNetwork
 Depends: RGCCA
 Suggests: testthat,
+    devtools,
+    bsplus,
     knitr,
     rmarkdown,
     pander,

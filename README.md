@@ -76,8 +76,8 @@ or multiple columns containing a disjunctive table.
 
 ```
 sudo apt-get install -y --no-install-recommends git && \
-    apt-get install -y r-base r-cran-ggplot2 r-cran-scales r-cran-optparse r-cran-shiny r-cran-shiny-js r-cran-plotly r-cran-igraph && \
-    R -e 'install.packages(c("RGCCA", "parallel", "ggrepel", "visNetwork"))' && \
+    apt-get install -y r-base r-cran-ggplot2 r-cran-scales r-cran-optparse r-cran-shiny r-cran-plotly r-cran-igraph && \
+    R -e 'install.packages(c("RGCCA", "visNetwork"))' && \
     git clone https://github.com/BrainAndSpineInstitute/rgcca_Rpackage && \
 	cd rgcca_Rpackage
 ```
@@ -114,7 +114,7 @@ On Windows:
 Please, find the Rmarkdown working example at ```vignettes/vignette_rgcca.Rmd```.
 
 ### Shiny interface
-- Required: shiny (R package)
+- Required: shiny, shinyjs, devtools, bsplus (R package)
 
 Open ```inst/shiny/app.R``` with RStudio to execute Shiny. In the RStudio upper menu, go to "Tools", "Install packages" and write "shiny" in the textual field. Then, the application could be launched by clicking on the ```Run App button``` in the upper right corner of the script menu bar. Click [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/inst/shiny/tutorialShiny.md) to read the tutorial.
 
