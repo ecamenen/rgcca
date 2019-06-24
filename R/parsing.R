@@ -54,16 +54,15 @@ checkFileSize = function(filename){
 }
 
 convertMatrixNumeric <- function(df){
-  df <- matrix( lapply(1:(nrow(df) * ncol(df) ),
-                       function(i)
-                         tryCatch({
-                           as.numeric(df[i])
-                          }, warning = function(e) NA
-                         )),
-                nrow(df),
-                ncol(df),
-                dimnames = list(row.names(df), colnames(df)))
-  return(df)
+  matrix( sapply(1:(nrow(df) * ncol(df) ),
+                 function(i)
+                   tryCatch({
+                     as.numeric(df[i])
+                    }, warning = function(e) NA
+                   )),
+              nrow(df),
+              ncol(df),
+              dimnames = list(row.names(df), colnames(df)))
 }
 
 #' Creates a matrix from loading a file

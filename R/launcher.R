@@ -17,28 +17,29 @@ graphics.off()
 # Parse the arguments from a command line launch
 getArgs = function(){
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)"),
+    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)",
+                default = "inst/extdata/agriculture.tsv,inst/extdata/industry.tsv,inst/extdata/politic.tsv"),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
-    make_option(c("--group"), type="character",
+    make_option(c("--group"), type="character", metavar="character",
                 help="Path of the group file (to color samples by group in the associated plot)"),
     make_option(c("-r", "--response"), type="integer", metavar="integer",
                 help="Position of the response file in datasets (if not null, activate supervized method)"),
     make_option(c("--names"), type="character", metavar="character", help="List of the names for each block file separated by comma [default: filename]"),
     make_option(c("-H", "--header"), type="logical", action="store_false", help="DO NOT consider the first row as header of columns"),
-    make_option(c("--separator"), type="integer", metavar="integer", default=1,
+    make_option(c("--separator"), type="integer", metavar="integer", default=opt[2],
                 help="Character used to separate the columns (1: Tabulation, 2: Semicolon, 3: Comma) [default: tabulation]"),
     make_option(c("--type"), type="character", metavar="character", default=opt[3],
                 help="Type of analysis to use (by default, 1 for RGCCA) [1: rgcca, 2: pca, 3: cca, 4: gcca, cpca-w, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov]"),
     make_option(c("--tau"), type="character", metavar="float", default=opt[5],
                 help="Tau parameter for RGCCA, a float between 0 (maximize the covariance) and 1 (maximize the correlation between blocks). Could also be a list separated by comma. Ex: 0,1,0.75,1"),
-    make_option(c("--scheme"), type="integer", metavar="integer", default=2,
+    make_option(c("--scheme"), type="integer", metavar="integer", default=opt[4],
                 help="Scheme function g(x) for RGCCA (1: x, 2: x^2, 3: |x|, 4: x^4) [default: x^2]"),
     make_option(c("--scale"),  type="logical", action="store_false",
                 help="DO NOT scale the blocks (i.e., standardize each block to zero mean and unit variances and then divide them by the square root of its number of variables)"),
     make_option(c("--superblock"),  type="logical", action="store_false",
                 help="DO NOT use a superblock (a concatenation of all the blocks to better interpret the results)"),
-    make_option(c("--init"),  type="integer", metavar="integer", default=1,
+    make_option(c("--init"),  type="integer", metavar="integer", default=opt[6],
                 help="Initialization mode for RGCCA (1: Singular Value Decompostion , 2: random) [default: SVD]"),
     make_option(c("--bias"),  type="logical", action="store_false",
                 help="Unbiased estimator of the variance"),
@@ -81,17 +82,17 @@ checkFile = function (f){
   }
 }
 
-# Check the validity of the arguments
-# opt : an optionParser object
 checkArg = function(opt){
+  # Check the validity of the arguments
+  # opt : an optionParser object
 
   if(is.null(opt$datasets))
     stop(paste0("--datasets is required."), exit_code = 121)
 
   if (is.null(opt$scheme))
     opt$scheme = "factorial"
-  else if ((opt$scheme < 1) || (opt$scheme > 4)){
-    stop("--scheme must be comprise between 1 and 4 [by default: 2].", exit_code = 122)
+  else if ( ! opt$scheme %in% 1:4 ){
+    stop(paste0("--scheme must be comprise between 1 and 4 [by default: 2], not be equals to ", opt$scheme, "."), exit_code = 122)
   }else{
     schemes = c("horst", "factorial", "centroid")
     if (opt$scheme == 4)
@@ -100,53 +101,59 @@ checkArg = function(opt){
       opt$scheme = schemes[opt$scheme]
   }
 
-  if ((opt$separator < 1) || (opt$separator > 3)){
-    stop("--separator must be comprise between 1 and 2 (1: Tabulation, 2: Semicolon, 3: Comma) [by default: 2].", exit_code = 123)
+  if (! opt$separator %in% 1:3 ){
+    stop(paste0("--separator must be comprise between 1 and 3 (1: Tabulation, 2: Semicolon, 3: Comma) [by default: 2], not be equals to ", opt$separator, "."), exit_code = 123)
   }else{
     separators = c('\t', ';', ',')
     opt$separator = separators[opt$separator]
   }
 
-  if ((opt$init < 1) || (opt$init > 2)){
-    stop("--init must be comprise between 1 and 2 (1: Singular Value Decompostion , 2: random) [by default: SVD].", exit_code = 124)
-  }else{
+  if (! opt$init %in% 1:2 )
+    stop(paste0("--init must be 1 or 2 (1: Singular Value Decompostion , 2: random) [by default: 1], not ", opt$init, "."), exit_code = 124)
+  else
     opt$init = ifelse(opt$init == 1, "svd", "random")
-  }
+
 
   FILES = c("connection", "group")
   for (o in FILES)
     if(!is.null(opt[[o]]))
       checkFile(opt[[o]])
 
+  checkInteger("nmark")
+  if(opt$nmark < 2)
+    stop(paste0("--nmark must be upper than 2, not be equals to ", opt$nmark, "."), exit_code = 135)
+
   return (opt)
 }
 
-# Check the validity of the arguments after loading the blocks
-# opt : an optionParser object
-# blocks : a list of matrix
+checkArgSize <- function(blocks, x, y){
+  if(length(x) != length(blocks))
+    stop(paste0("--", y, " list must have the same size (", length(x), ") than the the number of blocks (", length(blocks), ")."), exit_code = 130)
+  else
+    return(TRUE)
+}
+
 postCheckArg = function(opt, blocks){
+  # Check the validity of the arguments after loading the blocks
+  # opt : an optionParser object
+  # blocks : a list of matrix
+
   opt = select.type(blocks, opt)
 
   if(opt$superblock | opt$type == "pca")
     blocks = c(blocks, list(Reduce(cbind, blocks)))
 
-  opt$ncomp = as.list(opt$ncomp)
-
   out = lapply(1:length(opt$ncomp), function(x){
+    checkInteger("ncomp", opt$ncomp[x])
     if ((opt$ncomp[x] < 1) || (opt$ncomp[x] > ncol(blocks[[x]]))){
       stop(paste0("--ncomp must be comprise between 1 and ", ncol(blocks[[x]]) ,", the number of variables of the block (currently equals to ", opt$ncomp[x]  ,")"), exit_code = 126)
     }
   })
 
-  if(length(opt$ncomp) == 1)
-    opt$ncomp = rep(opt$ncomp[[1]], length(blocks))
-  else
-    if(length(opt$ncomp) != length(blocks))
-      stop(paste0("--ncomp list must have the same size (", length(opt$ncomp), ") than the the number of blocks (", length(blocks), ")."), exit_code = 127)
-    else
-      opt$ncomp = unlist(opt$ncomp)
+  checkArgSize(blocks, opt$ncomp, "ncomp")
 
   out = sapply(c("compx", "compy"), function (x){
+    checkInteger(x)
     if ((opt[[x]] < 1) || (opt[[x]] > opt$ncomp )){
       stop(paste0("--", x, " must be comprise between 1 and ", opt$ncomp ," (the number of component selected)."), exit_code = 128)
     }
@@ -167,9 +174,7 @@ postCheckArg = function(opt, blocks){
       if(length(list_tau) == 1)
         opt$tau = rep(list_tau[[1]], length(blocks))
       else
-        if(length(list_tau) != length(blocks))
-          stop(paste0("--tau list must have the same size (", length(list_tau), ") than the the number of blocks (", length(blocks), ")."), exit_code = 130)
-        else
+        if(checkArgSize(blocks, list_tau, "tau"))
           opt$tau = unlist(list_tau)
 
     }, warning = function(w) {
@@ -179,18 +184,45 @@ postCheckArg = function(opt, blocks){
     opt$tau = "optimal"
   }
 
-  # c1 : A vector of integer giving the spasity parameter for SGCCA (c1)
-  # Stop the program if at least one c1 parameter is not in the required interval
-
   checkC1(blocks, opt$tau, opt$type)
 
+  if(!is.null(opt$names))
+    checkArgSize(blocks, strsplit(gsub(" ", "", opt$names), ",")[[1]], "names")
 
-  if(opt$block > length(blocks))
-    stop(paste0("--block must be lower than ", length(blocks), " (the maximum number of blocks)."), exit_code = 133)
-  else if(opt$block == 0)
-    opt$block = length(blocks)
+  for (x in c("block", "block_y", "response")){
+    if(!is.null(opt[[x]])){
+      if(opt[[x]] > length(blocks))
+        stop(paste0("--", x, " must be lower than ", length(blocks), " (the maximum number of blocks)."), exit_code = 133)
+      else if(opt$block == 0)
+        opt[[x]] = length(blocks)
+      else if(opt[[x]] < 0 )
+        stop(paste0("--", x, " must be positive."), exit_code = 134)
+      checkInteger(x)
+    }
+  }
 
   return (opt)
+}
+
+checkInteger <- function(x, y = NULL){
+  # Test either x is an integer
+  # x : a string corresponding to a name in a list "opt"
+
+  if(is.null(y))
+    y = opt[[x]]
+
+  # Test if not a character
+  tryCatch({
+    as.integer(y)
+  }, warning = function(w) {
+    stop(paste0("--", x, " is a character (", y, ") and must be an integer."))
+  })
+
+  # Test if not a float
+
+  if(length(strsplit(as.character(y), ".", fixed=T)[[1]]) > 1)
+    stop(paste0("--", x, " is a float (", y, ") and must be an integer."))
+
 }
 
 ########## Main ##########
@@ -207,12 +239,12 @@ for (l in librairies) {
 
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt = list(directory = ".",
-           separator = "\t",
+           separator = 1,
            type = "rgcca",
-           scheme = "factorial",
+           scheme = 2,
            tau = "optimal",
-           init = "svd",
-           ncomp = "2, 2, 2, 2",
+           init = 1,
+           ncomp = 2,
            block = 0,
            compx = 1,
            compy = 2,
@@ -247,6 +279,9 @@ opt$text = !("text" %in% names(opt))
 
 blocks = setBlocks(opt$datasets, opt$names, opt$separator, opt$header)
 blocks = scaling(blocks, opt$scale, opt$bias)
+
+if(length(grep(",", opt$ncomp)) == 0)
+  opt$ncomp = paste(rep(opt$ncomp, length(blocks)), collapse = ",")
 
 opt = checkSuperblock(opt)
 opt = postCheckArg(opt, blocks)
