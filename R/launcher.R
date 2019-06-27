@@ -18,7 +18,7 @@ graphics.off()
 getArgs = function(){
   option_list = list(
     make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)",
-                default = "inst/extdata/agriculture.tsv,inst/extdata/industry.tsv,inst/extdata/politic.tsv"),
+                default = opt[18]),
     make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
     make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
     make_option(c("--group"), type="character", metavar="character",
@@ -209,11 +209,15 @@ checkInteger <- function(x, y = NULL){
   # x : a string corresponding to a name in a list "opt"
 
   if(is.null(y))
-    y = opt[[x]]
+    y <- opt[[x]]
 
   # Test if not a character
   tryCatch({
     as.integer(y)
+    if(is.na(y)){
+      y <- opt[[x]]
+      warning("")
+    }
   }, warning = function(w) {
     stop(paste0("--", x, " is a character (", y, ") and must be an integer."))
   })
@@ -254,7 +258,8 @@ opt = list(directory = ".",
            output3 = "fingerprint.pdf",
            output4 = "ave.pdf",
            output5 = "correlation.pdf",
-           output6 = "connection.pdf")
+           output6 = "connection.pdf",
+           datasets = "inst/extdata/agriculture.tsv,inst/extdata/industry.tsv,inst/extdata/politic.tsv")
 
 tryCatch({
   opt = parse_args(getArgs())
@@ -280,8 +285,10 @@ opt$text = !("text" %in% names(opt))
 blocks = setBlocks(opt$datasets, opt$names, opt$separator, opt$header)
 blocks = scaling(blocks, opt$scale, opt$bias)
 
-if(length(grep(",", opt$ncomp)) == 0)
-  opt$ncomp = paste(rep(opt$ncomp, length(blocks)), collapse = ",")
+for (x in c("ncomp", "tau")){
+  if(length(grep(",", opt[[x]])) == 0 && !(x == "tau" && opt[[x]] == "optimal"))
+    opt[[x]] = paste(rep(opt[[x]], length(blocks)), collapse = ",")
+}
 
 opt = checkSuperblock(opt)
 opt = postCheckArg(opt, blocks)
