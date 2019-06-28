@@ -17,7 +17,7 @@ stop <- function(message, exit_code = "1", call = sys.call(-1)) {
   base::stop(
     structure(
       class = c(exit_code, "simpleError", "error", "condition"),
-      list(message = message, call = call)
+      list(message = message, call. = NULL)
     ))
 }
 
@@ -54,10 +54,15 @@ checkFileSize = function(filename){
 }
 
 convertMatrixNumeric <- function(df){
-  options(warn = -1)
-  df <- matrix( as.numeric(df), nrow(df), ncol(df), dimnames = list(row.names(df), colnames(df)))
-  options(warn = 0)
-  return(df)
+  matrix( sapply(1:(nrow(df) * ncol(df) ),
+                 function(i)
+                   tryCatch({
+                     as.numeric(df[i])
+                    }, warning = function(e) NA
+                   )),
+              nrow(df),
+              ncol(df),
+              dimnames = list(row.names(df), colnames(df)))
 }
 
 #' Creates a matrix from loading a file
@@ -135,7 +140,7 @@ loadExcel = function(f, sheet, rownames = 1, h = TRUE, num = TRUE) {
 #' library("ggplot2")
 #' df = as.data.frame(matrix(runif(20), 10, 2))
 #' p = ggplot(df, aes(df[, 1], df[, 2]))
-#' savePlot("Rplot.png", p)
+#' #savePlot("Rplot.png", p)
 #' @export savePlot
 savePlot = function(f, p) {
 
@@ -294,7 +299,7 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
     if( any(is.na(df)) ){
       df = matrix(unlist(lapply(1:ncol(df),
                                     function(x) unlist(lapply(as.list(df[,x]),
-                                                                           function(y) ifelse(is.na(y),  mean(df[, x], na.rm = T), y))))),
+                                                                           function(y) ifelse(is.na(y),  mean(unlist(df[, x]), na.rm = T), y))))),
                       nrow(df), ncol(df))
     }
 
@@ -414,19 +419,7 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
     else
       response = loadExcel(file, 1, rownames, h = header, num = FALSE)
 
-    # if(length(response) < nrow(blocks[[1]])){
-    #
-    #   MSG <- ""
-    #
-    #   if( (length(response) + 1) == nrow(blocks[[1]]))
-    #     MSG <- "Please, check if the header is activated and the response does'nt have one."
-    #
-    #   warning(paste("The number of line of the response file is shorter than those of the blocks.", MSG))
-    #
-    #   return(rep(1, NROW(blocks[[1]])))
-    # }
-
-    qualitative = unique(isCharacter(na.omit(response)))
+    qualitative = unique(isCharacter(response))
 
     if (length(qualitative) > 1)
       stop("Please, select a response file with either qualitative data only or quantitative data only.",
@@ -479,7 +472,6 @@ isCharacter = function(x) {
   # as.vector, avoid factors of character in integer without NA
 
   # NA tolerance :
-  # x = na.omit(x)
 
   if (is.matrix(x)){
     test = sapply(
@@ -488,7 +480,7 @@ isCharacter = function(x) {
         is.na(
           tryCatch(
             as.integer(
-              as.vector(x[, i])
+              na.omit(as.vector(x[, i])[as.vector(x[, i]) != "NA"])
             ),
             warning = function(w)
               return(NA)
@@ -501,7 +493,7 @@ isCharacter = function(x) {
       is.na(
         tryCatch(
           as.integer(
-            as.vector(x)
+            na.omit(as.vector(x)[as.vector(x) != "NA"])
           ),
           warning = function(w)
             return(NA)

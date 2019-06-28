@@ -480,6 +480,8 @@ scaling = function(blocks, scale = TRUE, bias = TRUE){
 }
 
 checkC1 = function(blocks, tau, type){
+  # c1 : A vector of integer giving the spasity parameter for SGCCA (c1)
+  # Stop the program if at least one c1 parameter is not in the required interval
 
   if(tolower(type) == "sgcca"){
     #the minimum value avalaible

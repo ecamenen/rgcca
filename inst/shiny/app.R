@@ -1,5 +1,5 @@
 # Author: Etienne CAMENEN
-# Date: 2018
+# Date: 2019
 # Contact: arthur.tenenhaus@l2s.centralesupelec.fr
 # Key-words: omics, RGCCA, multi-block
 # EDAM operation: analysis, correlation, visualisation
@@ -9,7 +9,8 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
-rm(list=ls())
+rm(list=ls()) 
+setwd(strsplit(rstudioapi::getActiveDocumentContext()$path, "/app.R")[[1]])
 
 one_block <- c(`Principal Component Analysis` = "PCA")
 two_blocks <- c(`Canonical Correlation Analysis` = 'CCA', `Interbattery Factor Analysis` = "IFA", `Partial Least Squares Regression` = 'PLS',  `Redundancy analysis` = 'RA')
@@ -19,23 +20,7 @@ multiple_blocks <- c(`Regularized Generalized CCA (RGCCA)` = 'RGCCA', `Sparse Ge
 multiple_blocks_super <- c(`Generalized CCA (GCCA)` = 'GCCA', `Hierarchical PCA` = 'HPCA', `Multiple Factor Analysis` = 'MFA')
 analyse_methods <- list(one_block, two_blocks, multiple_blocks, multiple_blocks_super)
 
-# Libraries loading
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "shiny", "shinyjs", "plotly", "visNetwork", "igraph", "ggrepel", "parallel", "bsplus", "devtools")
-for (l in librairies) {
-  if (!(l %in% installed.packages()[, "Package"])){
-    if("bsplus")
-      devtools::install_github("ijlyttle/bsplus", upgrade = "never")
-    else
-      install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
-  }
-  library(l, character.only = TRUE, quiet = T)
-}
 
-# Maximum size allowed : 30 MB
+# Maximum size allowed : 30 MB  
 options(shiny.maxRequestSize = 30*1024^2)
-source("inst/shiny/server.R")
-source("inst/shiny/ui.R")
-
-app <- shinyApp(ui, server)
-
-runApp(app)
+runApp()

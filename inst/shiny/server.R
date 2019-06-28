@@ -10,10 +10,10 @@
 # of the most explicative variables and the explained variance for each blocks.
 
 server <- function(input, output, session) {
-  source("R/parsing.R")
-  source("R/plot.R")
-  source("R/select.type.R")
-  source("R/network.R")
+  source("../../R/parsing.R")
+  source("../../R/plot.R")
+  source("../../R/select.type.R")
+  source("../../R/network.R")
 
   # Assign reactive variables
   reac_var  <<- reactiveVal()
@@ -79,13 +79,16 @@ server <- function(input, output, session) {
     # TODO: pas plusieurs sliderInput, découper en modules
   })
 
+  refreshAnalysis <- function()
+    c(input$nb_comp, input$block, input$sep, input$scheme, input$scale, input$superblock, input$supervised)
+
   output$comp_x_custom <- renderUI({
-    refresh <- input$nb_comp
-    uiComp("x", 1, input$navbar != "Fingerprint")
+    refresh <- refreshAnalysis()
+    isolate(uiComp("x", 1, input$navbar != "Fingerprint"))
   })
 
   output$comp_y_custom <- renderUI({
-    refresh <- input$nb_comp
+    refresh <- refreshAnalysis()
     uiComp("y", 2)
   })
 
@@ -104,7 +107,8 @@ server <- function(input, output, session) {
 
   ################################################ UI function ################################################
 
-  setTauUI <- function(){
+  setTauUI <- function(superblock = NULL){
+    refresh <- c(input$superblock, input$supervised)
 
     if(!is.null(input$analysis_type) && input$analysis_type == "SGCCA"){
       par_name <- "Sparsity"
@@ -116,7 +120,7 @@ server <- function(input, output, session) {
 
     conditionalPanel(
       condition = cond,
-      lapply(1:(length(blocks_without_superb)+ ifelse(input$superblock, 1, 0)), function(i){
+      lapply(1:(length(blocks)), function(i){
         sliderInput(inputId = paste0("tau", i),
                     label = paste(par_name, "for", names(getNames())[i]),
                     min = ifelse(par_name == "Tau", 0, ceiling( 1 / sqrt(ncol(blocks[[i]])) * 100) / 100),
@@ -319,15 +323,8 @@ server <- function(input, output, session) {
 
   setIdBlock = function(){
 
-    if( !superblock && !is.null(input$names_block_x) && as.integer(input$names_block_x) > round(length(blocks)) ){
-      reac_var(as.integer(input$names_block_x))
-      assign("id_block", reac_var() - 1, .GlobalEnv)
-      assign("id_block_y", reac_var() - 1, .GlobalEnv)
-    }else{
-      # By default, when a new dataset is loaded, the selected block is the last
-      assign("id_block", length(blocks), .GlobalEnv)
-      assign("id_block_y", length(blocks), .GlobalEnv)
-    }
+    assign("id_block", length(blocks), .GlobalEnv)
+    assign("id_block_y", length(blocks), .GlobalEnv)
 
   }
 
@@ -337,10 +334,7 @@ server <- function(input, output, session) {
     refresh = c(input$sep, input$header, input$blocks, input$superblock, input$connection,  input$scheme, input$nb_mark,
                 input$scale, input$init, input$comp_x, input$comp_y, input$tau, input$tau_opt, input$analysis_type,
                 input$connection, input$nb_comp, input$response, input$names_block_x, input$names_block_y, input$boot, input$text,
-                input$names_block_response, input$supervised, input$run_analysis, input$nb_mark_custom, input$blocks_names_custom_x )
-
-    getIdBlockX()
-    getIdBlockY()
+                input$names_block_response, input$supervised, input$run_analysis, input$nb_mark_custom, input$blocks_names_custom_x)
   }
 
 
@@ -354,15 +348,18 @@ server <- function(input, output, session) {
       return(f)
   }
 
-  samples <- function()
-    plotSamplesSpace(rgcca = rgcca.res,
-                     resp = response,
-                     comp_x = comp_x,
-                     comp_y = comp_y,
-                     i_block = id_block,
-                     text = if_text,
-                     i_block_y = id_block_y,
+  samples <- function(){
+    isolate({
+      plotSamplesSpace(rgcca = rgcca.res,
+                       resp = response,
+                       comp_x = comp_x,
+                       comp_y = comp_y,
+                       i_block = id_block,
+                       text = if_text,
+                       i_block_y = id_block_y,
                      reponse_name = getExtension(input$response$name))
+    })
+  }
 
   corcircle <- function() plotVariablesSpace(rgcca = rgcca.res,
                                              blocks = blocks,
@@ -518,7 +515,7 @@ server <- function(input, output, session) {
                         header = input$header),  warn = FALSE)
 
     if(length(response) < 1)
-      response -> NULL
+      response <- NULL -> response_file
 
     return(response)
 
@@ -672,7 +669,7 @@ server <- function(input, output, session) {
     assign("response", NULL, .GlobalEnv)
     assign("connection", NULL, .GlobalEnv)
     assign("response_file", NULL, .GlobalEnv)
-    setUiResponse()
+    assign("response", setResponseShiny(), .GlobalEnv)
 
     assign("id_block_resp", length(blocks_without_superb), .GlobalEnv)
     blocks = setParRGCCA(FALSE)
@@ -723,6 +720,7 @@ server <- function(input, output, session) {
     # Observe if analysis parameters are changed
 
     if(blocksExists()){
+
       setNamesInput("x")
       setNamesInput("response")
       assign("nb_comp", input$nb_comp, .GlobalEnv)
@@ -734,7 +732,8 @@ server <- function(input, output, session) {
 
      if(!input$tau_opt)
        setTauUI()
-  })
+
+  }, priority = 10)
 
   updateSuperblock <- function(id, value)
     updateSelectizeInput(session,
@@ -759,36 +758,38 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$names_block_x, {
-    # Observe if graphical parameters are changed
-
-    getIdBlockX()
-
-  })
-
-  getIdBlockX = function(){
-      isolate({
+    isolate({
       if(blocksExists() &&  !is.null(input$names_block_x)){
+        if(as.integer(input$names_block_x) > round(length(blocks))){
+          reac_var(length(blocks))
+          assign("id_block", reac_var(), .GlobalEnv)
+        }else{
           reac_var(as.integer(input$names_block_x))
           assign("id_block", reac_var(), .GlobalEnv)
         }
-      })
-    }
-
-  getIdBlockY = function(){
-    isolate({
-      if(blocksExists() && !is.null(input$names_block_y)){
-        reac_var(as.integer(input$names_block_y))
-        assign("id_block_y", reac_var(), .GlobalEnv)
       }
     })
-  }
+  }, priority = 30)
+
+  observeEvent(c(input$superblock, input$supervised), {
+    reac_var(length(blocks))
+    assign("id_block", reac_var(), .GlobalEnv)
+    assign("id_block_y", reac_var(), .GlobalEnv)
+  }, priority = 20)
 
   observeEvent(input$names_block_y, {
-    # Observe if graphical parameters are changed
-
-    getIdBlockY()
-
-  })
+    isolate({
+      if(blocksExists() && !is.null(input$names_block_y)){
+        if(as.integer(input$names_block_y) > round(length(blocks))){
+          reac_var(length(blocks))
+          assign("id_block_y", reac_var(), .GlobalEnv)
+        }else{
+          reac_var(as.integer(input$names_block_y))
+          assign("id_block_y", reac_var(), .GlobalEnv)
+        }
+      }
+    })
+  }, priority = 30)
 
   observeEvent(input$names_block_response, {
     # Observe if graphical parameters are changed
@@ -813,6 +814,9 @@ server <- function(input, output, session) {
       savePlot("corcircle.pdf", corcircle())
       savePlot("fingerprint.pdf", fingerprint())
       savePlot("AVE.pdf", ave())
+      saveVars(rgcca.res, blocks, 1, 2)
+      saveInds(rgcca.res, blocks, 1, 2)
+      save(analysis, file = "rgcca.result.RData")
       msgSave()
     }
   })
@@ -830,13 +834,17 @@ server <- function(input, output, session) {
       }
   })
 
-  setResponseEvent <- eventReactive(input$response, {
+  observeEvent(input$response, {
 
-    assign("response_file", input$response$datapath, .GlobalEnv)
-    assign("response", setResponseShiny(), .GlobalEnv)
-    setUiResponse()
-    showWarn(message(paste0(input$response$name, " loaded as a group file.")), show = FALSE)
-  })
+    if(!is.null(input$response)){
+      assign("response_file", input$response$datapath, .GlobalEnv)
+      assign("response", setResponseShiny(), .GlobalEnv)
+      setUiResponse()
+      showWarn(samples(), warn = TRUE)
+      showWarn(message(paste0(input$response$name, " loaded as a group file.")), show = FALSE)
+    }
+
+  }, priority = 10)
 
   ################################################ Outputs ################################################
 
@@ -851,14 +859,8 @@ server <- function(input, output, session) {
         msgSave()
       })
 
-      assign("response", setResponseShiny(), .GlobalEnv)
-      setUiResponse()
-
-      if(!is.null(input$response))
-        setResponseEvent()
-
-      p = showWarn(changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), if_text ))
-      if( length(unique(na.omit(response))) < 2 || (length(unique(na.omit(response))) > 5 && !unique(isCharacter(na.omit(response))) ))
+      p = showWarn(changeHovertext( dynamicPlot(samples(), ax, "text", TRUE, TRUE), if_text ), warn = FALSE)
+      if( length(unique(na.omit(response))) < 2 || (length(unique(response)) > 5 && !unique(isCharacter(na.omit(response))) ))
         p  = p  %>% layout(showlegend = FALSE)
       p
 

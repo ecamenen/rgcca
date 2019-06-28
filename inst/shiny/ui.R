@@ -16,6 +16,20 @@ setInfo <- function(., text){
   )
 }
 
+# Libraries loading
+librairies = c("RGCCA", "ggplot2", "scales", "shiny", "shinyjs", "visNetwork", "devtools", "plotly", "igraph", "bsplus")
+for (l in librairies) {
+  if (!(l %in% installed.packages()[, "Package"])){
+    if(l == "bsplus")
+      devtools::install_github("ijlyttle/bsplus", upgrade = "never")
+    else
+      install.packages(l, repos = "http://cran.us.r-project.org")
+  }
+  library(l, character.only = TRUE,
+          warn.conflicts = FALSE,
+          quiet = TRUE)
+}
+
 ui <- fluidPage(
 
   bs_modal(
@@ -30,9 +44,9 @@ ui <- fluidPage(
   titlePanel("R/SGCCA - The Shiny graphical interface"),
   tags$div(
     tags$strong("Authors: "),
-    tags$p("Arthur TENENHAUS (", tags$a(href="arthur.tenenhaus@l2s.centralesupelec.fr","arthur.tenenhaus@l2s.centralesupelec.fr"), "), Vincent GUILLEMOT, Etienne CAMENEN")
+    tags$p("Etienne CAMENEN, Ivan MOSZER, Arthur TENENHAUS (", tags$a(href="arthur.tenenhaus@l2s.centralesupelec.fr","arthur.tenenhaus@l2s.centralesupelec.fr"),")")
   ),
-  tags$a(href="https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/develop/inst/shiny/tutorialShiny.md", "Go to the tutorial"),
+  tags$a(href="https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/inst/shiny/tutorialShiny.md", "Go to the tutorial"),
   useShinyjs(),
   sidebarLayout(
 
