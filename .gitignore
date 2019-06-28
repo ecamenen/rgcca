@@ -1,22 +1,26 @@
 *.pdf
 *.iml
 *.log
-resultRuns.log
+*.sh
+*.html
+*.tex
+*.RData
+
 .Rhistory
 .Rproj.user
 .RData
 .Ruserdata
 rgccaLauncher\.Rproj
 
+man/
+tests/
 temp/
 \.idea/
-data3/
-results/
 
-functional_tests\.sh
+vignettes/data/
+vignettes/images/
 
-data/blocks\.xlsx
+inst/doc/
 
-data/response2\.tsv
-
-data/response3\.tsv
+*inds\.tsv
+*vars\.tsv

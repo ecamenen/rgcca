@@ -9,122 +9,199 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
-rm(list=ls())
+setInfo <- function(., text){
+  shinyInput_label_embed(
+    icon("question") %>%
+      bs_embed_tooltip(title = text)
+  )
+}
+
 # Libraries loading
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "xlsx", "shiny", "shinyjs")
+librairies = c("RGCCA", "ggplot2", "scales", "shiny", "shinyjs", "visNetwork", "devtools", "plotly", "igraph", "bsplus")
 for (l in librairies) {
-  if (!(l %in% installed.packages()[, "Package"]))
-    install.packages(l, repos = "http://cran.us.r-project.org", quiet = T)
-  library(l, character.only = TRUE)
+  if (!(l %in% installed.packages()[, "Package"])){
+    if(l == "bsplus")
+      devtools::install_github("ijlyttle/bsplus", upgrade = "never")
+    else
+      install.packages(l, repos = "http://cran.us.r-project.org")
+  }
+  library(l, character.only = TRUE,
+          warn.conflicts = FALSE,
+          quiet = TRUE)
 }
 
 ui <- fluidPage(
 
-  titlePanel("RGCCA - graphical interface"),
+  bs_modal(
+    id = "modal_superblock",
+    title = "Help on superblock",
+    body =  "If activated, add a supplementary block (the 'superblock') corresponding to a concatenation of all the blocks.
+    This block shynthesize the other blocks all together into a common space to better interpret the results.
+    If disabled, a connection file could be used. Otherwise, all blocks are connected together.",
+    size = "medium"
+  ),
 
+  titlePanel("R/SGCCA - The Shiny graphical interface"),
+  tags$div(
+    tags$strong("Authors: "),
+    tags$p("Etienne CAMENEN, Ivan MOSZER, Arthur TENENHAUS (", tags$a(href="arthur.tenenhaus@l2s.centralesupelec.fr","arthur.tenenhaus@l2s.centralesupelec.fr"),")")
+  ),
+  tags$a(href="https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/inst/shiny/tutorialShiny.md", "Go to the tutorial"),
+  useShinyjs(),
   sidebarLayout(
 
     sidebarPanel(
-      useShinyjs(),
-      # Data loading
-      fileInput(inputId = "blocks",
-                label = h5("Choose blocks : "),
-                multiple = TRUE
-      ),
-      fileInput(inputId = "connection",
-                label = h5("Choose a connection design : ")
-      ),
-      fileInput(inputId = "response",
-                label = h5("Choose a response : ")
-      ),
+      tabsetPanel(id = "tabset",
+                  tabPanel("Data",
 
-      # File parsing
-      checkboxInput("adv_pars",
-                    "Advanced parsing",
-                    value = FALSE),
-      conditionalPanel(
-        condition = "input.adv_pars == true",
-        checkboxInput(inputId = "header",
-                      label = "Consider first row as header",
-                      value = TRUE),
-        radioButtons(inputId = "sep",
-                     label = "Separator",
-                     choices = c(Comma = ",",
-                                 Semicolon = ";",
-                                 Tabulation = "\t"),
-                     selected = "\t")),
+                           # Data loading
+                           fileInput(inputId = "blocks",
+                                     label = "Blocks",
+                                     multiple = TRUE)
+                           %>%
+                             shinyInput_label_embed(
+                               icon("question") %>%
+                                 bs_embed_tooltip(title = "One or multiple CSV files containing a matrix with : (i) quantitative values only (decimal should be separated by '.'), (ii) the samples in lines (should be labelled in the 1rst column) and (iii) variables in columns (should have a header)",
+                                                  placement = "bottom")
+                             ),
 
-      # Analysis parameters
-      checkboxInput("adv_ana",
-                    "Advanced analysis",
-                    value = FALSE),
-      conditionalPanel(
-        condition = "input.adv_ana == true",
-        uiOutput("nb_comp_custom"),
-        checkboxInput(inputId = "superblock",
-                      label = "Use a superblock",
-                      value = TRUE),
-        checkboxInput(inputId = "tau_opt",
-                      label = "Use an optimal tau",
-                      value = TRUE),
-        conditionalPanel(
-          condition = "input.tau_opt == false",
-          sliderInput(inputId = "tau",
-                      label = h5("Tau: "),
-                      min = 0, max = 1, value = .5, step = .1)),
-        checkboxInput(inputId = "scale",
-                      label = "Scale the blocks",
-                      value = TRUE),
-        checkboxInput(inputId = "bias",
-                      label = "Biaised estimator of the var/cov",
-                      value = TRUE),
-        radioButtons(inputId = "scheme",
-                     label = "Scheme function",
-                     choices = c(Horst = "horst",
-                                 Centroid = "centroid",
-                                 Factorial = "factorial"),
-                     selected = "factorial"),
-        radioButtons("init",
-                     label = "Mode of initialization",
-                     choices = c(SVD = "svd",
-                                 Random = "random"),
-                     selected = "svd")),
+                           radioButtons(inputId = "sep",
+                                        label = "Column separator",
+                                        choices = c(Comma = ",",
+                                                    Semicolon = ";",
+                                                    Tabulation = "\t"),
+                                        selected = "\t")
+                           %>%
+                             shinyInput_label_embed(
+                               icon("question") %>%
+                                 bs_embed_tooltip(title = "Character used to separate the column in the dataset")
+                             ),
 
-      # Graphical parameters
-      checkboxInput("adv_graph",
-                    "Advanced graphics",
-                    value = FALSE),
-      conditionalPanel(
-        condition = "input.adv_graph == true",
-        uiOutput("blocks_names_custom"),
-        uiOutput("axis1_custom"),
-        uiOutput("axis2_custom"),
-        uiOutput("nb_mark_custom")),
+                           checkboxInput(inputId = "header",
+                                         label = "Consider first row as header",
+                                         value = TRUE)
+                  ),
 
-      actionButton(inputId = "save_all",
-                   label = "Save all")
 
-    ),
+                  # Analysis parameters
+
+                  tabPanel("RGCCA",
+                           uiOutput("analysis_type_custom"),
+                           uiOutput("nb_comp_custom"),
+
+                           checkboxInput(inputId = "scale",
+                                         label = "Scale the blocks",
+                                         value = TRUE)
+                           %>%
+                           shinyInput_label_embed(
+                             icon("question") %>%
+                               bs_embed_tooltip(title = "A zero means translation is always performed. If activated, each block are standardized to unit variances and then divide them by the square root of its number of variables.")
+                           ),
+
+                           radioButtons("init",
+                                        label = "Mode of initialization",
+                                        choices = c(SVD = "svd",
+                                                    Random = "random"),
+                                        selected = "svd"),
+
+                           checkboxInput(inputId = "superblock",
+                                         label = "Use a superblock",
+                                         value = T)
+                           %>%
+                             shinyInput_label_embed(
+                               shiny_iconlink(name = "question-circle") %>%
+                                 bs_attach_modal(id_modal = "modal_superblock")
+                           ),
+
+                           checkboxInput(inputId = "supervised",
+                                         label = "Supervised analysis",
+                                         value = F),
+
+                           conditionalPanel(
+                             condition = "input.supervised || input.analysis_type == 'RA'",
+                             uiOutput("blocks_names_response")
+                           ),
+
+                           uiOutput("connection_custom"),
+
+                           checkboxInput(inputId = "tau_opt",
+                                         label = "Use an optimal tau",
+                                         value = TRUE)
+                           %>%
+                             shinyInput_label_embed(
+                               icon("question") %>%
+                                 bs_embed_tooltip(title = "A tau near 0 maximize the covariance in each blocks whereas a tau near 1 maximize the correlation.")
+                             ),
+                           uiOutput("tau_custom"),
+
+                           radioButtons(inputId = "scheme",
+                                        label = "Scheme function",
+                                        choices = c(Horst = "horst",
+                                                    Centroid = "centroid",
+                                                    Factorial = "factorial"),
+                                        selected = "factorial")
+                           %>%
+                             shinyInput_label_embed(
+                               icon("question") %>%
+                                 bs_embed_tooltip(title = "The maximization of the sum of covariances between block components is calculated with : the identity function (horst scheme),
+                               the absolute values (centroid scheme), the squared values (factorial scheme).")
+                               ),
+
+                           sliderInput(inputId = "boot",
+                                       label = "Number of boostraps",
+                                       min = 5, max = 100, value = 10, step = 5),
+                           actionButton(inputId = "run_boot",
+                                        label = "Run bootstrap"),
+                           actionButton(inputId = "run_analysis",
+                                        label = "Run Analysis")
+                  ),
+
+                  # Graphical parameters
+
+                  tabPanel("Graphic",
+                           checkboxInput(inputId = "text",
+                                         label = "Print names",
+                                         value = TRUE),
+                           uiOutput("blocks_names_custom_x"),
+                           uiOutput("blocks_names_custom_y"),
+                           uiOutput("comp_x_custom"),
+                           uiOutput("comp_y_custom"),
+                           uiOutput("nb_mark_custom"),
+                           uiOutput("response_custom"),
+
+                           actionButton(inputId = "save_all",
+                                        label = "Save all")
+                  )
+
+      )),
 
     mainPanel(
 
       tabsetPanel(
         type = "tabs",
         id = "navbar",
-        tabPanel("Samples plot",
-                 plotOutput("samplesPlot"),
-                 actionButton("samples_save","Save")),
-        tabPanel("Corcircle plot",
-                 plotOutput("corcirclePlot"),
-                 actionButton("corcircle_save","Save")),
-        tabPanel("Fingerprint plot",
-                 plotOutput("fingerprintPlot"),
-                 actionButton("fingerprint_save","Save")),
-        tabPanel("AVE plot",
+        tabPanel("Connection",
+                 visNetworkOutput("connectionPlot"),
+                 actionButton("connection_save","Save")),
+        tabPanel("AVE",
                  plotOutput("AVEPlot"),
-                 actionButton("ave_save","Save"))
+                 actionButton("ave_save","Save")),
+        tabPanel("Samples",
+                 plotlyOutput("samplesPlot", height = 700),
+                 actionButton("samples_save","Save")),
+        tabPanel("Corcircle",
+                 plotlyOutput("corcirclePlot"),
+                 actionButton("corcircle_save","Save")),
+        tabPanel("Fingerprint",
+                 plotlyOutput("fingerprintPlot", height = 700),
+                 actionButton("fingerprint_save","Save")),
+        tabPanel("Bootstrap",
+                 plotlyOutput("bootstrapPlot", height = 700),
+                 actionButton("bootstrap_save","Save"))
       )
 
     )
-  )
+  ),
+
+  use_bs_tooltip()
 )
