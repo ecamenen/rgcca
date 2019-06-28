@@ -1,5 +1,5 @@
 # Author: Etienne CAMENEN
-# Date: 2018
+# Date: 2019
 # Contact: arthur.tenenhaus@l2s.centralesupelec.fr
 # Key-words: omics, RGCCA, multi-block
 # EDAM operation: analysis, correlation, visualisation
@@ -9,7 +9,7 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
-rm(list=ls())
+rm(list=ls()) 
 setwd(strsplit(rstudioapi::getActiveDocumentContext()$path, "/app.R")[[1]])
 
 one_block <- c(`Principal Component Analysis` = "PCA")
@@ -21,6 +21,6 @@ multiple_blocks_super <- c(`Generalized CCA (GCCA)` = 'GCCA', `Hierarchical PCA`
 analyse_methods <- list(one_block, two_blocks, multiple_blocks, multiple_blocks_super)
 
 
-# Maximum size allowed : 30 MB
+# Maximum size allowed : 30 MB  
 options(shiny.maxRequestSize = 30*1024^2)
 runApp()

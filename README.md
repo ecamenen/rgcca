@@ -69,7 +69,7 @@ or multiple columns containing a disjunctive table.
 
 
 ## Installation
-- Softwares : R, [Rstudio](https://www.rstudio.com/products/rstudio/download/#download)
+- Softwares : R 
 - R libraries : see the [DESCRIPTION](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/DESCRIPTION) file.
 
 ### Linux
@@ -88,13 +88,19 @@ sudo apt-get install -y libcurl4-openssl-dev libssl-dev liblapack-dev && \
     apt-get update
 ```
 
-### Windows
+### Windows & Mac
 Please, find the software on [Github](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/release/3.0). Click on the green button in the upper right corner ```Clone and Download``` and then ```Download the ZIP```. Extract the file.
 
 
 ## Execution
 If the Linux dependencies installation step was not executed previously (e.g., for Windows users), their automatic 
 installation could take several minutes during the first execution. If dependencies compatibility errors appear, the required (and suggested) librairies to import are listed in the [DESCRIPTION](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/DESCRIPTION) file.
+
+
+### Shiny interface
+- Required: shiny, shinyjs, devtools, bsplus (R package)
+
+After installing [Rstudio](https://www.rstudio.com/products/rstudio/download/#download), right click on the ```inst/shiny/app.R``` file to open it with this software. In the RStudio upper menu, go to "Tools", "Install packages" and write "shiny" in the textual field. Do the same for the "rstudioapi" package. Then, the application could be launched by clicking on the ```Run App button``` in the upper right corner of the script menu bar. Click [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/inst/shiny/tutorialShiny.md) to read the tutorial.
 
 
 ### Vignette
@@ -113,10 +119,6 @@ On Windows:
 
 Please, find the Rmarkdown working example at ```vignettes/vignette_rgcca.Rmd```.
 
-### Shiny interface
-- Required: shiny, shinyjs, devtools, bsplus (R package)
-
-Open ```inst/shiny/app.R``` with RStudio to execute Shiny. In the RStudio upper menu, go to "Tools", "Install packages" and write "shiny" in the textual field. Then, the application could be launched by clicking on the ```Run App button``` in the upper right corner of the script menu bar. Click [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/inst/shiny/tutorialShiny.md) to read the tutorial.
 
 ### Command line
 
