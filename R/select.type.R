@@ -20,7 +20,16 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
 
   if(!is.null(opt)){
     scheme = opt$scheme; C = opt$connection;  superblock = opt$superblock; type = opt$type; tau = opt$tau; ncomp = opt$ncomp
-    ncomp = unlist(lapply(strsplit(gsub(" ", "", as.character(ncomp)), ","), as.double)[[1]])
+    ncomp = unlist(
+      lapply(
+        strsplit(gsub(" ", "", as.character(ncomp)), ","),
+        function(x) tryCatch({
+          as.double(x)
+          }, warning = function(w){
+            stop(unique(paste0("--ncomp is a character (", x  , ") and must be an integer.")), exit_code = 136 )
+          })
+      )[[1]]
+    )
     l_tau = as.list(strsplit(gsub(" ", "", as.character(tau)), ",")[[1]])
 
     tau = unlist(lapply(l_tau, function(x){

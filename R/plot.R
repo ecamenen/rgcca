@@ -759,7 +759,7 @@ getRankedValues = function(df, comp = 1, allCol = T){
 
 
 # Print variables analysis attributes
-saveVars <- function(rgcca, blocks, comp_x = 1, comp_y= 2, file = "vars.tsv"){
+saveVars <- function(rgcca, blocks, comp_x = 1, comp_y= 2, file = "variables.tsv"){
 
   indexes <- c("cor", "weight")
 
@@ -772,7 +772,7 @@ saveVars <- function(rgcca, blocks, comp_x = 1, comp_y= 2, file = "vars.tsv"){
   invisible(vars)
 }
 
-saveInds <- function(rgcca, blocks, comp_x = 1, comp_y = 2, file = "inds.tsv"){
+saveInds <- function(rgcca, blocks, comp_x = 1, comp_y = 2, file = "individuals.tsv"){
 
   inds <- Reduce(cbind,lapply(rgcca$Y, function(x) x[, c(comp_x, comp_y)]))
   colnames(inds) <- as.vector(sapply(names(blocks), function(x) paste0(x, ".axis", c(comp_x, comp_y))))

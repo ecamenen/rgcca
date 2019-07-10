@@ -15,15 +15,16 @@ graphics.off()
 ########## Arguments ##########
 
 # Parse the arguments from a command line launch
-getArgs = function(){
+getArgs <- function(){
 
-  option_list = list(
+  option_list <- list(
 
+    # File parameters
     make_option(
       opt_str = c("-d", "--datasets"),
       type = "character",
       metavar = "path list",
-      default = opt[20],
+      default = opt[21],
       help = "List of comma-separated file paths corresponding to the blocks to be analyzed (one per block and without spaces between them; e.g. path/file1.txt,path/file2.txt) [required]"
     ),
     make_option(
@@ -72,6 +73,7 @@ getArgs = function(){
     ),
 
 
+    # Analysis parameter
     make_option(
       opt_str = "--type",
       type = "character",
@@ -112,21 +114,22 @@ getArgs = function(){
       action = "store_false",
       help = "DO NOT use a superblock (i.e. a concatenation of all the blocks to visualize them all together in a consensus space). All blocks are connected together or a connection file could be loaded."
     ),
-    make_option(
-      opt_str = "--init",
-      type = "integer",
-      metavar = "integer",
-      default = opt[7],
-      help = "Initialization mode to find the first component (1: Singular Value Decompostion, 2: random) [default: %default]"
-    ),
-    make_option(
-      opt_str = "--bias",
-      type = "logical",
-      action = "store_false",
-      help = "Unbiased estimator of the variance"
-    ),
+    # make_option(
+    #   opt_str = "--init",
+    #   type = "integer",
+    #   metavar = "integer",
+    #   default = opt[7],
+    #   help = "Initialization mode to find the first component (1: Singular Value Decompostion, 2: random) [default: %default]"
+    # ),
+    # make_option(
+    #   opt_str = "--bias",
+    #   type = "logical",
+    #   action = "store_false",
+    #   help = "Unbiased estimator of the variance"
+    # ),
 
 
+    # Graphical parameters
     make_option(
       opt_str = "--text",
       type = "logical",
@@ -169,65 +172,73 @@ getArgs = function(){
     ),
 
 
+    # o parameters
     make_option(
-      opt_str = "--output1",
+      opt_str = "--o1",
       type = "character",
       metavar = "path",
       default = opt[12],
       help = "Path for the variable plot [default: %default]"
     ),
     make_option(
-      opt_str = "--output2",
+      opt_str = "--o2",
       type = "character",
       metavar = "path",
       default = opt[13],
       help = "Path for the individual plot [default: %default]"
     ),
     make_option(
-      opt_str = "--output3",
+      opt_str = "--o3",
       type = "character",
       metavar = "path",
       default = opt[14],
       help = "Path for the top variables plot [default: %default]"
     ),
     make_option(
-      opt_str = "--output4",
+      opt_str = "--o4",
       type = "character",
       metavar = "path",
       default = opt[15],
       help = "Path for the explained variance plot [default: %default]"
     ),
     make_option(
-      opt_str = "--output5",
+      opt_str = "--o5",
       type = "character",
       metavar = "path",
       default = opt[16],
       help = "Path for the design plot [default: %default]"
     ),
     make_option(
-      opt_str = "--output6",
+      opt_str = "--o6",
       type = "character",
       metavar = "path",
       default = opt[17],
       help = "Path for the individual table [default: %default]"
     ),
     make_option(
-      opt_str = "--output7",
+      opt_str = "--o7",
       type = "character",
       metavar = "path",
       default = opt[18],
       help = "Path for the variable table [default: %default]"
     ),
     make_option(
-      opt_str = "--output8",
+      opt_str = "--o8",
       type = "character",
       metavar = "path",
-      default = opt[19],
+      default = opt[18],
+      help = "Path for the analysis results in RData [default: %default]"
+    ),
+    make_option(
+      opt_str = "--o9",
+      type = "character",
+      metavar = "path",
+      default = opt[20],
       help = "Path for the response correlation plot [default: %default]"
     )
   )
-  args = commandArgs(trailingOnly=T)
-  return (OptionParser(option_list=option_list))
+  args <- commandArgs(trailingOnly = T)
+  return (OptionParser(option_list = option_list))
 }
 
 checkFile = function (f){
@@ -247,116 +258,117 @@ checkArg = function(opt){
     stop(paste0("--datasets is required."), exit_code = 121)
 
   if (is.null(opt$scheme))
-    opt$scheme = "factorial"
+    opt$scheme <- "factorial"
   else if ( ! opt$scheme %in% 1:4 ){
-    stop(paste0("--scheme must be comprise between 1 and 4 [by default: 2], not be equals to ", opt$scheme, "."), exit_code = 122)
+    stop(paste0("--scheme must be comprise between 1 and 4 [by default: 2], not be equal to ", opt$scheme, "."), exit_code = 122)
   }else{
-    schemes = c("horst", "factorial", "centroid")
+    schemes <- c("horst", "factorial", "centroid")
     if (opt$scheme == 4)
-      opt$scheme = function(x) x^4
+      opt$scheme <- function(x) x^4
     else
-      opt$scheme = schemes[opt$scheme]
+      opt$scheme <- schemes[opt$scheme]
   }
 
   if (! opt$separator %in% 1:3 ){
-    stop(paste0("--separator must be comprise between 1 and 3 (1: Tabulation, 2: Semicolon, 3: Comma) [by default: 2], not be equals to ", opt$separator, "."), exit_code = 123)
+    stop(paste0("--separator must be comprise between 1 and 3 (1: Tabulation, 2: Semicolon, 3: Comma) [by default: 2], not be equal to ", opt$separator, "."), exit_code = 123)
   }else{
-    separators = c('\t', ';', ',')
-    opt$separator = separators[opt$separator]
+    separators <- c('\t', ';', ',')
+    opt$separator <- separators[opt$separator]
   }
 
-  if (! opt$init %in% 1:2 )
-    stop(paste0("--init must be 1 or 2 (1: Singular Value Decompostion , 2: random) [by default: 1], not ", opt$init, "."), exit_code = 124)
-  else
-    opt$init = ifelse(opt$init == 1, "svd", "random")
+  # if (! opt$init %in% 1:2 )
+  #   stop(paste0("--init must be 1 or 2 (1: Singular Value Decompostion , 2: random) [by default: 1], not ", opt$init, "."), exit_code = 124)
+  # else
+  #   opt$init <- ifelse(opt$init == 1, "svd", "random")
 
 
-  FILES = c("connection", "group")
+  FILES <- c("connection", "group")
   for (o in FILES)
     if(!is.null(opt[[o]]))
       checkFile(opt[[o]])
 
   checkInteger("nmark")
   if(opt$nmark < 2)
-    stop(paste0("--nmark must be upper than 2, not be equals to ", opt$nmark, "."), exit_code = 135)
+    stop(paste0("--nmark must be upper than 2, not be equal to ", opt$nmark, "."), exit_code = 135)
 
   return (opt)
 }
 
 checkArgSize <- function(blocks, x, y){
   if(length(x) != length(blocks))
-    stop(paste0("--", y, " list must have the same size (", length(x), ") than the the number of blocks (", length(blocks), ")."), exit_code = 130)
+    stop(paste0("--", y, " list must have the same size (", length(x), ") than the number of blocks (", length(blocks), ")."), exit_code = 130)
   else
     return(TRUE)
 }
 
-postCheckArg = function(opt, blocks){
+postCheckArg <- function(opt, blocks){
   # Check the validity of the arguments after loading the blocks
   # opt : an optionParser object
   # blocks : a list of matrix
 
-  opt = select.type(blocks, opt)
+  opt <- select.type(blocks, opt)
 
   if(opt$superblock | opt$type == "pca")
-    blocks = c(blocks, list(Reduce(cbind, blocks)))
+    blocks <- c(blocks, list(Reduce(cbind, blocks)))
 
-  out = lapply(1:length(opt$ncomp), function(x){
+  for (x in c("block", "block_y", "response")){
+    if(!is.null(opt[[x]])){
+
+      if(opt[[x]] > length(blocks))
+        stop(paste0("--", x, " must be lower than ", length(blocks), " (the maximum number of blocks), not be equal to ", opt[[x]], "."), exit_code = 133)
+      else if(opt$block == 0)
+        opt[[x]] <- length(blocks)
+      else if(opt[[x]] < 0 )
+        stop(paste0("--", x, " must be positive, not be equal to ", opt[[x]], "."), exit_code = 134)
+      checkInteger(x)
+
+    }
+  }
+
+  out <- lapply(1:length(opt$ncomp), function(x){
     checkInteger("ncomp", opt$ncomp[x])
-    if ((opt$ncomp[x] < 1) || (opt$ncomp[x] > ncol(blocks[[x]]))){
-      stop(paste0("--ncomp must be comprise between 1 and ", ncol(blocks[[x]]) ,", the number of variables of the block (currently equals to ", opt$ncomp[x]  ,")"), exit_code = 126)
+    if ((opt$ncomp[x] < 2) || (opt$ncomp[x] > ncol(blocks[[x]]))){
+      stop(paste0("--ncomp must be comprise between 2 and ", ncol(blocks[[x]]) ,", the number of variables of the block (currently equals to ", opt$ncomp[x]  ,")."), exit_code = 126)
     }
   })
 
   checkArgSize(blocks, opt$ncomp, "ncomp")
 
-  out = sapply(c("compx", "compy"), function (x){
-    checkInteger(x)
-    if ((opt[[x]] < 1) || (opt[[x]] > opt$ncomp )){
-      stop(paste0("--", x, " must be comprise between 1 and ", opt$ncomp ," (the number of component selected)."), exit_code = 128)
+  out <- sapply(c("compx", "compy"), function (x){
+    if ((opt[[x]] < 1) || (opt[[x]] > opt$ncomp[opt$block])){
+      stop(paste0("--", x, " is currently equals to ",  opt[[x]] , " and must be comprise between 1 and ", opt$ncomp[opt$block] ," (the number of component for the selected block)."), exit_code = 128)
     }
   })
 
-  MSG = "--tau must be comprise between 0 and 1 or must correspond to the character 'optimal' for automatic setting."
-  if(all(opt$tau!="optimal")){
+  MSG = "--tau must be comprise between 0 and 1 or must correspond to the character 'optimal' for automatic setting"
+  if(all(opt$tau != "optimal")){
     tryCatch({
 
-      list_tau = as.list(opt$tau)
+      list_tau <- as.list(opt$tau)
       # Check value of each tau
-      out = lapply(list_tau, function(x){
+      out <- lapply(list_tau, function(x){
         if(((x < 0) || (x > 1)) && x != "optimal")
-          stop(MSG, exit_code = 129)
+          stop(paste0(MSG, " (currently equals to ", x, ")."), exit_code = 129)
       })
 
       # If there is only one common tau
       if(length(list_tau) == 1)
-        opt$tau = rep(list_tau[[1]], length(blocks))
+        opt$tau <- rep(list_tau[[1]], length(blocks))
       else
         if(checkArgSize(blocks, list_tau, "tau"))
-          opt$tau = unlist(list_tau)
+          opt$tau <- unlist(list_tau)
 
     }, warning = function(w) {
       stop(MSG, exit_code = 131)
     })
   }else{
-    opt$tau = "optimal"
+    opt$tau <- "optimal"
   }
 
   checkC1(blocks, opt$tau, opt$type)
 
   if(!is.null(opt$names))
     checkArgSize(blocks, strsplit(gsub(" ", "", opt$names), ",")[[1]], "names")
-
-  for (x in c("block", "block_y", "response")){
-    if(!is.null(opt[[x]])){
-      if(opt[[x]] > length(blocks))
-        stop(paste0("--", x, " must be lower than ", length(blocks), " (the maximum number of blocks)."), exit_code = 133)
-      else if(opt$block == 0)
-        opt[[x]] = length(blocks)
-      else if(opt[[x]] < 0 )
-        stop(paste0("--", x, " must be positive."), exit_code = 134)
-      checkInteger(x)
-    }
-  }
 
   return (opt)
 }
@@ -376,12 +388,12 @@ checkInteger <- function(x, y = NULL){
       warning("")
     }
   }, warning = function(w) {
-    stop(paste0("--", x, " is a character (", y, ") and must be an integer."))
+    stop(paste0("--", x, " is a character (", y, ") and must be an integer."), exit_code = 136)
   })
 
   # Test if not a float
 
-  if(length(strsplit(as.character(y), ".", fixed=T)[[1]]) > 1)
+  if(length(strsplit(as.character(y), ".", fixed = T)[[1]]) > 1)
     stop(paste0("--", x, " is a float (", y, ") and must be an integer."))
 
 }
@@ -389,7 +401,7 @@ checkInteger <- function(x, y = NULL){
 ########## Main ##########
 
 # Libraries loading
-librairies = c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph")
+librairies <- c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
     install.packages(l, repos = "http://cran.us.r-project.org")
@@ -399,7 +411,7 @@ for (l in librairies) {
 }
 
 # Get arguments : R packaging install, need an opt variable with associated arguments
-opt = list(directory = ".",
+opt <- list(directory = ".",
            separator = 1,
            type = "rgcca",
            ncomp = 2,
@@ -410,62 +422,74 @@ opt = list(directory = ".",
            compx = 1,
            compy = 2,
            nmark = 100,
-           output1 = "individuals.pdf",
-           output2 = "corcircle.pdf",
-           output3 = "top_variables.pdf",
-           output4 = "ave.pdf",
-           output5 = "design.pdf",
-           output6 = "individuals.tsv",
-           output7 = "variables.tsv",
-           output8 = "response_correlation.pdf",
+           o1 = "individuals.pdf",
+           o2 = "corcircle.pdf",
+           o3 = "top_variables.pdf",
+           o4 = "ave.pdf",
+           o5 = "design.pdf",
+           o6 = "individuals.tsv",
+           o7 = "variables.tsv",
+           o8 = "rgcca.result.RData",
+           o9 = "response_correlation.pdf",
            datasets = "inst/extdata/agriculture.tsv,inst/extdata/industry.tsv,inst/extdata/politic.tsv")
 
 tryCatch({
-  opt = parse_args(getArgs())
-  opt = checkArg(opt)
+  opt <- checkArg(parse_args(getArgs()))
 }, error = function(e) {
   if (length(grep("nextArg", e[[1]])) != 1)
     stop(e[[1]], exit_code = 140)
+}, warning = function(w) {
+    stop(w[[1]], exit_code = 141)
 })
 
+# Load functions
 setwd(opt$directory)
 source("R/parsing.R")
 source("R/select.type.R")
 source("R/plot.R")
 source("R/network.R")
 
-# Global settings
-opt$header = !("header" %in% names(opt))
-opt$superblock = !("superblock" %in% names(opt))
-opt$bias = !("bias" %in% names(opt))
-opt$scale = !("scale" %in% names(opt))
-opt$text = !("text" %in% names(opt))
+# Set missing parameters by default
+opt$header <- !("header" %in% names(opt))
+opt$superblock <- !("superblock" %in% names(opt))
+# opt$bias <- !("bias" %in% names(opt))
+opt$scale <- !("scale" %in% names(opt))
+opt$text <- !("text" %in% names(opt))
 
-blocks = setBlocks(opt$datasets, opt$names, opt$separator, opt$header)
-blocks = scaling(blocks, opt$scale, opt$bias)
+blocks <- setBlocks(opt$datasets, opt$names, opt$separator)
+blocks <- scaling(blocks, opt$scale)
 
+# If single values for ncomp and tau, tansform it in a list
 for (x in c("ncomp", "tau")){
   if(length(grep(",", opt[[x]])) == 0 && !(x == "tau" && opt[[x]] == "optimal"))
-    opt[[x]] = paste(rep(opt[[x]], length(blocks)), collapse = ",")
+    opt[[x]] <- paste(rep(opt[[x]], length(blocks)), collapse = ",")
 }
 
-opt = checkSuperblock(opt)
-opt = postCheckArg(opt, blocks)
+opt <- checkSuperblock(opt)
+opt <- postCheckArg(opt, blocks)
 
 if( ! is.null(opt$response) ){
-  opt = setPosPar(opt, blocks, opt$response)
-  blocks = opt$blocks
+  opt <- setPosPar(opt, blocks, opt$response)
+  blocks <- opt$blocks
 }
 
-blocks = setSuperblock(blocks, opt$superblock, opt$type)
+blocks <- setSuperblock(blocks, opt$superblock, opt$type)
 
-connection = opt$connection
+connection <- opt$connection
 if(!is.matrix(connection))
-  connection = setConnection(blocks, (opt$superblock | !is.null(opt$response)), opt$connection, opt$separator)
+  connection <- setConnection(blocks, (opt$superblock | !is.null(opt$response)), opt$connection, opt$separator)
 
-group = setResponse(blocks, opt$group, opt$separator, opt$header)
+group <- setResponse(blocks, opt$group, opt$separator, opt$header)
 
-rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, FALSE, opt$init, opt$bias, opt$type)
+rgcca.out <- rgcca.analyze(
+  blocks = blocks,
+  connection = connection,
+  tau = opt$tau,
+  ncomp = opt$ncomp,
+  scheme = opt$scheme,
+  scale = FALSE,
+  type = opt$type
+)
 
 ########## Plot ##########
 
@@ -473,54 +497,54 @@ rgcca.out = rgcca.analyze(blocks, connection, opt$tau, opt$ncomp, opt$scheme, FA
 if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
    warning("With a number of component of 1, a second block should be chosen to perform a samples plot")
 }else{
-  ( samples_plot = plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y, getFileName(opt$group)) )
-   p = changeHovertext( dynamicPlot(samples_plot, ax, "text", TRUE, TRUE), opt$text )
+  ( individual_plot <- plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y, getFileName(opt$group)) )
+   p <- changeHovertext( dynamicPlot(individual_plot, ax, "text", TRUE, TRUE), opt$text )
      if( length(unique(na.omit(group))) < 2 || (length(unique(group)) > 5 && !unique(isCharacter(group)) ))
-       p  = p  %>% layout(showlegend = FALSE)
+       p  <- p  %>% layout(showlegend = FALSE)
    p
-   savePlot(opt$output1, samples_plot)
+   savePlot(opt$o1, individual_plot)
 }
 
 if(opt$ncomp[opt$block] > 1){
   # Variables common space
-  ( corcircle = plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text, n_mark = opt$nmark) )
-  p = changeHovertext( dynamicPlot(corcircle, ax, "text"), opt$text)
-  n = length(p$x$data)
+  ( corcircle <- plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text, n_mark = opt$nmark) )
+  p <- changeHovertext( dynamicPlot(corcircle, ax, "text"), opt$text)
+  n <- length(p$x$data)
   ( style(p, hoverinfo = "none", traces = c(n, n-1)) )
-  savePlot(opt$output2, corcircle)
+  savePlot(opt$o2, corcircle)
 }
 
 # Fingerprint plot
-fingerprint = plotFingerprint(rgcca.out, blocks, opt$compx, opt$superblock, opt$nmark)
-p = changeText ( dynamicPlot(fingerprint, ax2, "text") )
-n = unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
+( top_variables <- plotFingerprint(rgcca.out, blocks, opt$compx, opt$superblock, opt$nmark) )
+p <- changeText ( dynamicPlot(top_variables, ax2, "text") )
+n <- unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
 for (i in 1:length(n[n]))
-  p$x$data[[i]]$text = round( as.double(sub( "order: .*<br />df\\[, 1\\]: (.*)<.*", "\\1\\", p$x$data[[i]]$text )), 3)
+  p$x$data[[i]]$text <- round( as.double(sub( "order: .*<br />df\\[, 1\\]: (.*)<.*", "\\1\\", p$x$data[[i]]$text )), 3)
 p
 # TODO: avoid the scale, zoom in, zoom out, make stop unexpectivly
-savePlot(opt$output3, fingerprint)
+savePlot(opt$o3, top_variables)
 
 
 if(opt$type != "pca"){
 
   # Average Variance Explained
-  (ave = plotAVE(rgcca.out))
-  savePlot(opt$output4, ave)
+  ( ave <- plotAVE(rgcca.out) )
+  savePlot(opt$o4, ave)
 
   # Creates design scheme
   nodes <- getNodes(blocks, rgcca = rgcca.out)
   edges <- getEdges(connection, blocks)
   conNet <- function() plotNetwork(nodes, edges, blocks)
   plotNetwork2(nodes, edges, blocks)
-  savePlot(opt$output5, conNet)
+  savePlot(opt$o5, conNet)
 
 }
 
 if( ! is.null(opt$response) ){
-  ( correlation = corResponse(rgcca.out, blocks, opt$response, comp = opt$compx, i_block = opt$block) )
-  savePlot(opt$output6, correlation)
+  ( correlation <- corResponse(rgcca.out, blocks, opt$response, comp = opt$compx, i_block = opt$block) )
+  savePlot(opt$o9, correlation)
 }
 
-saveVars(rgcca.out, blocks, 1, 2)
-saveInds(rgcca.out, blocks, 1, 2)
-save(rgcca.out, file = "rgcca.result.RData")
+saveInds(rgcca.out, blocks, 1, 2, opt$o6)
+saveVars(rgcca.out, blocks, 1, 2, opt$o7)
+save(rgcca.out, file = opt$o8)

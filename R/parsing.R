@@ -13,7 +13,7 @@ warning <- function(message,  call = sys.call(-1)){
   base::warning(message, call. = FALSE, immediate. = TRUE)
 }
 
-stop <- function(message, exit_code = "1", call = sys.call(-1)) {
+stop <- function(message, exit_code = "1", call = NULL) {
   base::stop(
     structure(
       class = c(exit_code, "simpleError", "error", "condition"),
@@ -92,6 +92,8 @@ loadData = function(f, sep = "\t", rownames = 1, h = TRUE) {
             func(NULL)
     }
   )
+
+  return(func())
 }
 
 #' Creates a data frame from an Excel file loading
@@ -334,13 +336,6 @@ checkConnection = function(c, blocks) {
   if (!isSymmetric.matrix(unname(c)))
     stop("The connection file must be a symmetric matrix.", exit_code = 103)
 
-  n = length(blocks)
-  if (NCOL(c) != n)
-    stop(paste0("The number of rows/columns of the connection matrix file must be equals to ",
-               n,
-               " (the number of blocks in the dataset, +1 with a superblock by default)."),
-         exit_code = 104)
-
   d = unique(diag(c))
   if (length(d) != 1 || d != 0)
     stop("The diagonal of the connection matrix file must be 0.", exit_code = 105)
@@ -351,6 +346,13 @@ checkConnection = function(c, blocks) {
 
   if(all(c==0))
     stop("The connection file could not contain only 0.", exit_code = 107)
+
+  n = length(blocks)
+  if (NCOL(c) != n)
+    stop(paste0("The number of rows/columns of the connection matrix file must be equal to ",
+                n,
+                " (the number of blocks in the dataset, +1 with a superblock by default)."),
+         exit_code = 104)
 
   #TODO: warning if superblock = TRUE
 
@@ -368,7 +370,7 @@ checkConnection = function(c, blocks) {
 #' setConnection (blocks, "data/connection.tsv")
 #' }
 #' @export setConnection
-setConnection = function(blocks, superblock = FALSE, file = NULL, sep = "\t") {
+setConnection = function(blocks, superblock = FALSE, file = NULL, sep = "\t", h = FALSE, rownames = NULL) {
 
   J = length(blocks)
 
@@ -382,10 +384,11 @@ setConnection = function(blocks, superblock = FALSE, file = NULL, sep = "\t") {
   else {
     isXls <- (length(grep("xlsx?", file)) == 1)
 
-    if(!isXls)
-      connection = loadData(file, sep, NULL, FALSE)
-    else
-      connection = loadExcel(file, 1, NULL, h = FALSE)
+    if(!isXls){
+      connection = loadData(f = file, sep = sep, rownames = rownames,  h = h)
+
+    }else
+      connection = loadExcel(f = file, sheet = 1, rownames = rownames,  h = h)
   }
 
   checkConnection(connection, blocks)

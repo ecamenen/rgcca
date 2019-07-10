@@ -22,5 +22,5 @@ vignettes/images/
 
 inst/doc/
 
-*inds\.tsv
-*vars\.tsv
+individuals\.tsv
+variables\.tsv
