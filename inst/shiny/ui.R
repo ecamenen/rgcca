@@ -41,6 +41,15 @@ ui <- fluidPage(
     size = "medium"
   ),
 
+  bs_modal(
+    id = "modal_scheme",
+    title = "Help on scheme functions",
+    body =  "The maximization of the sum of covariances between block components is calculated with : the identity function (horst scheme),
+    the absolute values (centroid scheme), the squared values (factorial scheme). Only, the x function penalizes structural negative correlation.
+    The square function discriminates more stronlgy the blocks than the absolute one.",
+    size = "medium"
+  ),
+
   titlePanel("R/SGCCA - The Shiny graphical interface"),
   tags$div(
     tags$strong("Authors: "),
@@ -95,7 +104,7 @@ ui <- fluidPage(
                            %>%
                            shinyInput_label_embed(
                              icon("question") %>%
-                               bs_embed_tooltip(title = "A zero means translation is always performed. If activated, each block are standardized to unit variances and then divide them by the square root of its number of variables.")
+                               bs_embed_tooltip(title = "A zero means translation is always performed. If activated, each block are standardized to unit variances and divided by the square root of its number of variables.")
                            ),
 
                            radioButtons("init",
@@ -130,7 +139,7 @@ ui <- fluidPage(
                            %>%
                              shinyInput_label_embed(
                                icon("question") %>%
-                                 bs_embed_tooltip(title = "A tau near 0 maximize the covariance in each blocks whereas a tau near 1 maximize the correlation.")
+                                 bs_embed_tooltip(title = "A tau near 0 maximize the the correlation between blocks whereas a tau near 1 maximize the variances within blocks")
                              ),
                            uiOutput("tau_custom"),
 
@@ -143,8 +152,7 @@ ui <- fluidPage(
                            %>%
                              shinyInput_label_embed(
                                icon("question") %>%
-                                 bs_embed_tooltip(title = "The maximization of the sum of covariances between block components is calculated with : the identity function (horst scheme),
-                               the absolute values (centroid scheme), the squared values (factorial scheme).")
+                                 bs_attach_modal(id_modal = "modal_scheme")
                                ),
 
                            sliderInput(inputId = "boot",
@@ -160,7 +168,7 @@ ui <- fluidPage(
 
                   tabPanel("Graphic",
                            checkboxInput(inputId = "text",
-                                         label = "Print names",
+                                         label = "Display names",
                                          value = TRUE),
                            uiOutput("blocks_names_custom_x"),
                            uiOutput("blocks_names_custom_y"),

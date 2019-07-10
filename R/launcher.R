@@ -9,65 +9,222 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
-rm(list=ls())
+rm(list = ls())
 graphics.off()
 
 ########## Arguments ##########
 
 # Parse the arguments from a command line launch
 getArgs = function(){
+
   option_list = list(
-    make_option(c("-d", "--datasets"), type="character", metavar="character", help="List of the paths for each block file separated by comma (without space between)",
-                default = opt[18]),
-    make_option(c("-w", "--directory"), type="character", metavar="character", help="Path of the scripts directory (for Galaxy)", default=opt[1]),
-    make_option(c("-c", "--connection"), type="character", metavar="character", help="Path of the connection file"),
-    make_option(c("--group"), type="character", metavar="character",
-                help="Path of the group file (to color samples by group in the associated plot)"),
-    make_option(c("-r", "--response"), type="integer", metavar="integer",
-                help="Position of the response file in datasets (if not null, activate supervized method)"),
-    make_option(c("--names"), type="character", metavar="character", help="List of the names for each block file separated by comma [default: filename]"),
-    make_option(c("-H", "--header"), type="logical", action="store_false", help="DO NOT consider the first row as header of columns"),
-    make_option(c("--separator"), type="integer", metavar="integer", default=opt[2],
-                help="Character used to separate the columns (1: Tabulation, 2: Semicolon, 3: Comma) [default: tabulation]"),
-    make_option(c("--type"), type="character", metavar="character", default=opt[3],
-                help="Type of analysis to use (by default, 1 for RGCCA) [1: rgcca, 2: pca, 3: cca, 4: gcca, cpca-w, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov]"),
-    make_option(c("--tau"), type="character", metavar="float", default=opt[5],
-                help="Tau parameter for RGCCA, a float between 0 (maximize the covariance) and 1 (maximize the correlation between blocks). Could also be a list separated by comma. Ex: 0,1,0.75,1"),
-    make_option(c("--scheme"), type="integer", metavar="integer", default=opt[4],
-                help="Scheme function g(x) for RGCCA (1: x, 2: x^2, 3: |x|, 4: x^4) [default: x^2]"),
-    make_option(c("--scale"),  type="logical", action="store_false",
-                help="DO NOT scale the blocks (i.e., standardize each block to zero mean and unit variances and then divide them by the square root of its number of variables)"),
-    make_option(c("--superblock"),  type="logical", action="store_false",
-                help="DO NOT use a superblock (a concatenation of all the blocks to better interpret the results)"),
-    make_option(c("--init"),  type="integer", metavar="integer", default=opt[6],
-                help="Initialization mode for RGCCA (1: Singular Value Decompostion , 2: random) [default: SVD]"),
-    make_option(c("--bias"),  type="logical", action="store_false",
-                help="Unbiased estimator of the variance"),
-    make_option(c("--text"),  type="logical", action="store_false", help="Print text when plotting points"),
-    make_option(c("--ncomp"),  type="character", metavar="integer", default=opt[7],
-                help="Number of components in the analysis for each block (should be greater than 1 and lower than the minimum number of variable among the blocks). Could also be a list separated by comma. Ex: 2,2,3,2."),
-    make_option(c("--block"),  type="integer", metavar="integer", default=opt[8],
-                help="Number of the block shown in the graphics (0: the superblock or, if not, the last, 1: the fist one, 2: the 2nd, etc.) [default: the last one]"),
-    make_option(c("--block_y"),  type="integer", metavar="integer",
-                help="Block shown in the Y-axis of the samples plot (0: the superblock or, if not, the last, 1: the fist one, 2: the 2nd, etc.) [default: the last one]"),
-    make_option(c("--compx"),  type="integer", metavar="integer", default=opt[9],
-                help="Component used in the X-axis for biplots and the only component used for histograms (should not be greater than the --ncomp parameter)"),
-    make_option(c("--compy"),  type="integer", metavar="integer", default=opt[10],
-                help="Component used in the Y-axis for biplots (should not be greater than the --ncomp parameter)"),
-    make_option(c("--nmark"),  type="integer", metavar="integer", default=opt[11],
-                help="Number maximum of biomarkers in the fingerprint"),
-    make_option(c( "--output1"), type="character", metavar="character", default=opt[12],
-                help="Variables space file name [default: %default]"),
-    make_option(c( "--output2"), type="character", metavar="character", default=opt[13],
-                help="Sample space file name [default: %default]"),
-    make_option(c( "--output3"), type="character", metavar="character", default=opt[14],
-                help="Best fingerprint file name [default: %default]"),
-    make_option(c( "--output4"), type="character", metavar="character", default=opt[15],
-                help="AVE plot file name [default: %default]"),
-    make_option(c( "--output5"), type="character", metavar="character", default=opt[16],
-                help="Correlation with response plot file name [default: %default]"),
-    make_option(c( "--output6"), type="character", metavar="character", default=opt[17],
-                help="Connection plot file name [default: %default]")
+
+    make_option(
+      opt_str = c("-d", "--datasets"),
+      type = "character",
+      metavar = "path list",
+      default = opt[20],
+      help = "List of comma-separated file paths corresponding to the blocks to be analyzed (one per block and without spaces between them; e.g. path/file1.txt,path/file2.txt) [required]"
+    ),
+    make_option(
+      opt_str = c("-w", "--directory"),
+      type = "character",
+      metavar = "path",
+      default = opt[1],
+      help = "Path of the root folder containing the R/ (e.g. for Galaxy) [default: the current one]"
+    ),
+    make_option(
+      opt_str = c("-c", "--connection"),
+      type = "character",
+      metavar = "path",
+      help = "Path of the file defining the connections between the blocks [if not used, activates the superblock mode]"
+    ),
+    make_option(
+      opt_str = "--group",
+      type = "character",
+      metavar = "path",
+      help = "Path of the file coloring the individuals in the ad hoc plot"
+    ),
+    make_option(
+      opt_str = c("-r", "--response"),
+      type = "integer",
+      metavar = "integer",
+      help = "Position of the response file for the supervised mode within the block path list [actives the supervised mode]"
+    ),
+    make_option(
+      opt_str = "--names",
+      type = "character",
+      metavar = "character list",
+      help = "List of comma-separated block names to rename them (one per block; without spaces between them) [default: the block file names]"
+    ),
+    make_option(
+      opt_str = c("-H", "--header"),
+      type = "logical",
+      action = "store_false",
+      help = "DO NOT consider the first row as the column header"
+    ),
+    make_option(
+      opt_str = "--separator",
+      type = "integer",
+      metavar = "integer",
+      default = opt[2],
+      help = "Character used to separate columns (1: tabulation, 2: semicolon, 3: comma) [default: %default]"
+    ),
+
+
+    make_option(
+      opt_str = "--type",
+      type = "character",
+      metavar = "character",
+      default = opt[3],
+      help = "Type of analysis [default: %default] (among: rgcca, pca, cca, gcca, cpca-w, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov)"
+    ),
+    make_option(
+      opt_str = "--ncomp",
+      type = "character",
+      metavar = "integer list",
+      default = opt[4],
+      help = "Number of components in the analysis for each block [default: %default]. The number should be greater than 1 and lower than the minimum number of variables among the blocks. It can be a single values or a comma-separated list (e.g 2,2,3,2)."
+    ),
+    make_option(
+      opt_str = "--tau",
+      type = "character",
+      metavar = "float list",
+      default = opt[5],
+      help = "For RGCCA, a covariance maximization regularization parameter for each block (i.e., tau) [default: %default]. Tau varies from 0 (to maximize the correlation between blocks) to 1 (to maximize the variances within blocks). For SGCCA, tau is automatically set to 1. A shrinkage parameter can be defined instead for automatic variable selection, varying from the square root of the variable number (the fewest selected variables) to 1 (all the variables are included). It can be a single values or a comma-separated list (e.g. 0,1,0.75,1)."
+    ),
+    make_option(
+      opt_str = "--scheme",
+      type = "integer",
+      metavar = "integer",
+      default = opt[6],
+      help = "Link (i.e. sheme) function for covariance maximization (1: x, 2: x^2, 3: |x|, 4: x^4) [default: %default]. Only, the x function penalizes structural negative correlation. The x^4 function discriminates more stronlgy the blocks than the x^2 one."
+    ),
+    make_option(
+      opt_str = "--scale",
+      type = "logical",
+      action = "store_false",
+      help = "DO NOT scale the blocks (i.e., a zero means translation is always performed). Otherwhise, each blocks are standardized to unit variances and divided by the square root of its number of variables."
+    ),
+    make_option(
+      opt_str = "--superblock",
+      type = "logical",
+      action = "store_false",
+      help = "DO NOT use a superblock (i.e. a concatenation of all the blocks to visualize them all together in a consensus space). All blocks are connected together or a connection file could be loaded."
+    ),
+    make_option(
+      opt_str = "--init",
+      type = "integer",
+      metavar = "integer",
+      default = opt[7],
+      help = "Initialization mode to find the first component (1: Singular Value Decompostion, 2: random) [default: %default]"
+    ),
+    make_option(
+      opt_str = "--bias",
+      type = "logical",
+      action = "store_false",
+      help = "Unbiased estimator of the variance"
+    ),
+
+
+    make_option(
+      opt_str = "--text",
+      type = "logical",
+      action = "store_false",
+      help = "Display the name of the points instead of shapes when plotting"
+    ),
+    make_option(
+      opt_str = "--block",
+      type = "integer",
+      metavar = "integer",
+      default = opt[8],
+      help = "Position in the path list of the plotted block (0: the superblock or, if not activated, the last one, 1: the fist one, 2: the 2nd, etc.) [default: the last one]"
+    ),
+    make_option(
+      opt_str = "--block_y",
+      type = "integer",
+      metavar = "integer",
+      help = "Position in the path list of the plotted block for the Y-axis in the individual plot (0: the superblock or, if not activated, the last one, 1: the fist one, 2: the 2nd, etc.) [default: the last one]"
+    ),
+    make_option(
+      opt_str = "--compx",
+      type = "integer",
+      metavar = "integer",
+      default = opt[9],
+      help = "Component used in the X-axis for biplots and the only component used for histograms [default: %default] (should not be greater than the number of components of the analysis)"
+    ),
+    make_option(
+      opt_str = "--compy",
+      type = "integer",
+      metavar = "integer",
+      default = opt[10],
+      help = "Component used in the Y-axis for biplots [default: %default] (should not be greater than the --ncomp parameter)"
+    ),
+    make_option(
+      opt_str = "--nmark",
+      type = "integer",
+      metavar = "integer",
+      default = opt[11],
+      help = "Number maximum of top variables in ad hoc plot [default: %default]"
+    ),
+
+
+    make_option(
+      opt_str = "--output1",
+      type = "character",
+      metavar = "path",
+      default = opt[12],
+      help = "Path for the variable plot [default: %default]"
+    ),
+    make_option(
+      opt_str = "--output2",
+      type = "character",
+      metavar = "path",
+      default = opt[13],
+      help = "Path for the individual plot [default: %default]"
+    ),
+    make_option(
+      opt_str = "--output3",
+      type = "character",
+      metavar = "path",
+      default = opt[14],
+      help = "Path for the top variables plot [default: %default]"
+    ),
+    make_option(
+      opt_str = "--output4",
+      type = "character",
+      metavar = "path",
+      default = opt[15],
+      help = "Path for the explained variance plot [default: %default]"
+    ),
+    make_option(
+      opt_str = "--output5",
+      type = "character",
+      metavar = "path",
+      default = opt[16],
+      help = "Path for the design plot [default: %default]"
+    ),
+    make_option(
+      opt_str = "--output6",
+      type = "character",
+      metavar = "path",
+      default = opt[17],
+      help = "Path for the individual table [default: %default]"
+    ),
+    make_option(
+      opt_str = "--output7",
+      type = "character",
+      metavar = "path",
+      default = opt[18],
+      help = "Path for the variable table [default: %default]"
+    ),
+    make_option(
+      opt_str = "--output8",
+      type = "character",
+      metavar = "path",
+      default = opt[19],
+      help = "Path for the response correlation plot [default: %default]"
+    )
   )
   args = commandArgs(trailingOnly=T)
   return (OptionParser(option_list=option_list))
@@ -245,20 +402,22 @@ for (l in librairies) {
 opt = list(directory = ".",
            separator = 1,
            type = "rgcca",
-           scheme = 2,
-           tau = "optimal",
-           init = 1,
            ncomp = 2,
+           tau = "optimal",
+           scheme = 2,
+           init = 1,
            block = 0,
            compx = 1,
            compy = 2,
            nmark = 100,
-           output1 = "samples_plot.pdf",
+           output1 = "individuals.pdf",
            output2 = "corcircle.pdf",
-           output3 = "fingerprint.pdf",
+           output3 = "top_variables.pdf",
            output4 = "ave.pdf",
-           output5 = "correlation.pdf",
-           output6 = "connection.pdf",
+           output5 = "design.pdf",
+           output6 = "individuals.tsv",
+           output7 = "variables.tsv",
+           output8 = "response_correlation.pdf",
            datasets = "inst/extdata/agriculture.tsv,inst/extdata/industry.tsv,inst/extdata/politic.tsv")
 
 tryCatch({
@@ -341,10 +500,6 @@ p
 # TODO: avoid the scale, zoom in, zoom out, make stop unexpectivly
 savePlot(opt$output3, fingerprint)
 
-if( ! is.null(opt$response) ){
-  ( correlation = corResponse(rgcca.out, blocks, opt$response, comp = opt$compx, i_block = opt$block) )
-  savePlot(opt$output5, correlation)
-}
 
 if(opt$type != "pca"){
 
@@ -357,8 +512,13 @@ if(opt$type != "pca"){
   edges <- getEdges(connection, blocks)
   conNet <- function() plotNetwork(nodes, edges, blocks)
   plotNetwork2(nodes, edges, blocks)
-  savePlot(opt$output6, conNet)
+  savePlot(opt$output5, conNet)
 
+}
+
+if( ! is.null(opt$response) ){
+  ( correlation = corResponse(rgcca.out, blocks, opt$response, comp = opt$compx, i_block = opt$block) )
+  savePlot(opt$output6, correlation)
 }
 
 saveVars(rgcca.out, blocks, 1, 2)

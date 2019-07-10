@@ -1,4 +1,4 @@
-# RGCCA Command-line and Shiny 
+# R/SGCCA in command-line and Shiny graphical interface
 
 ##### Version: 1.0
 
@@ -14,28 +14,28 @@ analysis, correlation, visualisation
 arthur.tenenhaus@l2s.centralesupelec.fr
 
 ##### Short description
-Performs multi-variate analysis (PCA, CCA, PLS, RGCCA) and projects the variables and samples into a bi-dimensional space.
+Performs multi-variate analysis (PCA, CCA, PLS, R/SGCCA, etc.) and produced textual and graphical outputs (e.g. variables and  individuals plots).
 
 ---
 
 ## Description
-A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA) 
-with all default settings predefined [1, 2]. Produce figures to help clinicians to identify biomarkers: 
-samples and variables projected on the two first component of the multi-block analysis, list of top biomarkers
-and explained variance in the model.
+A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA) as described in [1] and [2] with all default settings predefined. The software produces figures to explore the analysis' results: samples and variables projected on two component of the multi-block analysis, list of top variables and explained variance in the model.
  
-## RGCCA 
-We consider J data matrices X1 ,..., XJ. Each n × pj data matrix Xj = [ xj1, ..., xjpj ] is called a block and represents a set
-of pj variables observed on n individuals. The number and the nature of the variables may differ from one block to another,
-but the individuals must be the same across blocks. We assume that all variables are centered. The objective of RGCCA is to find,
-for each block, a weighted composite of variables (called block component) yj = Xjaj, j = 1 ,..., J (where a j is a column-vector with pj
-elements) summarizing the relevant information between and within the blocks. The block components are obtained such that (i) block
-components explain well their own block and/or (ii) block components that are assumed to be connected are highly correlated.
-As a component-based method, RGCCA can provide users with graphical representations to visualize the sources
-of variability within blocks and the amount of correlation between blocks.
+## R/SGCCA (from the [CRAN vignette](https://cran.r-project.org/web/packages/RGCCA/vignettes/vignette_RGCCA.pdf) [3])
+We consider J data matrices X1 ,..., XJ. Each n × pj data matrix Xj = [ xj1, ..., xjpj ] is called a block and represents a set of pj variables observed on n individuals. The number and the nature of the variables may differ from one block to another, but the individuals must be the same across blocks. We assume that all variables are centered. The objective of RGCCA is to find, for each block, a weighted composite of variables (called block component) yj = Xj . aj, j = 1 ,..., J (where aj is a column-vector with pj elements) summarizing the relevant information between and within the blocks. The block components are obtained such that (i) block components explain well their own block and/or (ii) block components that are assumed to be connected are highly correlated. In addition, RGCCA integrates a variable selection procedure, called SGCCA, allowing the identification of the most relevant features.
+
+The second generation RGCCA ([1]) subsumes fifty years of multiblock component methods. It provides important improvements to the initial version of RGCCA ([2]) and is defined as the following optimization problem: ![rgcca_formula](img/rgcca_formula.png)
+- The **scheme function** g is any continuous convex function and allows to consider different optimization criteria. Typical choices of g are the identity (horst scheme, leading to maximizing the sum of covariances between block components), the absolute value (centroid scheme, yielding maximization of the sum of the absolute values of the covariances), the square function (factorial scheme, thereby maximizing the sum of squared covariances), or, more generally, for any even integer m, g(x) = x^m (m-scheme, maximizing the power of m of the sum of covariances). The horst scheme penalizes structural negative correlation between block components while both the centroid scheme and the m-scheme enable two components to be negatively correlated. According to [4], a fair model is a model where all blocks contribute equally to the solution in opposition to a model dominated by only a few of the J sets. If fairness is a major objective, the user must choose m = 1. m > 1 is preferable if the user wants to discriminate between blocks. In practice, m is equal to 1, 2 or 4. The higher the value of m the more the method acts as block selector [5].
+- The **design matrix** C is a symmetric J × J matrix of nonnegative elements describing the network of connections between blocks that the user wants to take into account.  Usually, cjk = 1 for two connected blocks and 0 otherwise.
+- The τj are called **shrinkage parameters** ranging from 0 to 1 and interpolate smoothly between maximizing the covariance and maximizing the correlation. Setting the τj to 0 will force the block components to unit variance (var(Xj.aj = 1)), in which case the covariance criterion boils down to the correlation. The correlation criterion is better in explaining the correlated structure across datasets, thus discarding the variance within each individual dataset.  Setting τj to 1 will normalize the block weight vectors (aj . t(aj) = 1), which applies the covariance criterion. A value between 0 and 1 will lead to a compromise between the two first options and correspond to the following constraint (1 − τj) . var(Xj.aj) + τj‖aj‖^2 = 1. The choices τj = 1, τj = 0 and 0 < τj < 1 are respectively referred as Modes A, B and Ridge. In the RGCCA package, for each block, the determination of the shrinkage parameter can be made fully automatic by using the analytical formula proposed by (Schäfer and Strimmer 2005). Also, depending on the context, the shrinkage parameters should also be determined based on V-fold cross-validation. We can define the choice of the shrinkage parameters by providing interpretations on the properties of the resulting block components:
+    - τj = 1 yields the maximization of a covariance-based criterion. It is recommended when the user wants a stable component (large variance) while simultaneously taking into account the correlations between blocks. The user must, however, be aware that variance dominates over correlation.
+    - τj = 0 yields the maximization of a correlation-based criterion. It is recommended when the user wants to maximize correlations between connected components. This option can yield unstable solutions in case of multi-collinearity and cannot be used when a data block is rank deficient (e.g. n < pj).
+    - 0 < τj < 1 is a good compromise between variance and correlation: the block components are simultaneously stable and as well correlated as possible with their connected block components. This setting can be used when the data block is rank deficient.
+
+The quality and interpretability of the RGCCA block components yj = Xj . aj, j = 1,...,J are likely affected by the usefulness and relevance of the variables of each block. Accordingly, it is an important issue to identify within each block a subset of significant variables which are active in the relationships between blocks. **SGCCA** extends RGCCA to address this issue of variable selection. Specifically, RGCCA with all τj = 1 equal to 1 is combined with an L1-penalty that gives rise to SGCCA [6]. The SGCCA optimization problem is defined with sj, a user defined positive constant that determines the amount of sparsity for aj, j = 1,...,J. The smaller the sj, the larger the degree of sparsity for aj. The sparsity parameter sj is usually set based on cross-validation procedures. Alternatively, values of sj can simply be chosen to result in desired amounts of sparsity.
 
 ## Input files 
-(see ```int/extdata/``` folder for a [working example](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/release/3.0/inst/extdata)).
+(see ```int/extdata/``` folder for a [working example](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/master/inst/extdata)).
 - ```blocks``` (.tsv, .csv, .txt or .xls, xlsx) : file(s) containing variables to analyse together.
 The samples should be in lines and labelled and variables in columns with a header. With an Excel format, each block 
 must be in a separated sheet. For other format, each blocks must be in a separated file.
@@ -69,7 +69,8 @@ or multiple columns containing a disjunctive table.
 
 
 ## Installation
-- Softwares : R 
+Required:
+- Softwares : R
 - R libraries : see the [DESCRIPTION](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/DESCRIPTION) file.
 
 ### Linux
@@ -93,12 +94,13 @@ Please, find the software on [Github](https://github.com/BrainAndSpineInstitute/
 
 
 ## Execution
-If the Linux dependencies installation step was not executed previously (e.g., for Windows users), their automatic 
-installation could take several minutes during the first execution. If dependencies compatibility errors appear, the required (and suggested) librairies to import are listed in the [DESCRIPTION](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/DESCRIPTION) file.
+If the Linux dependencies installation step was not executed previously (e.g., for Windows users), their automatic installation could take several minutes during the first execution. If dependencies compatibility errors appear, the required (and suggested) librairies to import are listed in the [DESCRIPTION](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/DESCRIPTION) file.
 
 
 ### Shiny interface
 - Required: shiny, shinyjs, devtools, bsplus (R package)
+
+[Shiny](https://shiny.rstudio.com/) is a R framework providing a "user-friendly" web interface. When a parameter of the analysis is modified (e.g. the block to visualize), its impact can be directly observed on the graphical outputs.
 
 After installing [Rstudio](https://www.rstudio.com/products/rstudio/download/#download), right click on the ```inst/shiny/app.R``` file to open it with this software. In the RStudio upper menu, go to "Tools", "Install packages" and write "shiny" in the textual field. Do the same for the "rstudioapi" package. Then, the application could be launched by clicking on the ```Run App button``` in the upper right corner of the script menu bar. Click [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/inst/shiny/tutorialShiny.md) to read the tutorial.
 
@@ -106,6 +108,8 @@ After installing [Rstudio](https://www.rstudio.com/products/rstudio/download/#do
 ### Vignette
 - Required: markdown, pander (R packages)
 - Suggested: LateX
+
+A [vignette](http://r-pkgs.had.co.nz/vignettes.html) is a practical use of the software (with detailed examples). It is usually writen in [R Markdown](https://rmarkdown.rstudio.com/), a notebook interface including text or pieces of code that could be dynamically executed.
 
 On Linux:
 ```	
@@ -163,10 +167,7 @@ lower than the minimum number of variable among the blocks). Could also be a lis
 - ```--tau``` (FLOAT) Tau parameter in RGCCA. A tau near 0 maximize the covariance between blocks whereas a tau near 1 maximize
  the correlation between the blocks. Could also be a list separated by comma. Ex: 0,1,0.75,1.
 - ```-g (--scheme)``` (INTEGER) Scheme function among 1: Horst, 2: Factorial, 3: Centroid, 4: x^4 (by default, factorial scheme).
-The identity (horst scheme) maximizes the sum of covariances between block components. The absolute value (centroid scheme)
-maximizes of the sum of the absolute values of the covariances. The square function (factorial scheme) maximizes the sum
-of squared covariances, or, more generally, for any even integer m, g(x)=x^m (m-scheme), maximizes the power of m of the
-sum of covariances.
+The identity (horst scheme) maximizes the sum of covariances between block components. The absolute value (centroid scheme) maximizes of the sum of the absolute values of the covariances. The square function (factorial scheme) maximizes the sum of squared covariances, or, more generally, for any even integer m, g(x)=x^m (m-scheme), maximizes the power of m of the sum of covariances.
 - ```--init``` (INTEGER) The mode of initialization of the algorithm (1: Singular Value Decompostion , 2: random).
  
 #### Graphical parameters
@@ -178,6 +179,9 @@ By default, the x-axis and y-axis are respectively the first and the second comp
 - ```--block``` (INTEGER) The block shown in the graphics (0: the superblock or, if not, the last, 1: the first one, 2: the 2nd, etc.).
 
 ## References
-1. Tenenhaus M, Tenenhaus A, Groenen PJF, (2017) Regularized generalized canonical correlation analysis: A framework for sequential multiblock component methods, Psychometrika, vol. 82, no. 3, 737–777
-2. Tenenhaus  A. and Guillemot V. (2017): RGCCA Package. http://cran.project.org/web/packages/RGCCA/index.html
-3. Tenenhaus A, Tenenhaus M (2011) Regularized generalized canonical correlation analysis, vol. 76, pp. 257-284, Psychometrika.
+1. Tenenhaus, M., Tenenhaus, A., & Groenen, P. J. (2017). Regularized generalized canonical correlation analysis: a framework for sequential multiblock component methods. Psychometrika, 82(3), 737-777.
+2. Tenenhaus, A., & Tenenhaus, M. (2011). Regularized generalized canonical correlation analysis. Psychometrika, 76(2), 257.
+3. Tenenhaus  A. and Guillemot V. (2017): RGCCA Package. http://cran.project.org/web/packages/RGCCA/index.html
+4. Van de Geer, J. P. (1984). Linear relations amongk sets of variables. Psychometrika, 49(1), 79-94.
+5. Schäfer, J., & Strimmer, K. (2005). A shrinkage approach to large-scale covariance matrix estimation and implications for functional genomics. Statistical applications in genetics and molecular biology, 4(1).
+6. Tenenhaus, A., & Tenenhaus, M. (2014). Regularized generalized canonical correlation analysis for multiblock or multigroup data analysis. European Journal of operational research, 238(2), 391-403.
