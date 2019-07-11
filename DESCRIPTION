@@ -15,7 +15,8 @@ Imports: ggplot2,
     scales,
     plotly,
     igraph,
-    visNetwork
+    visNetwork,
+    xlsx
 Depends: RGCCA
 Suggests: testthat,
     devtools,

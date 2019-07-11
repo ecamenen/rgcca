@@ -1,13 +1,9 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^README\.Rmd$
-\.png$
 \.pdf$
-^temp$
-^img$
-^data
+\.RData$
+\individuals.tsv$
+\variables.tsv$
 ^\.git$
 ^\.idea$
-^results$
-^tests$
-^functional_tests\.sh$

@@ -11,16 +11,12 @@
 .RData
 .Ruserdata
 rgccaLauncher\.Rproj
-
 man/
 tests/
 temp/
 \.idea/
-
 vignettes/data/
 vignettes/images/
-
 inst/doc/
-
 individuals\.tsv
 variables\.tsv

@@ -1,3 +1,16 @@
+#' @import RGCCA
+#' @import ggplot2
+#' @importFrom grDevices dev.off rgb colorRamp pdf
+#' @importFrom graphics plot
+#' @importFrom stats cor quantile runif sd na.omit
+#' @importFrom utils read.table write.table packageVersion
+#' @importFrom scales hue_pal
+#' @importFrom optparse OptionParser make_option parse_args
+#' @importFrom plotly layout ggplotly style plotly_build %>%
+#' @importFrom visNetwork visNetwork visNodes visEdges
+#' @importFrom igraph graph_from_data_frame V<- E<-
+#' @importFrom xlsx read.xlsx loadWorkbook getSheets
+
 VERBOSE = FALSE
 
 checkNbBlocks <- function(blocks, type){
@@ -13,7 +26,27 @@ checkNbBlocks <- function(blocks, type){
   stop(paste0(length(blocks), " blocks used in the analysis. ", msg ," required for a ", type, "."), exit_code = exit_code)
 }
 
-#' Translates the type string into the appropriate tau and function
+#' Define the analysis parameters
+#'
+#' Define the correct parameters according to the type of the analysis
+#'
+#' @param A A list of matrix
+#' @param opt An OptionParser object
+#' @param C A matrix giving the connection between the blocks
+#' @param tau A vector of float (or character for 'optimal' setting) giving the shrinkage parameter for covariance maximization
+#' @param ncomp A vector of integer giving the number of component for each blocks
+#' @param scheme A character giving the link function for covariance maximization
+#' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
+#' @param type A character giving the type of analysis
+#' @param verbose A boolean displaying the warnings
+#' @param quiet A boolean hidding the warnings
+#' @return blocks A list of matrix
+#' @return scheme A character giving the link function for covariance maximization
+#' @return tau A vector of float (or character for 'optimal' setting) giving the shrinkage parameter for covariance maximization
+#' @return ncomp A vector of integer giving the number of component for each blocks
+#' @return connection matrix giving the connection between the blocks
+#' @return superblock A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
+
 select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = rep(1, length(A)),
                         ncomp = rep(1, length(A)), scheme = "centroid", superblock = TRUE,
                         type  = "rgcca", verbose = TRUE, quiet = FALSE){
@@ -284,14 +317,30 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
     }else
       grammar = "was the one"
 
-    warning(paste0("By using a superblock, ", warn.msg.super,
-                   " of the superblock ", grammar," of the first block."))
+    # warning(paste0("By using a superblock, ", warn.msg.super,
+    #                " of the superblock ", grammar," of the first block."))
   }
 
   opt$blocks = A; opt$scheme = scheme;  opt$tau = tau;  opt$ncomp = ncomp;  opt$connection = C;  opt$superblock = superblock
 
   return(opt)
 }
+
+#' Performs a r/sgcca
+#'
+#' Performs a r/sgcca with predefined parameters
+#'
+#' @param blocks A list of matrix
+#' @param connection A matrix giving the connection between the blocks
+#' @param tau A vector of float (or character for 'optimal' setting) giving the shrinkage parameter for covariance maximization
+#' @param ncomp A vector of integer giving the number of component for each blocks
+#' @param scheme A character giving the link function for covariance maximization
+#' @param scale A boolean scaling the blocks
+#' @param init A character among "svd" (Singular Value Decompostion) or "random" for alorithm initialization
+#' @param bias A boolean for a biased variance estimator
+#' @param type A character giving the type of analysis
+#' @param verbose A boolean to display the progress of the analysis
+#' @return superblock A RGCCA object
 
 rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, length(blocks)),
                          ncomp = rep(2, length(blocks)), scheme = "factorial", scale = TRUE,
@@ -425,11 +474,13 @@ bootstrap = function(blocks, n_boot = 5, connection = 1 - diag(length(blocks)), 
 #' list of list weights (one per bootstrap per blocks)
 #'
 #' @param comp An integer giving the index of the analysis components
+#' @param W A list of list weights (one per bootstrap per blocks)
+#' @param n_mark An integer giving the number of top variables to select
+#' @param i_block An integer giving the index of a list of blocks
 plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
 
   J <- names(W[[1]])
   color <- X2 <- X3 <- NULL
-
 
   if ( is.null(i_block) )
     i_block = length(W[[1]])

@@ -68,7 +68,7 @@ getArgs <- function(){
       opt_str = "--separator",
       type = "integer",
       metavar = "integer",
-      default = opt[2],
+      default = 1,
       help = "Character used to separate columns (1: tabulation, 2: semicolon, 3: comma) [default: %default]"
     ),
 
@@ -99,7 +99,7 @@ getArgs <- function(){
       opt_str = "--scheme",
       type = "integer",
       metavar = "integer",
-      default = opt[6],
+      default = 2,
       help = "Link (i.e. sheme) function for covariance maximization (1: x, 2: x^2, 3: |x|, 4: x^4) [default: %default]. Only, the x function penalizes structural negative correlation. The x^4 function discriminates more stronlgy the blocks than the x^2 one."
     ),
     make_option(
@@ -401,7 +401,7 @@ checkInteger <- function(x, y = NULL){
 ########## Main ##########
 
 # Libraries loading
-librairies <- c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph")
+librairies <- c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph", "xlsx")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
     install.packages(l, repos = "http://cran.us.r-project.org")
@@ -412,11 +412,11 @@ for (l in librairies) {
 
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt <- list(directory = ".",
-           separator = 1,
+           separator = "\t",
            type = "rgcca",
            ncomp = 2,
            tau = "optimal",
-           scheme = 2,
+           scheme = "factorial",
            init = 1,
            block = 0,
            compx = 1,

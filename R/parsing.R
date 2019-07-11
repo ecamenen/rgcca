@@ -54,15 +54,15 @@ checkFileSize = function(filename){
 }
 
 convertMatrixNumeric <- function(df){
-  matrix( sapply(1:(nrow(df) * ncol(df) ),
-                 function(i)
-                   tryCatch({
-                     as.numeric(df[i])
-                    }, warning = function(e) NA
-                   )),
-              nrow(df),
-              ncol(df),
-              dimnames = list(row.names(df), colnames(df)))
+    matrix( sapply(1:(nrow(df) * ncol(df) ),
+                   function(i)
+                     tryCatch({
+                       as.numeric(df[i])
+                      }, warning = function(e) NA
+                     )),
+                nrow(df),
+                ncol(df),
+                dimnames = list(row.names(df), colnames(df)))
 }
 
 #' Creates a matrix from loading a file
@@ -83,7 +83,7 @@ loadData = function(f, sep = "\t", rownames = 1, h = TRUE) {
     rownames <- NULL
 
   func <- function(x = rownames)
-    as.matrix(read.table(f, sep = sep, header = h, row.names = x, na.strings = "NA", dec=","))
+    as.matrix(read.table(f, sep = sep, header = h, row.names = x, na.strings = "NA", dec = ","))
 
   tryCatch({
       func()
@@ -93,7 +93,6 @@ loadData = function(f, sep = "\t", rownames = 1, h = TRUE) {
     }
   )
 
-  return(func())
 }
 
 #' Creates a data frame from an Excel file loading
@@ -294,7 +293,6 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
     if (NCOL(df) == 0)
       stop(paste(fo, "block file has an only-column. Check the separator."), exit_code = 102)
 
-
     dimnames = list(row.names(df), colnames(df))
     df <- convertMatrixNumeric(df)
 
@@ -358,12 +356,15 @@ checkConnection = function(c, blocks) {
 
 }
 
-#' Create a matrix from loading a file corresponding to a connection between the blocks
+#' Create a matrix corresponding to a connection between the blocks
 #'
 #' @param blocks A list of matrix
+#' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
 #' @param file A character giving the path of a file used as a response
 #' @param sep A character giving the column separator
-#' @return A matrix corresponding to the response
+#' @param rownames An integer corresponding to the column number of the row names (NULL otherwise)
+#' @param h A bolean giving the presence or the absence of the header
+#' @return A matrix corresponding to the connection between the blocks
 #' @examples
 #' \dontrun{
 #' blocks = lapply(1:4, function(x) matrix(runif(47 * 5), 47, 5))
@@ -397,7 +398,7 @@ setConnection = function(blocks, superblock = FALSE, file = NULL, sep = "\t", h 
 }
 
 
-#' Create a matrix from loading a file corresponding to the response
+#' Create a matrix corresponding to the response
 #'
 #' @param blocks A list of matrix
 #' @param file A character giving the path of a file used as a response
@@ -566,8 +567,8 @@ setSuperblock = function(blocks, superblock = FALSE, type = "rgcca"){
 
   if(superblock | tolower(type) == "pca"){
 
-    if(type != "pca")
-      warnConnection("superblock")
+    # if(type != "pca")
+    #   warnConnection("superblock")
 
     blocks[["Superblock"]] = Reduce(cbind, blocks)
 
