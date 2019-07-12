@@ -35,9 +35,9 @@ ui <- fluidPage(
   bs_modal(
     id = "modal_superblock",
     title = "Help on superblock",
-    body =  "If activated, add a supplementary block (the 'superblock') corresponding to a concatenation of all the blocks.
-    This block shynthesize the other blocks all together into a common space to better interpret the results.
-    If disabled, a connection file could be used. Otherwise, all blocks are connected together.",
+    body =  "If ticked, a superblock is introduced. This superblock is defined as a concatenation of all the blocks.
+This block enables the construction of a consensus space which help to better interpret and  visualize the results.
+If unchecked, a connection file could be used. Otherwise, all blocks are assumed to be connected.",
     size = "medium"
   ),
 
@@ -104,7 +104,7 @@ ui <- fluidPage(
                            %>%
                            shinyInput_label_embed(
                              icon("question") %>%
-                               bs_embed_tooltip(title = "A zero means translation is always performed. If activated, each block are standardized to unit variances and divided by the square root of its number of variables.")
+                               bs_embed_tooltip(title = "A data centering step is always performed. If ticked, each block is normalised and divided by the square root of its number of variables.")
                            ),
 
                            radioButtons("init",
@@ -139,7 +139,7 @@ ui <- fluidPage(
                            %>%
                              shinyInput_label_embed(
                                icon("question") %>%
-                                 bs_embed_tooltip(title = "A tau near 0 maximize the the correlation between blocks whereas a tau near 1 maximize the variances within blocks")
+                                 bs_embed_tooltip(title = "A tau near 0 maximize the the correlation whereas a tau near 1 maximize the covariance")
                              ),
                            uiOutput("tau_custom"),
 

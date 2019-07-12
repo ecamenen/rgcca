@@ -3,7 +3,7 @@
 ^README\.Rmd$
 \.pdf$
 \.RData$
-\individuals.tsv$
-\variables.tsv$
+individuals.tsv
+variables.tsv
 ^\.git$
 ^\.idea$

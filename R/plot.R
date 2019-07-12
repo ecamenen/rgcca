@@ -538,7 +538,7 @@ plotFingerprint = function(rgcca, blocks = NULL, comp = 1, superblock = TRUE, n_
   if ( is.null(i_block) )
     i_block = length(rgcca$a)
 
-  title = ifelse(type == "cor", "Variable correlations with", "Variable weights")
+  title = ifelse(type == "cor", "Variable correlations with", "Variable weights on")
   criterion = getVar(rgcca, blocks, comp, comp, i_block, type)
 
   # select the weights (var to add a column to work with comp = 1)

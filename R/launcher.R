@@ -93,7 +93,7 @@ getArgs <- function(){
       type = "character",
       metavar = "float list",
       default = opt[5],
-      help = "For RGCCA, a covariance maximization regularization parameter for each block (i.e., tau) [default: %default]. Tau varies from 0 (to maximize the correlation between blocks) to 1 (to maximize the variances within blocks). For SGCCA, tau is automatically set to 1. A shrinkage parameter can be defined instead for automatic variable selection, varying from the square root of the variable number (the fewest selected variables) to 1 (all the variables are included). It can be a single values or a comma-separated list (e.g. 0,1,0.75,1)."
+      help = "A regularization parameter for each block (i.e., tau) [default: %default]. Tau varies from 0 (maximizing the correlation) to 1 (maximizing the covariance). For SGCCA, tau is automatically set to 1. A shrinkage parameter can be defined instead for automatic variable selection, varying from the square root of the variable number (the fewest selected variables) to 1 (all the variables are included). It can be a single values or a comma-separated list (e.g. 0,1,0.75,1)."
     ),
     make_option(
       opt_str = "--scheme",
@@ -106,13 +106,13 @@ getArgs <- function(){
       opt_str = "--scale",
       type = "logical",
       action = "store_false",
-      help = "DO NOT scale the blocks (i.e., a zero means translation is always performed). Otherwhise, each blocks are standardized to unit variances and divided by the square root of its number of variables."
+      help = "DO NOT scale the blocks (i.e., a data centering step is always performed). Otherwhise, each block is normalised and divided by the square root of its number of variables."
     ),
     make_option(
       opt_str = "--superblock",
       type = "logical",
       action = "store_false",
-      help = "DO NOT use a superblock (i.e. a concatenation of all the blocks to visualize them all together in a consensus space). All blocks are connected together or a connection file could be loaded."
+      help = "DO NOT use a superblock (i.e. a concatenation of all the blocks to visualize them all together in a consensus space). In this case, all blocks are assumed to be connected or a connection file could be used."
     ),
     # make_option(
     #   opt_str = "--init",
@@ -401,7 +401,7 @@ checkInteger <- function(x, y = NULL){
 ########## Main ##########
 
 # Libraries loading
-librairies <- c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph", "xlsx")
+librairies <- c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
     install.packages(l, repos = "http://cran.us.r-project.org")
@@ -515,7 +515,7 @@ if(opt$ncomp[opt$block] > 1){
 }
 
 # Fingerprint plot
-( top_variables <- plotFingerprint(rgcca.out, blocks, opt$compx, opt$superblock, opt$nmark) )
+( top_variables <- plotFingerprint(rgcca.out, blocks, opt$compx, opt$superblock, opt$nmark, type = "cor") )
 p <- changeText ( dynamicPlot(top_variables, ax2, "text") )
 n <- unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
 for (i in 1:length(n[n]))

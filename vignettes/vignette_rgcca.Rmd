@@ -1,6 +1,5 @@
 ---
-title: The RGCCA package for Regularized/Sparse Generalized Canonical Correlation
-  Analysis
+title: "The RGCCA package for Regularized/Sparse Generalized Canonical Correlation Analysis"
 author: "Etienne CAMENEN"
 date: "`r Sys.Date()`"
 output:
@@ -53,8 +52,10 @@ header-includes:
 - \usepackage{pgfplots}
 - \usepackage{microtype}
 bibliography: biblio.bib
-vignette: |
-  %\VignetteIndexEntry{The RGCCA package for Regularized/Sparse Generalized Canonical Correlation Analysis}  %\VignetteEngine{knitr::rmarkdown} \usepackage[utf8]{inputenc}
+vignette: >
+  %\VignetteIndexEntry{The RGCCA package for Regularized/Sparse Generalized Canonical Correlation Analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
 ---
 
 \newcommand{\ma}[1]{\ensuremath{\mathbf{#1}}}
@@ -248,7 +249,7 @@ plotVariablesSpace(rgcca = sgcca.res,
 plotFingerprint(rgcca = sgcca.res,
                 superblock = SUPERBLOCK,
                 n_mark = NB_MARK,
-                type = "weigth")
+                type = "weight")
 ```
 
 ### Best explained blocks
@@ -283,7 +284,7 @@ plotFingerprint(rgcca = sgcca.res,
                 comp = COMP1,
                 n_mark = NB_MARK, 
                 i_block = 3,
-                type = "weigth")
+                type = "weight")
 ```
 
 

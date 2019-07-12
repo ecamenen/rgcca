@@ -95,41 +95,41 @@ loadData = function(f, sep = "\t", rownames = 1, h = TRUE) {
 
 }
 
-#' Creates a data frame from an Excel file loading
-#'
-#' @param f A character giving the file name
-#' @param sheet A character giving the sheet name
-#' @param rownames An integer corresponding to the column number of the row names (NULL otherwise)
-#' @param h A bolean giving the presence or the absence of the header
-#' @param num A bolean giving the presence or the absence of numerical values
-#' @return A matrix containing the loaded file
-#' @examples
-#' \dontrun{
-#' loadExcel("data/blocks.xlsx", "industry")
-#' }
-#' @export loadExcel
-loadExcel = function(f, sheet, rownames = 1, h = TRUE, num = TRUE) {
-
-  if (!is.null(rownames) && rownames < 1)
-    rownames = NULL
-
-  df = read.xlsx(f, sheet, header = h, startRow = 1)
-
-  if(!is.null(rownames)){
-    names = df[, rownames]
-    df = df[, -rownames]
-  }
-
-  if(num)
-    df = as.data.frame(lapply(df, function(x) as.numeric(as.vector(x))))
-
-  df = as.matrix(df)
-
-  if(!is.null(rownames))
-    row.names(df) = names
-
-  return (df)
-}
+# Creates a data frame from an Excel file loading
+#
+# @param f A character giving the file name
+# @param sheet A character giving the sheet name
+# @param rownames An integer corresponding to the column number of the row names (NULL otherwise)
+# @param h A bolean giving the presence or the absence of the header
+# @param num A bolean giving the presence or the absence of numerical values
+# @return A matrix containing the loaded file
+# @examples
+# \dontrun{
+# loadExcel("data/blocks.xlsx", "industry")
+# }
+# @export loadExcel
+# loadExcel = function(f, sheet, rownames = 1, h = TRUE, num = TRUE) {
+#
+#   if (!is.null(rownames) && rownames < 1)
+#     rownames = NULL
+#
+#   df = read.xlsx(f, sheet, header = h, startRow = 1)
+#
+#   if(!is.null(rownames)){
+#     names = df[, rownames]
+#     df = df[, -rownames]
+#   }
+#
+#   if(num)
+#     df = as.data.frame(lapply(df, function(x) as.numeric(as.vector(x))))
+#
+#   df = as.matrix(df)
+#
+#   if(!is.null(rownames))
+#     row.names(df) = names
+#
+#   return (df)
+# }
 
 #' Save a ggplot object
 #'
@@ -244,12 +244,12 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
     # if it is not, parse the name of file from the arg list
     blocksFilename = parseList(file)
   else {
-    # if xls, check file exists
-    checkFile(file)
-    # load the xls
-    wb = loadWorkbook(file)
-    # load the blocks
-    blocksFilename = names(getSheets(wb))
+    # # if xls, check file exists
+    # checkFile(file)
+    # # load the xls
+    # wb = loadWorkbook(file)
+    # # load the blocks
+    # blocksFilename = names(getSheets(wb))
   }
 
   # Parse optional names of blocks
@@ -284,10 +284,11 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
     if (!isXls){
       checkFileSize(fi)
       df = loadData(fi, sep, rownames, header)
-    }else{
-      checkFileSize(file)
-      df = loadExcel(file, blocksFilename[i], rownames, header)
     }
+    # }else{
+    #   checkFileSize(file)
+    #   df = loadExcel(file, blocksFilename[i], rownames, header)
+    # }
 
     #if one-column file, it is a tabulation error
     if (NCOL(df) == 0)
@@ -385,11 +386,10 @@ setConnection = function(blocks, superblock = FALSE, file = NULL, sep = "\t", h 
   else {
     isXls <- (length(grep("xlsx?", file)) == 1)
 
-    if(!isXls){
+    if(!isXls)
       connection = loadData(f = file, sep = sep, rownames = rownames,  h = h)
-
-    }else
-      connection = loadExcel(f = file, sheet = 1, rownames = rownames,  h = h)
+    # else
+    #   connection = loadExcel(f = file, sheet = 1, rownames = rownames,  h = h)
   }
 
   checkConnection(connection, blocks)
@@ -420,8 +420,8 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
 
     if(!isXls)
       response = loadData(file, sep, rownames, header)
-    else
-      response = loadExcel(file, 1, rownames, h = header, num = FALSE)
+    # else
+    #   response = loadExcel(file, 1, rownames, h = header, num = FALSE)
 
     qualitative = unique(isCharacter(response))
 

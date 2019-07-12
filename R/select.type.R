@@ -9,7 +9,6 @@
 #' @importFrom plotly layout ggplotly style plotly_build %>%
 #' @importFrom visNetwork visNetwork visNodes visEdges
 #' @importFrom igraph graph_from_data_frame V<- E<-
-#' @importFrom xlsx read.xlsx loadWorkbook getSheets
 
 VERBOSE = FALSE
 
