@@ -17,7 +17,7 @@ setInfo <- function(., text){
 }
 
 # Libraries loading
-librairies = c("RGCCA", "ggplot2", "scales", "shiny", "shinyjs", "visNetwork", "devtools", "plotly", "igraph", "bsplus")
+librairies = c("RGCCA", "ggplot2", "scales", "plotly", "visNetwork", "devtools", "igraph", "shiny", "shinyjs", "bsplus")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"])){
     if(l == "bsplus")

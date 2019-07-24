@@ -515,7 +515,7 @@ if(opt$ncomp[opt$block] > 1){
 }
 
 # Fingerprint plot
-( top_variables <- plotFingerprint(rgcca.out, blocks, opt$compx, opt$superblock, opt$nmark, type = "cor") )
+top_variables <- plotFingerprint(rgcca.out, blocks, opt$compx, opt$superblock, opt$nmark, type = "cor")
 p <- changeText ( dynamicPlot(top_variables, ax2, "text") )
 n <- unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
 for (i in 1:length(n[n]))
