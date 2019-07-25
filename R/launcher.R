@@ -401,7 +401,7 @@ checkInteger <- function(x, y = NULL){
 ########## Main ##########
 
 # Libraries loading
-librairies <- c("RGCCA", "ggplot2", "optparse", "scales", "plotly", "visNetwork", "igraph")
+librairies <- c("RGCCA", "ggplot2", "optparse", "scales", "igraph")
 for (l in librairies) {
   if (!(l %in% installed.packages()[, "Package"]))
     install.packages(l, repos = "http://cran.us.r-project.org")
@@ -498,30 +498,17 @@ if(opt$ncomp[opt$block] == 1 && is.null(opt$block_y)){
    warning("With a number of component of 1, a second block should be chosen to perform a samples plot")
 }else{
   ( individual_plot <- plotSamplesSpace(rgcca.out, group, opt$compx, opt$compy, opt$block, opt$text, opt$block_y, getFileName(opt$group)) )
-   p <- changeHovertext( dynamicPlot(individual_plot, ax, "text", TRUE, TRUE), opt$text )
-     if( length(unique(na.omit(group))) < 2 || (length(unique(group)) > 5 && !unique(isCharacter(group)) ))
-       p  <- p  %>% layout(showlegend = FALSE)
-   p
    savePlot(opt$o1, individual_plot)
 }
 
 if(opt$ncomp[opt$block] > 1){
   # Variables common space
   ( corcircle <- plotVariablesSpace(rgcca.out, blocks, opt$compx, opt$compy, opt$superblock, opt$block, opt$text, n_mark = opt$nmark) )
-  p <- changeHovertext( dynamicPlot(corcircle, ax, "text"), opt$text)
-  n <- length(p$x$data)
-  ( style(p, hoverinfo = "none", traces = c(n, n-1)) )
   savePlot(opt$o2, corcircle)
 }
 
 # Fingerprint plot
 top_variables <- plotFingerprint(rgcca.out, blocks, opt$compx, opt$superblock, opt$nmark, type = "cor")
-p <- changeText ( dynamicPlot(top_variables, ax2, "text") )
-n <- unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
-for (i in 1:length(n[n]))
-  p$x$data[[i]]$text <- round( as.double(sub( "order: .*<br />df\\[, 1\\]: (.*)<.*", "\\1\\", p$x$data[[i]]$text )), 3)
-p
-# TODO: avoid the scale, zoom in, zoom out, make stop unexpectivly
 savePlot(opt$o3, top_variables)
 
 
@@ -535,7 +522,6 @@ if(opt$type != "pca"){
   nodes <- getNodes(blocks, rgcca = rgcca.out)
   edges <- getEdges(connection, blocks)
   conNet <- function() plotNetwork(nodes, edges, blocks)
-  plotNetwork2(nodes, edges, blocks)
   savePlot(opt$o5, conNet)
 
 }
