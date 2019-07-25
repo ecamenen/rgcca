@@ -17,8 +17,8 @@ AXIS_FONT = "italic"
 SAMPLES_COL_DEFAULT = "brown3"
 
 # X- Y axis format for plotly objets : no axis, no ticks
-ax <- list(linecolor = toRGB("white"), ticks = "", titlefont = list(size = 23))
-ax2 <- list(linecolor = toRGB("white"), tickfont = list(size = 10, color = "grey"))
+ax <- list(linecolor = "white", ticks = "", titlefont = list(size = 23))
+ax2 <- list(linecolor = "white", tickfont = list(size = 10, color = "grey"))
 
 # Dynamic visualization of the outputs
 # f: ggplot2 function
