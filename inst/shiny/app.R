@@ -14,7 +14,7 @@ rm(list=ls())
 tryCatch({
   appDir <- setwd(strsplit(rstudioapi::getActiveDocumentContext()$path, "/app.R")[[1]])
 }, error = function(e) {
-  appDir <<- "./inst/shiny"
+  appDir <<- "."
 })
 
 one_block <- c(`Principal Component Analysis` = "PCA")
