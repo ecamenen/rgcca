@@ -70,39 +70,38 @@ or multiple columns containing a disjunctive table.
 
 ## Installation
 Required:
-- Softwares : R
-- R libraries : see the [DESCRIPTION](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/DESCRIPTION) file.
+- Softwares : R (≥ 3.2.0)
+- R libraries : see the [DESCRIPTION](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/master/DESCRIPTION) file.
 
 ### Linux
 
 ```
-sudo apt-get install -y --no-install-recommends git && \
-    apt-get install -y r-base r-cran-ggplot2 r-cran-scales r-cran-optparse r-cran-shiny r-cran-plotly r-cran-igraph && \
-    R -e 'install.packages(c("RGCCA", "visNetwork"))' && \
+sudo apt-get install -y git r-base && \
+    R -e 'install.packages(c("RGCCA", "ggplot2", "optparse", "scales", "igraph", "shiny"))' && \
     git clone https://github.com/BrainAndSpineInstitute/rgcca_Rpackage && \
 	cd rgcca_Rpackage
 ```
 
 On Ubuntu, if dependencies errors appear for igraph and plotly, try :
 ```
-sudo apt-get install -y libcurl4-openssl-dev libssl-dev liblapack-dev && \
+sudo apt-get install -y libxml2-dev libcurl4-openssl-dev libssl-dev liblapack-dev && \
     apt-get update
 ```
 
 ### Windows & Mac
-Please, find the software on [Github](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/release/3.0). Click on the green button in the upper right corner ```Clone and Download``` and then ```Download the ZIP```. Extract the file.
+Please, find the software on [Github](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage). Click on the green button in the upper right corner ```Clone and Download``` and then ```Download the ZIP```. Extract the file.
 
 
 ## Execution
-If the Linux dependencies installation step was not executed previously (e.g., for Windows users), their automatic installation could take several minutes during the first execution. If dependencies compatibility errors appear, the required (and suggested) librairies to import are listed in the [DESCRIPTION](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/DESCRIPTION) file.
+If the Linux dependencies installation step was not executed previously (e.g., for Windows users), their automatic installation could take several minutes during the first execution. If dependencies compatibility errors appear, the required (and suggested) librairies to import are listed in the [DESCRIPTION](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/master/DESCRIPTION) file.
 
 
 ### Shiny interface
-- Required: shiny, shinyjs, devtools, bsplus (R package)
+- Required: shiny, shinyjs, devtools, bsplus (R packages)
 
 [Shiny](https://shiny.rstudio.com/) is a R framework providing a "user-friendly" web interface. When a parameter of the analysis is modified (e.g. the block to visualize), its impact can be directly observed on the graphical outputs.
 
-After installing [Rstudio](https://www.rstudio.com/products/rstudio/download/#download), right click on the ```inst/shiny/app.R``` file to open it with this software. In the RStudio upper menu, go to "Tools", "Install packages" and write "shiny" in the textual field. Do the same for the "rstudioapi" package. Then, the application could be launched by clicking on the ```Run App button``` in the upper right corner of the script menu bar. Click [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/inst/shiny/tutorialShiny.md) to read the tutorial.
+After installing [Rstudio](https://www.rstudio.com/products/rstudio/download/#download), open ```inst/shiny/server.R``` file with it. In the RStudio upper menu, go to "Tools", "Install packages" and write "shiny" in the textual field. Then, the application could be launched by clicking on the ```Run App button``` in the upper right corner of the script menu bar. Click [here](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/master/inst/shiny/tutorialShiny.md) to read the tutorial.
 
 
 ### Vignette
@@ -149,10 +148,10 @@ By default, on tabulated files with a header without response groups. The names 
 - ```--names``` (STRING) The list of the names for each block file separated by comma (without space between).
 - ```-H (--header)```DO NOT consider the first row as header of the columns.
 - ```--separator``` (INTEGER) Specify the character used to separate the column (1: tabulation, 2: semicolon).
-- ```--output1``` (STRING) The path of the output file for the samples space. Ex : sample_space.pdf
-- ```--output2``` (STRING) The path of the output file for the corcircle space. Ex : corcircle.pdf
-- ```--output3``` (STRING) The path of the output file for the biomarkers. Ex : fingerprint.pdf
-- ```--output4``` (STRING) The path of the output file for the variance explained in the model. Ex : ave.pdf
+- ```--o1``` (STRING) The path of the output file for the samples space. Ex : sample_space.pdf
+- ```--o2``` (STRING) The path of the output file for the corcircle space. Ex : corcircle.pdf
+- ```--o3``` (STRING) The path of the output file for the biomarkers. Ex : fingerprint.pdf
+- ```--o4``` (STRING) The path of the output file for the variance explained in the model. Ex : ave.pdf
 
 #### Analyse parameters
 By default, the analysis : scales the blocks, initiates the algorithm with Singular Value Decomposition, 
