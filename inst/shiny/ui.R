@@ -19,6 +19,7 @@ setInfo <- function(., text){
   )
 }
 
+# Global variables
 one_block <<- c(`Principal Component Analysis` = "PCA")
 two_blocks <<- c(`Canonical Correlation Analysis` = 'CCA', `Interbattery Factor Analysis` = "IFA", `Partial Least Squares Regression` = 'PLS',  `Redundancy analysis` = 'RA')
 multiple_blocks  <<- c(`Regularized Generalized CCA (RGCCA)` = 'RGCCA', `Sparse Generalized CCA (SGCCA)` = 'SGCCA', `SUM of CORrelations method` = 'SUMCOR', `Sum of SQuared CORrelations method` = 'SSQCOR',
@@ -26,38 +27,47 @@ multiple_blocks  <<- c(`Regularized Generalized CCA (RGCCA)` = 'RGCCA', `Sparse 
                       `Sum of ABSolute value COVariances method` = 'SABSCOV', `MAXBET` = 'MAXBET', `MAXBETB` = 'MAXBET-B')
 multiple_blocks_super  <<- c(`Generalized CCA (GCCA)` = 'GCCA', `Hierarchical PCA` = 'HPCA', `Multiple Factor Analysis` = 'MFA')
 analyse_methods  <<- list(one_block, two_blocks, multiple_blocks, multiple_blocks_super)
+reac_var  <<- reactiveVal()
+id_block_y <<- id_block <<- id_block_resp <<- analysis <<- boot <<- analysis_type <<- NULL
+clickSep <<- FALSE
+if_text <<- TRUE
+comp_x <<- 1
+nb_comp <<- comp_y <<- 2
+nb_mark <<- 100
 
-# Libraries loading
-librairies = c("RGCCA", "ggplot2", "scales", "plotly", "visNetwork", "devtools", "igraph", "shiny", "shinyjs", "bsplus")
-for (l in librairies) {
-  if (!(l %in% installed.packages()[, "Package"])){
-    if(l == "bsplus")
-      devtools::install_github("ijlyttle/bsplus", upgrade = "never")
-    else
-      install.packages(l, repos = "http://cran.us.r-project.org")
-  }
-  library(l, character.only = TRUE,
-          warn.conflicts = FALSE,
-          quiet = TRUE)
-}
+# Load functions
+source("../../R/parsing.R")
+source("../../R/plot.R")
+source("../../R/select.type.R")
+source("../../R/network.R")
+
+# maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
+# rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
+
+loadLibraries(c("RGCCA", "ggplot2", "scales", "plotly", "visNetwork", "devtools", "igraph", "shiny", "shinyjs", "bsplus"))
+
+# ("bsplus")
+# if(l == "bsplus")
+#   devtools::install_github("ijlyttle/bsplus", upgrade = "never")
 
 ui <- fluidPage(
 
   bs_modal(
     id = "modal_superblock",
     title = "Help on superblock",
-    body =  "If ticked, a superblock is introduced. This superblock is defined as a concatenation of all the blocks.
-This block enables the construction of a consensus space which help to better interpret and  visualize the results.
-If unchecked, a connection file could be used. Otherwise, all blocks are assumed to be connected.",
+    body =  "If ticked, a superblock is introduced. This superblock is defined as a concatenation of all the other blocks.
+     The space spanned by global components is viewed as a compromise space that integrated all the modalities
+     and facilitates the visualization of the results and their interpretation.
+     If unchecked, a connection file could be used. Otherwise, all blocks are assumed to be connected.",
     size = "medium"
   ),
 
   bs_modal(
     id = "modal_scheme",
     title = "Help on scheme functions",
-    body =  "The maximization of the sum of covariances between block components is calculated with : the identity function (horst scheme),
-    the absolute values (centroid scheme), the squared values (factorial scheme). Only, the x function penalizes structural negative correlation.
-    The square function discriminates more stronlgy the blocks than the absolute one.",
+    body="Link (i.e. scheme) function for covariance maximization is calculated with: the identity function (horst scheme),
+    the absolute values (centroid scheme), the squared values (factorial scheme). Only, the horst scheme penalizes structural
+    negative correlation. The factorial scheme discriminates more strongly the blocks than the centroid one.",
     size = "medium"
   ),
 

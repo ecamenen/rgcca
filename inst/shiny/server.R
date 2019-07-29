@@ -10,22 +10,6 @@
 # of the most explicative variables and the explained variance for each blocks.
 
 server <- function(input, output, session) {
-  source("../../R/parsing.R")
-  source("../../R/plot.R")
-  source("../../R/select.type.R")
-  source("../../R/network.R")
-
-  # Assign reactive variables
-  reac_var  <<- reactiveVal()
-  id_block_y <<- id_block <<- id_block_resp <<- analysis <<- boot <<- analysis_type <<- NULL
-  clickSep <<- FALSE
-  if_text <<- TRUE
-  comp_x <<- 1
-  nb_comp <<- comp_y <<- 2
-  nb_mark <<- 100
-
-  # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
-  # rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
 
   ################################################ Render UI ################################################
 
@@ -39,7 +23,7 @@ server <- function(input, output, session) {
   output$nb_mark_custom <- renderUI({
     refresh <- c(input$blocks_names_custom_x, input$names_block_x)
     sliderInput(inputId = "nb_mark",
-                label = "Number of potential biomarkers",
+                label = "Number of top variables",
                 min = 10, max = getMaxCol(), value = getDefaultCol(), step = 1)
   })
 
@@ -76,7 +60,6 @@ server <- function(input, output, session) {
                 label = "Number of components",
                 min = 2, max = getDefaultComp(), value = 2, step = 1)
 
-    # TODO: pas plusieurs sliderInput, découper en modules
   })
 
   refreshAnalysis <- function()

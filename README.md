@@ -14,58 +14,90 @@ analysis, correlation, visualisation
 arthur.tenenhaus@l2s.centralesupelec.fr
 
 ##### Short description
-Performs multi-variate analysis (PCA, CCA, PLS, R/SGCCA, etc.) and produced textual and graphical outputs (e.g. variables and  individuals plots).
+Performs multi-variate analysis (PCA, CCA, PLS, R/SGCCA, etc.) and produces textual and graphical outputs (e.g. variables and individuals plots).
 
 ---
 
 ## Description
-A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA) as described in [1] and [2] with all default settings predefined. The software produces figures to explore the analysis' results: samples and variables projected on two component of the multi-block analysis, list of top variables and explained variance in the model.
+A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA) as described in [1] and [2] with all default settings predefined. The software produces figures to explore the analysis' results: individuals and variables projected on two components of the multi-block analysis, list of top variables and explained variance in the model.
  
 ## R/SGCCA (from the [CRAN vignette](https://cran.r-project.org/web/packages/RGCCA/vignettes/vignette_RGCCA.pdf) [3])
 We consider J data matrices X1 ,..., XJ. Each n × pj data matrix Xj = [ xj1, ..., xjpj ] is called a block and represents a set of pj variables observed on n individuals. The number and the nature of the variables may differ from one block to another, but the individuals must be the same across blocks. We assume that all variables are centered. The objective of RGCCA is to find, for each block, a weighted composite of variables (called block component) yj = Xj . aj, j = 1 ,..., J (where aj is a column-vector with pj elements) summarizing the relevant information between and within the blocks. The block components are obtained such that (i) block components explain well their own block and/or (ii) block components that are assumed to be connected are highly correlated. In addition, RGCCA integrates a variable selection procedure, called SGCCA, allowing the identification of the most relevant features.
 
 The second generation RGCCA ([1]) subsumes fifty years of multiblock component methods. It provides important improvements to the initial version of RGCCA ([2]) and is defined as the following optimization problem: ![rgcca_formula](img/rgcca_formula.png)
 - The **scheme function** g is any continuous convex function and allows to consider different optimization criteria. Typical choices of g are the identity (horst scheme, leading to maximizing the sum of covariances between block components), the absolute value (centroid scheme, yielding maximization of the sum of the absolute values of the covariances), the square function (factorial scheme, thereby maximizing the sum of squared covariances), or, more generally, for any even integer m, g(x) = x^m (m-scheme, maximizing the power of m of the sum of covariances). The horst scheme penalizes structural negative correlation between block components while both the centroid scheme and the m-scheme enable two components to be negatively correlated. According to [4], a fair model is a model where all blocks contribute equally to the solution in opposition to a model dominated by only a few of the J sets. If fairness is a major objective, the user must choose m = 1. m > 1 is preferable if the user wants to discriminate between blocks. In practice, m is equal to 1, 2 or 4. The higher the value of m the more the method acts as block selector [5].
-- The **design matrix** C is a symmetric J × J matrix of nonnegative elements describing the network of connections between blocks that the user wants to take into account.  Usually, cjk = 1 for two connected blocks and 0 otherwise.
-- The τj are called **shrinkage parameters** ranging from 0 to 1 and interpolate smoothly between maximizing the covariance and maximizing the correlation. Setting the τj to 0 will force the block components to unit variance (var(Xj.aj = 1)), in which case the covariance criterion boils down to the correlation. The correlation criterion is better in explaining the correlated structure across datasets, thus discarding the variance within each individual dataset.  Setting τj to 1 will normalize the block weight vectors (aj . t(aj) = 1), which applies the covariance criterion. A value between 0 and 1 will lead to a compromise between the two first options and correspond to the following constraint (1 − τj) . var(Xj.aj) + τj‖aj‖^2 = 1. The choices τj = 1, τj = 0 and 0 < τj < 1 are respectively referred as Modes A, B and Ridge. In the RGCCA package, for each block, the determination of the shrinkage parameter can be made fully automatic by using the analytical formula proposed by (Schäfer and Strimmer 2005). Also, depending on the context, the shrinkage parameters should also be determined based on V-fold cross-validation. We can define the choice of the shrinkage parameters by providing interpretations on the properties of the resulting block components:
+- The **design matrix** C is a symmetric J × J matrix of nonnegative elements describing the network of connections between blocks that the user wants to take into account. Usually, cjk = 1 for two connected blocks and 0 otherwise.
+- The τj are called **shrinkage parameters** ranging from 0 to 1 and interpolate smoothly between maximizing the covariance and maximizing the correlation. Setting the τj to 0 will force the block components to unit variance (var(Xj.aj = 1)), in which case the covariance criterion boils down to the correlation. The correlation criterion is better in explaining the correlated structure across datasets, thus discarding the variance within each individual dataset. Setting τj to 1 will normalize the block weight vectors (aj . t(aj) = 1), which applies the covariance criterion. A value between 0 and 1 will lead to a compromise between the two first options and correspond to the following constraint (1 − τj) . var(Xj.aj) + τj‖aj‖^2 = 1. The choices τj = 1, τj = 0 and 0 < τj < 1 are respectively referred as Modes A, B and Ridge. In the RGCCA package, for each block, the determination of the shrinkage parameter can be made fully automatic by using the analytical formula proposed by (Schäfer and Strimmer 2005). Also, depending on the context, the shrinkage parameters should also be determined based on V-fold cross-validation. We can define the choice of the shrinkage parameters by providing interpretations on the properties of the resulting block components:
     - τj = 1 yields the maximization of a covariance-based criterion. It is recommended when the user wants a stable component (large variance) while simultaneously taking into account the correlations between blocks. The user must, however, be aware that variance dominates over correlation.
     - τj = 0 yields the maximization of a correlation-based criterion. It is recommended when the user wants to maximize correlations between connected components. This option can yield unstable solutions in case of multi-collinearity and cannot be used when a data block is rank deficient (e.g. n < pj).
     - 0 < τj < 1 is a good compromise between variance and correlation: the block components are simultaneously stable and as well correlated as possible with their connected block components. This setting can be used when the data block is rank deficient.
 
 The quality and interpretability of the RGCCA block components yj = Xj . aj, j = 1,...,J are likely affected by the usefulness and relevance of the variables of each block. Accordingly, it is an important issue to identify within each block a subset of significant variables which are active in the relationships between blocks. **SGCCA** extends RGCCA to address this issue of variable selection. Specifically, RGCCA with all τj = 1 equal to 1 is combined with an L1-penalty that gives rise to SGCCA [6]. The SGCCA optimization problem is defined with sj, a user defined positive constant that determines the amount of sparsity for aj, j = 1,...,J. The smaller the sj, the larger the degree of sparsity for aj. The sparsity parameter sj is usually set based on cross-validation procedures. Alternatively, values of sj can simply be chosen to result in desired amounts of sparsity.
 
-## Input files 
+## Input files
 (see ```int/extdata/``` folder for a [working example](https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/tree/master/inst/extdata)).
-- ```blocks``` (.tsv, .csv, .txt or .xls, xlsx) : file(s) containing variables to analyse together.
-The samples should be in lines and labelled and variables in columns with a header. With an Excel format, each block 
-must be in a separated sheet. For other format, each blocks must be in a separated file.
-- ```connection``` (.tsv, .csv, .txt or .xls, xlsx) : file without header, containing a symmetric matrix
-of non-negative elements describing the network of connections between blocks that the user wants to take into account.
-Its dimension should be NB_BLOCKS + 1) * (NB_BLOCKS + 1). + 1 corresponds for the use of a supplementary block 
-(the "superblock"), a concatenation of all the blocks helpful to interpret the results. By default, the connection
-matrix is build with values for the last line (and column) except for the diagonal (i.e., the superblock is fully
-connected with the other blocks) and 0 values for the other cells (the blocks are not connected together). 
-To go further than this null hypothesis, a priori information could be used to tune the matrix (e.g., add 1 value 
-for a connection between two block).
-- ```response``` (.tsv, .csv, .txt or .xls, xlsx) : an only column of of either a qualitative, or a quantitative variable 
-or multiple columns containing a disjunctive table.
+- ```blocks``` (.tsv, .csv, .txt or .xls, xlsx): one or multiple required file(s) with the columns separated by tabulations (or semi-colons). Each file corresponds to a block containing only quantitative values with "NA" for missing data and "." for decimal separators (**Fig. 1**). Individuals should be in rows, labelled in the first column with the same name between each block (some samples could be missing in some blocks). Variables should be in columns with a header and no duplication in variable names (between and within blocks).
+
+![blocks](img/blocks.png)
+
+*Fig. 1: The blocks (e.g., politic, agriculture, industry from Russet data [3]) should have some common individuals, a header and row names.*
+
+- ```connection``` (.tsv, .csv, .txt or .xls, xlsx): an optional file without header and without row names. This file describes the connections between the blocks (**design matrix**). It should contain 1 (if two blocks are related) or 0 values otherwise (**Fig. 2**). The columns are separated by tabulations. It is a symmetric matrix with the same dimension as the number of blocks. 
+    - By default, the design uses a **superblock** configuration, a block defined as the concatenation of all the other blocks. The space spanned by global components is viewed as a compromise space that integrated all the modalities and facilitates the visualization of the results and their interpretation. The design matrix has 1 values on the whole last line (and last column) except for the diagonal (i.e., all the blocks are connected to the superblock) and 0 values for the other cells (the blocks are not connected to each other). 
+
+![connection](img/connection.png)
+
+*Fig. 2: The relation between the blocks is synthesized in a design matrix: 1 for two related blocks, 0 otherwise. By default, all the blocks are related only to a bloc concatenating their values (i.e., superblock).*
+
+- ```response``` (.tsv, .csv, .txt or .xls, xlsx): an optional file used to **color the individuals in the ad hoc plot**. It should contain (i) a single column of either a quantitative (with "NA" for missing data and "." for decimal separators), or (ii) a qualitative variable or (iii) multiple columns corresponding to a disjunctive table (1 or 0 for each modalities; **Fig. 3**). Columns are separated by tabulations. Individuals should be in row, labelled with the first column and with the same names as the blocks.
+
+![response](img/response.png)
+
+*Fig. 3: A quantitative (i), a qualitative variable (ii) or a disjunctive table (iii) could color the individual plot.*
 
 ## Output files 
-- ```corcircle``` (.pdf, .png, .tiff, .bmp or .jpeg) : samples projected in a space composed by the first two components of the analysis (with the percent of explained variance). By selecting a response, samples are colored according to this criterion.
+- ```individuals``` (.pdf, .png, .tiff, .bmp or .jpeg): individuals in a space composed by two components of the analysis (with the percent of explained variance). The points could be colored according to a response (see last section).
 
-![variables_space](img/corcircle.png)
+![individuals](img/individuals.png)
 
-- ```samples_space``` (.pdf, .png, .tiff, .bmp or .jpeg) : circle of correlation of variables with the first two components of the analysis (with the percent of  explained variance). The dotted circle corresponds to a 0.5 correlation and the full one corresponds to a 1 correlation.
+- ```corcircle``` (.pdf, .png, .tiff, .bmp or .jpeg): Pearson correlation of the variables of the block with two components of the analysis (with the percent of explained variance). The circle corresponds to a 1 correlation and the dotted one to a 0.5 correlation. If the superblock is selected, colors correspond to the belonging of each variable to each block. 
 
-![samples_space](img/samples.png)
+![corcircle](img/corcircle.png)
 
-- ```fingerprint``` (.pdf, .png, .tiff, .bmp or .jpeg) : 100 best biomarkers for a set of blocks according to the weight of these variables in the analysis (eigen value for PCA, canonical variable for CCA, component for PLS and RGCCA).
+- ```fingerprint``` (.pdf, .png, .tiff, .bmp or .jpeg): top variables in a block, sorted decreasingly by their weights or their correlation with the analysis components.
 
-![best_biomarkers](img/fingerprint.png)
+![top_variables.](img/top_variables.png)
 
-- ```ave``` (.pdf, .png, .tiff, .bmp or .jpeg) : average variance explained (in %) in the model for each block ranked decreasingly.
-
+- ```ave``` (.pdf, .png, .tiff, .bmp or .jpeg): average variance explained (AVE; in X-axis) in percent for each block (in Y-axis) and each component (one color per component). The subtitle gives the AVE for the two first of the outer model (weighted average of the AVE of each block).
+ 
 ![ave](img/ave.png)
+
+- ```connection``` (.pdf, .png, .tiff, .bmp or .jpeg): connection between each block, with:
+- "P", the number of variables
+- "N", the number of lines (here, each block has the same number of line)
+- "tau", the shrinkage parameter (for each component if the optimal option is selected) and "sparsity", the sparsity coefficient (see R/SGCCA section)
+
+![design](img/design.png)
+
+- ```individuals``` (.tsv, .csv or .txt): a table containing for each individuals their coordinates on the two first analysis components of each block.
+
+|           | politic.axis1 | politic.axis2 | industry.axis1 |
+|-----------|---------------|---------------|----------------|
+| Argentina | 0,66          | -0,13         | 0,25           |
+| Australia | -1,49         | 0,28          | 1,37           |
+| …         | …             | …             | …              |
+
+- ```variables``` (.tsv, .csv or .txt): a table containing for each variable of each block their correlation and their weights for the two first analysis components.
+
+|      | cor.axis.1 | cor.axis.2 | weight.axis.1 | weight.axis.2 | block    |
+|------|------------|------------|---------------|---------------|----------|
+| inst | 0,33       | -0,27      | 0,16          | 0,05          | politic  |
+| ecks | 0,79       | 0,09       | 0,52          | 0,43          | politic  |
+| …    | …          | …          | …             | …             | …        |
+| gnpr | 0,94       | 0,33       | 0,68          | 2,09          | industry |
+| …    | …          | …          | …             | …             | …        |
+
+- ```rgcca.result``` (.RData): a R file containing a RGCCA object from the RGCCA package
 
 
 ## Installation
@@ -138,49 +170,51 @@ Rscript R/launcher.R --datasets <list_block_files> [--help] [--names <list_block
 ```
 
 #### Files parameters
-By default, on tabulated files with a header without response groups. The names of the blocks are the filename 
-(or the name of the sheets for an Excel file) without the extension.
+By default, on tabulated files with a header without response groups. The names of the blocks are the filename (or the name of the sheets for an Excel file) without the extension.
 
-- ```-d (--datasets)``` (STRING) The list of the paths for each block file separated by comma (without space between).
- Ex : data/X_agric.tsv,data/X_ind.tsv,data/X_polit.tsv or data/blocks.xlsx
-- ```-c (--connection)``` (STRING) The path of the file used as a connection matrix. 
-- ```-r (--response)``` (STRING) To color samples by group in ```samples_space```, a response file could be added.
-- ```--names``` (STRING) The list of the names for each block file separated by comma (without space between).
-- ```-H (--header)```DO NOT consider the first row as header of the columns.
-- ```--separator``` (INTEGER) Specify the character used to separate the column (1: tabulation, 2: semicolon).
-- ```--o1``` (STRING) The path of the output file for the samples space. Ex : sample_space.pdf
-- ```--o2``` (STRING) The path of the output file for the corcircle space. Ex : corcircle.pdf
-- ```--o3``` (STRING) The path of the output file for the biomarkers. Ex : fingerprint.pdf
-- ```--o4``` (STRING) The path of the output file for the variance explained in the model. Ex : ave.pdf
+- ```-d (--datasets)``` (PATH LIST) [REQUIRED] List of comma-separated file paths corresponding to the blocks to be analyzed (one per block and without spaces between them; e.g. path/file1.txt,path/file2.txt)
+- ```-c (--connection)``` (PATH) Path of the file defining the connections between the blocks [if not used, activates the superblock mode]
+- ```--group``` (PATH) Path of the file coloring the individuals in the ad hoc plot
+- ```-r (--response)``` (INTEGER) Position of the response file for the supervised mode within the block path list [actives the supervised mode]
+- ```--names``` (STRING LIST) List of comma-separated block names to rename them (one per block; without spaces between them) [default: the block file names]
+- ```-H (--header)``` DO NOT consider the first row as the column header.
+- ```--separator``` (INTEGER) Character used to separate columns (1: tabulation, 2: semicolon, 3: comma) [default: tabulation].
+- ```--o1``` (PATH) Path for the variable plot [default: ```individuals.pdf```]
+- ```--o2``` (PATH) Path for the individual plot [default: ```corcircle.pdf```]
+- ```--o3``` (PATH) Path for the top variables plot [default: ```top_variables.pdf```]
+- ```--o4``` (PATH) Path for the explained variance plot [default: ```ave.pdf```]
+- ```--o5``` (PATH) Path for the design plot [default: ```design.pdf```]
+- ```--o6``` (PATH) Path for the individual table [default: ```individuals.tsv```]
+- ```--o7``` (PATH) Path for the variable table [default: ```variables.tsv```]
+- ```--o8``` (PATH) Path for the analysis results in RData [default: ```rgcca.result.RData```]
+- ```--o9``` (PATH) Path for the response correlation plot [default: ```response_correlation.pdf```]
 
 #### Analyse parameters
-By default, the analysis : scales the blocks, initiates the algorithm with Singular Value Decomposition, 
-uses a superblock with a factorial scheme function, a biased estimator of the variance, a tau equals to one and
-two components for each block.
+By default, the analysis : scales the blocks, initiates the algorithm with Singular Value Decomposition, uses a superblock with a factorial scheme function, a biased estimator of the variance, a tau equals to one and two components for each block.
 
-- ```--scale``` DO NOT standardize each block to zero mean and unit variances and then divide them by the square root of its number of variables.
-- ```--bias``` Use an unbiased estimator of the variance.
-- ```--superblock``` DO NOT use a superblock, a concatenation of all the blocks to better interpret the results.
-- ```--ncomp``` (INTEGER) The number of components to use in the analysis for each block (should be greater than 1 and 
-lower than the minimum number of variable among the blocks). Could also be a list separated by comma. Ex: 2,2,3,2.
-- ```--tau``` (FLOAT) Tau parameter in RGCCA. A tau near 0 maximize the covariance between blocks whereas a tau near 1 maximize
- the correlation between the blocks. Could also be a list separated by comma. Ex: 0,1,0.75,1.
-- ```-g (--scheme)``` (INTEGER) Scheme function among 1: Horst, 2: Factorial, 3: Centroid, 4: x^4 (by default, factorial scheme).
+- ```--type``` (STRING) Type of analysis [default: rgcca] (among: rgcca, pca, cca, gcca, cpca-w, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov)
+- ```--scale``` DO NOT scale the blocks (i.e., a data centering step is always performed). Otherwhise, each block is normalised and divided by the square root of its number of variables.
+- ```--superblock``` DO NOT use a superblock (i.e. a concatenation of all the blocks to visualize them all together in a consensus space). In this case, all blocks are assumed to be connected or a connection file could be used.
+- ```--ncomp``` (INTEGER) Number of components in the analysis for each block [default: 2]. The number should be greater than 1 and lower than the minimum number of variables among the blocks. It can be a single values or a comma-separated list (e.g 2,2,3,2).
+- ```--tau``` (INTEGER/FLOAT) A regularization parameter for each block (i.e., tau) [default: optimal value by an ad hoc algorithm]. Tau varies from 0 (maximizing the correlation) to 1 (maximizing the covariance). For SGCCA, tau is automatically set to 1. A shrinkage parameter can be defined instead for automatic variable selection, varying from the square root of the variable number (the fewest selected variables) to 1 (all the variables are included). It can be a single values or a comma-separated list (e.g. 0,1,0.75,1).
+- ```-g (--scheme)``` (INTEGER) Link (i.e. scheme) function for covariance maximization (1: x, 2: x^2, 3: |x|, 4: x^4) [default: factorial]. Only, the x function penalizes structural negative correlation. The x^4 function discriminates more strongly the blocks than the x^2 one.
+
+Scheme function among 1: Horst, 2: Factorial, 3: Centroid, 4: x^4 (by default, factorial scheme).
 The identity (horst scheme) maximizes the sum of covariances between block components. The absolute value (centroid scheme) maximizes of the sum of the absolute values of the covariances. The square function (factorial scheme) maximizes the sum of squared covariances, or, more generally, for any even integer m, g(x)=x^m (m-scheme), maximizes the power of m of the sum of covariances.
-- ```--init``` (INTEGER) The mode of initialization of the algorithm (1: Singular Value Decompostion , 2: random).
- 
+
 #### Graphical parameters
 By default, the x-axis and y-axis are respectively the first and the second components, the number of top biomarkers is 100 and the superblock is used in graphics.
-
-- ```--compx``` (INTEGER) The component used in the X-axis in biplots and the one used in histograms (should not be greater than the ```--ncomp``` parameter). 
-- ```--compy``` (INTEGER) The component used in the Y-axis in biplots (should not be greater than the ```--ncomp``` parameter).
-- ```--nmark``` (INTEGER) The maximum number of top potential biomarkers (for ```fingerprint``` file).
-- ```--block``` (INTEGER) The block shown in the graphics (0: the superblock or, if not, the last, 1: the first one, 2: the 2nd, etc.).
+- ```--text``` Display the name of the points instead of shapes when plotting.
+- ```--compx``` (INTEGER) Component used in the X-axis for biplots and the only component used for histograms [default: 1] (should not be greater than the ```--ncomp``` parameter). 
+- ```--compy``` (INTEGER) Component used in the Y-axis for biplots [default: 2] should not be greater than the ```--ncomp``` parameter).
+- ```--nmark``` (INTEGER) Number maximum of top variables in ad hoc plot [default: 100] (for ```top_variable``` file).
+- ```--block``` (INTEGER) Position in the path list of the plotted block (0: the superblock or, if not activated, the last one, 1: the fist one, 2: the 2nd, etc.) [default: the last one].
+- ```--block_y``` (INTEGER) Position in the path list of the plotted block for the Y-axis in the individual plot (0: the superblock or, if not activated, the last one, 1: the fist one, 2: the 2nd, etc.) [default: the last one].
 
 ## References
 1. Tenenhaus, M., Tenenhaus, A., & Groenen, P. J. (2017). Regularized generalized canonical correlation analysis: a framework for sequential multiblock component methods. Psychometrika, 82(3), 737-777.
 2. Tenenhaus, A., & Tenenhaus, M. (2011). Regularized generalized canonical correlation analysis. Psychometrika, 76(2), 257.
-3. Tenenhaus  A. and Guillemot V. (2017): RGCCA Package. http://cran.project.org/web/packages/RGCCA/index.html
+3. Tenenhaus A. and Guillemot V. (2017): RGCCA Package. http://cran.project.org/web/packages/RGCCA/index.html
 4. Van de Geer, J. P. (1984). Linear relations amongk sets of variables. Psychometrika, 49(1), 79-94.
 5. Schäfer, J., & Strimmer, K. (2005). A shrinkage approach to large-scale covariance matrix estimation and implications for functional genomics. Statistical applications in genetics and molecular biology, 4(1).
 6. Tenenhaus, A., & Tenenhaus, M. (2014). Regularized generalized canonical correlation analysis for multiblock or multigroup data analysis. European Journal of operational research, 238(2), 391-403.

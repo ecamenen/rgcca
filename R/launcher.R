@@ -25,7 +25,7 @@ getArgs <- function(){
       type = "character",
       metavar = "path list",
       default = opt[21],
-      help = "List of comma-separated file paths corresponding to the blocks to be analyzed (one per block and without spaces between them; e.g. path/file1.txt,path/file2.txt) [required]"
+      help = "List of comma-separated file paths corresponding to the blocks to be analyzed (one per block and without spaces between them; e.g., path/file1.txt,path/file2.txt) [required]"
     ),
     make_option(
       opt_str = c("-w", "--directory"),
@@ -100,7 +100,7 @@ getArgs <- function(){
       type = "integer",
       metavar = "integer",
       default = 2,
-      help = "Link (i.e. sheme) function for covariance maximization (1: x, 2: x^2, 3: |x|, 4: x^4) [default: %default]. Only, the x function penalizes structural negative correlation. The x^4 function discriminates more stronlgy the blocks than the x^2 one."
+      help = "Link (i.e. scheme) function for covariance maximization (1: x, 2: x^2, 3: |x|, 4: x^4) [default: %default]. Only, the x function penalizes structural negative correlation. The x^4 function discriminates more strongly the blocks than the x^2 one."
     ),
     make_option(
       opt_str = "--scale",
@@ -114,19 +114,6 @@ getArgs <- function(){
       action = "store_false",
       help = "DO NOT use a superblock (i.e. a concatenation of all the blocks to visualize them all together in a consensus space). In this case, all blocks are assumed to be connected or a connection file could be used."
     ),
-    # make_option(
-    #   opt_str = "--init",
-    #   type = "integer",
-    #   metavar = "integer",
-    #   default = opt[7],
-    #   help = "Initialization mode to find the first component (1: Singular Value Decompostion, 2: random) [default: %default]"
-    # ),
-    # make_option(
-    #   opt_str = "--bias",
-    #   type = "logical",
-    #   action = "store_false",
-    #   help = "Unbiased estimator of the variance"
-    # ),
 
 
     # Graphical parameters
@@ -161,7 +148,7 @@ getArgs <- function(){
       type = "integer",
       metavar = "integer",
       default = opt[10],
-      help = "Component used in the Y-axis for biplots [default: %default] (should not be greater than the --ncomp parameter)"
+      help = "Component used in the Y-axis for biplots [default: %default] (should not be greater than the number of components of the analysis)"
     ),
     make_option(
       opt_str = "--nmark",
@@ -172,7 +159,7 @@ getArgs <- function(){
     ),
 
 
-    # o parameters
+    # output parameters
     make_option(
       opt_str = "--o1",
       type = "character",
@@ -400,16 +387,6 @@ checkInteger <- function(x, y = NULL){
 
 ########## Main ##########
 
-# Libraries loading
-librairies <- c("RGCCA", "ggplot2", "optparse", "scales", "igraph")
-for (l in librairies) {
-  if (!(l %in% installed.packages()[, "Package"]))
-    install.packages(l, repos = "http://cran.us.r-project.org")
-  library(l, character.only = TRUE,
-          warn.conflicts = FALSE,
-          quiet = TRUE)
-}
-
 # Get arguments : R packaging install, need an opt variable with associated arguments
 opt <- list(directory = ".",
            separator = "\t",
@@ -433,6 +410,15 @@ opt <- list(directory = ".",
            o9 = "response_correlation.pdf",
            datasets = "inst/extdata/agriculture.tsv,inst/extdata/industry.tsv,inst/extdata/politic.tsv")
 
+# Load functions
+setwd(opt$directory)
+source("R/parsing.R")
+source("R/select.type.R")
+source("R/plot.R")
+source("R/network.R")
+
+loadLibraries(c("RGCCA", "ggplot2", "optparse", "scales", "igraph"))
+
 tryCatch({
   opt <- checkArg(parse_args(getArgs()))
 }, error = function(e) {
@@ -442,12 +428,6 @@ tryCatch({
     stop(w[[1]], exit_code = 141)
 })
 
-# Load functions
-setwd(opt$directory)
-source("R/parsing.R")
-source("R/select.type.R")
-source("R/plot.R")
-source("R/network.R")
 
 # Set missing parameters by default
 opt$header <- !("header" %in% names(opt))

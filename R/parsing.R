@@ -9,6 +9,16 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
+loadLibraries <- function(librairies){
+  for (l in librairies){
+    if (!(l %in% installed.packages()[, "Package"]))
+      install.packages(l, repos = "http://cran.us.r-project.org")
+    library(l, character.only = TRUE,
+            warn.conflicts = FALSE,
+            quiet = TRUE)
+  }
+}
+
 warning <- function(message,  call = sys.call(-1)){
   base::warning(message, call. = FALSE, immediate. = TRUE)
 }
