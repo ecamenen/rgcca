@@ -34,8 +34,7 @@ if_text <<- TRUE
 comp_x <<- 1
 nb_comp <<- comp_y <<- 2
 nb_mark <<- 100
-BSPLUS <<- T
-# BSPLUS <<- R.Version()$minor >= 3
+BSPLUS <<- R.Version()$minor >= 3
 
 # Load functions
 source("../../R/parsing.R")
@@ -48,32 +47,13 @@ source("../../R/network.R")
 
 loadLibraries(c("RGCCA", "ggplot2", "scales", "plotly", "visNetwork", "devtools", "igraph", "shiny", "shinyjs"))
 
-# if(BSPLUS){
-#   if (!("bsplus" %in% installed.packages()[, "Package"]))
-#     devtools::install_github("ijlyttle/bsplus", upgrade = "never")
+if(BSPLUS){
+  if (!("bsplus" %in% installed.packages()[, "Package"]))
+    devtools::install_github("ijlyttle/bsplus", upgrade = "never")
   library("bsplus", warn.conflicts = FALSE, quiet = TRUE)
-# }
+}
 
 ui <- fluidPage(
-
-  # bs_modal(
-  #   id = "modal_superblock",
-  #   title = "Help on superblock",
-  #   body =  "If ticked, a superblock is introduced. This superblock is defined as a concatenation of all the other blocks.
-  #    The space spanned by global components is viewed as a compromise space that integrated all the modalities
-  #    and facilitates the visualization of the results and their interpretation.
-  #    If unchecked, a connection file could be used. Otherwise, all blocks are assumed to be connected.",
-  #   size = "medium"
-  # ),
-
-  bs_modal(
-    id = "modal_scheme",
-    title = "Help on scheme functions",
-    body="Link (i.e. scheme) function for covariance maximization is calculated with: the identity function (horst scheme),
-    the absolute values (centroid scheme), the squared values (factorial scheme). Only, the horst scheme penalizes structural
-    negative correlation. The factorial scheme discriminates more strongly the blocks than the centroid one.",
-    size = "medium"
-  ),
 
   titlePanel("R/SGCCA - The Shiny graphical interface"),
   tags$div(

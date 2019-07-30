@@ -240,11 +240,15 @@ server <- function(input, output, session) {
                            Factorial = "factorial"),
                selected = "factorial")
 
-    # if(BSPLUS)
-    #   ui <- shinyInput_label_embed(ui,
-    #   icon("question") %>%
-    #     bs_attach_modal(id_modal = "modal_scheme")
-    # )
+    if(BSPLUS)
+      ui <- shinyInput_label_embed(
+        ui,
+        icon("question") %>%
+        bs_embed_tooltip(title =
+      "Link (i.e. scheme) function for covariance maximization is calculated with: the identity function (horst scheme),
+    the absolute values (centroid scheme), the squared values (factorial scheme). Only, the horst scheme penalizes structural
+    negative correlation. The factorial scheme discriminates more strongly the blocks than the centroid one.")
+    )
 
     return(ui)
   })
@@ -256,11 +260,17 @@ server <- function(input, output, session) {
                 label = "Use a superblock",
                 value = T)
 
-    # if(BSPLUS)
-    #   ui <- shinyInput_label_embed(
-    #   shiny_iconlink(name = "question-circle") %>%
-    #     bs_attach_modal(id_modal = "modal_superblock")
-    # )
+    if(BSPLUS)
+      ui <- shinyInput_label_embed(
+        ui,
+        icon("question") %>%
+        bs_embed_tooltip(title =
+        "If ticked, a superblock is introduced. This superblock is defined as a concatenation of all the other blocks.
+       The space spanned by global components is viewed as a compromise space that integrated all the modalities
+       and facilitates the visualization of the results and their interpretation.
+       If unchecked, a connection file could be used. Otherwise, all blocks are assumed to be connected.")
+    )
+
 
     return(ui)
   })
