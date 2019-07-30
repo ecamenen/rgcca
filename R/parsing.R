@@ -12,7 +12,7 @@
 loadLibraries <- function(librairies){
   for (l in librairies){
     if (!(l %in% installed.packages()[, "Package"]))
-      install.packages(l, repos = "http://cran.us.r-project.org")
+      utils::install.packages(l, repos = "http://cran.us.r-project.org", .libPaths()[1])
     library(l, character.only = TRUE,
             warn.conflicts = FALSE,
             quiet = TRUE)

@@ -34,6 +34,8 @@ if_text <<- TRUE
 comp_x <<- 1
 nb_comp <<- comp_y <<- 2
 nb_mark <<- 100
+BSPLUS <<- T
+# BSPLUS <<- R.Version()$minor >= 3
 
 # Load functions
 source("../../R/parsing.R")
@@ -44,23 +46,25 @@ source("../../R/network.R")
 # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
 # rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
 
-loadLibraries(c("RGCCA", "ggplot2", "scales", "plotly", "visNetwork", "devtools", "igraph", "shiny", "shinyjs", "bsplus"))
+loadLibraries(c("RGCCA", "ggplot2", "scales", "plotly", "visNetwork", "devtools", "igraph", "shiny", "shinyjs"))
 
-# ("bsplus")
-# if(l == "bsplus")
-#   devtools::install_github("ijlyttle/bsplus", upgrade = "never")
+# if(BSPLUS){
+#   if (!("bsplus" %in% installed.packages()[, "Package"]))
+#     devtools::install_github("ijlyttle/bsplus", upgrade = "never")
+  library("bsplus", warn.conflicts = FALSE, quiet = TRUE)
+# }
 
 ui <- fluidPage(
 
-  bs_modal(
-    id = "modal_superblock",
-    title = "Help on superblock",
-    body =  "If ticked, a superblock is introduced. This superblock is defined as a concatenation of all the other blocks.
-     The space spanned by global components is viewed as a compromise space that integrated all the modalities
-     and facilitates the visualization of the results and their interpretation.
-     If unchecked, a connection file could be used. Otherwise, all blocks are assumed to be connected.",
-    size = "medium"
-  ),
+  # bs_modal(
+  #   id = "modal_superblock",
+  #   title = "Help on superblock",
+  #   body =  "If ticked, a superblock is introduced. This superblock is defined as a concatenation of all the other blocks.
+  #    The space spanned by global components is viewed as a compromise space that integrated all the modalities
+  #    and facilitates the visualization of the results and their interpretation.
+  #    If unchecked, a connection file could be used. Otherwise, all blocks are assumed to be connected.",
+  #   size = "medium"
+  # ),
 
   bs_modal(
     id = "modal_scheme",
@@ -84,32 +88,11 @@ ui <- fluidPage(
       tabsetPanel(id = "tabset",
                   tabPanel("Data",
 
-                           # Data loading
-                           fileInput(inputId = "blocks",
-                                     label = "Blocks",
-                                     multiple = TRUE)
-                           %>%
-                             shinyInput_label_embed(
-                               icon("question") %>%
-                                 bs_embed_tooltip(title = "One or multiple CSV files containing a matrix with : (i) quantitative values only (decimal should be separated by '.'), (ii) the samples in lines (should be labelled in the 1rst column) and (iii) variables in columns (should have a header)",
-                                                  placement = "bottom")
-                             ),
-
-                           radioButtons(inputId = "sep",
-                                        label = "Column separator",
-                                        choices = c(Comma = ",",
-                                                    Semicolon = ";",
-                                                    Tabulation = "\t"),
-                                        selected = "\t")
-                           %>%
-                             shinyInput_label_embed(
-                               icon("question") %>%
-                                 bs_embed_tooltip(title = "Character used to separate the column in the dataset")
-                             ),
-
-                           checkboxInput(inputId = "header",
-                                         label = "Consider first row as header",
-                                         value = TRUE)
+                       uiOutput("file_custom"),
+                       uiOutput("sep_custom"),
+                       checkboxInput(inputId = "header",
+                                     label = "Consider first row as header",
+                                     value = TRUE)
                   ),
 
 
@@ -118,15 +101,7 @@ ui <- fluidPage(
                   tabPanel("RGCCA",
                            uiOutput("analysis_type_custom"),
                            uiOutput("nb_comp_custom"),
-
-                           checkboxInput(inputId = "scale",
-                                         label = "Scale the blocks",
-                                         value = TRUE)
-                           %>%
-                           shinyInput_label_embed(
-                             icon("question") %>%
-                               bs_embed_tooltip(title = "A data centering step is always performed. If ticked, each block is normalised and divided by the square root of its number of variables.")
-                           ),
+                           uiOutput("scale_custom"),
 
                            radioButtons("init",
                                         label = "Mode of initialization",
@@ -134,15 +109,8 @@ ui <- fluidPage(
                                                     Random = "random"),
                                         selected = "svd"),
 
-                           checkboxInput(inputId = "superblock",
-                                         label = "Use a superblock",
-                                         value = T)
-                           %>%
-                             shinyInput_label_embed(
-                               shiny_iconlink(name = "question-circle") %>%
-                                 bs_attach_modal(id_modal = "modal_superblock")
-                           ),
 
+                           uiOutput("superblock_custom"),
                            checkboxInput(inputId = "supervised",
                                          label = "Supervised analysis",
                                          value = F),
@@ -153,28 +121,9 @@ ui <- fluidPage(
                            ),
 
                            uiOutput("connection_custom"),
-
-                           checkboxInput(inputId = "tau_opt",
-                                         label = "Use an optimal tau",
-                                         value = TRUE)
-                           %>%
-                             shinyInput_label_embed(
-                               icon("question") %>%
-                                 bs_embed_tooltip(title = "A tau near 0 maximize the the correlation whereas a tau near 1 maximize the covariance")
-                             ),
+                           uiOutput("tau_opt_custom"),
                            uiOutput("tau_custom"),
-
-                           radioButtons(inputId = "scheme",
-                                        label = "Scheme function",
-                                        choices = c(Horst = "horst",
-                                                    Centroid = "centroid",
-                                                    Factorial = "factorial"),
-                                        selected = "factorial")
-                           %>%
-                             shinyInput_label_embed(
-                               icon("question") %>%
-                                 bs_attach_modal(id_modal = "modal_scheme")
-                               ),
+                           uiOutput("scheme_custom"),
 
                            sliderInput(inputId = "boot",
                                        label = "Number of boostraps",
