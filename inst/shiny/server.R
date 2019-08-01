@@ -9,17 +9,6 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
-user <- unname(Sys.info()["user"])
-if (user == "shiny") {
-
-  # Set library locations
-  .libPaths(c(
-    "/home/etienne.camenen/R/x86_64-pc-linux-gnu-library/3.4"
-  )
-  )
-
-}
-
 server <- function(input, output, session) {
 
   ################################################ Render UI ################################################
@@ -32,12 +21,11 @@ server <- function(input, output, session) {
   })
 
   output$nb_mark_custom <- renderUI({
-    refresh <- c(input$blocks_names_custom_x, input$names_block_x)
+    refresh <- c(input$blocks_names_custom_x, input$blocks_names_custom_x)
     sliderInput(inputId = "nb_mark",
                 label = "Number of top variables",
                 min = 10, max = getMaxCol(), value = getDefaultCol(), step = 1)
   })
-
 
   output$connection_custom <- renderUI({
     setUiConnection()
@@ -61,11 +49,6 @@ server <- function(input, output, session) {
 
   output$nb_comp_custom <- renderUI({
     # Set dynamically the maximum number of component that should be used in the analysis
-
-    # Get the number minimum of columns among the whole blocks
-    reac_var(getMinComp())
-    # Dynamically assign this number of component
-    assign("nb_comp", reac_var(), .GlobalEnv)
 
     sliderInput(inputId = "nb_comp",
                 label = "Number of components",
@@ -180,8 +163,7 @@ server <- function(input, output, session) {
     if(BSPLUS)
       ui <- shinyInput_label_embed(ui,
         icon("question") %>%
-          bs_embed_tooltip(title = "One or multiple CSV files containing a matrix with : (i) quantitative values only (decimal should be separated by '.'), (ii) the samples in lines (should be labelled in the 1rst column) and (iii) variables in columns (should have a header)",
-                           placement = "bottom")
+          bs_embed_tooltip(title = "One or multiple CSV files containing a matrix with : (i) quantitative values only (decimal should be separated by '.'), (ii) the samples in lines (should be labelled in the 1rst column) and (iii) variables in columns (should have a header)")
       )
 
     return(ui)
@@ -339,7 +321,6 @@ server <- function(input, output, session) {
     # Get the maximum number of columns among the blocks
 
     if(!is.null(input$blocks)){
-      blocks = getInfile()
       return( ncol(blocks[[id_block]]) )
     }else
       return(100)

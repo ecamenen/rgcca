@@ -726,7 +726,8 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
     theme(legend.position = "none")
 }
 
-getVar = function(rgcca, blocks, comp_x = 1, comp_y = 2, i_block = NULL, type = "cor"){
+# blocks : should not be null with cor mode
+getVar = function(rgcca, blocks = NULL, comp_x = 1, comp_y = 2, i_block = NULL, type = "cor"){
 
   if ( is.null(i_block) )
     i_block = length(blocks)
@@ -739,7 +740,7 @@ getVar = function(rgcca, blocks, comp_x = 1, comp_y = 2, i_block = NULL, type = 
   return(  data.frame(
     #correlation matrix within a block for each variables and each component selected
     sapply ( c(comp_x, comp_y), function(x) f(x)) ,
-    row.names = colnames(blocks[[i_block]])
+    row.names = row.names(rgcca$a[[i_block]])
   ))
 
 }

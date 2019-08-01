@@ -36,18 +36,21 @@ nb_comp <<- comp_y <<- 2
 nb_mark <<- 100
 BSPLUS <<- R.Version()$minor >= 3
 
+# config for shinyapps.io
+appDir <- ifelse("packrat" %in% list.files(), "", "../../R/")
 # Load functions
-source("../../R/parsing.R")
-source("../../R/plot.R")
-source("../../R/select.type.R")
-source("../../R/network.R")
+source(paste0(appDir,"parsing.R"))
+source(paste0(appDir,"plot.R"))
+source(paste0(appDir,"select.type.R"))
+source(paste0(appDir,"network.R"))
 
 # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
 # rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
 
-loadLibraries(c("RGCCA", "ggplot2", "scales", "plotly", "visNetwork", "devtools", "igraph", "shiny", "shinyjs"))
+loadLibraries(c("RGCCA", "ggplot2", "scales", "igraph", "plotly", "visNetwork", "shiny", "shinyjs"))
 
 if(BSPLUS){
+   loadLibraries("devtools")
   if (!("bsplus" %in% installed.packages()[, "Package"]))
     devtools::install_github("ijlyttle/bsplus", upgrade = "never")
   library("bsplus", warn.conflicts = FALSE, quiet = TRUE)
@@ -59,8 +62,8 @@ ui <- fluidPage(
   tags$div(
     tags$strong("Authors: "),
     tags$p("Etienne CAMENEN, Ivan MOSZER, Arthur TENENHAUS (", tags$a(href="arthur.tenenhaus@l2s.centralesupelec.fr","arthur.tenenhaus@l2s.centralesupelec.fr"),")")
-  ),
-  tags$a(href="https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/inst/shiny/tutorialShiny.md", "Go to the tutorial"),
+    ),
+  tags$a(href="https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/master/inst/shiny/tutorialShiny.md", "Go to the tutorial"),
   useShinyjs(),
   sidebarLayout(
 
@@ -159,7 +162,5 @@ ui <- fluidPage(
       )
 
     )
-  ),
-
-  use_bs_tooltip()
+  )
 )
