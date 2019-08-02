@@ -17,8 +17,8 @@ AXIS_FONT = "italic"
 SAMPLES_COL_DEFAULT = "brown3"
 
 # X- Y axis format for plotly objets : no axis, no ticks
-ax <- list(linecolor = toRGB("white"), ticks = "", titlefont = list(size = 23))
-ax2 <- list(linecolor = toRGB("white"), tickfont = list(size = 10, color = "grey"))
+ax <- list(linecolor = "white", ticks = "", titlefont = list(size = 23))
+ax2 <- list(linecolor = "white", tickfont = list(size = 10, color = "grey"))
 
 # Dynamic visualization of the outputs
 # f: ggplot2 function
@@ -148,6 +148,7 @@ circleFun = function(center = c(0, 0), diameter = 2, npoints = 100) {
 #' @param rgcca A list giving the results of a R/SGCCA
 #' @param n An integer giving the index of the analysis component
 #' @param i An integer giving the index of a list of blocks
+#' @param outer A boolean for ave plot case
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' AVE = list(c(0.6, 0.5), c(0.7, 0.45))
@@ -184,9 +185,10 @@ printAxis = function (rgcca, n = NULL, i = NULL, outer = FALSE){
   }
 }
 
-#' Get the variables with a weight != 0
-varSelected = function(rgcca, i_block, comp)
+varSelected = function(rgcca, i_block, comp){
+  # Get the variables with a weight != 0
   sum(rgcca$a[[i_block]][,comp] != 0)
+}
 
 #' Default font for plots
 theme_perso = function() {
@@ -216,6 +218,7 @@ colorGroup = function(group){
 #' @param i_block An integer giving the index of a list of blocks
 #' @param text A bolean to represent the points with their row names (TRUE) or with circles (FALSE)
 #' @param i_block_y An integer giving the index of a list of blocks (another one, different from the one used in i_block)
+#' @param reponse_name A character giving the legend title
 #' @examples
 #' coord = lapply(1:3, function(x) matrix(runif(15 * 2, min = -1), 15, 2))
 #' AVE_X = lapply(1:3, function(x) runif(2))
@@ -324,7 +327,8 @@ getBlocsVariables = function(df){
 #' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
 #' @param i_block An integer giving the index of a list of blocks
 #' @param text A bolean to represent the points with their row names (TRUE) or with circles
-#' @param removeVariable A bolean to keep only the 100 variables of each component with the biggest correlation
+#' @param removeVariable A bolean to keep only the 100 variables of each component with the biggest correlation#'
+#' @param n_mark An integer giving the number of top variables to select
 #' @examples
 #' setMatrix = function(nrow, ncol, iter = 3) lapply(1:iter, function(x) matrix(runif(nrow * ncol), nrow, ncol))
 #' blocks = setMatrix(10, 5)
@@ -342,7 +346,8 @@ getBlocsVariables = function(df){
 #' # Using the first block
 #' plotVariablesSpace(rgcca.res, blocks, 1, 2, FALSE, 1)
 #' @export plotVariablesSpace
-plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock = TRUE, i_block = NULL, text = TRUE, removeVariable = TRUE, n_mark = 100){
+plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock = TRUE, i_block = NULL, text = TRUE,
+                              removeVariable = TRUE, n_mark = 100){
 
   x = y = selectedVar = NULL
 
@@ -414,13 +419,15 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 #' @param p A ggplot object
 #' @param text A bolean to represent the points with their row names (TRUE) or with circles (FALSE)
 #' @param i_block_y An integer giving the index of a list of blocks (another one, different from the one used in i_block)
+#' @param colours A vectof of character to color quantitative data
 #' @examples
 #' df = as.data.frame(matrix(runif(20*2, min = -1), 20, 2))
 #' AVE =  lapply(1:4, function(x) runif(2))
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
 #' plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
 #' @export plotSpace
-plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = NULL, p = NULL, text = TRUE, i_block_y = NULL, no_Overlap = TRUE, colours = c("blue", "gray", SAMPLES_COL_DEFAULT)){
+plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 2, i_block = NULL, p = NULL, text = TRUE,
+                      i_block_y = NULL, colours = c("blue", "gray", SAMPLES_COL_DEFAULT)){
 
   if(is.null(i_block_y))
     i_block_y = i_block
@@ -502,8 +509,9 @@ orderColorPerBlocs <- function(rgcca, p, matched  = NULL){
 #' Histogram of the higher outer weight vectors for a component of a block (by default, the superblock or the last one) analysed by R/SGCCA
 #'
 #' @param rgcca A list giving the results of a R/SGCCA
+#' @param blocks A list of matrix
 #' @param comp An integer giving the index of the analysis components
-#' @param n_mark An integer giving the number of top potential biomarkers to select
+#' @param n_mark An integer giving the number of top variables to select
 #' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
 #' @param i_block An integer giving the index of a list of blocks
 #' @param type A string giving the criterion to selects biomarkers : either "cor" for correlation between the component and the block
@@ -530,7 +538,7 @@ plotFingerprint = function(rgcca, blocks = NULL, comp = 1, superblock = TRUE, n_
   if ( is.null(i_block) )
     i_block = length(rgcca$a)
 
-  title = ifelse(type == "cor", "Variable correlations with", "Variable weights")
+  title = ifelse(type == "cor", "Variable correlations with", "Variable weights on")
   criterion = getVar(rgcca, blocks, comp, comp, i_block, type)
 
   # select the weights (var to add a column to work with comp = 1)
@@ -586,7 +594,6 @@ plotFingerprint = function(rgcca, blocks = NULL, comp = 1, superblock = TRUE, n_
 #' Histogram of the model quality (based on Average Variance Explained) for each blocks and sorted in decreasing order
 #'
 #' @param rgcca A list giving the results of a R/SGCCA
-#' @param comp An integer giving the index of the analysis components
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' random_val = function(y=1) lapply(1:4, function(x) matrix(runif(4), y, 2))
@@ -719,7 +726,8 @@ plotHistogram = function(p, df, title = "", color = "black", low_col = "khaki2",
     theme(legend.position = "none")
 }
 
-getVar = function(rgcca, blocks, comp_x = 1, comp_y = 2, i_block = NULL, type = "cor"){
+# blocks : should not be null with cor mode
+getVar = function(rgcca, blocks = NULL, comp_x = 1, comp_y = 2, i_block = NULL, type = "cor"){
 
   if ( is.null(i_block) )
     i_block = length(blocks)
@@ -732,16 +740,16 @@ getVar = function(rgcca, blocks, comp_x = 1, comp_y = 2, i_block = NULL, type = 
   return(  data.frame(
     #correlation matrix within a block for each variables and each component selected
     sapply ( c(comp_x, comp_y), function(x) f(x)) ,
-    row.names = colnames(blocks[[i_block]])
+    row.names = row.names(rgcca$a[[i_block]])
   ))
 
 }
 
 #' Rank values of a dataframe in decreasing order
 #'
-#' @param df A dataframeZ
+#' @param df A dataframe
 #' @param comp An integer giving the index of the analysis components
-#' @param allCol A boolean to use all the column of the datafram
+#' @param allCol A boolean to use all the column of the dataframe
 getRankedValues = function(df, comp = 1, allCol = T){
 
   ordered = order(abs(df[, comp]), decreasing = T)
@@ -759,7 +767,7 @@ getRankedValues = function(df, comp = 1, allCol = T){
 
 
 # Print variables analysis attributes
-saveVars <- function(rgcca, blocks, comp_x = 1, comp_y= 2, file = "vars.tsv"){
+saveVars <- function(rgcca, blocks, comp_x = 1, comp_y= 2, file = "variables.tsv"){
 
   indexes <- c("cor", "weight")
 
@@ -772,7 +780,7 @@ saveVars <- function(rgcca, blocks, comp_x = 1, comp_y= 2, file = "vars.tsv"){
   invisible(vars)
 }
 
-saveInds <- function(rgcca, blocks, comp_x = 1, comp_y = 2, file = "inds.tsv"){
+saveInds <- function(rgcca, blocks, comp_x = 1, comp_y = 2, file = "individuals.tsv"){
 
   inds <- Reduce(cbind,lapply(rgcca$Y, function(x) x[, c(comp_x, comp_y)]))
   colnames(inds) <- as.vector(sapply(names(blocks), function(x) paste0(x, ".axis", c(comp_x, comp_y))))
