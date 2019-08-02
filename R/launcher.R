@@ -293,6 +293,9 @@ postCheckArg <- function(opt, blocks){
   # opt : an optionParser object
   # blocks : a list of matrix
 
+  if(!is.null(opt$names))
+    checkArgSize(blocks, strsplit(gsub(" ", "", opt$names), ",")[[1]], "names")
+
   opt <- select.type(blocks, opt)
 
   if(opt$superblock | opt$type == "pca")
@@ -354,8 +357,6 @@ postCheckArg <- function(opt, blocks){
 
   checkC1(blocks, opt$tau, opt$type)
 
-  if(!is.null(opt$names))
-    checkArgSize(blocks, strsplit(gsub(" ", "", opt$names), ",")[[1]], "names")
 
   return (opt)
 }
@@ -385,6 +386,16 @@ checkInteger <- function(x, y = NULL){
 
 }
 
+loadLibraries <- function(librairies){
+  for (l in librairies){
+    if (!(l %in% installed.packages()[, "Package"]))
+    utils::install.packages(l, repos = "http://cran.us.r-project.org")
+    library(l, character.only = TRUE,
+    warn.conflicts = FALSE,
+    quiet = TRUE)
+  }
+}
+
 ########## Main ##########
 
 # Get arguments : R packaging install, need an opt variable with associated arguments
@@ -410,12 +421,6 @@ opt <- list(directory = ".",
            o9 = "response_correlation.pdf",
            datasets = "inst/extdata/agriculture.tsv,inst/extdata/industry.tsv,inst/extdata/politic.tsv")
 
-# Load functions
-setwd(opt$directory)
-source("R/parsing.R")
-source("R/select.type.R")
-source("R/plot.R")
-source("R/network.R")
 
 loadLibraries(c("RGCCA", "ggplot2", "optparse", "scales", "igraph"))
 
@@ -427,6 +432,14 @@ tryCatch({
 }, warning = function(w) {
     stop(w[[1]], exit_code = 141)
 })
+
+# Load functions
+setwd(opt$directory)
+
+source("R/parsing.R")
+source("R/select.type.R")
+source("R/plot.R")
+source("R/network.R")
 
 
 # Set missing parameters by default
