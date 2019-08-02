@@ -10,22 +10,6 @@
 # of the most explicative variables and the explained variance for each blocks.
 
 server <- function(input, output, session) {
-  source("../../R/parsing.R")
-  source("../../R/plot.R")
-  source("../../R/select.type.R")
-  source("../../R/network.R")
-
-  # Assign reactive variables
-  reac_var  <<- reactiveVal()
-  id_block_y <<- id_block <<- id_block_resp <<- analysis <<- boot <<- analysis_type <<- NULL
-  clickSep <<- FALSE
-  if_text <<- TRUE
-  comp_x <<- 1
-  nb_comp <<- comp_y <<- 2
-  nb_mark <<- 100
-
-  # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
-  # rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
 
   ################################################ Render UI ################################################
 
@@ -37,12 +21,11 @@ server <- function(input, output, session) {
   })
 
   output$nb_mark_custom <- renderUI({
-    refresh <- c(input$blocks_names_custom_x, input$names_block_x)
+    refresh <- c(input$blocks_names_custom_x, input$blocks_names_custom_x)
     sliderInput(inputId = "nb_mark",
-                label = "Number of potential biomarkers",
+                label = "Number of top variables",
                 min = 10, max = getMaxCol(), value = getDefaultCol(), step = 1)
   })
-
 
   output$connection_custom <- renderUI({
     setUiConnection()
@@ -67,16 +50,10 @@ server <- function(input, output, session) {
   output$nb_comp_custom <- renderUI({
     # Set dynamically the maximum number of component that should be used in the analysis
 
-    # Get the number minimum of columns among the whole blocks
-    reac_var(getMinComp())
-    # Dynamically assign this number of component
-    assign("nb_comp", reac_var(), .GlobalEnv)
-
     sliderInput(inputId = "nb_comp",
                 label = "Number of components",
                 min = 2, max = getDefaultComp(), value = 2, step = 1)
 
-    # TODO: pas plusieurs sliderInput, découper en modules
   })
 
   refreshAnalysis <- function()
@@ -125,7 +102,7 @@ server <- function(input, output, session) {
                     label = paste(par_name, "for", names(getNames())[i]),
                     min = ifelse(par_name == "Tau", 0, ceiling( 1 / sqrt(ncol(blocks[[i]])) * 100) / 100),
                     max = 1,
-                    value = ifelse(is.null(input$tau1), 1, input[[paste0("tau", i)]]),
+                    value = ifelse(is.null(input[[paste0("tau", i)]]), 1, input[[paste0("tau", i)]]),
                     step = .01)
         })
     )
@@ -178,29 +155,137 @@ server <- function(input, output, session) {
                 min = 1, max = input$nb_comp, value = y, step = 1)
   }
 
+  output$file_custom <- renderUI({
+    ui <- fileInput(inputId = "blocks",
+              label = "Blocks",
+              multiple = TRUE)
+
+    if(BSPLUS)
+      ui <- shinyInput_label_embed(ui,
+        icon("question") %>%
+          bs_embed_tooltip(title = "One or multiple CSV files containing a matrix with : (i) quantitative values only (decimal should be separated by '.'), (ii) the samples in lines (should be labelled in the 1rst column) and (iii) variables in columns (should have a header)")
+      )
+
+    return(ui)
+  })
+
+  output$sep_custom <- renderUI({
+    ui <- radioButtons(inputId = "sep",
+               label = "Column separator",
+               choices = c(Comma = ",",
+                           Semicolon = ";",
+                           Tabulation = "\t"),
+               selected = "\t")
+
+    if(BSPLUS)
+      ui <- shinyInput_label_embed(ui,
+      icon("question") %>%
+        bs_embed_tooltip(title = "Character used to separate the column in the dataset")
+    )
+
+    return(ui)
+  })
+
+  output$scale_custom <- renderUI({
+    ui <- checkboxInput(inputId = "scale",
+                label = "Scale the blocks",
+                value = TRUE)
+
+    if(BSPLUS)
+      ui <- shinyInput_label_embed(ui,
+      icon("question") %>%
+        bs_embed_tooltip(title = "A data centering step is always performed. If ticked, each block is normalised and divided by the square root of its number of variables.")
+    )
+
+    return(ui)
+  })
+
+  output$tau_opt_custom <- renderUI({
+    ui <- checkboxInput(inputId = "tau_opt",
+                label = "Use an optimal tau",
+                value = TRUE)
+
+    if(BSPLUS)
+      ui <- shinyInput_label_embed(ui,
+      icon("question") %>%
+        bs_embed_tooltip(title = "A tau near 0 maximize the the correlation whereas a tau near 1 maximize the covariance")
+    )
+
+    return(ui)
+  })
+
+  output$scheme_custom <- renderUI({
+    ui <- radioButtons(inputId = "scheme",
+               label = "Scheme function",
+               choices = c(Horst = "horst",
+                           Centroid = "centroid",
+                           Factorial = "factorial"),
+               selected = "factorial")
+
+    if(BSPLUS)
+      ui <- shinyInput_label_embed(
+        ui,
+        icon("question") %>%
+        bs_embed_tooltip(title =
+      "Link (i.e. scheme) function for covariance maximization is calculated with: the identity function (horst scheme),
+    the absolute values (centroid scheme), the squared values (factorial scheme). Only, the horst scheme penalizes structural
+    negative correlation. The factorial scheme discriminates more strongly the blocks than the centroid one.")
+    )
+
+    return(ui)
+  })
+
+
+  output$superblock_custom <- renderUI({
+
+    ui <- checkboxInput(inputId = "superblock",
+                label = "Use a superblock",
+                value = T)
+
+    if(BSPLUS)
+      ui <- shinyInput_label_embed(
+        ui,
+        icon("question") %>%
+        bs_embed_tooltip(title =
+        "If ticked, a superblock is introduced. This superblock is defined as a concatenation of all the other blocks.
+       The space spanned by global components is viewed as a compromise space that integrated all the modalities
+       and facilitates the visualization of the results and their interpretation.
+       If unchecked, a connection file could be used. Otherwise, all blocks are assumed to be connected.")
+    )
+
+
+    return(ui)
+  })
+
   setUiConnection <- function(){
     refresh <- c(input$connection)
-    conditionalPanel(
-      condition = "!input.superblock && !input.supervised",
-    fileInput(inputId = "connection",
+
+    ui <- fileInput(inputId = "connection",
               label = "Connection design [OPTIONAL]"
-    ) %>%
-      shinyInput_label_embed(
+    )
+
+    if(BSPLUS)
+      ui <- shinyInput_label_embed(ui,
         icon("question") %>%
           bs_embed_tooltip(title = "The design matrix is a symmetric matrix of the length of the number of blocks describing the connections between them. Two values are accepted : '1' for a connection between two blocks, or '0' otherwise.")
       )
-    )
+
+    conditionalPanel(condition = "!input.superblock && !input.supervised", ui)
   }
 
   setUiResponse <- function(){
     refresh <- c(input$response)
-    fileInput(inputId = "response",
+
+    ui <- fileInput(inputId = "response",
               label = "Color with a response [OPTIONAL]"
-    ) %>%
-      shinyInput_label_embed(
+    )
+    if(BSPLUS)
+      ui <- shinyInput_label_embed(ui,
       icon("question") %>%
         bs_embed_tooltip(title = "To color the sample plot. A CSV file containing either : (i) an only column with a qualitative or a quantitative variable; (ii) multiple columns corresponding to a disjunctive table")
     )
+
+    return(ui)
   }
 
   getMinComp = function(){
@@ -236,7 +321,6 @@ server <- function(input, output, session) {
     # Get the maximum number of columns among the blocks
 
     if(!is.null(input$blocks)){
-      blocks = getInfile()
       return( ncol(blocks[[id_block]]) )
     }else
       return(100)
@@ -406,7 +490,7 @@ server <- function(input, output, session) {
       analysis_type <- input$analysis_type
 
     # Tau is set to optimal by default
-    if (input$tau_opt && analysis_type != "SGCCA")
+    if (is.null(input$tau_opt)  || (input$tau_opt && analysis_type != "SGCCA"))
       tau <- "optimal"
     else{
       # otherwise the tau value fixed by the user is used
@@ -441,9 +525,9 @@ server <- function(input, output, session) {
       response = input$supervised
     else
       response = NULL
-
-    pars = showWarn(checkSuperblock(list(response = response, superblock = (!is.null(input$supervised) && input$superblock))),
+    pars = showWarn(checkSuperblock(list(response = response, superblock = (!is.null(input$supervised) && !is.null(input$superblock) && input$superblock))),
                     show = FALSE)
+
 
     if(!is.null(input$supervised) && (input$supervised || tolower(analysis_type) == "ra")){
       pars = setPosPar(list(tau = tau, ncomp = ncomp, superblock = pars$superblock), blocks, id_block_resp)
@@ -454,8 +538,6 @@ server <- function(input, output, session) {
     pars = showWarn(select.type(A = blocks, C = NULL, tau = tau,
                                 ncomp = ncomp, scheme = input$scheme,
                                 superblock = pars$superblock, type  = analysis_type, quiet = TRUE))
-
-    #c1 = showWarn(checkC1(pars$blocks, pars$tau, analysis_type))
 
 
     if(length(pars) == 1){
@@ -660,7 +742,7 @@ server <- function(input, output, session) {
     }
 
     assign("blocks_without_superb",
-           scaling(blocks_unscaled, input$scale, TRUE),
+           scaling(blocks_unscaled, ifelse(is.null(input$scale), TRUE, input$scale), TRUE),
            .GlobalEnv)
 
     # reactualiser l'analyse
@@ -730,7 +812,7 @@ server <- function(input, output, session) {
         hide(i)
     }
 
-     if(!input$tau_opt)
+     if(!is.null(input$tau_opt) && !input$tau_opt)
        setTauUI()
 
   }, priority = 10)

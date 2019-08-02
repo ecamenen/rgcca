@@ -9,6 +9,9 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
+rm(list=ls())
+options(shiny.maxRequestSize = 30*1024^2)
+
 setInfo <- function(., text){
   shinyInput_label_embed(
     icon("question") %>%
@@ -16,37 +19,51 @@ setInfo <- function(., text){
   )
 }
 
-# Libraries loading
-librairies = c("RGCCA", "ggplot2", "scales", "shiny", "shinyjs", "visNetwork", "devtools", "plotly", "igraph", "bsplus")
-for (l in librairies) {
-  if (!(l %in% installed.packages()[, "Package"])){
-    if(l == "bsplus")
-      devtools::install_github("ijlyttle/bsplus", upgrade = "never")
-    else
-      install.packages(l, repos = "http://cran.us.r-project.org")
-  }
-  library(l, character.only = TRUE,
-          warn.conflicts = FALSE,
-          quiet = TRUE)
+# Global variables
+one_block <<- c(`Principal Component Analysis` = "PCA")
+two_blocks <<- c(`Canonical Correlation Analysis` = 'CCA', `Interbattery Factor Analysis` = "IFA", `Partial Least Squares Regression` = 'PLS',  `Redundancy analysis` = 'RA')
+multiple_blocks  <<- c(`Regularized Generalized CCA (RGCCA)` = 'RGCCA', `Sparse Generalized CCA (SGCCA)` = 'SGCCA', `SUM of CORrelations method` = 'SUMCOR', `Sum of SQuared CORrelations method` = 'SSQCOR',
+                      `Sum of ABSolute value CORrelations method` = 'SABSCOR',`SUM of COVariances method` = 'SUMCOV',`Sum of SQuared COVariances method` = 'SSQCOV',
+                      `Sum of ABSolute value COVariances method` = 'SABSCOV', `MAXBET` = 'MAXBET', `MAXBETB` = 'MAXBET-B')
+multiple_blocks_super  <<- c(`Generalized CCA (GCCA)` = 'GCCA', `Hierarchical PCA` = 'HPCA', `Multiple Factor Analysis` = 'MFA')
+analyse_methods  <<- list(one_block, two_blocks, multiple_blocks, multiple_blocks_super)
+reac_var  <<- reactiveVal()
+id_block_y <<- id_block <<- id_block_resp <<- analysis <<- boot <<- analysis_type <<- NULL
+clickSep <<- FALSE
+if_text <<- TRUE
+comp_x <<- 1
+nb_comp <<- comp_y <<- 2
+nb_mark <<- 100
+BSPLUS <<- R.Version()$minor >= 3
+
+# config for shinyapps.io
+appDir <- ifelse("packrat" %in% list.files(), "", "../../R/")
+# Load functions
+source(paste0(appDir,"parsing.R"))
+source(paste0(appDir,"plot.R"))
+source(paste0(appDir,"select.type.R"))
+source(paste0(appDir,"network.R"))
+
+# maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
+# rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
+
+loadLibraries(c("RGCCA", "ggplot2", "scales", "igraph", "plotly", "visNetwork", "shiny", "shinyjs"))
+
+if(BSPLUS){
+   loadLibraries("devtools")
+  if (!("bsplus" %in% installed.packages()[, "Package"]))
+    devtools::install_github("ijlyttle/bsplus", upgrade = "never")
+  library("bsplus", warn.conflicts = FALSE, quiet = TRUE)
 }
 
 ui <- fluidPage(
-
-  bs_modal(
-    id = "modal_superblock",
-    title = "Help on superblock",
-    body =  "If activated, add a supplementary block (the 'superblock') corresponding to a concatenation of all the blocks.
-    This block shynthesize the other blocks all together into a common space to better interpret the results.
-    If disabled, a connection file could be used. Otherwise, all blocks are connected together.",
-    size = "medium"
-  ),
 
   titlePanel("R/SGCCA - The Shiny graphical interface"),
   tags$div(
     tags$strong("Authors: "),
     tags$p("Etienne CAMENEN, Ivan MOSZER, Arthur TENENHAUS (", tags$a(href="arthur.tenenhaus@l2s.centralesupelec.fr","arthur.tenenhaus@l2s.centralesupelec.fr"),")")
-  ),
-  tags$a(href="https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/release/3.0/inst/shiny/tutorialShiny.md", "Go to the tutorial"),
+    ),
+  tags$a(href="https://github.com/BrainAndSpineInstitute/rgcca_Rpackage/blob/master/inst/shiny/tutorialShiny.md", "Go to the tutorial"),
   useShinyjs(),
   sidebarLayout(
 
@@ -54,32 +71,11 @@ ui <- fluidPage(
       tabsetPanel(id = "tabset",
                   tabPanel("Data",
 
-                           # Data loading
-                           fileInput(inputId = "blocks",
-                                     label = "Blocks",
-                                     multiple = TRUE)
-                           %>%
-                             shinyInput_label_embed(
-                               icon("question") %>%
-                                 bs_embed_tooltip(title = "One or multiple CSV files containing a matrix with : (i) quantitative values only (decimal should be separated by '.'), (ii) the samples in lines (should be labelled in the 1rst column) and (iii) variables in columns (should have a header)",
-                                                  placement = "bottom")
-                             ),
-
-                           radioButtons(inputId = "sep",
-                                        label = "Column separator",
-                                        choices = c(Comma = ",",
-                                                    Semicolon = ";",
-                                                    Tabulation = "\t"),
-                                        selected = "\t")
-                           %>%
-                             shinyInput_label_embed(
-                               icon("question") %>%
-                                 bs_embed_tooltip(title = "Character used to separate the column in the dataset")
-                             ),
-
-                           checkboxInput(inputId = "header",
-                                         label = "Consider first row as header",
-                                         value = TRUE)
+                       uiOutput("file_custom"),
+                       uiOutput("sep_custom"),
+                       checkboxInput(inputId = "header",
+                                     label = "Consider first row as header",
+                                     value = TRUE)
                   ),
 
 
@@ -88,15 +84,7 @@ ui <- fluidPage(
                   tabPanel("RGCCA",
                            uiOutput("analysis_type_custom"),
                            uiOutput("nb_comp_custom"),
-
-                           checkboxInput(inputId = "scale",
-                                         label = "Scale the blocks",
-                                         value = TRUE)
-                           %>%
-                           shinyInput_label_embed(
-                             icon("question") %>%
-                               bs_embed_tooltip(title = "A zero means translation is always performed. If activated, each block are standardized to unit variances and then divide them by the square root of its number of variables.")
-                           ),
+                           uiOutput("scale_custom"),
 
                            radioButtons("init",
                                         label = "Mode of initialization",
@@ -104,15 +92,8 @@ ui <- fluidPage(
                                                     Random = "random"),
                                         selected = "svd"),
 
-                           checkboxInput(inputId = "superblock",
-                                         label = "Use a superblock",
-                                         value = T)
-                           %>%
-                             shinyInput_label_embed(
-                               shiny_iconlink(name = "question-circle") %>%
-                                 bs_attach_modal(id_modal = "modal_superblock")
-                           ),
 
+                           uiOutput("superblock_custom"),
                            checkboxInput(inputId = "supervised",
                                          label = "Supervised analysis",
                                          value = F),
@@ -123,29 +104,9 @@ ui <- fluidPage(
                            ),
 
                            uiOutput("connection_custom"),
-
-                           checkboxInput(inputId = "tau_opt",
-                                         label = "Use an optimal tau",
-                                         value = TRUE)
-                           %>%
-                             shinyInput_label_embed(
-                               icon("question") %>%
-                                 bs_embed_tooltip(title = "A tau near 0 maximize the covariance in each blocks whereas a tau near 1 maximize the correlation.")
-                             ),
+                           uiOutput("tau_opt_custom"),
                            uiOutput("tau_custom"),
-
-                           radioButtons(inputId = "scheme",
-                                        label = "Scheme function",
-                                        choices = c(Horst = "horst",
-                                                    Centroid = "centroid",
-                                                    Factorial = "factorial"),
-                                        selected = "factorial")
-                           %>%
-                             shinyInput_label_embed(
-                               icon("question") %>%
-                                 bs_embed_tooltip(title = "The maximization of the sum of covariances between block components is calculated with : the identity function (horst scheme),
-                               the absolute values (centroid scheme), the squared values (factorial scheme).")
-                               ),
+                           uiOutput("scheme_custom"),
 
                            sliderInput(inputId = "boot",
                                        label = "Number of boostraps",
@@ -160,7 +121,7 @@ ui <- fluidPage(
 
                   tabPanel("Graphic",
                            checkboxInput(inputId = "text",
-                                         label = "Print names",
+                                         label = "Display names",
                                          value = TRUE),
                            uiOutput("blocks_names_custom_x"),
                            uiOutput("blocks_names_custom_y"),
@@ -201,7 +162,5 @@ ui <- fluidPage(
       )
 
     )
-  ),
-
-  use_bs_tooltip()
+  )
 )

@@ -9,11 +9,21 @@
 # the samples and the variables projected on the two first component of the multi-block analysis, the histograms
 # of the most explicative variables and the explained variance for each blocks.
 
+loadLibraries <- function(librairies){
+  for (l in librairies){
+    if (!(l %in% installed.packages()[, "Package"]))
+      utils::install.packages(l, repos = "http://cran.us.r-project.org", .libPaths()[1])
+    library(l, character.only = TRUE,
+            warn.conflicts = FALSE,
+            quiet = TRUE)
+  }
+}
+
 warning <- function(message,  call = sys.call(-1)){
   base::warning(message, call. = FALSE, immediate. = TRUE)
 }
 
-stop <- function(message, exit_code = "1", call = sys.call(-1)) {
+stop <- function(message, exit_code = "1", call = NULL) {
   base::stop(
     structure(
       class = c(exit_code, "simpleError", "error", "condition"),
@@ -54,15 +64,15 @@ checkFileSize = function(filename){
 }
 
 convertMatrixNumeric <- function(df){
-  matrix( sapply(1:(nrow(df) * ncol(df) ),
-                 function(i)
-                   tryCatch({
-                     as.numeric(df[i])
-                    }, warning = function(e) NA
-                   )),
-              nrow(df),
-              ncol(df),
-              dimnames = list(row.names(df), colnames(df)))
+    matrix( sapply(1:(nrow(df) * ncol(df) ),
+                   function(i)
+                     tryCatch({
+                       as.numeric(df[i])
+                      }, warning = function(e) NA
+                     )),
+                nrow(df),
+                ncol(df),
+                dimnames = list(row.names(df), colnames(df)))
 }
 
 #' Creates a matrix from loading a file
@@ -83,7 +93,7 @@ loadData = function(f, sep = "\t", rownames = 1, h = TRUE) {
     rownames <- NULL
 
   func <- function(x = rownames)
-    as.matrix(read.table(f, sep = sep, header = h, row.names = x, na.strings = "NA", dec=","))
+    as.matrix(read.table(f, sep = sep, header = h, row.names = x, na.strings = "NA", dec = ","))
 
   tryCatch({
       func()
@@ -92,43 +102,44 @@ loadData = function(f, sep = "\t", rownames = 1, h = TRUE) {
             func(NULL)
     }
   )
+
 }
 
-#' Creates a data frame from an Excel file loading
-#'
-#' @param f A character giving the file name
-#' @param sheet A character giving the sheet name
-#' @param rownames An integer corresponding to the column number of the row names (NULL otherwise)
-#' @param h A bolean giving the presence or the absence of the header
-#' @param num A bolean giving the presence or the absence of numerical values
-#' @return A matrix containing the loaded file
-#' @examples
-#' \dontrun{
-#' loadExcel("data/blocks.xlsx", "industry")
-#' }
-#' @export loadExcel
-loadExcel = function(f, sheet, rownames = 1, h = TRUE, num = TRUE) {
-
-  if (!is.null(rownames) && rownames < 1)
-    rownames = NULL
-
-  df = read.xlsx(f, sheet, header = h, startRow = 1)
-
-  if(!is.null(rownames)){
-    names = df[, rownames]
-    df = df[, -rownames]
-  }
-
-  if(num)
-    df = as.data.frame(lapply(df, function(x) as.numeric(as.vector(x))))
-
-  df = as.matrix(df)
-
-  if(!is.null(rownames))
-    row.names(df) = names
-
-  return (df)
-}
+# Creates a data frame from an Excel file loading
+#
+# @param f A character giving the file name
+# @param sheet A character giving the sheet name
+# @param rownames An integer corresponding to the column number of the row names (NULL otherwise)
+# @param h A bolean giving the presence or the absence of the header
+# @param num A bolean giving the presence or the absence of numerical values
+# @return A matrix containing the loaded file
+# @examples
+# \dontrun{
+# loadExcel("data/blocks.xlsx", "industry")
+# }
+# @export loadExcel
+# loadExcel = function(f, sheet, rownames = 1, h = TRUE, num = TRUE) {
+#
+#   if (!is.null(rownames) && rownames < 1)
+#     rownames = NULL
+#
+#   df = read.xlsx(f, sheet, header = h, startRow = 1)
+#
+#   if(!is.null(rownames)){
+#     names = df[, rownames]
+#     df = df[, -rownames]
+#   }
+#
+#   if(num)
+#     df = as.data.frame(lapply(df, function(x) as.numeric(as.vector(x))))
+#
+#   df = as.matrix(df)
+#
+#   if(!is.null(rownames))
+#     row.names(df) = names
+#
+#   return (df)
+# }
 
 #' Save a ggplot object
 #'
@@ -243,12 +254,12 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
     # if it is not, parse the name of file from the arg list
     blocksFilename = parseList(file)
   else {
-    # if xls, check file exists
-    checkFile(file)
-    # load the xls
-    wb = loadWorkbook(file)
-    # load the blocks
-    blocksFilename = names(getSheets(wb))
+    # # if xls, check file exists
+    # checkFile(file)
+    # # load the xls
+    # wb = loadWorkbook(file)
+    # # load the blocks
+    # blocksFilename = names(getSheets(wb))
   }
 
   # Parse optional names of blocks
@@ -283,15 +294,15 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
     if (!isXls){
       checkFileSize(fi)
       df = loadData(fi, sep, rownames, header)
-    }else{
-      checkFileSize(file)
-      df = loadExcel(file, blocksFilename[i], rownames, header)
     }
+    # }else{
+    #   checkFileSize(file)
+    #   df = loadExcel(file, blocksFilename[i], rownames, header)
+    # }
 
     #if one-column file, it is a tabulation error
     if (NCOL(df) == 0)
       stop(paste(fo, "block file has an only-column. Check the separator."), exit_code = 102)
-
 
     dimnames = list(row.names(df), colnames(df))
     df <- convertMatrixNumeric(df)
@@ -334,13 +345,6 @@ checkConnection = function(c, blocks) {
   if (!isSymmetric.matrix(unname(c)))
     stop("The connection file must be a symmetric matrix.", exit_code = 103)
 
-  n = length(blocks)
-  if (NCOL(c) != n)
-    stop(paste0("The number of rows/columns of the connection matrix file must be equals to ",
-               n,
-               " (the number of blocks in the dataset, +1 with a superblock by default)."),
-         exit_code = 104)
-
   d = unique(diag(c))
   if (length(d) != 1 || d != 0)
     stop("The diagonal of the connection matrix file must be 0.", exit_code = 105)
@@ -352,23 +356,33 @@ checkConnection = function(c, blocks) {
   if(all(c==0))
     stop("The connection file could not contain only 0.", exit_code = 107)
 
+  n = length(blocks)
+  if (NCOL(c) != n)
+    stop(paste0("The number of rows/columns of the connection matrix file must be equal to ",
+                n,
+                " (the number of blocks in the dataset, +1 with a superblock by default)."),
+         exit_code = 104)
+
   #TODO: warning if superblock = TRUE
 
 }
 
-#' Create a matrix from loading a file corresponding to a connection between the blocks
+#' Create a matrix corresponding to a connection between the blocks
 #'
 #' @param blocks A list of matrix
+#' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
 #' @param file A character giving the path of a file used as a response
 #' @param sep A character giving the column separator
-#' @return A matrix corresponding to the response
+#' @param rownames An integer corresponding to the column number of the row names (NULL otherwise)
+#' @param h A bolean giving the presence or the absence of the header
+#' @return A matrix corresponding to the connection between the blocks
 #' @examples
 #' \dontrun{
 #' blocks = lapply(1:4, function(x) matrix(runif(47 * 5), 47, 5))
 #' setConnection (blocks, "data/connection.tsv")
 #' }
 #' @export setConnection
-setConnection = function(blocks, superblock = FALSE, file = NULL, sep = "\t") {
+setConnection = function(blocks, superblock = FALSE, file = NULL, sep = "\t", h = FALSE, rownames = NULL) {
 
   J = length(blocks)
 
@@ -383,9 +397,9 @@ setConnection = function(blocks, superblock = FALSE, file = NULL, sep = "\t") {
     isXls <- (length(grep("xlsx?", file)) == 1)
 
     if(!isXls)
-      connection = loadData(file, sep, NULL, FALSE)
-    else
-      connection = loadExcel(file, 1, NULL, h = FALSE)
+      connection = loadData(f = file, sep = sep, rownames = rownames,  h = h)
+    # else
+    #   connection = loadExcel(f = file, sheet = 1, rownames = rownames,  h = h)
   }
 
   checkConnection(connection, blocks)
@@ -394,7 +408,7 @@ setConnection = function(blocks, superblock = FALSE, file = NULL, sep = "\t") {
 }
 
 
-#' Create a matrix from loading a file corresponding to the response
+#' Create a matrix corresponding to the response
 #'
 #' @param blocks A list of matrix
 #' @param file A character giving the path of a file used as a response
@@ -416,8 +430,8 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
 
     if(!isXls)
       response = loadData(file, sep, rownames, header)
-    else
-      response = loadExcel(file, 1, rownames, h = header, num = FALSE)
+    # else
+    #   response = loadExcel(file, 1, rownames, h = header, num = FALSE)
 
     qualitative = unique(isCharacter(response))
 
@@ -563,8 +577,8 @@ setSuperblock = function(blocks, superblock = FALSE, type = "rgcca"){
 
   if(superblock | tolower(type) == "pca"){
 
-    if(type != "pca")
-      warnConnection("superblock")
+    # if(type != "pca")
+    #   warnConnection("superblock")
 
     blocks[["Superblock"]] = Reduce(cbind, blocks)
 
