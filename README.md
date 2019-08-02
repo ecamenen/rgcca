@@ -73,9 +73,9 @@ The quality and interpretability of the RGCCA block components yj = Xj . aj, j =
 ![ave](img/ave.png)
 
 - ```connection``` (.pdf, .png, .tiff, .bmp or .jpeg): connection between each block, with:
-- "P", the number of variables
-- "N", the number of lines (here, each block has the same number of line)
-- "tau", the shrinkage parameter (for each component if the optimal option is selected) and "sparsity", the sparsity coefficient (see R/SGCCA section)
+    - "P", the number of variables
+    - "N", the number of lines (here, each block has the same number of line)
+    - "tau", the shrinkage parameter (for each component if the optimal option is selected) and "sparsity", the sparsity coefficient (see R/SGCCA section)
 
 ![design](img/design.png)
 
@@ -83,18 +83,18 @@ The quality and interpretability of the RGCCA block components yj = Xj . aj, j =
 
 |           | politic.axis1 | politic.axis2 | industry.axis1 |
 |-----------|---------------|---------------|----------------|
-| Argentina | 0,66          | -0,13         | 0,25           |
-| Australia | -1,49         | 0,28          | 1,37           |
+| Argentina | 0.66          | -0.13         | 0.25           |
+| Australia | -1.49         | 0.28          | 1.37           |
 | …         | …             | …             | …              |
 
-- ```variables``` (.tsv, .csv or .txt): a table containing for each variable of each block their correlation and their weights for the two first analysis components.
+- ```variables``` (.tsv. .csv or .txt): a table containing for each variable of each block their correlation and their weights for the two first analysis components.
 
 |      | cor.axis.1 | cor.axis.2 | weight.axis.1 | weight.axis.2 | block    |
 |------|------------|------------|---------------|---------------|----------|
-| inst | 0,33       | -0,27      | 0,16          | 0,05          | politic  |
-| ecks | 0,79       | 0,09       | 0,52          | 0,43          | politic  |
+| inst | 0.33       | -0.27      | 0.16          | 0.05          | politic  |
+| ecks | 0.79       | 0.09       | 0.52          | 0.43          | politic  |
 | …    | …          | …          | …             | …             | …        |
-| gnpr | 0,94       | 0,33       | 0,68          | 2,09          | industry |
+| gnpr | 0.94       | 0.33       | 0.68          | 2.09          | industry |
 | …    | …          | …          | …             | …             | …        |
 
 - ```rgcca.result``` (.RData): a R file containing a RGCCA object from the RGCCA package
@@ -163,12 +163,6 @@ For direct usage (Example from Russet data from RGCCA package [3]) :
 Rscript R/launcher.R -d inst/extdata/agriculture.tsv,inst/extdata/industry.tsv,inst/extdata/politic.tsv
 ```
 
-With parameters :
-
-```
-Rscript R/launcher.R --datasets <list_block_files> [--help] [--names <list_block_names] [--connection <connection_file>] [--response <response_file>] [--scheme <scheme_type>] [--output1 <variables_space_fig_name>] [--output3 <samples_space_fig_name>] [--output3 <biomarkers_fig_name>] [--header] [--separator <separator_type>]
-```
-
 #### Files parameters
 By default, on tabulated files with a header without response groups. The names of the blocks are the filename (or the name of the sheets for an Excel file) without the extension.
 
@@ -179,8 +173,8 @@ By default, on tabulated files with a header without response groups. The names 
 - ```--names``` (STRING LIST) List of comma-separated block names to rename them (one per block; without spaces between them) [default: the block file names]
 - ```-H (--header)``` DO NOT consider the first row as the column header.
 - ```--separator``` (INTEGER) Character used to separate columns (1: tabulation, 2: semicolon, 3: comma) [default: tabulation].
-- ```--o1``` (PATH) Path for the variable plot [default: ```individuals.pdf```]
-- ```--o2``` (PATH) Path for the individual plot [default: ```corcircle.pdf```]
+- ```--o1``` (PATH) Path for the individuals plot [default: ```individuals.pdf```]
+- ```--o2``` (PATH) Path for the corcircle plot [default: ```corcircle.pdf```]
 - ```--o3``` (PATH) Path for the top variables plot [default: ```top_variables.pdf```]
 - ```--o4``` (PATH) Path for the explained variance plot [default: ```ave.pdf```]
 - ```--o5``` (PATH) Path for the design plot [default: ```design.pdf```]
