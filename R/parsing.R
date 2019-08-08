@@ -131,7 +131,7 @@ loadData = function(f, sep = "\t", rownames = 1, h = TRUE) {
 #   }
 #
 #   if(num)
-#     df = as.data.frame(vapply(df, function(x) as.numeric(as.vector(x))))
+#     df = as.data.frame(lapply(df, function(x) as.numeric(as.vector(x))))
 #
 #   df = as.matrix(df)
 #
@@ -156,7 +156,7 @@ loadData = function(f, sep = "\t", rownames = 1, h = TRUE) {
 savePlot = function(f, p) {
 
   # get suffixe of filename
-  format = unlist(strsplit(f, '.', fixed="T"))
+  format = unlist(strsplit(f, '.', fixed="TRUE"))
   format = format[length(format)]
 
   # dynamic loading of formattion depending of the extension
@@ -308,9 +308,9 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
     df <- convertMatrixNumeric(df)
 
     if( any(is.na(df)) ){
-      df = matrix(unlist(vapply(seq_len(ncol(df)),
-                                    function(x) unlist(vapply(as.list(df[,x]),
-                                                                           function(y) ifelse(is.na(y),  mean(unlist(df[, x]), na.rm = T), y))))),
+      df = matrix(unlist(lapply(seq_len(ncol(df)),
+                                    function(x) unlist(lapply(as.list(df[,x]),
+                                                                           function(y) ifelse(is.na(y),  mean(unlist(df[, x]), na.rm = TRUE), y))))),
                       nrow(df), ncol(df))
     }
 
@@ -319,7 +319,7 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
     blocks[[fo]] = df
   }
 
-  nrow = vapply(blocks, NROW)
+  nrow = lapply(blocks, NROW)
 
   if(length(blocks) > 1)
     blocks = keepCommonRow(blocks)
@@ -350,7 +350,7 @@ checkConnection = function(c, blocks) {
     stop("The diagonal of the connection matrix file must be 0.", exit_code = 105)
 
   x = unique(c %in% c(0, 1))
-  if (length(x) != 1 || x != T)
+  if (length(x) != 1 || x != TRUE)
     stop("The connection file must contains only 0 or 1.", exit_code = 106)
 
   if(all(c==0))
@@ -378,7 +378,7 @@ checkConnection = function(c, blocks) {
 #' @return A matrix corresponding to the connection between the blocks
 #' @examples
 #' \dontrun{
-#' blocks = vapply(seq_len(4), function(x) matrix(runif(47 * 5), 47, 5))
+#' blocks = lapply(seq_len(4), function(x) matrix(runif(47 * 5), 47, 5))
 #' setConnection (blocks, "data/connection.tsv")
 #' }
 #' @export setConnection
@@ -418,7 +418,7 @@ setConnection = function(blocks, superblock = FALSE, file = NULL, sep = "\t", h 
 #' @return A matrix corresponding to the response
 #' @examples
 #' \dontrun{
-#' blocks = vapply(seq_len(3), function(x) matrix(runif(47 * 5), 47, 5))
+#' blocks = lapply(seq_len(3), function(x) matrix(runif(47 * 5), 47, 5))
 #' setResponse (blocks, "data/response3.tsv")
 #' }
 #' @export setResponse
@@ -543,7 +543,7 @@ keepCommonRow = function(list_m){
   names = names(list_m)
 
   common_row = commonRow(list_m)
-  list_m = vapply(seq_len(length(list_m)), function (x) list_m[[x]] = list_m[[x]][common_row,])
+  list_m = lapply(seq_len(length(list_m)), function (x) list_m[[x]] = list_m[[x]][common_row,])
 
   names(list_m) = names
   return (list_m)
@@ -558,10 +558,10 @@ removeColumnSdNull = function(list_m) {
 
   names = names(list_m)
 
-  column_sd_null = vapply(list_m, function (x) which( apply(x, 2, sd ) == 0 ))
-  blocks_index =  seq(1, length(list_m))[unlist(vapply(column_sd_null, function(x) length(x) > 0))]
+  column_sd_null = lapply(list_m, function (x) which( apply(x, 2, sd ) == 0 ))
+  blocks_index =  seq(1, length(list_m))[unlist(lapply(column_sd_null, function(x) length(x) > 0))]
 
-  list_m = vapply(seq_len(length(list_m)), function(x){
+  list_m = lapply(seq_len(length(list_m)), function(x){
 
     if( x %in% blocks_index)
       list_m[[x]][, -column_sd_null[[x]]]

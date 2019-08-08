@@ -386,7 +386,7 @@ bootstrap_k = function(blocks, connection = 1 - diag(length(blocks)), tau = rep(
                        ncomp = rep(2, length(blocks)), scheme = 'factorial', scale = TRUE,
                        init = "svd", bias = TRUE, type = "rgcca", verbose = FALSE){
   # Shuffle rows
-  id_boot = sample(NROW(blocks[[1]]), replace = T)
+  id_boot = sample(NROW(blocks[[1]]), replace = TRUE)
 
   # Scale the blocks
   if( !is.null(attr(blocks, "scaled:center"))){
@@ -400,14 +400,14 @@ bootstrap_k = function(blocks, connection = 1 - diag(length(blocks)), tau = rep(
     else
       boot_blocks  = lapply(blocks, function(x) scale(x[id_boot, ],
                                                       center = attr(blocks, "scaled:center"),
-                                                      scale = F))
+                                                      scale = FALSE))
 
   }else{
 
     if(isTRUE(scale))
       boot_blocks  = lapply(blocks, function(x) scale2(x[id_boot, ], bias = bias) / sqrt(ncol(x)) )
     else
-      boot_blocks = lapply(blocks, function(x) scale2(x[id_boot, ], scale = F))
+      boot_blocks = lapply(blocks, function(x) scale2(x[id_boot, ], scale = FALSE))
   }
 
   boot_blocks = removeColumnSdNull(boot_blocks)
@@ -497,7 +497,7 @@ plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
   if (  any(names(W[[1]]) == "Superblock") & i_block == length(J) )
     df$color = as.factor(getBlocsVariables(W[[1]]))
 
-  df = data.frame(getRankedValues(df,  allCol = T), order = nrow(df):1)
+  df = data.frame(getRankedValues(df,  allCol = TRUE), order = nrow(df):1)
 
   if(nrow(df) > n_mark)
     df = df[seq_len(n_mark), ]
@@ -534,7 +534,7 @@ scaling = function(blocks, scale = TRUE, bias = TRUE){
       scale2(x, bias = bias) / sqrt(ncol(x)) )
   }else{
     lapply(blocks, function(x)
-      scale2(x, scale = F))
+      scale2(x, scale = FALSE))
   }
 }
 

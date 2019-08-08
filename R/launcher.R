@@ -224,7 +224,7 @@ getArgs <- function(){
       help = "Path for the response correlation plot [default: %default]"
     )
   )
-  args <- commandArgs(trailingOnly = T)
+  args <- commandArgs(trailingOnly = TRUE)
   return (OptionParser(option_list = option_list))
 }
 
@@ -315,7 +315,7 @@ postCheckArg <- function(opt, blocks){
     }
   }
 
-  out <- vapply(seq_len(length(opt$ncomp)), function(x){
+  out <- lapply(seq_len(length(opt$ncomp)), function(x){
     checkInteger("ncomp", opt$ncomp[x])
     if ((opt$ncomp[x] < 2) || (opt$ncomp[x] > ncol(blocks[[x]]))){
       stop(paste0("--ncomp must be comprise between 2 and ", ncol(blocks[[x]]) ,", the number of variables of the block (currently equals to ", opt$ncomp[x]  ,")."), exit_code = 126)
@@ -336,7 +336,7 @@ postCheckArg <- function(opt, blocks){
 
       list_tau <- as.list(opt$tau)
       # Check value of each tau
-      out <- vapply(list_tau, function(x){
+      out <- lapply(list_tau, function(x){
         if(((x < 0) || (x > 1)) && x != "optimal")
           stop(paste0(MSG, " (currently equals to ", x, ")."), exit_code = 129)
       })
@@ -381,7 +381,7 @@ checkInteger <- function(x, y = NULL){
 
   # Test if not a float
 
-  if(length(strsplit(as.character(y), ".", fixed = T)[[1]]) > 1)
+  if(length(strsplit(as.character(y), ".", fixed = TRUE)[[1]]) > 1)
     stop(paste0("--", x, " is a float (", y, ") and must be an integer."))
 
 }

@@ -96,7 +96,7 @@ ui <- fluidPage(
                            uiOutput("superblock_custom"),
                            checkboxInput(inputId = "supervised",
                                          label = "Supervised analysis",
-                                         value = F),
+                                         value = FALSE),
 
                            conditionalPanel(
                              condition = "input.supervised || input.analysis_type == 'RA'",

@@ -240,7 +240,7 @@ server <- function(input, output, session) {
 
     ui <- checkboxInput(inputId = "superblock",
                 label = "Use a superblock",
-                value = T)
+                value = TRUE)
 
     if(BSPLUS)
       ui <- shinyInput_label_embed(
@@ -426,7 +426,7 @@ server <- function(input, output, session) {
 
   getExtension <- function(f){
     if(!is.null(f)){
-      format <- unlist(strsplit(f, '.', fixed="T"))
+      format <- unlist(strsplit(f, '.', fixed="TRUE"))
       return(paste(format[-length(format)], collapse = "."))
     }else
       return(f)

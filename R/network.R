@@ -91,8 +91,6 @@ plotNetwork <- function(nodes, edges, blocks){
 
 plotNetwork2 <- function(nodes, edges, blocks){
 
-  # Avoid random
-  set.seed(1)
   par <- ifelse("sparsity" %in% names(nodes), "sparsity", "tau")
 
   if(all(is.na(nodes[, par])))
