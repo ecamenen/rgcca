@@ -15,7 +15,7 @@ loadLibraries <- function(librairies){
       utils::install.packages(l, repos = "http://cran.us.r-project.org")
     library(l, character.only = TRUE,
             warn.conflicts = FALSE,
-            quiet = TRUE)
+            quietly = TRUE)
   }
 }
 

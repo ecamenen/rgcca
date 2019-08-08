@@ -106,7 +106,7 @@ getArgs <- function(){
       opt_str = "--scale",
       type = "logical",
       action = "store_false",
-      help = "DO NOT scale the blocks (i.e., a data centering step is always performed). Otherwhise, each block is normalised and divided by the square root of its number of variables."
+      help = "DO NOT scale the blocks (i.e., a data centering step is always performed). Otherwise, each block is normalised and divided by the square root of its number of variables."
     ),
     make_option(
       opt_str = "--superblock",
@@ -213,7 +213,7 @@ getArgs <- function(){
       opt_str = "--o8",
       type = "character",
       metavar = "path",
-      default = opt[18],
+      default = opt[19],
       help = "Path for the analysis results in RData [default: %default]"
     ),
     make_option(
@@ -306,7 +306,7 @@ postCheckArg <- function(opt, blocks){
 
       if(opt[[x]] > length(blocks))
         stop(paste0("--", x, " must be lower than ", length(blocks), " (the maximum number of blocks), not be equal to ", opt[[x]], "."), exit_code = 133)
-      else if(opt$block == 0)
+      else if(opt[[x]] == 0)
         opt[[x]] <- length(blocks)
       else if(opt[[x]] < 0 )
         stop(paste0("--", x, " must be positive, not be equal to ", opt[[x]], "."), exit_code = 134)
@@ -527,3 +527,4 @@ if( ! is.null(opt$response) ){
 saveInds(rgcca.out, blocks, 1, 2, opt$o6)
 saveVars(rgcca.out, blocks, 1, 2, opt$o7)
 save(rgcca.out, file = opt$o8)
+

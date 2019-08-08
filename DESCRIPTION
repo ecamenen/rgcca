@@ -1,7 +1,7 @@
 Package: rgccaLauncher
 Type: Package
 Title: Launcher for Regularized and Sparse Generalized Canonical Correlation Analysis
-Version: 1.0
+Version: 0.3.2
 Author: Etienne Camenen, Arthur Tenenhaus and Vincent Guillemot
 Maintainer: Arthur Tenenhaus <arthur.tenenhaus@centralesupelec.fr>
 Description: A user-friendly multi-blocks analysis (Regularized Generalized Canonical Correlation Analysis, RGCCA) with all default settings predefined.
@@ -16,6 +16,10 @@ Imports: ggplot2,
     plotly,
     igraph,
     visNetwork,
+    grDevices,
+    graphics,
+    stats,
+    utils
 Depends: RGCCA
 Suggests: testthat,
     devtools,
@@ -26,3 +30,4 @@ Suggests: testthat,
     shiny,
     shinyjs
 VignetteBuilder: knitr
+biocViews: Visualization, PrincipalComponent, DimensionReduction, StructuralEquationModels

@@ -1,7 +1,10 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^README\.Rmd$
-\.pdf$
+corcircle.pdf
+individuals.pdf
+ave.pdf
+top_variables.pdf
 \.RData$
 individuals.tsv
 variables.tsv
