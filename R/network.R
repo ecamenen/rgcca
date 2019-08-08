@@ -8,14 +8,14 @@ getNodes <- function(blocks, tau = NULL, rgcca = NULL) {
 
   if(any(tau == "optimal")){
     if(!is.null(rgcca))
-      tau <- unlist(lapply(1:ncol(rgcca[[par.rgcca]]), function(x) Reduce(paste, round(rgcca[[par.rgcca]][, x],2))))
+      tau <- unlist(lapply(seq_len(ncol(rgcca[[par.rgcca]])), function(x) Reduce(paste, round(rgcca[[par.rgcca]][, x],2))))
     else
       tau <- rep(NA, length(blocks))
   }
 
   if(is.null(tau)){
     if(is.matrix(rgcca[[par.rgcca]]))
-      tau <- unlist(lapply(1:ncol(rgcca[[par.rgcca]]), function(x) Reduce(paste, round(rgcca[[par.rgcca]][, x],2))))
+      tau <- unlist(lapply(seq_len(ncol(rgcca[[par.rgcca]])), function(x) Reduce(paste, round(rgcca[[par.rgcca]][, x],2))))
     else
       tau <- rgcca[[par.rgcca]]
   }
@@ -36,8 +36,8 @@ getEdges <- function(connection, blocks) {
   edges <- list()
 
   k <- 0
-  for (j in 1:J) {
-    for (i in 1:J){
+  for (j in seq_len(J)) {
+    for (i in seq_len(J)){
       if(i > k && connection[i, j] > 0)
         edges[[ length(edges) + 1 ]] <- c( names(blocks)[j], names(blocks)[i], connection[i, j] )
     }

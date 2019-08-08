@@ -62,7 +62,7 @@ dynamicPlot = function (f, ax, text = "name+x+y", legend = TRUE, dynamicTicks = 
   }
 
   if( ncol(f$data) == 3 )
-    p$sample_names = lapply(levels(as.factor(f$data[, 3])), function(x) row.names(subset(f$data, f$data[, 3] == x)))
+    p$sample_names = vapply(levels(as.factor(f$data[, 3])), function(x) row.names(subset(f$data, f$data[, 3] == x)))
   else
     p$sample_names = list(row.names(f$data))
 
@@ -74,10 +74,10 @@ dynamicPlotBoot = function(p){
 
   p = dynamicPlot(p, ax2, "text")
   n = length(p$x$data)
-  m = unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
+  m = unlist(vapply(p$x$data, function(x) !is.null(x$orientation)))
   j = length(m[m])
 
-  for (i in 1:j){
+  for (i in seq_len(j)){
     p$x$data[[i]]$text = paste( round(p$x$data[[i]]$x, 3), "+/-", round(p$x$data[[n]]$error_x$array[j], 3) )
     j = j - 1
   }
@@ -93,18 +93,18 @@ changeHovertext = function(p, hovertext = TRUE){
 
   attr = ifelse(hovertext, "hovertext", "text")
   # identify the order / id of the traces which corresponds to x- and y-axis (should be before the splitting function)
-  traces = which(lapply(p$x$data, function(x) length(grep("intercept", x$text)) == 1) == T)
+  traces = which(vapply(p$x$data, function(x) length(grep("intercept", x$text)) == 1) == T)
   # length of groups of points without traces and circle points
   n = which(sapply(p$x$data, function(x) match("xintercept: 0", x$text)==1)) -1
 
-  for (i in 1:n) {
+  for (i in seq_len(n)) {
 
       # For each lines of each group in the legend
-      for (j in 1:length(p$x$data[[i]][attr][[1]])){
+      for (j in seq_len(length(p$x$data[[i]][attr][[1]]))){
         # Distinguish each duplicate by splitting with "<br>"  and separe them in key/value by splitting with ": " (like a dictionnary)
-        l_text  = lapply( as.list( strsplit( p$x$data[[i]][attr][[1]][j], "<br />" )[[1]] ), function(x) strsplit(x, ": ")[[1]] )
+        l_text  = vapply( as.list( strsplit( p$x$data[[i]][attr][[1]][j], "<br />" )[[1]] ), function(x) strsplit(x, ": ")[[1]] )
         # keep only the (x, y) coordinates with the key df[, ] and the response if exists
-        l_text = unlist(lapply(l_text, function(x, y) {
+        l_text = unlist(vapply(l_text, function(x, y) {
           if(x[1] %in% paste0("df[, ", c(1, 2), "]"))
             round(as.numeric(x[2]), 3)
           else if(x[1] == "resp")
@@ -124,7 +124,7 @@ changeHovertext = function(p, hovertext = TRUE){
 }
 
 changeText = function(p){
-  for (i in 1:length(p$x$data))
+  for (i in seq_len(length(p$x$data)))
     p$x$data[[i]]$text = sub( "order: .*<br />df\\[, 1\\]: (.*)<.*", "\\1\\", p$x$data[[i]]$text)
 
   return (p)
@@ -220,11 +220,11 @@ colorGroup = function(group){
 #' @param i_block_y An integer giving the index of a list of blocks (another one, different from the one used in i_block)
 #' @param reponse_name A character giving the legend title
 #' @examples
-#' coord = lapply(1:3, function(x) matrix(runif(15 * 2, min = -1), 15, 2))
-#' AVE_X = lapply(1:3, function(x) runif(2))
+#' coord = vapply(seq_len(3), function(x) matrix(runif(15 * 2, min = -1), 15, 2))
+#' AVE_X = vapply(seq_len(3), function(x) runif(2))
 #' rgcca.res = list(Y = coord, AVE = list(AVE_X = AVE_X))
 #' # Using a superblock
-#' plotSamplesSpace(rgcca.res, rep(LETTERS[1:3], each = 5))
+#' plotSamplesSpace(rgcca.res, rep(LETTERS[seq_len(3)], each = 5))
 #' # Using the first block
 #' plotSamplesSpace(rgcca.res, runif(15, min=-15, max = 15), 1, 2, 1)
 #' @export plotSamplesSpace
@@ -307,14 +307,14 @@ plotSamplesSpace = function (rgcca, resp, comp_x = 1, comp_y = 2, i_block = NULL
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' rgcca.res = list(a = rep(NA, 4))
-#' names(rgcca.res$a) = LETTERS[1:4]
+#' names(rgcca.res$a) = LETTERS[seq_len(4)]
 #' getBlocsVariables(rgcca.res)
 #' # a, b, c
 #' @export getBlocsVariables
 getBlocsVariables = function(df){
 
   rep( names(df)[-length(df)],
-       sapply(df[1:(length(df)-1)], NROW))
+       sapply(df[seq_len(length(df)-1)], NROW))
 }
 
 #' Plot of variables space
@@ -330,17 +330,17 @@ getBlocsVariables = function(df){
 #' @param removeVariable A bolean to keep only the 100 variables of each component with the biggest correlation#'
 #' @param n_mark An integer giving the number of top variables to select
 #' @examples
-#' setMatrix = function(nrow, ncol, iter = 3) lapply(1:iter, function(x) matrix(runif(nrow * ncol), nrow, ncol))
+#' setMatrix = function(nrow, ncol, iter = 3) vapply(seq_len(iter), function(x) matrix(runif(nrow * ncol), nrow, ncol))
 #' blocks = setMatrix(10, 5)
 #' blocks[[4]] = Reduce(cbind, blocks)
-#' for (i in 1:4)
-#'     colnames(blocks[[i]]) = paste0( LETTERS[i], as.character(1:NCOL(blocks[[i]])))
+#' for (i in seq_len(4))
+#'     colnames(blocks[[i]]) = paste0( LETTERS[i], as.character(seq_len(NCOL(blocks[[i]]))))
 #' coord = setMatrix(10, 2, 4)
 #' a = setMatrix(5, 2)
 #' a[[4]] = matrix(runif(15 * 2), 15, 2)
-#' AVE_X = lapply(1:4, function(x) runif(2))
+#' AVE_X = vapply(seq_len(4), function(x) runif(2))
 #' rgcca.res = list(Y = coord, a = a, AVE = list(AVE_X = AVE_X))
-#' names(rgcca.res$a) = LETTERS[1:4]
+#' names(rgcca.res$a) = LETTERS[seq_len(4)]
 #' # Using a superblock
 #' plotVariablesSpace(rgcca.res, blocks, 1, 2, TRUE)
 #' # Using the first block
@@ -367,7 +367,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 
     if(removeVariable & nrow(df) > 2 * n_mark){
       selectedVar = unique( as.vector (unique( sapply(c(1, 2),
-                                         function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[1:n_mark,])))))
+                                         function(x) row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE),])[seq_len(n_mark),])))))
   	  df = df[selectedVar, ]
     }
   }
@@ -382,7 +382,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
       color = color[row.names(df)]
     }else{
     	if(!is.null(selectedVar))
-    		color = color[unlist(lapply(1:length(selectedVar), function(x) which(colnames(blocks[[length(blocks)]]) == selectedVar[x])))]
+    		color = color[unlist(vapply(seq_len(length(selectedVar)), function(x) which(colnames(blocks[[length(blocks)]]) == selectedVar[x])))]
     }
 
   }else{
@@ -422,7 +422,7 @@ plotVariablesSpace = function(rgcca, blocks, comp_x = 1, comp_y = 2, superblock 
 #' @param colours A vectof of character to color quantitative data
 #' @examples
 #' df = as.data.frame(matrix(runif(20*2, min = -1), 20, 2))
-#' AVE =  lapply(1:4, function(x) runif(2))
+#' AVE =  vapply(seq_len(4), function(x) runif(2))
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
 #' plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
 #' @export plotSpace
@@ -452,7 +452,7 @@ plotSpace = function (rgcca, df, title, group, name_group, comp_x = 1, comp_y = 
   }
 
   if(length(name_group) > 15)
-    name_group <- name_group[1:15]
+    name_group <- name_group[seq_len(15)]
 
   if(is.null(name_group))
     name_group <- 0
@@ -492,7 +492,7 @@ orderColorPerBlocs <- function(rgcca, p, matched  = NULL){
   J <- names(rgcca$a)
 
   if(is.null(matched)){
-    matched <- 1:length(J)
+    matched <- seq_len(length(J))
     f <- "color"
   }else
     f <- "fill"
@@ -518,12 +518,12 @@ orderColorPerBlocs <- function(rgcca, p, matched  = NULL){
 #' or "weight" for the weight of the RGCCA
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
-#' weights = lapply(1:3, function(x) matrix(runif(7*2), 7, 2))
+#' weights = vapply(seq_len(3), function(x) matrix(runif(7*2), 7, 2))
 #' weights[[4]] = Reduce(rbind, weights)
 #' rgcca.res = list(a = weights)
-#' names(rgcca.res$a) = LETTERS[1:4]
+#' names(rgcca.res$a) = LETTERS[seq_len(4)]
 #' for(i in seq(1,4))
-#' row.names(rgcca.res$a[[i]]) <- paste0(letters[i],letters[1:nrow(rgcca.res$a[[i]])])
+#' row.names(rgcca.res$a[[i]]) <- paste0(letters[i],letters[seq_len(nrow(rgcca.res$a[[i]]))])
 #' # With the 1rst component of the superblock
 #' plotFingerprint(rgcca.res, NULL, 1, TRUE, type = "weigth")
 #' # With the 2nd component of the 1rst block by selecting the ten higher weights
@@ -558,7 +558,7 @@ plotFingerprint = function(rgcca, blocks = NULL, comp = 1, superblock = TRUE, n_
 
   # max threshold for n
   if(NROW(df) >= n_mark)
-    df = df[1:n_mark,]
+    df = df[seq_len(n_mark),]
 
   # if the superblock is selected, color the text of the y-axis according to their belonging to each blocks
   if (  superblock & ( i_block == length(rgcca$a) ) ){
@@ -596,9 +596,9 @@ plotFingerprint = function(rgcca, blocks = NULL, comp = 1, superblock = TRUE, n_
 #' @param rgcca A list giving the results of a R/SGCCA
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
-#' random_val = function(y=1) lapply(1:4, function(x) matrix(runif(4), y, 2))
+#' random_val = function(y=1) vapply(seq_len(4), function(x) matrix(runif(4), y, 2))
 #' rgcca.res = list(AVE = list(AVE_X = random_val()), a = random_val(2), ncomp = rep(2, 4))
-#' names(rgcca.res$a) <- LETTERS[1:4]
+#' names(rgcca.res$a) <- LETTERS[seq_len(4)]
 #' library("ggplot2")
 #' for(i in seq(1,4))
 #' names(rgcca.res$AVE$AVE_X[[i]]) <- c(1,2)
@@ -607,13 +607,13 @@ plotFingerprint = function(rgcca, blocks = NULL, comp = 1, superblock = TRUE, n_
 plotAVE = function(rgcca){
 
   ave = 100 * unlist(rgcca$AVE$AVE_X)
-  blocks = factor(unlist(lapply(1:length(names(rgcca$a)), function(x) rep(names(rgcca$a)[x], rgcca$ncomp[x]))), levels = names(rgcca$a))
+  blocks = factor(unlist(vapply(seq_len(length(names(rgcca$a))), function(x) rep(names(rgcca$a)[x], rgcca$ncomp[x]))), levels = names(rgcca$a))
   ncomp = as.factor(names(ave))
 
-  y_ave_cum = lapply(lapply(rgcca$AVE$AVE_X, function(x) round(100 * cumsum(x), 1)), function(x) c(0, x))
-  y_ave_cum = unlist(lapply(y_ave_cum, function(x) unlist(lapply(1:length(x), function(i) (x[i-1] + x[i]) / 2 ))))
+  y_ave_cum = vapply(vapply(rgcca$AVE$AVE_X, function(x) round(100 * cumsum(x), 1)), function(x) c(0, x))
+  y_ave_cum = unlist(vapply(y_ave_cum, function(x) unlist(vapply(seq_len(length(x)), function(i) (x[i-1] + x[i]) / 2 ))))
 
-  ave_label = unlist(lapply(rgcca$AVE$AVE_X, function(x) round(100 * x, 1)))
+  ave_label = unlist(vapply(rgcca$AVE$AVE_X, function(x) round(100 * x, 1)))
   ave_label[ave_label < max(y_ave_cum)/20] =  ""
 
   df = data.frame(ave, blocks, ncomp, stringsAsFactors = F)
@@ -755,7 +755,7 @@ getRankedValues = function(df, comp = 1, allCol = T){
   ordered = order(abs(df[, comp]), decreasing = T)
 
   if (allCol)
-    comp = 1:ncol(df)
+    comp = seq_len(ncol(df))
 
   res = df[ordered, comp]
 
@@ -771,8 +771,8 @@ saveVars <- function(rgcca, blocks, comp_x = 1, comp_y= 2, file = "variables.tsv
 
   indexes <- c("cor", "weight")
 
-  vars <- Reduce(rbind, lapply( 1: length(blocks), function(i)
-    data.frame(Reduce(cbind, lapply(indexes, function(x) getVar(rgcca, blocks, comp_x, comp_y, i, x) )), names(blocks)[i])
+  vars <- Reduce(rbind, vapply( seq_len( length(blocks)), function(i)
+    data.frame(Reduce(cbind, vapply(indexes, function(x) getVar(rgcca, blocks, comp_x, comp_y, i, x) )), names(blocks)[i])
   ))
 
   colnames(vars) <- c(as.vector(sapply(indexes, function(x) paste0(x, ".", paste0("axis.", c(comp_x, comp_y))))), "block")
@@ -782,7 +782,7 @@ saveVars <- function(rgcca, blocks, comp_x = 1, comp_y= 2, file = "variables.tsv
 
 saveInds <- function(rgcca, blocks, comp_x = 1, comp_y = 2, file = "individuals.tsv"){
 
-  inds <- Reduce(cbind,lapply(rgcca$Y, function(x) x[, c(comp_x, comp_y)]))
+  inds <- Reduce(cbind,vapply(rgcca$Y, function(x) x[, c(comp_x, comp_y)]))
   colnames(inds) <- as.vector(sapply(names(blocks), function(x) paste0(x, ".axis", c(comp_x, comp_y))))
   write.table(inds, file, sep = "\t")
   invisible(inds)

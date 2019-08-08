@@ -258,7 +258,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)), tau = r
 
     else if (tolower(type) == "ridge-gca"){
       scheme   <- setScheme("factorial")
-      tau      <- setTau(c(tau[1:J], 0))
+      tau      <- setTau(c(tau[seq_len(J)], 0))
     }
 
     else if (tolower(type) == "r-maxvar"){
@@ -348,7 +348,7 @@ rgcca.analyze = function(blocks, connection = 1 - diag(length(A)), tau = rep(1, 
   WARN = FALSE
   A = NULL
 
-  for (i in 1:length(blocks)){
+  for (i in seq_len(length(blocks))){
     if( ncol(blocks[[i]]) > 1000 ){
       # if( (type == "sgcca" && tau > 0.3) || type != "sgcca" )
         WARN = TRUE
@@ -417,16 +417,16 @@ bootstrap_k = function(blocks, connection = 1 - diag(length(blocks)), tau = rep(
                 scale = FALSE, init = init, bias = bias, type = type, verbose = verbose)$a
 
   # Add removed variables
-  missing_var = lapply(1:length(blocks), function(x) setdiff(colnames(blocks[[x]]), rownames(w[[x]])))
-  missing_tab = lapply(1:length(missing_var),
+  missing_var = lapply(seq_len(length(blocks)), function(x) setdiff(colnames(blocks[[x]]), rownames(w[[x]])))
+  missing_tab = lapply(seq_len(length(missing_var)),
                        function(x) matrix(0,
                                         length(missing_var[[x]]),
                                         ncomp[x],
-                                        dimnames = list(missing_var[[x]], 1:ncomp[x]))
-                                      )
+                                        dimnames = list(missing_var[[x]], seq_len(ncomp[x]))
+                                      ))
   # bug mapply with pca
-  w = lapply(1:length(w), function(x) rbind(w[[x]], missing_tab[[x]]))
-  w = lapply(1:length(w), function(x) w[[x]][ colnames(blocks[[x]]), ])
+  w = lapply(seq_len(length(w)), function(x) rbind(w[[x]], missing_tab[[x]]))
+  w = lapply(seq_len(length(w)), function(x) w[[x]][ colnames(blocks[[x]]), ])
 
   return(w)
 }
@@ -434,7 +434,7 @@ bootstrap_k = function(blocks, connection = 1 - diag(length(blocks)), tau = rep(
 # Examples
 # library(RGCCA)
 # data("Russett")
-# blocks3 = list(agriculture = Russett[, 1:3], industry = Russett[, 4:5], politic = Russett[, 6:11] )
+# blocks3 = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5], politic = Russett[, 6:11] )
 # bootstrap(blocks3)
 bootstrap = function(blocks, n_boot = 5, connection = 1 - diag(length(blocks)), tau = rep(1, length(blocks)),
                        ncomp = rep(2, length(blocks)), scheme = 'factorial', scale = TRUE,
@@ -448,15 +448,15 @@ bootstrap = function(blocks, n_boot = 5, connection = 1 - diag(length(blocks)), 
 
   w1 = bootstrap_k(blocks, connection, tau, ncomp, scheme, scale, init, bias, type)
 
-  W = parallel::mclapply(1:(n_boot-1), function(x) {
+  W = parallel::mclapply(seq_len((n_boot-1)), function(x) {
 
     # print(paste("Bootstrap", x))
 
     w = bootstrap_k(blocks, connection, tau, ncomp, scheme, scale, init, bias, type)
 
     # Test on the sign of the correlation
-    for(k in 1:length(blocks)){
-      for (j in 1:ncol(w[[k]])){
+    for(k in seq_len(length(blocks))){
+      for (j in seq_len(ncol(w[[k]]))){
         if (cor(w1[[k]][, j], w[[k]][, j]) < 0){
           w[[k]][, j] = -1 * w[[k]][, j]
         }
@@ -500,7 +500,7 @@ plotBootstrap = function(W, comp = 1, n_mark = 100, i_block = NULL){
   df = data.frame(getRankedValues(df,  allCol = T), order = nrow(df):1)
 
   if(nrow(df) > n_mark)
-    df = df[1:n_mark, ]
+    df = df[seq_len(n_mark), ]
 
   if (  any(names(W[[1]]) == "Superblock") & i_block == length(J) ){
     color2 = factor(df$color); levels(color2) = colorGroup(color2)

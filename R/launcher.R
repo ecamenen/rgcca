@@ -246,7 +246,7 @@ checkArg = function(opt){
 
   if (is.null(opt$scheme))
     opt$scheme <- "factorial"
-  else if ( ! opt$scheme %in% 1:4 ){
+  else if ( ! opt$scheme %in% seq_len(4) ){
     stop(paste0("--scheme must be comprise between 1 and 4 [by default: 2], not be equal to ", opt$scheme, "."), exit_code = 122)
   }else{
     schemes <- c("horst", "factorial", "centroid")
@@ -256,7 +256,7 @@ checkArg = function(opt){
       opt$scheme <- schemes[opt$scheme]
   }
 
-  if (! opt$separator %in% 1:3 ){
+  if (! opt$separator %in% seq_len(3) ){
     stop(paste0("--separator must be comprise between 1 and 3 (1: Tabulation, 2: Semicolon, 3: Comma) [by default: 2], not be equal to ", opt$separator, "."), exit_code = 123)
   }else{
     separators <- c('\t', ';', ',')
@@ -315,7 +315,7 @@ postCheckArg <- function(opt, blocks){
     }
   }
 
-  out <- lapply(1:length(opt$ncomp), function(x){
+  out <- vapply(seq_len(length(opt$ncomp)), function(x){
     checkInteger("ncomp", opt$ncomp[x])
     if ((opt$ncomp[x] < 2) || (opt$ncomp[x] > ncol(blocks[[x]]))){
       stop(paste0("--ncomp must be comprise between 2 and ", ncol(blocks[[x]]) ,", the number of variables of the block (currently equals to ", opt$ncomp[x]  ,")."), exit_code = 126)
@@ -336,7 +336,7 @@ postCheckArg <- function(opt, blocks){
 
       list_tau <- as.list(opt$tau)
       # Check value of each tau
-      out <- lapply(list_tau, function(x){
+      out <- vapply(list_tau, function(x){
         if(((x < 0) || (x > 1)) && x != "optimal")
           stop(paste0(MSG, " (currently equals to ", x, ")."), exit_code = 129)
       })

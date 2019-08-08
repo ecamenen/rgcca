@@ -64,7 +64,7 @@ checkFileSize = function(filename){
 }
 
 convertMatrixNumeric <- function(df){
-    matrix( sapply(1:(nrow(df) * ncol(df) ),
+    matrix( sapply(seq_len(nrow(df) * ncol(df) ),
                    function(i)
                      tryCatch({
                        as.numeric(df[i])
@@ -131,7 +131,7 @@ loadData = function(f, sep = "\t", rownames = 1, h = TRUE) {
 #   }
 #
 #   if(num)
-#     df = as.data.frame(lapply(df, function(x) as.numeric(as.vector(x))))
+#     df = as.data.frame(vapply(df, function(x) as.numeric(as.vector(x))))
 #
 #   df = as.matrix(df)
 #
@@ -203,7 +203,7 @@ parseList = function(s) {
 #' df = matrix(runif(20), 10, 2)
 #' checkQuantitative(df, "data")
 #' \dontrun{
-#' df[,2] = LETTERS[1:10]
+#' df[,2] = LETTERS[seq_len(10)]
 #' checkQuantitative(df, "data", TRUE)
 #' # Error
 #' }
@@ -269,7 +269,7 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
 
   # Load each dataset
   blocks = list()
-  for (i in 1:length(blocksFilename)) {
+  for (i in seq_len(length(blocksFilename))) {
 
     if (!isXls) {
       # if not an xls, file exist test is done here
@@ -308,8 +308,8 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
     df <- convertMatrixNumeric(df)
 
     if( any(is.na(df)) ){
-      df = matrix(unlist(lapply(1:ncol(df),
-                                    function(x) unlist(lapply(as.list(df[,x]),
+      df = matrix(unlist(vapply(seq_len(ncol(df)),
+                                    function(x) unlist(vapply(as.list(df[,x]),
                                                                            function(y) ifelse(is.na(y),  mean(unlist(df[, x]), na.rm = T), y))))),
                       nrow(df), ncol(df))
     }
@@ -319,13 +319,13 @@ setBlocks = function(file, names = NULL, sep = "\t", header = TRUE, rownames = R
     blocks[[fo]] = df
   }
 
-  nrow = lapply(blocks, NROW)
+  nrow = vapply(blocks, NROW)
 
   if(length(blocks) > 1)
     blocks = keepCommonRow(blocks)
     blocks = removeColumnSdNull(blocks)
 
-	for (i in 1:length(blocks)){
+	for (i in seq_len(length(blocks))){
 		attributes(blocks[[i]])$nrow = nrow[[i]]
 	}
 
@@ -378,7 +378,7 @@ checkConnection = function(c, blocks) {
 #' @return A matrix corresponding to the connection between the blocks
 #' @examples
 #' \dontrun{
-#' blocks = lapply(1:4, function(x) matrix(runif(47 * 5), 47, 5))
+#' blocks = vapply(seq_len(4), function(x) matrix(runif(47 * 5), 47, 5))
 #' setConnection (blocks, "data/connection.tsv")
 #' }
 #' @export setConnection
@@ -388,7 +388,7 @@ setConnection = function(blocks, superblock = FALSE, file = NULL, sep = "\t", h 
 
   if(superblock){
     connection <- matrix(0, J, J)
-    connection[1:J-1, J] = connection[J, 1:J-1] = 1
+    connection[seq_len(J-1), J] = connection[J, seq_len(J-1)] = 1
 
   }else if (is.null(file))
     connection = 1-diag(J)
@@ -418,7 +418,7 @@ setConnection = function(blocks, superblock = FALSE, file = NULL, sep = "\t", h 
 #' @return A matrix corresponding to the response
 #' @examples
 #' \dontrun{
-#' blocks = lapply(1:3, function(x) matrix(runif(47 * 5), 47, 5))
+#' blocks = vapply(seq_len(3), function(x) matrix(runif(47 * 5), 47, 5))
 #' setResponse (blocks, "data/response3.tsv")
 #' }
 #' @export setResponse
@@ -473,10 +473,10 @@ setResponse = function(blocks, file = NULL, sep = "\t", header = TRUE, rownames 
 #' @param x A matrix or a vector
 #' @return A bolean for the presence (FALSE) or the absence (TRUE) of at least one quantitative variable
 #' @examples
-#' x = matrix(c(runif(10), LETTERS[1:10]), 10, 2)
+#' x = matrix(c(runif(10), LETTERS[seq_len(10)]), 10, 2)
 #' isCharacter(x)
 #' # FALSE TRUE
-#' isCharacter(LETTERS[1:10])
+#' isCharacter(LETTERS[seq_len(10)])
 #' # TRUE
 #' @export isCharacter
 isCharacter = function(x) {
@@ -489,7 +489,7 @@ isCharacter = function(x) {
 
   if (is.matrix(x)){
     test = sapply(
-      1:NCOL(x),
+      seq_len(NCOL(x)),
       function(i) unique(
         is.na(
           tryCatch(
@@ -543,7 +543,7 @@ keepCommonRow = function(list_m){
   names = names(list_m)
 
   common_row = commonRow(list_m)
-  list_m = lapply(1:length(list_m), function (x) list_m[[x]] = list_m[[x]][common_row,])
+  list_m = vapply(seq_len(length(list_m)), function (x) list_m[[x]] = list_m[[x]][common_row,])
 
   names(list_m) = names
   return (list_m)
@@ -558,10 +558,10 @@ removeColumnSdNull = function(list_m) {
 
   names = names(list_m)
 
-  column_sd_null = lapply(list_m, function (x) which( apply(x, 2, sd ) == 0 ))
-  blocks_index =  seq(1, length(list_m))[unlist(lapply(column_sd_null, function(x) length(x) > 0))]
+  column_sd_null = vapply(list_m, function (x) which( apply(x, 2, sd ) == 0 ))
+  blocks_index =  seq(1, length(list_m))[unlist(vapply(column_sd_null, function(x) length(x) > 0))]
 
-  list_m = lapply(1:length(list_m), function(x){
+  list_m = vapply(seq_len(length(list_m)), function(x){
 
     if( x %in% blocks_index)
       list_m[[x]][, -column_sd_null[[x]]]
@@ -597,7 +597,7 @@ setPosPar = function(opt, blocks, i_resp){
   if (all(opt$tau != "optimal"))
     par[length(par)+1] = "tau"
 
-  for (i in 1:length(par)){
+  for (i in seq_len(length(par))){
     temp = opt[[par[i]]][[J]]
     opt[[par[i]]][[J]] = opt[[par[i]]][[i_resp]]
     opt[[par[i]]][[i_resp]] = temp
