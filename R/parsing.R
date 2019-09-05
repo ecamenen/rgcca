@@ -196,7 +196,7 @@ savePlot <- function(f, p) {
     else
         plot(p)
 
-    suprLog <- dev.off()
+    invisible(dev.off())
 }
 
 #' Convert a character in a vector
@@ -269,9 +269,12 @@ checkFile <- function(f) {
 #'     "agric,ind,polit")
 #' }
 #' @export setBlocks
-setBlocks <- function(file, names = NULL, sep = "\t", header = TRUE,
+setBlocks <- function(file,
+    names = NULL,
+    sep = "\t",
+    header = TRUE,
     rownames = ROW_NAMES) {
-
+    
     # Parse args containing files path
     isXls <- (length(grep("xlsx?", file)) == 1)
     # test if extension filename is xls
@@ -332,17 +335,8 @@ setBlocks <- function(file, names = NULL, sep = "\t", header = TRUE,
         dimnames <- list(row.names(df), colnames(df))
         df <- convertMatrixNumeric(df)
 
-        if (any(is.na(df))) {
-            df <- matrix(unlist(
-                lapply(seq_len(ncol(df)),
-                    function(x)
-                        unlist(lapply(as.list(df[, x]),
-                            function(y)
-                                ifelse(is.na(y),
-                                mean(unlist(df[, x]), na.rm = TRUE), y))))),
-                nrow(df), ncol(df))
-        }
-
+        df <- imputeMean(df)
+        
         checkQuantitative(df, fo, header)
         df <- matrix(as.numeric(df), nrow(df), ncol(df), dimnames = dimnames)
         blocks[[fo]] <- df
@@ -352,17 +346,37 @@ setBlocks <- function(file, names = NULL, sep = "\t", header = TRUE,
 
     if (length(blocks) > 1)
         blocks <- keepCommonRow(blocks)
+    
     blocks <- removeColumnSdNull(blocks)
 
-    for (i in seq_len(length(blocks))) {
+    for (i in seq_len(length(blocks))) 
         attributes(blocks[[i]])$nrow <- nrow[[i]]
-    }
 
     if (nrow(blocks[[1]]) > 0)
         return(blocks)
     else
         stop("There is no rows in common between the blocks.", exit_code = 108)
 }
+
+#' Impute missing data by means
+#' 
+#'  @param df A matrix containing missing data
+imputeMean <- function(df){
+    if (any(is.na(df))) {
+        df <- matrix(unlist(
+            lapply(seq_len(ncol(df)),
+                function(x)
+                    unlist(lapply(as.list(df[, x]),
+                        function(y)
+                            ifelse(is.na(y),
+                            mean(unlist(df[, x]), na.rm = TRUE), y))))),
+            nrow(df),
+            ncol(df), 
+            dimnames = list(row.names(df), colnames(df)))
+    }
+    return(df)
+}
+
 
 #' Check the format of the connection matrix
 #'
@@ -418,15 +432,19 @@ checkConnection <- function(c, blocks) {
 #' setConnection (blocks, 'data/connection.tsv')
 #' }
 #' @export setConnection
-setConnection <- function(blocks, superblock = FALSE, file = NULL,
-    sep = "\t", h = FALSE, rownames = NULL) {
+setConnection <- function(blocks,
+    superblock = FALSE,
+    file = NULL,
+    sep = "\t",
+    h = FALSE,
+    rownames = NULL) {
+    
 
     J <- length(blocks)
 
     if (superblock) {
         connection <- matrix(0, J, J)
-        connection[seq_len(J - 1), J] <-
-            connection[J, seq_len(J - 1)] <- 1
+        connection[seq_len(J - 1), J] <- connection[J, seq_len(J - 1)] <- 1
 
     } else if (is.null(file))
         connection <- 1 - diag(J)
@@ -465,8 +483,13 @@ setConnection <- function(blocks, superblock = FALSE, file = NULL,
 #' setResponse (blocks, 'data/response3.tsv')
 #' }
 #' @export setResponse
-setResponse <- function(blocks, file = NULL, sep = "\t",
-    header = TRUE, rownames = ROW_NAMES) {
+setResponse <- function(
+    blocks = NULL,
+    file = NULL,
+    sep = "\t",
+    header = TRUE,
+    rownames = ROW_NAMES) {
+    
 
     if (!is.null(file)) {
         isXls <- length(grep("xlsx?", file))

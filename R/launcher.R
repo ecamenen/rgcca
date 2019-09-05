@@ -8,6 +8,21 @@
 # and produces textual and graphical outputs (e.g. variables and individuals
 # plots).
 
+#' @import RGCCA
+#' @import ggplot2
+#' @importFrom grDevices dev.off rgb colorRamp pdf
+#' @importFrom graphics plot
+#' @importFrom stats cor quantile runif sd na.omit
+#' @importFrom utils read.table write.table packageVersion
+#' @importFrom scales hue_pal
+#' @importFrom optparse OptionParser make_option parse_args
+#' @importFrom plotly layout ggplotly style plotly_build %>%
+#' @importFrom visNetwork visNetwork visNodes visEdges
+#' @importFrom igraph graph_from_data_frame V<- E<-
+#' @importFrom methods is
+#' @importFrom utils installed.packages
+
+
 rm(list = ls())
 graphics.off()
 
@@ -155,7 +170,7 @@ getArgs <- function() {
             help = "Position in the path list of the plotted block (0: the
             superblock or, if not activated, the last one, 1: the fist one,
             2: the 2nd, etc.)[default: the last one]"
-            ),
+        ),
         make_option(
             opt_str = "--block_y",
             type = "integer",
@@ -255,25 +270,25 @@ getArgs <- function() {
             default = opt[20],
             help = "Path for the response correlation plot [default: %default]"
         )
-        )
+    )
     args <- commandArgs(trailingOnly = TRUE)
     return (OptionParser(option_list = option_list))
 }
 
 checkFile <- function(f) {
     # Check the existence of a path f: A character giving the path of a file
-
+    
     if (!file.exists(f)) {
         stop(paste0(f, " file does not exist."), exit_code = 120)
     }
 }
 
 checkArg <- function(opt) {
-    # Check the validity of the arguments opt : an optionParser object
-
-    if (is.null(opt$datasets))
-        stop(paste0("--datasets is required."), exit_code = 121)
-
+        # Check the validity of the arguments opt : an optionParser object
+        
+        if (is.null(opt$datasets))
+            stop(paste0("--datasets is required."), exit_code = 121)
+    
     if (is.null(opt$scheme))
         opt$scheme <- "factorial"
     else if (!opt$scheme %in% seq_len(4)) {
@@ -293,7 +308,7 @@ checkArg <- function(opt) {
         else
             opt$scheme <- schemes[opt$scheme]
     }
-
+    
     if (!opt$separator %in% seq_len(3)) {
         stop(
             paste0(
@@ -308,27 +323,27 @@ checkArg <- function(opt) {
         separators <- c("\t", ";", ",")
         opt$separator <- separators[opt$separator]
     }
-
+    
     # if (! opt$init %in% 1:2 )
     # stop(paste0('--init must be 1 or 2 (1: Singular Value
     # Decompostion , 2: random) [by default: 1], not ', opt$init, '.'),
     #  exit_code = 124)
     # else
     # opt$init <- ifelse(opt$init == 1, 'svd', 'random')
-
-
+    
+    
     FILES <- c("connection", "group")
     for (o in FILES)
         if (!is.null(opt[[o]]))
             checkFile(opt[[o]])
-
+    
     checkInteger("nmark")
     if (opt$nmark < 2)
         stop(paste0("--nmark must be upper than 2, not be equal to ",
-                    opt$nmark,
-                    "."),
+            opt$nmark,
+            "."),
             exit_code = 135)
-
+    
     return(opt)
 }
 
@@ -353,18 +368,18 @@ checkArgSize <- function(blocks, x, y) {
 postCheckArg <- function(opt, blocks) {
     # Check the validity of the arguments after loading the blocks opt : an
     # optionParser object blocks : a list of matrix
-
+    
     if (!is.null(opt$names))
         checkArgSize(
             blocks,
             strsplit(gsub(" ", "", opt$names), ",")[[1]], "names"
         )
-
+    
     opt <- select.type(blocks, opt)
-
+    
     if (opt$superblock | opt$type == "pca")
         blocks <- c(blocks, list(Reduce(cbind, blocks)))
-
+    
     for (x in c("block", "block_y", "response")) {
         if (!is.null(opt[[x]])) {
             if (opt[[x]] > length(blocks))
@@ -384,19 +399,19 @@ postCheckArg <- function(opt, blocks) {
                 opt[[x]] <- length(blocks)
             else if (opt[[x]] < 0)
                 stop(paste0("--",
-                            x,
-                            " must be positive, not be equal to ",
-                            opt[[x]],
-                            "."),
+                    x,
+                    " must be positive, not be equal to ",
+                    opt[[x]],
+                    "."),
                     exit_code = 134)
             checkInteger(x)
         }
     }
-
+    
     out <- lapply(seq_len(length(opt$ncomp)), function(x) {
         checkInteger("ncomp", opt$ncomp[x])
         if ((opt$ncomp[x] < 2) ||
-            (opt$ncomp[x] > ncol(blocks[[x]]))) {
+                (opt$ncomp[x] > ncol(blocks[[x]]))) {
             stop(
                 paste0(
                     "--ncomp must be comprise between 2 and ",
@@ -409,9 +424,9 @@ postCheckArg <- function(opt, blocks) {
             )
         }
     })
-
+    
     checkArgSize(blocks, opt$ncomp, "ncomp")
-
+    
     out <- sapply(c("compx", "compy"), function(x) {
         if ((opt[[x]] < 1) || (opt[[x]] > opt$ncomp[opt$block])) {
             stop(
@@ -428,7 +443,7 @@ postCheckArg <- function(opt, blocks) {
             )
         }
     })
-
+    
     MSG <- "--tau must be comprise between 0 and 1 or must correspond to the
     character 'optimal' for automatic setting"
     if (all(opt$tau != "optimal")) {
@@ -440,7 +455,7 @@ postCheckArg <- function(opt, blocks) {
                     stop(paste0(MSG, " (currently equals to ", x, ")."),
                         exit_code = 129)
             })
-
+            
             # If there is only one common tau
             if (length(list_tau) == 1)
                 opt$tau <- rep(list_tau[[1]], length(blocks))
@@ -452,19 +467,19 @@ postCheckArg <- function(opt, blocks) {
     } else {
         opt$tau <- "optimal"
     }
-
+    
     checkC1(blocks, opt$tau, opt$type)
-
+    
     return(opt)
 }
 
 checkInteger <- function(x, y = NULL) {
     # Test either x is an integer x : a string corresponding to a name
     # in a list opt'
-
+    
     if (is.null(y))
         y <- opt[[x]]
-
+    
     # Test if not a character
     tryCatch({
         as.integer(y)
@@ -476,9 +491,9 @@ checkInteger <- function(x, y = NULL) {
         stop(paste0("--", x, " is a character (", y, ") and must be an integer."),
             exit_code = 136)
     })
-
+    
     # Test if not a float
-
+    
     if (length(strsplit(as.character(y), ".", fixed = TRUE)[[1]]) > 1)
         stop(paste0("--", x, " is a float (", y, ") and must be an integer."))
 }
@@ -501,28 +516,31 @@ loadLibraries <- function(librairies) {
 # Get arguments : R packaging install, need an opt variable with associated
 # arguments
 opt <- list(
-        directory = ".",
-        separator = "\t",
-        type = "rgcca",
-        ncomp = 2,
-        tau = "optimal",
-        scheme = "factorial",
-        init = 1,
-        block = 0,
-        compx = 1,
-        compy = 2,
-        nmark = 100,
-        o1 = "individuals.pdf",
-        o2 = "corcircle.pdf",
-        o3 = "top_variables.pdf",
-        o4 = "ave.pdf",
-        o5 = "design.pdf",
-        o6 = "individuals.tsv",
-        o7 = "variables.tsv",
-        o8 = "rgcca.result.RData",
-        o9 = "response_correlation.pdf",
-        datasets = "inst/extdata/agriculture.tsv,inst/extdata/industry.tsv,inst/extdata/politic.tsv"
-    )
+    directory = ".",
+    separator = "\t",
+    type = "rgcca",
+    ncomp = 2,
+    tau = "optimal",
+    scheme = "factorial",
+    init = 1,
+    block = 0,
+    compx = 1,
+    compy = 2,
+    nmark = 100,
+    o1 = "individuals.pdf",
+    o2 = "corcircle.pdf",
+    o3 = "top_variables.pdf",
+    o4 = "ave.pdf",
+    o5 = "design.pdf",
+    o6 = "individuals.tsv",
+    o7 = "variables.tsv",
+    o8 = "rgcca.result.RData",
+    o9 = "response_correlation.pdf",
+    datasets = paste0("inst/extdata/",
+        c("agriculture","industry","politic"),
+        ".tsv",
+        collapse = ",")
+)
 
 
 loadLibraries(c("RGCCA", "ggplot2", "optparse", "scales", "igraph"))
@@ -558,7 +576,7 @@ blocks <- scaling(blocks, opt$scale)
 # If single values for ncomp and tau, tansform it in a list
 for (x in c("ncomp", "tau")) {
     if (length(grep(",", opt[[x]])) == 0 &&
-        !(x == "tau" && opt[[x]] == "optimal"))
+            !(x == "tau" && opt[[x]] == "optimal"))
         opt[[x]] <- paste(rep(opt[[x]], length(blocks)), collapse = ",")
 }
 
@@ -575,9 +593,9 @@ blocks <- setSuperblock(blocks, opt$superblock, opt$type)
 connection <- opt$connection
 if (!is.matrix(connection))
     connection <- setConnection(blocks,
-                                (opt$superblock | !is.null(opt$response)),
-                                opt$connection,
-                                opt$separator)
+        (opt$superblock | !is.null(opt$response)),
+        opt$connection,
+        opt$separator)
 
 group <- setResponse(blocks, opt$group, opt$separator, opt$header)
 
@@ -599,8 +617,7 @@ if (opt$ncomp[opt$block] == 1 && is.null(opt$block_y)) {
     to perform a samples plot")
 } else {
     (
-        individual_plot <-
-            plotSamplesSpace(
+        individual_plot <- plotSamplesSpace(
                 rgcca.out,
                 group,
                 opt$compx,
@@ -617,8 +634,7 @@ if (opt$ncomp[opt$block] == 1 && is.null(opt$block_y)) {
 if (opt$ncomp[opt$block] > 1) {
     # Variables common space
     (
-        corcircle <-
-            plotVariablesSpace(
+        corcircle <- plotVariablesSpace(
                 rgcca.out,
                 blocks,
                 opt$compx,
@@ -633,9 +649,14 @@ if (opt$ncomp[opt$block] > 1) {
 }
 
 # Fingerprint plot
-top_variables <-
-    plotFingerprint(rgcca.out, blocks, opt$compx, opt$superblock, opt$nmark,
-                    type = "cor")
+top_variables <- plotFingerprint(
+        rgcca.out, 
+        blocks, 
+        opt$compx, 
+        opt$superblock, 
+        opt$nmark,
+        type = "cor"
+    )
 savePlot(opt$o3, top_variables)
 
 

@@ -8,20 +8,6 @@
 # and produces textual and graphical outputs (e.g. variables and individuals
 # plots).
 
-#' @import RGCCA
-#' @import ggplot2
-#' @importFrom grDevices dev.off rgb colorRamp pdf
-#' @importFrom graphics plot
-#' @importFrom stats cor quantile runif sd na.omit
-#' @importFrom utils read.table write.table packageVersion
-#' @importFrom scales hue_pal
-#' @importFrom optparse OptionParser make_option parse_args
-#' @importFrom plotly layout ggplotly style plotly_build %>%
-#' @importFrom visNetwork visNetwork visNodes visEdges
-#' @importFrom igraph graph_from_data_frame V<- E<-
-#' @importFrom methods is
-#' @importFrom utils installed.packages
-
 VERBOSE <- FALSE
 
 checkNbBlocks <- function(blocks, type) {
@@ -74,11 +60,17 @@ checkNbBlocks <- function(blocks, type) {
 #' @return superblock A boolean giving the presence (TRUE) / absence (FALSE)
 #' of a superblock
 
-select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)),
-            tau = rep(1, length(A)), ncomp = rep(1, length(A)),
-            scheme = "centroid", superblock = TRUE, type  = "rgcca",
-            verbose = TRUE, quiet = FALSE) {
-
+select.type <- function(A = blocks,
+    opt = NULL,
+    C = 1 - diag(length(A)),
+    tau = rep(1, length(A)),
+    ncomp = rep(1, length(A)),
+    scheme = "centroid",
+    superblock = TRUE,
+    type  = "rgcca",
+    verbose = TRUE,
+    quiet = FALSE) {
+    
         if (!is.null(opt)) {
             scheme <- opt$scheme
             C <- opt$connection
@@ -434,7 +426,7 @@ select.type <- function(A = blocks, opt = NULL, C = 1 - diag(length(A)),
 #' @return superblock A RGCCA object
 
 rgcca.analyze <- function(blocks,
-                        connection = 1 - diag(length(A)),
+                        connection = 1 - diag(length(blocks)),
                         tau = rep(1, length(blocks)),
                         ncomp = rep(2, length(blocks)),
                         scheme = "factorial",
@@ -445,7 +437,6 @@ rgcca.analyze <- function(blocks,
                         verbose = TRUE) {
     
     WARN <- FALSE
-    A <- NULL
 
     for (i in seq_len(length(blocks))) {
         if (ncol(blocks[[i]]) > 1000) {
@@ -499,11 +490,27 @@ bootstrap_k <- function(blocks,
     id_boot <- sample(NROW(blocks[[1]]), replace = TRUE)
 
     # Scale the blocks
-    if (!is.null(attr(blocks, "scaled:center"))) {
-        # If blocks are already scaled
-
-        if (!is.null(attr(blocks, "scaled:scale")))
-            boot_blocks <- lapply(blocks, function(x)
+    # if (!is.null(attr(blocks, "scaled:center"))) {
+    #     # If blocks are already scaled
+    # 
+    #     if (!is.null(attr(blocks, "scaled:scale")))
+    #         boot_blocks <- lapply(blocks, function(x)
+    #             scale(
+    #                 x[id_boot, ],
+    #                 center = attr(blocks, "scaled:center"),
+    #                 scale = attr(blocks, "scaled:scale")
+    #             ) / sqrt(ncol(x)))
+    #     else
+    #         boot_blocks <- lapply(blocks, function(x)
+    #             scale(
+    #                 x[id_boot, ],
+    #                 center = attr(blocks, "scaled:center"),
+    #                 scale = FALSE
+    #             ))
+    # 
+    # } else{
+        if (isTRUE(scale))
+                boot_blocks <- lapply(blocks, function(x)
                 scale(
                     x[id_boot, ],
                     center = attr(blocks, "scaled:center"),
@@ -511,20 +518,8 @@ bootstrap_k <- function(blocks,
                 ) / sqrt(ncol(x)))
         else
             boot_blocks <- lapply(blocks, function(x)
-                scale(
-                    x[id_boot, ],
-                    center = attr(blocks, "scaled:center"),
-                    scale = FALSE
-                ))
-
-    } else{
-        if (isTRUE(scale))
-            boot_blocks <- lapply(blocks, function(x)
-                scale2(x[id_boot, ], bias = bias) / sqrt(ncol(x)))
-        else
-            boot_blocks <- lapply(blocks, function(x)
                 scale2(x[id_boot, ], scale = FALSE))
-    }
+    # }
 
     boot_blocks <- removeColumnSdNull(boot_blocks)
 
@@ -560,6 +555,7 @@ bootstrap_k <- function(blocks,
     w <- lapply(seq_len(length(w)), function(x)
         w[[x]][colnames(blocks[[x]]), ])
 
+    names(w) <- names(blocks)
     return(w)
 }
 
@@ -569,17 +565,18 @@ bootstrap_k <- function(blocks,
 # blocks3 = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
 #   politic = Russett[, 6:11] )
 # bootstrap(blocks3)
-bootstrap <- function(blocks,
-                    n_boot = 5,
-                    connection = 1 - diag(length(blocks)),
-                    tau = rep(1, length(blocks)),
-                    ncomp = rep(2, length(blocks)),
-                    scheme = 'factorial',
-                    scale = TRUE,
-                    init = "svd",
-                    bias = TRUE,
-                    type = "rgcca",
-                    nb_cores = NULL) {
+bootstrap <- function(
+    blocks,
+    n_boot = 5,
+    connection = 1 - diag(length(blocks)),
+    tau = rep(1, length(blocks)),
+    ncomp = rep(2, length(blocks)),
+    scheme = 'factorial',
+    scale = TRUE,
+    init = "svd",
+    bias = TRUE,
+    type = "rgcca",
+    nb_cores = NULL) {
     
     if (any(unlist(lapply(blocks, ncol) > 1000)))
         verbose <- TRUE
@@ -596,6 +593,10 @@ bootstrap <- function(blocks,
                     init,
                     bias,
                     type)
+    
+    print(w1)
+    
+    cat("Bootstrap in progress...")
 
     W <- parallel::mclapply(seq_len((n_boot - 1)), function(x) {
         # print(paste("Bootstrap", x))
@@ -617,28 +618,25 @@ bootstrap <- function(blocks,
                     w[[k]][, j] <- -1 * w[[k]][, j]
             }
         }
+        
+        print(w)
 
         return(w)
 
     }, mc.cores = nb_cores)
+    
+    beepr::beep(expr = cat("OK", append = TRUE))
 
     return(c(list(w1), W))
 }
 
-#' list of list weights (one per bootstrap per blocks)
-#'
-#' @param comp An integer giving the index of the analysis components
-#' @param W A list of list weights (one per bootstrap per blocks)
-#' @param n_mark An integer giving the number of top variables to select
-#' @param i_block An integer giving the index of a list of blocks
-plotBootstrap <- function(W,
-                        comp = 1,
-                        n_mark = 100,
-                        i_block = NULL) {
-
-    J <- names(W[[1]])
-    color <- X2 <- X3 <- NULL
-
+getBootstrap <- function(
+    rgcca,
+    W,
+    comp = 1,
+    i_block = NULL,
+    collapse = TRUE) {
+    
     if (is.null(i_block))
         i_block <- length(W[[1]])
 
@@ -647,39 +645,77 @@ plotBootstrap <- function(W,
         stop("Selected dimension was not associated to every blocks",
             exit_code = 113)
 
-    W_select <- Reduce(rbind, lapply(W, function(x) x[[i_block]][, comp]))
+    if (collapse)
+        W_select <- Reduce(rbind, lapply(W, function(x) t(Reduce(rbind, x)[, comp])))
+    else
+        W_select <- Reduce(rbind, lapply(W, function(x) x[[i_block]][, comp]))
+ 
     stats <- apply(W_select, 2,  function(x) c(mean(x), sd(x)))
+    p.vals <- pnorm(0, mean = abs(stats[1,]), sd = stats[2,])
+    
+    # TODO: added selected variables for sgcca in previous df, then add the pvals
+    
+    if (collapse)
+        weights <- Reduce(rbind, rgcca$a)[, comp]
+    else
+        weights <- rgcca$a[[i_block]][, comp]
 
-    df <- data.frame(cbind(stats[1, ],
-                        stats[1, ] - stats[2, ],
-                        stats[1, ] + stats[2, ]))
+    df <- data.frame(
+        cbind(
+            weights,
+            stats[1, ] - stats[2, ],
+            stats[1, ] + stats[2, ]
+        ),
+        p.vals,
+        BH = p.adjust(p.vals, method = "BH")
+    )
 
-    if (any(names(W[[1]]) == "Superblock") & i_block == length(J))
-        df$color <- as.factor(getBlocsVariables(W[[1]]))
+    if (collapse)
+        df$color <- as.factor(getBlocsVariables(rgcca$a, collapse = collapse))
 
-    df <- data.frame(getRankedValues(df,  allCol = TRUE), order = nrow(df):1)
+    data.frame(getRankedValues(df,  allCol = TRUE), order = nrow(df):1)
+}
+
+#' list of list weights (one per bootstrap per blocks)
+#'
+#' @param comp An integer giving the index of the analysis components
+#' @param W A list of list weights (one per bootstrap per blocks)
+#' @param n_mark An integer giving the number of top variables to select
+#' @param i_block An integer giving the index of a list of blocks
+plotBootstrap <- function(
+    df,
+    rgcca,
+    superblock = TRUE,
+    n_mark = 100) {
+
+    color <- V2 <- V3 <- NULL
+    J <- names(rgcca$a)
 
     if (nrow(df) > n_mark)
         df <- df[seq_len(n_mark), ]
 
-    if (any(names(W[[1]]) == "Superblock") & i_block == length(J)) {
+    if (superblock) {
         color2 <- factor(df$color)
         levels(color2) <- colorGroup(color2)
-        levels(df$color) <- rev(levels(df$color))
         p <- ggplot(df, aes(order, df[, 1], fill = color))
     } else{
         color2 <- "black"
         p <- ggplot(df, aes(order, df[, 1], fill = abs(df[, 1])))
     }
 
-    p <- plotHistogram(p, df, "Average variable weights", as.character(color2)) +
-        geom_errorbar(aes(ymin = X2, ymax = X3), color = "gray40")
+    p <- plotHistogram(p, df, "Average variable bootstraped weights", as.character(color2)) +
+        geom_errorbar(aes(ymin = V2, ymax = V3), color = "gray40")
 
-    if (any(names(W[[1]]) == "Superblock") & i_block == length(J))
-        p <- p + scale_fill_manual(values = colorGroup(J),
-                                    limits = J[-length(J)],
-                                    labels = rev(J[-length(J)]))
-
+    if (superblock)
+        col <- J
+    else
+       col <- J[-length(J)]
+        
+    if (superblock) {
+        matched <- match(rev(unique(df$color)), col)
+        p <- orderColorPerBlocs(rgcca, p, matched, superblock)
+    }
+    
     return(p)
 }
 
@@ -704,7 +740,7 @@ checkC1 <- function(blocks, tau, type) {
         min_c1 <- lapply(blocks, function(x) 1 / sqrt(ncol(x)))
 
         # Check c1 varying between 1/sqrt(pj) and 1
-        out <- mapply(function(x, y) {
+        mapply(function(x, y) {
             if (x < y | x > 1)
                 stop(
                     paste0(
