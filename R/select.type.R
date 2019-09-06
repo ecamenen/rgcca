@@ -594,8 +594,6 @@ bootstrap <- function(
                     bias,
                     type)
     
-    print(w1)
-    
     cat("Bootstrap in progress...")
 
     W <- parallel::mclapply(seq_len((n_boot - 1)), function(x) {
@@ -618,8 +616,6 @@ bootstrap <- function(
                     w[[k]][, j] <- -1 * w[[k]][, j]
             }
         }
-        
-        print(w)
 
         return(w)
 
@@ -635,7 +631,8 @@ getBootstrap <- function(
     W,
     comp = 1,
     i_block = NULL,
-    collapse = TRUE) {
+    collapse = TRUE,
+    keep.sign = TRUE) {
     
     if (is.null(i_block))
         i_block <- length(W[[1]])
@@ -663,8 +660,9 @@ getBootstrap <- function(
     df <- data.frame(
         cbind(
             weights,
-            stats[1, ] - stats[2, ],
-            stats[1, ] + stats[2, ]
+            mean = stats[1, ],
+            sdneg = stats[1, ] - stats[2, ],
+            sdpos = stats[1, ] + stats[2, ]
         ),
         p.vals,
         BH = p.adjust(p.vals, method = "BH")
@@ -672,7 +670,21 @@ getBootstrap <- function(
 
     if (collapse)
         df$color <- as.factor(getBlocsVariables(rgcca$a, collapse = collapse))
-
+    
+    df <- df[-which(df$weights == 0), ]
+    
+    df$sign <- rep("", nrow(df))
+    sign = c(.05, .01, .001)
+    for (i in 1:3) {
+        for (j in 1:nrow(df)) {
+            if (df$p.vals[j] <= sign[i])
+                df$sign[j] <- paste(rep("*", i), collapse = "")
+        }
+    }
+    
+    if(keep.sign)
+        df <- df[which(df$sign!=""), ]
+    
     data.frame(getRankedValues(df,  allCol = TRUE), order = nrow(df):1)
 }
 
@@ -697,14 +709,16 @@ plotBootstrap <- function(
     if (superblock) {
         color2 <- factor(df$color)
         levels(color2) <- colorGroup(color2)
-        p <- ggplot(df, aes(order, df[, 1], fill = color))
+        p <- ggplot(df, aes(order, mean, fill = color))
     } else{
         color2 <- "black"
-        p <- ggplot(df, aes(order, df[, 1], fill = abs(df[, 1])))
+        p <- ggplot(df, aes(order, mean, fill = abs(mean)))
     }
 
-    p <- plotHistogram(p, df, "Average variable bootstraped weights", as.character(color2)) +
-        geom_errorbar(aes(ymin = V2, ymax = V3), color = "gray40")
+    p <- plotHistogram(p, df, "Variable weights with averaged bootstraps", as.character(color2)) +
+        geom_errorbar(aes(ymin = sdneg, ymax = sdpos)) +
+        geom_line(aes(x = order, y = weights), inherit.aes = FALSE, col = "gray40", lwd = 0.7) +
+        geom_point(aes(x = order, y = weights), inherit.aes = FALSE, col = "gray40", size = 1.5)
 
     if (superblock)
         col <- J
