@@ -8,9 +8,11 @@
 # and produces textual and graphical outputs (e.g. variables and individuals
 # plots).
 
-AXIS_TITLE_SIZE <- 19
-AXIS_TEXT_SIZE <- 10
-PCH_TEXT_SIZE <- 3
+CEX <- 1.5
+AXIS_TITLE_CEX <- 19 * CEX
+SUBTITLE_CEX <- 16 * CEX
+AXIS_TEXT_CEX <- 10 * CEX
+PCH_TEXT_CEX <- 3 * CEX
 AXIS_FONT <- "italic"
 SAMPLES_COL_DEFAULT <- "#cd5b45"
 
@@ -249,10 +251,10 @@ varSelected <- function(rgcca, i_block, comp) {
 #' Default font for plots
 theme_perso <- function() {
     theme(
-        legend.text = element_text(size = 13),
-        legend.title = element_text(face = "bold.italic", size = 16),
+        legend.text = element_text(size = 13 * CEX),
+        legend.title = element_text(face = "bold.italic", size = SUBTITLE_CEX ),
         plot.title = element_text(
-            size = 25,
+            size = 25 * CEX,
             face = "bold",
             hjust = 0.5,
             margin = margin(0, 0, 20, 0)
@@ -332,7 +334,7 @@ plotSamplesSpace <- function(rgcca,
                 rgcca$Y[[i_block_y]][, comp_y])
 
         if (nrow(df) > 100)
-            PCH_TEXT_SIZE <- 2
+            PCH_TEXT_CEX <- 2
 
         # if the resp is numeric
         if (length(unique(as.matrix(resp))) > 1) {
@@ -608,8 +610,8 @@ plotSpace <- function(
     if (is.null(i_block_y))
         i_block_y <- i_block
 
-    if (!isTRUE(text)) {
-            func <- quote(geom_point(size = PCH_TEXT_SIZE))
+if (!isTRUE(text)) {
+        func <- quote(geom_point(size = PCH_TEXT_CEX))
         if (!is.numeric(na.omit(group)))
             func$mapping <- aes(shape = as.factor(group))
     } else {
@@ -617,7 +619,8 @@ plotSpace <- function(
         f <- "geom_text"
         func <- quote(
             get(f)(aes(label = rownames(df)),
-                size = PCH_TEXT_SIZE))
+            size = PCH_TEXT_CEX)
+        )
         
         if (no_Overlap && nrow(df) <= 200) {
             f = paste0(f, '_repel') 
@@ -662,12 +665,12 @@ plotSpace <- function(
             axis.title.y = element_text(
                 face = AXIS_FONT,
                 margin = margin(0, 20, 0, 0),
-                    size = AXIS_TITLE_SIZE
+                    size = AXIS_TITLE_CEX
             ),
             axis.title.x = element_text(
                 face = AXIS_FONT,
                 margin = margin(20, 0, 0, 0),
-                    size = AXIS_TITLE_SIZE
+                size = AXIS_TITLE_CEX
             )
         )
 
@@ -881,7 +884,7 @@ plotAVE <- function(rgcca) {
             labels = gsub("comp", " ", levels(df$ncomp))) + 
         geom_col(position = position_stack(reverse = TRUE)) +
         labs(subtitle = printAxis(rgcca, outer = TRUE)) +
-        geom_text(aes(y = y_ave_cum),  cex = 3.5, color = "white") +
+        geom_text(aes(y = y_ave_cum),  cex = 3.5 * CEX, color = "white") +
         labs(fill = "Components")
 
     return(p)
@@ -920,7 +923,7 @@ plotHistogram <- function(p,
     if (nrow(df) <= 10 || title == "Average Variance Explained") {
         WIDTH <- NULL
         if (title == "Average Variance Explained")
-            AXIS_TEXT_SIZE <- 12
+            AXIS_TEXT_CEX <- 12
     } else
         WIDTH <- 1
 
@@ -937,12 +940,12 @@ plotHistogram <- function(p,
         theme_perso() +
         theme(
             axis.text.y = element_text(
-            size = AXIS_TEXT_SIZE,
+            size = AXIS_TEXT_CEX,
             face = AXIS_FONT,
             color = "gray40"
             ),
             axis.text.x = element_text(
-                size = AXIS_TEXT_SIZE,
+                size = AXIS_TEXT_CEX,
                 face = AXIS_FONT,
                 color = "gray40"
             ),
@@ -950,7 +953,7 @@ plotHistogram <- function(p,
             axis.ticks = element_blank(),
             plot.subtitle = element_text(
                 hjust = 0.5,
-                size = 16,
+                size = SUBTITLE_CEX,
                 face = "italic"
             ),
             plot.margin = margin(0, 0, MAR, 0, "mm")
