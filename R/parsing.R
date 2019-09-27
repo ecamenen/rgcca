@@ -512,9 +512,11 @@ setResponse <- function(
 
         if (NCOL(response) > 1) {
             disjunctive <- unique(apply(response, 1, sum))
+            
+            
 
             if (length(disjunctive) &&
-                unique(response %in% c(0, 1)) && disjunctive) {
+                unique(disjunctive %in% c(0, 1)) && disjunctive) {
                 response2 <- factor(apply(response, 1, which.max))
                 if (header) {
                     levels(response2) <- colnames(response)
@@ -525,7 +527,7 @@ setResponse <- function(
                     ))
 
             } else {
-                response <- response[, 1]
+                response <- as.matrix(response[, 1])
                 warning("There is multiple columns in the response file. By default, only the first one is taken in account.")
             }
         }

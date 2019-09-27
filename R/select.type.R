@@ -477,63 +477,44 @@ rgcca.analyze <- function(blocks,
 }
 
 bootstrap_k <- function(blocks,
-                    connection = 1 - diag(length(blocks)),
-                    tau = rep(1, length(blocks)),
-                    ncomp = rep(2, length(blocks)),
-                    scheme = 'factorial',
+                    rgcca,
                     scale = TRUE,
                     init = "svd",
                     bias = TRUE,
-                    type = "rgcca",
                     verbose = FALSE) {
+    
     # Shuffle rows
     id_boot <- sample(NROW(blocks[[1]]), replace = TRUE)
 
-    # Scale the blocks
-    # if (!is.null(attr(blocks, "scaled:center"))) {
-    #     # If blocks are already scaled
-    # 
-    #     if (!is.null(attr(blocks, "scaled:scale")))
-    #         boot_blocks <- lapply(blocks, function(x)
-    #             scale(
-    #                 x[id_boot, ],
-    #                 center = attr(blocks, "scaled:center"),
-    #                 scale = attr(blocks, "scaled:scale")
-    #             ) / sqrt(ncol(x)))
-    #     else
-    #         boot_blocks <- lapply(blocks, function(x)
-    #             scale(
-    #                 x[id_boot, ],
-    #                 center = attr(blocks, "scaled:center"),
-    #                 scale = FALSE
-    #             ))
-    # 
-    # } else{
-        if (isTRUE(scale))
-                boot_blocks <- lapply(blocks, function(x)
-                scale(
-                    x[id_boot, ],
-                    center = attr(blocks, "scaled:center"),
-                    scale = attr(blocks, "scaled:scale")
-                ) / sqrt(ncol(x)))
-        else
+    if (isTRUE(scale))
             boot_blocks <- lapply(blocks, function(x)
-                scale2(x[id_boot, ], scale = FALSE))
-    # }
+            scale(
+                x[id_boot, ],
+                center = attr(blocks, "scaled:center"),
+                scale = attr(blocks, "scaled:scale")
+            ) / sqrt(ncol(x)))
+    else
+        boot_blocks <- lapply(blocks, function(x)
+            scale2(x[id_boot, ], scale = FALSE))
 
     boot_blocks <- removeColumnSdNull(boot_blocks)
+    
+    if (class(rgcca) == "sgcca")
+        tau <- rgcca$c1
+    else
+        tau <- rgcca$tau
 
     # Get boostraped weights
     w <- rgcca.analyze(
         boot_blocks,
-        connection,
+        rgcca$C,
         tau = tau,
-        ncomp = ncomp,
-        scheme = scheme,
+        ncomp = rgcca$ncomp,
+        scheme = rgcca$scheme,
         scale = FALSE,
         init = init,
         bias = bias,
-        type = type,
+        type = class(rgcca),
         verbose = verbose
     )$a
 
@@ -545,8 +526,8 @@ bootstrap_k <- function(blocks,
                             matrix(
                                 0,
                                 length(missing_var[[x]]),
-                                ncomp[x],
-                                dimnames = list(missing_var[[x]], seq_len(ncomp[x]))
+                                rgcca$ncomp[x],
+                                dimnames = list(missing_var[[x]], seq_len(rgcca$ncomp[x]))
                             ))
     
     # bug mapply with pca
@@ -567,47 +548,28 @@ bootstrap_k <- function(blocks,
 # bootstrap(blocks3)
 bootstrap <- function(
     blocks,
+    rgcca,
     n_boot = 5,
-    connection = 1 - diag(length(blocks)),
-    tau = rep(1, length(blocks)),
-    ncomp = rep(2, length(blocks)),
-    scheme = 'factorial',
     scale = TRUE,
     init = "svd",
     bias = TRUE,
-    type = "rgcca",
-    nb_cores = NULL) {
-    
+    nb_cores = parallel::detectCores() - 1) {
+
     if (any(unlist(lapply(blocks, ncol) > 1000)))
         verbose <- TRUE
 
-    if (is.null(nb_cores))
-        nb_cores <- parallel::detectCores() - 1
-
-    w1 <- bootstrap_k(blocks,
-                    connection,
-                    tau,
-                    ncomp,
-                    scheme,
-                    scale,
-                    init,
-                    bias,
-                    type)
+    w1 <- rgcca$a
     
     cat("Bootstrap in progress...")
 
-    W <- parallel::mclapply(seq_len((n_boot - 1)), function(x) {
+    W <- parallel::mclapply(seq_len(n_boot), function(x) {
         # print(paste("Bootstrap", x))
 
         w <- bootstrap_k(blocks,
-                        connection,
-                        tau,
-                        ncomp,
-                        scheme,
+                        rgcca,
                         scale,
                         init,
-                        bias,
-                        type)
+                        bias)
 
         # Test on the sign of the correlation
         for (k in seq_len(length(blocks))) {
@@ -623,7 +585,7 @@ bootstrap <- function(
     
     beepr::beep(expr = cat("OK", append = TRUE))
 
-    return(c(list(w1), W))
+    return(W)
 }
 
 getBootstrap <- function(
@@ -632,7 +594,8 @@ getBootstrap <- function(
     comp = 1,
     i_block = NULL,
     collapse = TRUE,
-    keep.sign = TRUE) {
+    select = TRUE,
+    alpha = 0.05) {
     
     if (is.null(i_block))
         i_block <- length(W[[1]])
@@ -646,46 +609,57 @@ getBootstrap <- function(
         W_select <- Reduce(rbind, lapply(W, function(x) t(Reduce(rbind, x)[, comp])))
     else
         W_select <- Reduce(rbind, lapply(W, function(x) x[[i_block]][, comp]))
- 
-    stats <- apply(W_select, 2,  function(x) c(mean(x), sd(x)))
-    p.vals <- pnorm(0, mean = abs(stats[1,]), sd = stats[2,])
     
-    # TODO: added selected variables for sgcca in previous df, then add the pvals
+        if (collapse)
+            weights <- Reduce(rbind, rgcca$a)[, comp]
+        else
+            weights <- rgcca$a[[i_block]][, comp]
     
-    if (collapse)
-        weights <- Reduce(rbind, rgcca$a)[, comp]
-    else
-        weights <- rgcca$a[[i_block]][, comp]
-
-    df <- data.frame(
-        cbind(
-            weights,
-            mean = stats[1, ],
-            sdneg = stats[1, ] - stats[2, ],
-            sdpos = stats[1, ] + stats[2, ]
-        ),
-        p.vals,
-        BH = p.adjust(p.vals, method = "BH")
-    )
+    if (class(rgcca) == "sgcca")
+        df <- data.frame(
+            cbind(
+                weights = apply(W_select, 2, function(x) sum(x != 0) / length(x)),
+                mean = weights
+            )
+        )
+    else{
+        stats <- apply(W_select, 2,  function(x) c(mean(x), sd(x)))
+        p.vals <- pnorm(0, mean = abs(stats[1,]), sd = stats[2,])
+    
+        tail <- qnorm(1 - alpha / 2)
+        
+        df <- data.frame(
+            cbind(
+                weights,
+                mean = stats[1, ],
+                intneg = stats[1, ] - tail * stats[2, ],
+                intpos = stats[1, ] + tail * stats[2, ]
+            ),
+            p.vals,
+            BH = p.adjust(p.vals, method = "BH")
+        )
+    }
 
     if (collapse)
         df$color <- as.factor(getBlocsVariables(rgcca$a, collapse = collapse))
     
-    df <- df[-which(df$weights == 0), ]
-    
-    df$sign <- rep("", nrow(df))
-    sign = c(.05, .01, .001)
-    for (i in 1:3) {
-        for (j in 1:nrow(df)) {
-            if (df$p.vals[j] <= sign[i])
-                df$sign[j] <- paste(rep("*", i), collapse = "")
+     if (class(rgcca) != "sgcca") {
+        df <- df[-which(df$weights == 0), ]
+        
+        df$sign <- rep("", nrow(df))
+        sign = c(.05, .01, .001)
+        for (i in 1:3) {
+            for (j in 1:nrow(df)) {
+                if (df$p.vals[j] <= sign[i])
+                    df$sign[j] <- paste(rep("*", i), collapse = "")
+            }
         }
+        
+        if (select)
+            df <- df[which(df$intneg/df$intpos > 0), ]
     }
     
-    if(keep.sign)
-        df <- df[which(df$sign!=""), ]
-    
-    data.frame(getRankedValues(df,  allCol = TRUE), order = nrow(df):1)
+    data.frame(getRankedValues(df, allCol = TRUE), order = nrow(df):1)
 }
 
 #' list of list weights (one per bootstrap per blocks)
@@ -698,7 +672,8 @@ plotBootstrap <- function(
     df,
     rgcca,
     superblock = TRUE,
-    n_mark = 100) {
+    show.boot = TRUE,
+    n_mark = 30) {
 
     color <- V2 <- V3 <- NULL
     J <- names(rgcca$a)
@@ -709,16 +684,23 @@ plotBootstrap <- function(
     if (superblock) {
         color2 <- factor(df$color)
         levels(color2) <- colorGroup(color2)
-        p <- ggplot(df, aes(order, mean, fill = color))
+        p <- ggplot(df, aes(order, weights, fill = color))
     } else{
         color2 <- "black"
-        p <- ggplot(df, aes(order, mean, fill = abs(mean)))
+        p <- ggplot(df, aes(order, weights, fill = abs(weights)))
     }
 
-    p <- plotHistogram(p, df, "Variable weights with averaged bootstraps", as.character(color2)) +
-        geom_errorbar(aes(ymin = sdneg, ymax = sdpos)) +
-        geom_line(aes(x = order, y = weights), inherit.aes = FALSE, col = "gray40", lwd = 0.7) +
-        geom_point(aes(x = order, y = weights), inherit.aes = FALSE, col = "gray40", size = 1.5)
+    p <- plotHistogram(p, df, "Variable weights", as.character(color2))
+    
+    if (show.boot){
+    p <- p +
+        geom_line(aes(x = order, y = mean), inherit.aes = FALSE, lwd = 0.7) +
+        geom_point(aes(x = order, y = mean), inherit.aes = FALSE, size = 1.5)
+
+        if (class(rgcca) == "rgcca" )
+            p <- p +
+                geom_errorbar(aes(ymin = intneg, ymax = intpos))
+    }
 
     if (superblock)
         col <- J
