@@ -12,7 +12,7 @@ AXIS_TITLE_SIZE <- 19
 AXIS_TEXT_SIZE <- 10
 PCH_TEXT_SIZE <- 3
 AXIS_FONT <- "italic"
-SAMPLES_COL_DEFAULT <- "brown3"
+SAMPLES_COL_DEFAULT <- "#cd5b45"
 
 # X- Y axis format for plotly objets : no axis, no ticks
 ax <- list(linecolor = "white",
@@ -31,7 +31,10 @@ ax2 <- list(linecolor = "white",
 # (otherwhise samplesPlot which do not have traces could not be convereted
 # in ggplotly)
 # return a plotly object
-dynamicPlot <- function(f, ax, text = "name+x+y", legend = TRUE, 
+dynamicPlot <- function(f,
+    ax,
+    text = "name+x+y",
+    legend = TRUE,
     dynamicTicks = FALSE) {
     
         # Convert a ggplot into a plotly object add a layout with predefined
@@ -261,7 +264,7 @@ colorGroup <- function(group) {
     palette <-
         rep(
             c(
-                "#cd5b45",
+                SAMPLES_COL_DEFAULT,
                 "#71ad65",
                 "#3c78b4",
                 "#ffc600",
@@ -313,7 +316,8 @@ plotSamplesSpace <- function(rgcca,
             i_block = NULL,
             text = TRUE,
             i_block_y = NULL,
-            reponse_name = "Response") {
+            reponse_name = "Response",
+            no_Overlap = TRUE) {
 
 
         # resp : color the points with a vector
@@ -339,7 +343,7 @@ plotSamplesSpace <- function(rgcca,
             if (!is.null(names)) {
                 
                 resp <- as.matrix(resp, row.names = names)
-                name_blocks <- row.names(blocks[[i_block]])
+                name_blocks <- row.names(rgcca$Y[[i_block]])
                 diff_column <- setdiff(name_blocks, names)
                 
                 if (identical(diff_column, name_blocks)) {
@@ -353,7 +357,7 @@ plotSamplesSpace <- function(rgcca,
                     } else {
                         names(resp) <- names
                     }
-                    resp <- resp[row.names(blocks[[i_block]])]
+                    resp <- resp[row.names(rgcca$Y[[i_block]])]
                 }
             } else {
                 warning("No row names have been found in the group file.")
@@ -384,7 +388,8 @@ plotSamplesSpace <- function(rgcca,
                         i_block,
                         p,
                         text,
-                        i_block_y)
+                        i_block_y,
+                        no_Overlap = no_Overlap)
 
         # remove legend if missing
         if (length(unique(resp)) == 1)
@@ -408,8 +413,25 @@ plotSamplesSpace <- function(rgcca,
 #' getBlocsVariables(rgcca.res)
 #' # a, b, c
 #' @export getBlocsVariables
-getBlocsVariables <- function(df) {
-    rep(names(df)[-length(df)], sapply(df[seq_len(length(df) - 1)], NROW))
+getBlocsVariables <- function(df, collapse = FALSE) {
+    
+    if (!collapse)
+        bl.names <- names(df)[-length(df)]
+    else
+        bl.names <- names(df)
+
+    res <- rep(
+        bl.names,
+        sapply(
+            df[seq_len(length(df) - as.integer(!collapse))],
+            function(x)
+            nrow(as.matrix(x))
+        )
+    )
+    
+    names(res) <- unlist(lapply(df[bl.names], row.names))
+
+    return(res)
 }
 
 #' Plot of variables space
@@ -449,78 +471,94 @@ getBlocsVariables <- function(df) {
 #' # Using the first block
 #' plotVariablesSpace(rgcca.res, blocks, 1, 2, FALSE, 1)
 #' @export plotVariablesSpace
-plotVariablesSpace <- function(rgcca, blocks, comp_x = 1, comp_y = 2,
-    superblock = TRUE, i_block = NULL, text = TRUE, removeVariable = TRUE,
-    n_mark = 100) {
+plotVariablesSpace <- function(
+    rgcca,
+    blocks,
+    comp_x = 1,
+    comp_y = 2,
+    superblock = TRUE,
+    i_block = NULL,
+    text = TRUE,
+    removeVariable = TRUE,
+    n_mark = 100,
+    collapse = FALSE,
+    no_Overlap = TRUE) {
 
+    x <- y <- selectedVar <- NULL
+    if (is.null(i_block))
+        i_block <- length(blocks)
 
-        x <- y <- selectedVar <- NULL
-        if (is.null(i_block))
-            i_block <- length(blocks)
+    df <- getVar(rgcca, blocks, comp_x, comp_y, i_block, "cor")
+    df_temp <- df
+    
+    if (is(rgcca, "sgcca")) {
+        selectedVar <- rgcca$a[[i_block]][, comp_x] != 0 | rgcca$a[[i_block]][, comp_y] != 0
+        df <- df[selectedVar, ]
+    }
 
-        df <- getVar(rgcca, blocks, comp_x, comp_y, i_block, "cor")
-        df_temp <- df
-        
-        if (is(rgcca, "sgcca")) {
-            selectedVar <- rgcca$a[[i_block]][, comp_x] != 0 | rgcca$a[[i_block]][, comp_y] != 0
-            df <- df[selectedVar, ]
-        } else {
-            
-            if (n_mark < 2)
-                n_mark <- nrow(df)
-            
-            if (removeVariable & nrow(df) > 2 * n_mark) {
-                selectedVar <- unique(as.vector(unique(
-                        sapply(c(1, 2), function(x)
-                            row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE), ])[seq_len(n_mark), ]))
-                    )))
-                df <- df[selectedVar, ]
-            }
+    if (n_mark < 2)
+        n_mark <- nrow(df)
+
+    if (removeVariable & nrow(df) > 2 * n_mark) {
+        selectedVar <- unique(as.vector(unique(
+                sapply(c(1, 2), function(x)
+                    row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE), ])[seq_len(n_mark), ]))
+            )))
+        df <- df[selectedVar, ]
+    }
+
+    # if superblock is selected, color by blocks
+    if (superblock & (i_block == length(blocks))) {
+        color <- getBlocsVariables(rgcca$a, collapse)
+
+        if (is(rgcca, "sgcca"))
+            color <- color[row.names(df)]
+       else {
+            if (!is.null(selectedVar))
+                color <- color[
+                    unlist(
+                        lapply(
+                            seq_len(length(selectedVar)),
+                            function(x) which(colnames(blocks[[length(blocks)]]) == selectedVar[x])
+                        )
+                    )
+                ]
         }
-        # if superblock is selected, color by blocks
-        if (superblock & (i_block == length(blocks))) {
-            color <- getBlocsVariables(rgcca$a)
-            if (is(rgcca, "sgcca")) {
-                names(color) <- row.names(df_temp)
-                color <- color[row.names(df)]
-            } else {
-                if (!is.null(selectedVar))
-                    color <- color[unlist(lapply(seq_len(length(selectedVar)),
-                        function(x)
-                            which(colnames(blocks[[length(blocks)]]) == selectedVar[x])))]
-            }
-        } else {
-            color <- rep(1, NROW(df))
-        }
-        df <- data.frame(df, color)
+    } else
+        color <- rep(1, NROW(df))
 
-        p <- plotSpace(rgcca,
-                        df,
-                        "Variable",
-                        color,
-                        "Blocks",
-                        comp_x,
-                        comp_y,
-                        i_block,
-                        text = text) +
-        geom_path(
+    df <- data.frame(df, color)
+
+    p <- plotSpace(rgcca,
+                    df,
+                    "Variable",
+                    color,
+                    "Blocks",
+                    comp_x,
+                    comp_y,
+                    i_block,
+                    text = text,
+                    collapse =  collapse,
+                    no_Overlap = no_Overlap) +
+    geom_path(
+        aes(x, y),
+        data = circleFun(),
+        col = "grey",
+        size = 1
+    ) +
+    geom_path(
             aes(x, y),
-            data = circleFun(),
+            data = circleFun() / 2,
             col = "grey",
-            size = 1) +
-        geom_path(
-                aes(x, y),
-                data = circleFun() / 2,
-                col = "grey",
-                size = 1,
-                lty = 2
-            )
-        # remove legend if not on superblock
+            size = 1,
+            lty = 2
+        )
+    # remove legend if not on superblock
         if (!superblock || i_block != length(blocks))
-            p + theme(legend.position = "none")
+        p + theme(legend.position = "none")
         else
             p
-    }
+}
 
 #' Plot of components space
 #'
@@ -550,85 +588,102 @@ plotVariablesSpace <- function(rgcca, blocks, comp_x = 1, comp_y = 2,
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
 #' plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
 #' @export plotSpace
-plotSpace <- function(rgcca, df, title, group, name_group, comp_x = 1,
-    comp_y = 2, i_block = NULL, p = NULL, text = TRUE, i_block_y = NULL,
-            colours = c("blue", "gray", SAMPLES_COL_DEFAULT)) {
+plotSpace <- function(
+    rgcca,
+    df,
+    title,
+    group,
+    name_group,
+    comp_x = 1,
+    comp_y = 2,
+    i_block = NULL,
+    p = NULL,
+    text = TRUE,
+    i_block_y = NULL,
+    colours = c("blue", "gray", SAMPLES_COL_DEFAULT),
+    collapse = FALSE,
+    no_Overlap = FALSE) {
+        
+    
+    if (is.null(i_block_y))
+        i_block_y <- i_block
 
-        if (is.null(i_block_y))
-            i_block_y <- i_block
-
-        if (!isTRUE(text)) {
+    if (!isTRUE(text)) {
             func <- quote(geom_point(size = PCH_TEXT_SIZE))
-            if (!is.numeric(na.omit(group)))
-                func$mapping <- aes(shape = as.factor(group))
-        } else {
-            f <- "geom_text"
-            func <- quote(
-                get(f)(aes(label = rownames(df)),
+        if (!is.numeric(na.omit(group)))
+            func$mapping <- aes(shape = as.factor(group))
+    } else {
+
+        f <- "geom_text"
+        func <- quote(
+            get(f)(aes(label = rownames(df)),
                 size = PCH_TEXT_SIZE))
-            # if(no_Overlap && nrow(df) <= 100){
-            #  f = paste0(f, '_repel') func$force = 0.2
-            # func$max.iter = 500 }
+        
+        if (no_Overlap && nrow(df) <= 200) {
+            f = paste0(f, '_repel') 
+            func$force = 0.2
+            func$max.iter = 500 
         }
+    }
 
-        if (is.null(p)) {
-            p <- ggplot(df, aes(df[, 1], df[, 2], colour = as.factor(group)))
-        }
+    if (is.null(p)) {
+        p <- ggplot(df, aes(df[, 1], df[, 2], colour = as.factor(group)))
+    }
 
-        if (length(name_group) > 15)
-            name_group <- name_group[seq_len(15)]
+    if (length(name_group) > 15)
+        name_group <- name_group[seq_len(15)]
 
-        if (is.null(name_group))
-            name_group <- 0
+    if (is.null(name_group))
+        name_group <- 0
 
-        p <- p + eval(as.call(func)) + theme_classic() + geom_vline(
-                xintercept = 0,
-                col = "grey",
-                linetype = "dashed",
-                size = 1
-            ) + geom_hline(
-                yintercept = 0,
-                col = "grey",
-                linetype = "dashed",
-                size = 1
-            ) + labs(
+    p <- p + eval(as.call(func)) + theme_classic() + geom_vline(
+            xintercept = 0,
+            col = "grey",
+            linetype = "dashed",
+            size = 1
+        ) + geom_hline(
+            yintercept = 0,
+            col = "grey",
+            linetype = "dashed",
+            size = 1
+        ) + labs(
                 title = paste(title, "space"),
                 x = printAxis(rgcca, comp_x, i_block),
                 y = printAxis(rgcca, comp_y, i_block_y),
-                color = name_group,
-                shape = name_group
-            ) + 
-            scale_y_continuous(breaks = NULL) +
-            scale_x_continuous(breaks = NULL) +
-            theme_perso() +
-            theme(
-                legend.key.width = unit(nchar(name_group), "mm"),
-                axis.text = element_blank(),
-                axis.title.y = element_text(
-                    face = AXIS_FONT,
-                    margin = margin(0, 20, 0, 0),
+            color = name_group,
+            shape = name_group
+        ) + 
+        scale_y_continuous(breaks = NULL) +
+        scale_x_continuous(breaks = NULL) +
+        theme_perso() +
+        theme(
+            legend.key.width = unit(nchar(name_group), "mm"),
+            axis.text = element_blank(),
+            axis.title.y = element_text(
+                face = AXIS_FONT,
+                margin = margin(0, 20, 0, 0),
                     size = AXIS_TITLE_SIZE
-                ),
-                axis.title.x = element_text(
-                    face = AXIS_FONT,
-                    margin = margin(20, 0, 0, 0),
+            ),
+            axis.title.x = element_text(
+                face = AXIS_FONT,
+                margin = margin(20, 0, 0, 0),
                     size = AXIS_TITLE_SIZE
-                )
             )
+        )
 
-        if (length(unique(group)) != 1 && title == "Variable") {
-            orderColorPerBlocs(rgcca, p)
-            # For qualitative response OR no response
-        } else if (isCharacter(group[!is.na(group)]) ||
-                    length(unique(group)) <= 5) {
-            p + scale_color_manual(values = colorGroup(group))
-            # For quantitative response
-        } else
-            p + scale_color_gradientn(colours = colours, na.value = "black")
+    if (length(unique(group)) != 1 && title == "Variable") {
+        orderColorPerBlocs(rgcca, p, collapse = collapse)
+        # For qualitative response OR no response
+    } else if (isCharacter(group[!is.na(group)]) ||
+                length(unique(group)) <= 5) {
+        p + scale_color_manual(values = colorGroup(group))
+        # For quantitative response
+    } else
+        p + scale_color_gradientn(colours = colours, na.value = "black")
 }
 
 
-orderColorPerBlocs <- function(rgcca, p, matched = NULL) {
+orderColorPerBlocs <- function(rgcca, p, matched = NULL, collapse = FALSE) {
 
     J <- names(rgcca$a)
     if (is.null(matched)) {
@@ -637,12 +692,17 @@ orderColorPerBlocs <- function(rgcca, p, matched = NULL) {
     } else
         f <- "fill"
 
+    if (collapse)
+        n <- J
+    else
+        n <- J[-length(J)]
+
     func <- quote(get(paste("scale", f, "manual", sep = "_"))(
             values = colorGroup(J)[matched],
-            limits = J[-length(J)][matched],
-            labels = J[-length(J)][matched]
+            limits = n[matched],
+            labels = n[matched]
         ))
-
+    
     return(p + eval(as.call(func)))
 }
 
@@ -675,72 +735,97 @@ orderColorPerBlocs <- function(rgcca, p, matched = NULL) {
 #' # With the 2nd component of the 1rst block by selecting the ten higher weights
 #' plotFingerprint(rgcca.res, NULL, 2, FALSE, 10, 1, type = "weigth")
 #' @export plotFingerprint
-plotFingerprint <- function(rgcca, blocks = NULL, comp = 1, superblock = TRUE,
-    n_mark = 100, i_block = NULL, type = "cor") {
+plotFingerprint <- function(rgcca,
+    blocks = NULL,
+    comp = 1,
+    superblock = TRUE,
+    n_mark = 100,
+    i_block = NULL,
+    type = "cor",
+    collapse = FALSE) {
+    
+    color <- NULL
+    J <- names(rgcca$a)
+    # if no specific block is selected, by default, the superblock is
+    # selected (or the last one)
 
-        color <- NULL
-        J <- names(rgcca$a)
-        # if no specific block is selected, by default, the superblock is
-        # selected (or the last one)
-
-        if (is.null(i_block))
-            i_block <- length(rgcca$a)
+    if (is.null(i_block))
+        i_block <- length(rgcca$a)
 
         title <- ifelse(type == "cor",
                     "Variable correlations with",
                     "Variable weights on")
+    
+    if (!collapse) {
         criterion <- getVar(rgcca, blocks, comp, comp, i_block, type)
         # select the weights (var to add a column to work with comp = 1)
         df <- data.frame(criterion, var = row.names(criterion))
+    }else{
+        df <- Reduce(rbind, 
+            lapply(1:length(rgcca$a),
+                function(x)
+                    getVar(
+                        rgcca = rgcca,
+                        blocks = blocks,
+                        comp_x = comp,
+                        comp_y = comp,
+                        i_block = x,
+                        type = type,
+                        collapse = TRUE
+                    )
+                )
+        )
+    }
 
-        # Get a qualitative variable with which block is associated
-        # with each variables
-        if (superblock & (i_block == length(rgcca$a)))
-            df <- data.frame(df, color = as.factor(getBlocsVariables(rgcca$a)))
+    # Get a qualitative variable with which block is associated
+    # with each variables
+    if (superblock & (collapse | (i_block == length(rgcca$a))))
+        df <- data.frame(df, color = as.factor(getBlocsVariables(rgcca$a, collapse = collapse)))
 
-        # sort in decreasing order
-        df <- data.frame(getRankedValues(df, 1, TRUE), order = nrow(df):1)
-        # selected variables in sgcca
-        nvar_select <- varSelected(rgcca, i_block, comp)
+    # sort in decreasing order
+    df <- data.frame(getRankedValues(df, 1, TRUE), order = nrow(df):1)
+    
+    # selected variables in sgcca
+    nvar_select <- varSelected(rgcca, i_block, comp)
 
-        if (n_mark > nvar_select)
-            n_mark <- nvar_select
+    if (n_mark > nvar_select)
+        n_mark <- nvar_select
 
-        # max threshold for n
-        if (NROW(df) >= n_mark)
-            df <- df[seq_len(n_mark), ]
+    # max threshold for n
+    if (NROW(df) >= n_mark)
+        df <- df[seq_len(n_mark), ]
 
-        # if the superblock is selected, color the text of the y-axis according
-        # to their belonging to each blocks
-        if (superblock & (i_block == length(rgcca$a))) {
-            color2 <- factor(df$color)
-            levels(color2) <- colorGroup(color2)
-        } else {
-            color2 <- "black"
-        }
+    # if the superblock is selected, color the text of the y-axis according
+    # to their belonging to each blocks
+    if (superblock & (collapse | (i_block == length(rgcca$a)))) {
+        color2 <- factor(df$color)
+        levels(color2) <- colorGroup(color2)
+        p <- ggplot(df, aes(order, df[, 1], fill = color))
+    } else {
+        color2 <- "black"
+        p <- ggplot(df, aes(order, df[, 1], fill = abs(df[, 1])))
+    }
 
-        if (superblock & i_block == length(rgcca$a)) {
-            # levels(df$color) = rev(levels(df$color))
-            p <- ggplot(df, aes(order, df[, 1], fill = color))
-        } else {
-            p <- ggplot(df, aes(order, df[, 1], fill = abs(df[, 1])))
-        }
+    p <- plotHistogram(p, df, title, as.character(color2)) + 
+        labs(subtitle = printAxis(rgcca, comp, i_block))
 
-        p <- plotHistogram(p, df, title, as.character(color2)) + 
-            labs(subtitle = printAxis(rgcca, comp, i_block))
+    # If some blocks have any variables in the top hit, selects the ones
+    # corresponding
+    if (collapse)
+        col <- J
+    else
+       col <- J[-length(J)]
 
-        # If some blocks have any variables in the top hit, selects the ones
-        # corresponding
-        matched <- match(rev(unique(df$color)), J[-length(J)])
+    matched <- match(rev(unique(df$color)), col)
 
-        # Force all the block names to appear on the legend
-        if (length(color2) != 1)
-            p <- orderColorPerBlocs(rgcca, p, matched)
-        if (!superblock | i_block != length(rgcca$a))
+    # Force all the block names to appear on the legend
+    if (length(color2) != 1)
+        p <- orderColorPerBlocs(rgcca, p, matched, collapse)
+    if ( !superblock | (!collapse & i_block != length(rgcca$a)))
             p <- p + theme(legend.position = "none")
 
-        return(p)
-    }
+    return(p)
+}
 
 #' Histogram of Average Variance Explained
 #'
@@ -814,7 +899,6 @@ plotAVE <- function(rgcca) {
 #' the gradient
 #' @param high_col A character giving the color used for the highest part of
 #'  the gradient
-#'
 #' @examples
 #' df = data.frame(x = runif(30), order = 30:1)
 #' library("ggplot2")
@@ -825,8 +909,13 @@ plotAVE <- function(rgcca) {
 #' p = ggplot(df, aes(order, x, fill = color))
 #' plotHistogram(p, df, "Histogram", as.character(df$color))
 #' @export plotHistogram
-plotHistogram <- function(p, df, title = "", color = "black",
-    low_col = "khaki2", high_col = "coral3") {
+plotHistogram <- function(p,
+    df,
+    title = "",
+    color = "black",
+    low_col = "khaki2",
+    high_col = "coral3") {
+    
 
     if (nrow(df) <= 10 || title == "Average Variance Explained") {
         WIDTH <- NULL
@@ -881,8 +970,12 @@ plotHistogram <- function(p, df, title = "", color = "black",
     return(p)
 }
 
-corResponse <- function(rgcca, blocks, i_response = NULL, 
-    comp = 1, i_block = 1) {
+corResponse <- function(rgcca,
+    blocks,
+    i_response = NULL,
+    comp = 1,
+    i_block = 1) {
+    
 
     if (is.null(i_response))
         response <- blocks[[length(rgcca$a)]]
@@ -916,20 +1009,36 @@ corResponse <- function(rgcca, blocks, i_response = NULL,
 }
 
 # blocks : should not be null with cor mode
-getVar <- function(rgcca, blocks = NULL, comp_x = 1, comp_y = 2, 
-    i_block = NULL, type = "cor") {
+getVar <- function(rgcca,
+    blocks = NULL,
+    comp_x = 1,
+    comp_y = 2,
+    i_block = NULL,
+    type = "cor",
+    collapse = FALSE) {
+
 
     if (is.null(i_block))
         i_block <- length(blocks)
+    
+    if(!collapse)
+        i_block_rgcca <- i_block
+    else
+        i_block_rgcca <- 1
+    
+    if(is.null(blocks))
+        row.names = row.names(rgcca$a[[i_block]])
+    else
+        row.names = colnames(blocks[[i_block]])
 
     if (type == "cor")
-        f <- function(x) cor(blocks[[i_block]], rgcca$Y[[i_block]][, x])
+        f <- function(x) cor(blocks[[i_block]], rgcca$Y[[i_block_rgcca]][, x], use = "pairwise.complete.obs")
     else
         f <- function(x) rgcca$a[[i_block]][, x]
 
     return(data.frame(
         sapply(c(comp_x, comp_y), function(x) f(x)),
-        row.names = row.names(rgcca$a[[i_block]])))
+        row.names = row.names))
 
 }
 
@@ -939,6 +1048,7 @@ getVar <- function(rgcca, blocks = NULL, comp_x = 1, comp_y = 2,
 #' @param comp An integer giving the index of the analysis components
 #' @param allCol A boolean to use all the column of the dataframe
 getRankedValues <- function(df, comp = 1, allCol = TRUE) {
+    
     ordered <- order(abs(df[, comp]), decreasing = TRUE)
 
     if (allCol)
@@ -954,9 +1064,12 @@ getRankedValues <- function(df, comp = 1, allCol = TRUE) {
 
 
 # Print variables analysis attributes
-saveVars <- function(rgcca, blocks, comp_x = 1,
-    comp_y = 2, file = "variables.tsv") {
-
+saveVars <- function(rgcca,
+    blocks,
+    comp_x = 1,
+    comp_y = 2,
+    file = "variables.tsv") {
+    
     indexes <- c("cor", "weight")
 
         vars <- Reduce(rbind, lapply(seq_len(length(blocks)), function(i)
@@ -975,9 +1088,12 @@ saveVars <- function(rgcca, blocks, comp_x = 1,
         invisible(vars)
     }
 
-saveInds <- function(rgcca, blocks, comp_x = 1, 
-    comp_y = 2, file = "individuals.tsv") {
-
+saveInds <- function(rgcca,
+    blocks,
+    comp_x = 1,
+    comp_y = 2,
+    file = "individuals.tsv") {
+    
     inds <- Reduce(cbind, lapply(
         rgcca$Y,
         function(x) x[, c(comp_x, comp_y)]))
