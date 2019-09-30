@@ -595,35 +595,71 @@ getBootstrap <- function(
     i_block = NULL,
     collapse = TRUE,
     select = TRUE,
-    alpha = 0.05) {
+    alpha = 0.05,
+    nb_cores = parallel::detectCores() - 1) {
     
     if (is.null(i_block))
         i_block <- length(W[[1]])
 
-    if (comp > min(unlist(lapply(W, function(x)
-        lapply(x, function(z) ncol(z))))))
+    if (comp > min(rgcca$ncomp))
         stop("Selected dimension was not associated to every blocks",
             exit_code = 113)
 
-    if (collapse)
-        W_select <- Reduce(rbind, lapply(W, function(x) t(Reduce(rbind, x)[, comp])))
-    else
-        W_select <- Reduce(rbind, lapply(W, function(x) x[[i_block]][, comp]))
+    cat("Binding in progress...")
     
-        if (collapse)
-            weights <- Reduce(rbind, rgcca$a)[, comp]
-        else
-            weights <- rgcca$a[[i_block]][, comp]
+    if (collapse) {
+        W_bind <- parallel::mclapply(
+            W,
+            function(x) unlist(
+                lapply(
+                        x,
+                        function(y) y[, comp]
+                    )
+                ),
+            mc.cores = nb_cores
+        )
+        # Reduce(rbind, x)[, comp]
+        weights <- Reduce(rbind, rgcca$a)[, comp]
+    }else{
+        W_bind <- parallel::mclapply(
+            W,
+            function(x) x[[i_block]][, comp],
+            mc.cores = nb_cores
+        )
+        weights <- rgcca$a[[i_block]][, comp]
+    }
     
-    if (class(rgcca) == "sgcca")
+    cat("OK", append = TRUE)
+    W_select <- matrix(unlist(W_bind), nrow = length(W_bind), ncol = length(W_bind[[1]]), byrow = TRUE)
+    colnames(W_select) <- names(weights)
+    cat("\nStatistics calculation in progress...")
+
+    if (class(rgcca) == "sgcca") {
+        mean <- unlist(parallel::mclapply(1:ncol(W_select),
+            function(x) sum(W_select[,x] != 0) / length(W_select[, x]),
+            mc.cores = nb_cores
+        ))
+        cat("OK", append = TRUE)
         df <- data.frame(
             cbind(
-                weights = apply(W_select, 2, function(x) sum(x != 0) / length(x)),
-                mean = weights
+                weights,
+                mean = mean
             )
         )
-    else{
-        stats <- apply(W_select, 2,  function(x) c(mean(x), sd(x)))
+   }else{
+
+        means <- unlist(parallel::mclapply(1:ncol(W_select),
+            function(x) mean(W_select[,x]),
+            mc.cores = nb_cores
+        ))
+        cat("OK", append = TRUE)
+        sds <- unlist(parallel::mclapply(1:ncol(W_select),
+            function(x) sd(W_select[,x]),
+            mc.cores = nb_cores
+        ))
+
+        stats <- rbind(means, sds)
+        cat("OK", append = TRUE)
         p.vals <- pnorm(0, mean = abs(stats[1,]), sd = stats[2,])
     
         tail <- qnorm(1 - alpha / 2)
