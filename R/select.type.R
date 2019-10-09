@@ -435,7 +435,7 @@ rgcca.analyze <- function(blocks,
                         bias = TRUE,
                         type = "rgcca",
                         verbose = TRUE) {
-    
+
     WARN <- FALSE
 
     for (i in seq_len(length(blocks))) {
@@ -607,95 +607,97 @@ getBootstrap <- function(
 
     cat("Binding in progress...")
     
-    if (collapse) {
-        W_bind <- parallel::mclapply(
-            W,
-            function(x) unlist(
-                lapply(
-                        x,
-                        function(y) y[, comp]
-                    )
-                ),
-            mc.cores = nb_cores
-        )
-        # Reduce(rbind, x)[, comp]
-        weights <- Reduce(rbind, rgcca$a)[, comp]
-    }else{
-        W_bind <- parallel::mclapply(
-            W,
-            function(x) x[[i_block]][, comp],
-            mc.cores = nb_cores
-        )
-        weights <- rgcca$a[[i_block]][, comp]
-    }
+    mean <- weight <- sd <- occ <- list()
     
-    cat("OK", append = TRUE)
-    W_select <- matrix(unlist(W_bind), nrow = length(W_bind), ncol = length(W_bind[[1]]), byrow = TRUE)
-    colnames(W_select) <- names(weights)
-    cat("\nStatistics calculation in progress...")
-
-    if (class(rgcca) == "sgcca") {
-        mean <- unlist(parallel::mclapply(1:ncol(W_select),
-            function(x) sum(W_select[,x] != 0) / length(W_select[, x]),
+    if (collapse)
+        J <- 1:length(rgcca$a)
+    else
+        J <- i_block
+    
+    for (i in J){
+            
+        W_bind <- parallel::mclapply(
+            W,
+            function(x) x[[i]][, comp],
             mc.cores = nb_cores
-        ))
-        cat("OK", append = TRUE)
-        df <- data.frame(
-            cbind(
-                weights,
-                mean = mean
-            )
         )
-   }else{
+        
+        weight[[i]] <- rgcca$a[[i]][, comp]
+        W_select <- matrix(unlist(W_bind), nrow = length(W_bind), ncol = length(W_bind[[1]]), byrow = TRUE)
+        colnames(W_select) <- names(weight[[i]])
+        rm(W_bind); gc()
 
-        means <- unlist(parallel::mclapply(1:ncol(W_select),
+        if (class(rgcca) == "sgcca") {
+
+            occ[[i]] <- unlist(parallel::mclapply(1:ncol(W_select),
+                function(x) sum(W_select[,x] != 0) / length(W_select[, x]),
+                mc.cores = nb_cores
+            ))
+
+        }
+            
+        mean[[i]] <- unlist(parallel::mclapply(1:ncol(W_select),
             function(x) mean(W_select[,x]),
             mc.cores = nb_cores
         ))
-        cat("OK", append = TRUE)
-        sds <- unlist(parallel::mclapply(1:ncol(W_select),
+        sd[[i]] <- unlist(parallel::mclapply(1:ncol(W_select),
             function(x) sd(W_select[,x]),
             mc.cores = nb_cores
         ))
 
-        stats <- rbind(means, sds)
-        cat("OK", append = TRUE)
-        p.vals <- pnorm(0, mean = abs(stats[1,]), sd = stats[2,])
-    
-        tail <- qnorm(1 - alpha / 2)
-        
-        df <- data.frame(
-            cbind(
-                weights,
-                mean = stats[1, ],
-                intneg = stats[1, ] - tail * stats[2, ],
-                intpos = stats[1, ] + tail * stats[2, ]
-            ),
-            p.vals,
-            BH = p.adjust(p.vals, method = "BH")
-        )
+        rm(W_select); gc()
     }
 
+    rm(W); gc()
+    
+    occ <- unlist(occ)
+    mean <- unlist(mean)
+    weight <- unlist(weight)
+    sd <- unlist(sd)
+    
+    cat("OK", append = TRUE)
+
+
+    p.vals <- pnorm(0, mean = abs(mean), sd = sd)
+    tail <- qnorm(1 - alpha / 2)
+    
+    df <- data.frame(
+        mean = mean,
+        rgcca = weight,
+        intneg = mean - tail * sd,
+        intpos = mean + tail * sd,
+        br = abs(mean) / sd,
+        p.vals,
+        BH = p.adjust(p.vals, method = "BH")
+    )
+
+    if (class(rgcca) == "sgcca"){
+        index <- 8
+        df$occ <- occ
+    }else{
+        index <- 5
+        df$sign <- rep("", nrow(df))
+        # sign = c(.05, .01, .001)
+        # for (i in 1:3) {
+        #     for (j in 1:nrow(df)) {
+        #         if (df$p.vals[j] <= sign[i])
+        #             df$sign[j] <- paste(rep("*", i), collapse = "")
+        #     }
+        # }
+    
+        for (i in 1:nrow(df))
+            if(df$intneg[i]/df$intpos[i] > 0)
+                df$sign[i] <- "*"
+    }
+    
     if (collapse)
         df$color <- as.factor(getBlocsVariables(rgcca$a, collapse = collapse))
     
-     if (class(rgcca) != "sgcca") {
-        df <- df[-which(df$weights == 0), ]
-        
-        df$sign <- rep("", nrow(df))
-        sign = c(.05, .01, .001)
-        for (i in 1:3) {
-            for (j in 1:nrow(df)) {
-                if (df$p.vals[j] <= sign[i])
-                    df$sign[j] <- paste(rep("*", i), collapse = "")
-            }
-        }
-        
-        if (select)
-            df <- df[which(df$intneg/df$intpos > 0), ]
-    }
+    zero_var <- which(df[, 1] == 0)
+    if(length(zero_var) != 0)
+        df <- df[-zero_var, ]
     
-    data.frame(getRankedValues(df, allCol = TRUE), order = nrow(df):1)
+    data.frame(getRankedValues(df, index, allCol = TRUE), order = nrow(df):1)
 }
 
 #' list of list weights (one per bootstrap per blocks)
@@ -751,13 +753,79 @@ plotBootstrap <- function(
     return(p)
 }
 
+plotBootstrap2D <- function(b, x = "br", y = "occ"){
+    
+    axis <- function(margin){
+        element_text(
+            face = AXIS_FONT,
+            size = AXIS_TITLE_CEX * 0.75,
+            margin = margin
+        )
+    }
+
+    ggplot(
+        b, 
+        aes(
+            x = abs(b[, x]),
+            y = b[, y],
+            label = row.names(b),            , 
+            color = as.factor(mean > 0)
+        )
+    ) + 
+    geom_text(
+        size = PCH_TEXT_CEX * 0.75
+    ) + 
+    labs(
+        y = "Non-zero occurences",
+        x = "Bootstrap-ratio", 
+        title = "Occurences selection\nby bootstrap"
+    ) + 
+    theme_classic()  +
+    theme_perso() +
+    theme(
+        legend.position = "none",
+        axis.title.y = axis(margin(0, 20, 0, 0)),
+        axis.title.x = axis(margin(20, 0, 0, 0))
+    ) +
+    scale_color_manual(values = colorGroup(1:2))
+}
+
+plotBootstrap1D <- function(b, x = "occ", y = "mean", n = 50){
+    
+    if (!("occ" %in% colnames(b))){
+        title <- "Bootstrap ratio"
+        x <- "br"
+    }else
+        title <- "Occurences selection\nby bootstrap"
+
+    b <- head(b, n)
+    p <- ggplot(b, 
+        aes(
+            x = order,
+            y = b[, x],
+            fill = b[, y]
+        )
+    )
+
+    plotHistogram(
+        p,
+        b,
+        title,
+        "black",
+        low_col = colorGroup(1:3)[1],
+        mid_col = "white", 
+        high_col = colorGroup(1:3)[3]
+    ) +
+    labs(fill = "Mean weights")
+}
+
 scaling = function(blocks,
                     scale = TRUE,
                     bias = TRUE) {
     if (scale) {
         lapply(blocks, function(x)
             scale2(x, bias = bias) / sqrt(ncol(x)))
-    } else{
+    }else{
         lapply(blocks, function(x)
             scale2(x, scale = FALSE))
     }
