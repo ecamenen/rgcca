@@ -29,6 +29,7 @@ Suggests: testthat,
     rmarkdown,
     pander,
     shiny,
-    shinyjs
+    shinyjs,
+    ggrepel
 VignetteBuilder: knitr
 biocViews: Visualization, PrincipalComponent, DimensionReduction, StructuralEquationModels

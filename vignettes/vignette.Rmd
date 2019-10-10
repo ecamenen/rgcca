@@ -69,7 +69,7 @@ source("../R/select.type.R")
 source("../R/plot.R")
 source("../R/network.R")
 
-loadLibraries(c("RGCCA", "ggplot2", "optparse", "scales", "igraph"))
+loadLibraries(c("RGCCA", "ggplot2", "optparse", "scales", "igraph", "ggrepel"))
 
 # Load the data
 data("Russett")

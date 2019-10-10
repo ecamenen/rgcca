@@ -476,12 +476,29 @@ rgcca.analyze <- function(blocks,
     return(func.res)
 }
 
+#' Compute bootstrap (internal)
+#' 
+#' Internal function for computing boostrap of RGCCA
+#' 
+#' @param blocks A list of matrix
+#' @param rgcca A list giving the results of a R/SGCCA
+#' @param scale A boolean scaling the blocks
+#' @param init A character among "svd" (Singular Value Decompostion) or "random"
+#'  for alorithm initialization
+#' @param bias A boolean for a biased variance estimator
+#' @example 
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'   politic = Russett[, 6:11] )
+#' rgcca.res = rgcca(blocks, ncomp = rep(2,3), verbose = FALSE)
+#' names(rgcca.res$a) = names(blocks)
+#' bootstrap_k(blocks, rgcca.res, FALSE)
 bootstrap_k <- function(blocks,
                     rgcca,
                     scale = TRUE,
                     init = "svd",
-                    bias = TRUE,
-                    verbose = FALSE) {
+                    bias = TRUE) {
     
     # Shuffle rows
     id_boot <- sample(NROW(blocks[[1]]), replace = TRUE)
@@ -515,7 +532,7 @@ bootstrap_k <- function(blocks,
         init = init,
         bias = bias,
         type = class(rgcca),
-        verbose = verbose
+        verbose = FALSE
     )$a
 
     # Add removed variables
@@ -540,12 +557,26 @@ bootstrap_k <- function(blocks,
     return(w)
 }
 
-# Examples
-# library(RGCCA)
-# data("Russett")
-# blocks3 = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
-#   politic = Russett[, 6:11] )
-# bootstrap(blocks3)
+#' Compute bootstrap
+#' 
+#' Computing boostrap of RGCCA
+#' 
+#' @param blocks A list of matrix
+#' @param rgcca A list giving the results of a R/SGCCA
+#' @param n_boot A integer for the number of boostrap
+#' @param scale A boolean scaling the blocks
+#' @param init A character among "svd" (Singular Value Decompostion) or "random"
+#'  for alorithm initialization
+#' @param bias A boolean for a biased variance estimator
+#' @param nb_cores An integer for the number of cores used in parallelization
+#' @example 
+#' library(RGCCA) 
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'   politic = Russett[, 6:11] )
+#' rgcca.res = rgcca(blocks, ncomp = rep(2,3), verbose = FALSE)
+#' names(rgcca.res$a) = names(blocks)
+#' bootstrap(blocks, rgcca.res, 2, FALSE)
 bootstrap <- function(
     blocks,
     rgcca,
@@ -554,6 +585,9 @@ bootstrap <- function(
     init = "svd",
     bias = TRUE,
     nb_cores = parallel::detectCores() - 1) {
+    
+    if(nb_cores == 0)
+        nb_cores <- 1
 
     if (any(unlist(lapply(blocks, ncol) > 1000)))
         verbose <- TRUE
@@ -563,7 +597,6 @@ bootstrap <- function(
     cat("Bootstrap in progress...")
 
     W <- parallel::mclapply(seq_len(n_boot), function(x) {
-        # print(paste("Bootstrap", x))
 
         w <- bootstrap_k(blocks,
                         rgcca,
@@ -583,20 +616,39 @@ bootstrap <- function(
 
     }, mc.cores = nb_cores)
     
-    beepr::beep(expr = cat("OK", append = TRUE))
+    cat("OK", append = TRUE)
 
     return(W)
 }
 
+#' Extract a bootstrap
+#' 
+#' Extract statistical information from a bootstrap
+#'
+#' @param rgcca A list giving the results of a R/SGCCA
+#' @param W A list of list weights (one per bootstrap per blocks)
+#' @param comp An integer giving the index of the analysis components
+#' @param i_block An integer giving the index of a list of blocks
+#' @param collapse A boolean to combine the variables of each blocks as result
+#' @param nb_cores An integer for the number of cores used in parallelization
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'   politic = Russett[, 6:11] )
+#' rgcca.res = rgcca(blocks, ncomp = rep(2,3), verbose = FALSE)
+#' names(rgcca.res$a)= names(blocks)
+#' boot = bootstrap(blocks, rgcca.res, 2, FALSE)
+#' getBootstrap(rgcca.res, boot)
 getBootstrap <- function(
     rgcca,
     W,
     comp = 1,
     i_block = NULL,
     collapse = TRUE,
-    select = TRUE,
-    alpha = 0.05,
     nb_cores = parallel::detectCores() - 1) {
+    
+    if(nb_cores == 0)
+        nb_cores <- 1
     
     if (is.null(i_block))
         i_block <- length(W[[1]])
@@ -657,9 +709,8 @@ getBootstrap <- function(
     
     cat("OK", append = TRUE)
 
-
     p.vals <- pnorm(0, mean = abs(mean), sd = sd)
-    tail <- qnorm(1 - alpha / 2)
+    tail <- qnorm(1 - .05 / 2)
     
     df <- data.frame(
         mean = mean,
@@ -677,13 +728,6 @@ getBootstrap <- function(
     }else{
         index <- 5
         df$sign <- rep("", nrow(df))
-        # sign = c(.05, .01, .001)
-        # for (i in 1:3) {
-        #     for (j in 1:nrow(df)) {
-        #         if (df$p.vals[j] <= sign[i])
-        #             df$sign[j] <- paste(rep("*", i), collapse = "")
-        #     }
-        # }
     
         for (i in 1:nrow(df))
             if(df$intneg[i]/df$intpos[i] > 0)
@@ -700,12 +744,7 @@ getBootstrap <- function(
     data.frame(getRankedValues(df, index, allCol = TRUE), order = nrow(df):1)
 }
 
-#' list of list weights (one per bootstrap per blocks)
-#'
-#' @param comp An integer giving the index of the analysis components
-#' @param W A list of list weights (one per bootstrap per blocks)
-#' @param n_mark An integer giving the number of top variables to select
-#' @param i_block An integer giving the index of a list of blocks
+
 plotBootstrap <- function(
     df,
     rgcca,
@@ -713,7 +752,7 @@ plotBootstrap <- function(
     show.boot = TRUE,
     n_mark = 30) {
 
-    color <- V2 <- V3 <- NULL
+    color <- V2 <- V3 <- intneg <- intpos <- NULL
     J <- names(rgcca$a)
 
     if (nrow(df) > n_mark)

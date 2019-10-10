@@ -301,6 +301,8 @@ colorGroup <- function(group) {
 #' @param i_block_y An integer giving the index of a list of blocks (another
 #' one, different from the one used in i_block)
 #' @param reponse_name A character giving the legend title
+#' @param no_Overlap A boolean to avoid overlap in plotted text
+#' @param predicted A list containing as  2nd element a matrix of predicted components 
 #' @examples
 #' coord = lapply(seq_len(3),
 #'   function(x) matrix(runif(15 * 2, min = -1), 15, 2))
@@ -311,102 +313,103 @@ colorGroup <- function(group) {
 #' # Using the first block
 #' plotSamplesSpace(rgcca.res, runif(15, min=-15, max = 15), 1, 2, 1)
 #' @export plotSamplesSpace
-plotSamplesSpace <- function(rgcca,
-            resp,
-            comp_x = 1,
-            comp_y = 2,
-            i_block = NULL,
-            text = TRUE,
-            i_block_y = NULL,
-            reponse_name = "Response",
-            no_Overlap = TRUE,
-            predicted = NULL) {
+plotSamplesSpace <- function(
+    rgcca,
+    resp,
+    comp_x = 1,
+    comp_y = 2,
+    i_block = NULL,
+    text = TRUE,
+    i_block_y = NULL,
+    reponse_name = "Response",
+    no_Overlap = FALSE,
+    predicted = NULL) {
 
 
-        # resp : color the points with a vector
-        if (is.null(i_block))
-            i_block <- length(rgcca$Y)
+    # resp : color the points with a vector
+    if (is.null(i_block))
+        i_block <- length(rgcca$Y)
 
-        if (is.null(i_block_y))
-            df <- data.frame(rgcca$Y[[i_block]][, c(comp_x, comp_y)])
-        else
-            df <- data.frame(
-                comp1 = rgcca$Y[[i_block]][, comp_x], 
-                comp2 = rgcca$Y[[i_block_y]][, comp_y]
-            )
+    if (is.null(i_block_y))
+        df <- data.frame(rgcca$Y[[i_block]][, c(comp_x, comp_y)])
+    else
+        df <- data.frame(
+            comp1 = rgcca$Y[[i_block]][, comp_x], 
+            comp2 = rgcca$Y[[i_block_y]][, comp_y]
+        )
 
-        if (nrow(df) > 100)
-            PCH_TEXT_CEX <- 2
+    if (nrow(df) > 100)
+        PCH_TEXT_CEX <- 2
 
-        if(!is.null(predicted)){
+    if(!is.null(predicted)){
 
-                df <- rbind(df, predicted[[2]][[i_block]][, c(comp_x, comp_y)])
-                df$resp <- resp <- rep(c("obs", "pred"), each = nrow(rgcca$Y[[1]]))
-                p <- ggplot(df, aes(df[, 1], df[, 2], color = resp))
+            df <- rbind(df, predicted[[2]][[i_block]][, c(comp_x, comp_y)])
+            df$resp <- resp <- rep(c("obs", "pred"), each = nrow(rgcca$Y[[1]]))
+            p <- ggplot(df, aes(df[, 1], df[, 2], color = resp))
 
-        } else if (length(unique(as.matrix(resp))) > 1) {
-        # if the resp is numeric
+    } else if (length(unique(as.matrix(resp))) > 1) {
+    # if the resp is numeric
 
-            names <- row.names(resp)
-            resp <- apply(as.matrix(resp), 1, as.character)
+        names <- row.names(resp)
+        resp <- apply(as.matrix(resp), 1, as.character)
 
-            if (!is.null(names)) {
+        if (!is.null(names)) {
 
-                resp <- as.matrix(resp, row.names = names)
-                name_blocks <- row.names(rgcca$Y[[i_block]])
-                diff_column <- setdiff(name_blocks, names)
+            resp <- as.matrix(resp, row.names = names)
+            name_blocks <- row.names(rgcca$Y[[i_block]])
+            diff_column <- setdiff(name_blocks, names)
 
-                if (identical(diff_column, name_blocks)) {
-                    warning("No match has been found with the row names of the group file.")
-                    resp <- rep("NA", nrow(df))
-
-                } else {
-                    if (length(diff_column) > 0) {
-                        resp[diff_column] <- "NA"
-                        names(resp)[names(resp) == ""] <- names
-                    } else {
-                        names(resp) <- names
-                    }
-                    resp <- resp[row.names(rgcca$Y[[i_block]])]
-                }
-            } else {
-                warning("No row names have been found in the group file.")
+            if (identical(diff_column, name_blocks)) {
+                warning("No match has been found with the row names of the group file.")
                 resp <- rep("NA", nrow(df))
+
+            } else {
+                if (length(diff_column) > 0) {
+                    resp[diff_column] <- "NA"
+                    names(resp)[names(resp) == ""] <- names
+                } else {
+                    names(resp) <- names
+                }
+                resp <- resp[row.names(rgcca$Y[[i_block]])]
             }
-            if (!unique(isCharacter(as.vector(resp))) &&
-                length(unique(resp)) > 5) {
+        } else {
+            warning("No row names have been found in the group file.")
+            resp <- rep("NA", nrow(df))
+        }
+        if (!unique(isCharacter(as.vector(resp))) &&
+            length(unique(resp)) > 5) {
 
-                resp[resp == "NA"] <- NA
-                resp <- as.numeric(resp)
-                df$resp <- resp
-                # add some transparency
-                p <- ggplot(df, aes(df[, 1], df[, 2], color = resp))
+            resp[resp == "NA"] <- NA
+            resp <- as.numeric(resp)
+            df$resp <- resp
+            # add some transparency
+            p <- ggplot(df, aes(df[, 1], df[, 2], color = resp))
 
-            } else
-                p <- NULL
         } else
             p <- NULL
+    } else
+        p <- NULL
 
 
-        p <- plotSpace(rgcca,
-                        df,
-                        "Sample",
-                        resp,
-                        reponse_name,
-                        comp_x,
-                        comp_y,
-                        i_block,
-                        p,
-                        text,
-                        i_block_y,
-                        no_Overlap = no_Overlap)
+    p <- plotSpace(rgcca,
+                    df,
+                    "Sample",
+                    resp,
+                    reponse_name,
+                    comp_x,
+                    comp_y,
+                    i_block,
+                    p,
+                    text,
+                    i_block_y,
+                    no_Overlap = no_Overlap)
 
-        # remove legend if missing
-        if (length(unique(resp)) == 1)
-            p + theme(legend.position = "none")
-        else
-            p
-    }
+    # remove legend if missing
+    if (length(unique(resp)) == 1)
+        p + theme(legend.position = "none")
+    else
+        p
+}
 #' Get the blocs of each variables
 #'
 #' Get a vector of block names for each corresponding variable. The last block 
@@ -414,6 +417,7 @@ plotSamplesSpace <- function(rgcca,
 #'
 #' @param df A list of matrix where their names are those of the blocks and the 
 #' superblock and their rows are named after their variables
+#' @param collapse A boolean to combine the variables of each blocks as result
 #' @return A vector of character giving block names for each corresponding 
 #' variable.
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
@@ -433,7 +437,7 @@ getBlocsVariables <- function(df, collapse = FALSE) {
     res <- rep(
         bl.names,
         sapply(
-            df[seq_len(length(df))],
+            df[seq_len(length(df) - as.integer(!collapse))],
             function(x)
             nrow(as.matrix(x))
         )
@@ -462,6 +466,8 @@ getBlocsVariables <- function(df, collapse = FALSE) {
 #' @param removeVariable A bolean to keep only the 100 variables of each
 #' component with the biggest correlation#'
 #' @param n_mark An integer giving the number of top variables to select
+#' @param no_Overlap A boolean to avoid overlap in plotted text
+#' @param collapse A boolean to combine the variables of each blocks as result
 #' @examples
 #' setMatrix = function(nrow, ncol, iter = 3) lapply(seq_len(iter),
 #'    function(x) matrix(runif(nrow * ncol), nrow, ncol))
@@ -492,7 +498,7 @@ plotVariablesSpace <- function(
     removeVariable = TRUE,
     n_mark = 100,
     collapse = FALSE,
-    no_Overlap = TRUE) {
+    no_Overlap = FALSE) {
 
     x <- y <- selectedVar <- NULL
     if (is.null(i_block))
@@ -604,9 +610,11 @@ plotVariablesSpace <- function(
 #' @param p A ggplot object
 #' @param text A bolean to represent the points with their row names (TRUE) or
 #' with circles (FALSE)
-#' @param i_block_y An integer giving the index of a list of blocks (another one,
-#'  different from the one used in i_block)
+#' @param i_block_y An integer giving the index of a list of blocks 
+#' (another one, different from the one used in i_block)
 #' @param colours A vectof of character to color quantitative data
+#' @param no_Overlap A boolean to avoid overlap in plotted text
+#' @param collapse A boolean to combine the variables of each blocks as result
 #' @examples
 #' df = as.data.frame(matrix(runif(20*2, min = -1), 20, 2))
 #' AVE = lapply(seq_len(4), function(x) runif(2))
@@ -748,6 +756,7 @@ orderColorPerBlocs <- function(df, p, matched = NULL, collapse = FALSE) {
 #' @param type A string giving the criterion to selects biomarkers : either 
 #' "cor" for correlation between the component and the block
 #' or "weight" for the weight of the RGCCA
+#' @param collapse A boolean to combine the variables of each blocks as result
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' weights = lapply(seq_len(3), function(x) matrix(runif(7*2), 7, 2))
@@ -778,6 +787,10 @@ plotFingerprint <- function(rgcca,
 
     if (is.null(i_block))
         i_block <- length(rgcca$a)
+    
+    title <- ifelse(type == "cor",
+            "Variable correlations with",
+            "Variable weights on")
     
     if (collapse) {
         superblock <- TRUE
@@ -918,7 +931,9 @@ plotAVE <- function(rgcca) {
 #' @param low_col A character giving the color used for the lowest part of
 #' the gradient
 #' @param high_col A character giving the color used for the highest part of
-#'  the gradient
+#' the gradient
+#' @param mid_col A character giving the color used for the middle part of
+#' the gradient
 #' @examples
 #' df = data.frame(x = runif(30), order = 30:1)
 #' library("ggplot2")

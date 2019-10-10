@@ -1,5 +1,5 @@
 # Author: Etienne CAMENEN
-# Date: 20198
+# Date: 2019
 # Contact: arthur.tenenhaus@l2s.centralesupelec.fr
 # Key-words: omics, RGCCA, multi-block
 # EDAM operation: analysis, correlation, visualisation
@@ -358,9 +358,11 @@ setBlocks <- function(file,
         stop("There is no rows in common between the blocks.", exit_code = 108)
 }
 
-#' Impute missing data by means
+#' Impute NA
 #' 
-#'  @param df A matrix containing missing data
+#' Impute non availabe by means
+#' 
+#' @param df A matrix containing missing data
 imputeMean <- function(df){
     if (any(is.na(df))) {
         df <- matrix(unlist(

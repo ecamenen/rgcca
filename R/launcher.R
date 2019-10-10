@@ -12,16 +12,14 @@
 #' @import ggplot2
 #' @importFrom grDevices dev.off rgb colorRamp pdf
 #' @importFrom graphics plot
-#' @importFrom stats cor quantile runif sd na.omit
-#' @importFrom utils read.table write.table packageVersion
+#' @importFrom stats cor quantile runif sd na.omit p.adjust pnorm qnorm weights
+#' @importFrom utils read.table write.table packageVersion installed.packages head
 #' @importFrom scales hue_pal
 #' @importFrom optparse OptionParser make_option parse_args
 #' @importFrom plotly layout ggplotly style plotly_build %>%
 #' @importFrom visNetwork visNetwork visNodes visEdges
 #' @importFrom igraph graph_from_data_frame V<- E<-
 #' @importFrom methods is
-#' @importFrom utils installed.packages
-
 
 rm(list = ls())
 graphics.off()
@@ -543,7 +541,7 @@ opt <- list(
 )
 
 
-loadLibraries(c("RGCCA", "ggplot2", "optparse", "scales", "igraph"))
+loadLibraries(c("RGCCA", "ggplot2", "optparse", "scales", "igraph", "ggrepel"))
 
 tryCatch({
     opt <- checkArg(parse_args(getArgs()))
