@@ -1,5 +1,5 @@
 # Author: Etienne CAMENEN
-# Date: 20198
+# Date: 2019
 # Contact: arthur.tenenhaus@l2s.centralesupelec.fr
 # Key-words: omics, RGCCA, multi-block
 # EDAM operation: analysis, correlation, visualisation
@@ -8,8 +8,22 @@
 # and produces textual and graphical outputs (e.g. variables and individuals
 # plots).
 
+#' Creates the nodes for a design matrix
+#' 
+#' @inheritParams plotVariablesSpace
+#' @inheritParams select.type
+#' @return A dataframe with blocks in rows and the number of variables, of rows 
+#' and tau or c1 in columns
+#' @examples
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'     politic = Russett[, 6:11] )
+#' rgcca.res = rgcca.analyze(blocks)
+#' getNodes(blocks, rgcca = rgcca.res)
+#' @export
 getNodes <- function(blocks, tau = NULL, rgcca = NULL) {
-    if (attr(rgcca, "class") == "sgcca") {
+
+    if (!is.null(rgcca) & is(rgcca, "sgcca")) {
         par.rgcca <- "c1"
         par.name <- "sparsity"
     } else
@@ -17,8 +31,7 @@ getNodes <- function(blocks, tau = NULL, rgcca = NULL) {
 
     if (any(tau == "optimal")) {
         if (!is.null(rgcca))
-            tau <-
-                unlist(lapply(seq_len(ncol(rgcca[[par.rgcca]])), function(x)
+            tau <- unlist(lapply(seq_len(ncol(rgcca[[par.rgcca]])), function(x)
                     Reduce(paste, round(rgcca[[par.rgcca]][, x], 2))))
         else
             tau <- rep(NA, length(blocks))
@@ -26,30 +39,37 @@ getNodes <- function(blocks, tau = NULL, rgcca = NULL) {
 
     if (is.null(tau)) {
         if (is.matrix(rgcca[[par.rgcca]]))
-            tau <-
-                unlist(lapply(seq_len(ncol(rgcca[[par.rgcca]])), function(x)
+            tau <-  unlist(lapply(seq_len(ncol(rgcca[[par.rgcca]])), function(x)
                     Reduce(paste, round(rgcca[[par.rgcca]][, x], 2))))
         else
             tau <- rgcca[[par.rgcca]]
     }
 
-    nrow <-
-        unlist(lapply(blocks, function(x)
+    nrow <- unlist(lapply(blocks, function(x)
             ifelse(
                 is.null(attributes(x)$nrow),
                 nrow(blocks[[1]]),
                 attributes(x)$nrow
             )))
 
-    values <-
-        list(names(blocks), unlist(lapply(blocks, NCOL)), nrow, tau)
-    nodes <-
-        as.data.frame(matrix(unlist(values), length(blocks), length(values)))
+    values <- list(names(blocks), unlist(lapply(blocks, NCOL)), nrow, tau)
+    nodes <- as.data.frame(matrix(unlist(values), length(blocks), length(values)))
     colnames(nodes) <- c("id", "P", "nrow", par.name)
 
     return(nodes)
 }
 
+#' Creates the edges for a design matrix
+#' 
+#' @inheritParams select.type
+#' @return A dataframe with tuples of connected blocks
+#' @examples
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'     politic = Russett[, 6:11] )
+#' rgcca.res = rgcca.analyze(blocks)
+#' getEdges(rgcca.res$C, blocks)
+#' @export
 getEdges <- function(connection, blocks) {
     J <- NCOL(connection)
 
@@ -77,6 +97,23 @@ colorNodes <- function(nodes) {
         rgb(colorRamp( c("coral3", "khaki2"))(x) / 255)))
 }
 
+#' Plot the connection between blocks
+#' 
+#' @inheritParams select.type
+#' @param nodes A dataframe containing metadata for each blocks
+#' @param edges A dataframe of connection between blocks
+#' @return A dataframe with tuples of connected blocks
+#' @examples
+#' library(igraph)
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'     politic = Russett[, 6:11] )
+#' rgcca.res = rgcca.analyze(blocks)
+#' e <- getEdges(rgcca.res$C, blocks)
+#' n <- getNodes(blocks, rgcca = rgcca.res)
+#' plotNetwork(n, e, blocks)
+#' @export
 plotNetwork <- function(nodes, edges, blocks) {
     # Avoid random
     set.seed(1)
@@ -84,8 +121,7 @@ plotNetwork <- function(nodes, edges, blocks) {
 
     par <- ifelse("sparsity" %in% names(nodes), "sparsity", "tau")
 
-    net <-
-        graph_from_data_frame(d = edges,
+    net <- graph_from_data_frame(d = edges,
             vertices = nodes,
             directed = FALSE)
 
@@ -122,6 +158,22 @@ plotNetwork <- function(nodes, edges, blocks) {
 
 }
 
+#' Plot the connection between blocks (dynamic plot)
+#' 
+#' @inheritParams select.type
+#' @inheritParams plotNetwork
+#' @return A dataframe with tuples of connected blocks
+#' @examples
+#' library(visNetwork)
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'     politic = Russett[, 6:11] )
+#' rgcca.res = rgcca.analyze(blocks)
+#' e <- getEdges(rgcca.res$C, blocks)
+#' n <- getNodes(blocks, rgcca = rgcca.res)
+#' plotNetwork2(n, e, blocks)
+#' @export
 plotNetwork2 <- function(nodes, edges, blocks) {
     par <- ifelse("sparsity" %in% names(nodes), "sparsity", "tau")
 

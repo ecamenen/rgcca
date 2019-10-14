@@ -44,12 +44,12 @@ ROW_NAMES <- 1  # column of row names
 #' Get the file name from a path
 #'
 #' @param fi A character giving the path of a file
-#' @return A character
+#' @return A character for the name of the file
 #' @examples
 #' fi = '/name.lastname/dirPath/fileName.tsv'
 #' getFileName(fi)
 #' # fileName
-#' @export getFileName
+#' @export
 getFileName <- function(fi) {
     if (!is.null(fi)) {
         fo <- unlist(strsplit(fi, "/"))
@@ -93,7 +93,7 @@ convertMatrixNumeric <- function(df) {
 #' \dontrun{
 #' loadData('data/agriculture.tsv')
 #' }
-#' @export loadData
+#' @export
 loadData <- function(f, sep = "\t", rownames = 1, h = TRUE) {
 
     if (!is.null(rownames) && rownames < 1)
@@ -166,7 +166,7 @@ loadData <- function(f, sep = "\t", rownames = 1, h = TRUE) {
 #' df = as.data.frame(matrix(runif(20), 10, 2))
 #' p = ggplot(df, aes(df[, 1], df[, 2]))
 #' #savePlot('Rplot.png', p)
-#' @export savePlot
+#' @export
 savePlot <- function(f, p) {
 
     # get suffixe of filename
@@ -206,7 +206,7 @@ savePlot <- function(f, p) {
 #' @examples
 #' s = '1,2, 3'
 #' parseList(s)
-#' @export parseList
+#' @export
 parseList <- function(s) {
     s <- gsub(" ", "", s)
     # split by comma
@@ -227,7 +227,7 @@ parseList <- function(s) {
 #' checkQuantitative(df, 'data', TRUE)
 #' # Error
 #' }
-#' @export checkQuantitative
+#' @export
 checkQuantitative <- function(df, fo, h = FALSE) {
     qualitative <- unique(unique(isCharacter(as.matrix(df))))
 
@@ -268,7 +268,7 @@ checkFile <- function(f) {
 #'     "data/agriculture.tsv,data/industry.tsv,data/politic.tsv",
 #'     "agric,ind,polit")
 #' }
-#' @export setBlocks
+#' @export
 setBlocks <- function(file,
     names = NULL,
     sep = "\t",
@@ -362,7 +362,8 @@ setBlocks <- function(file,
 #' 
 #' Impute non availabe by means
 #' 
-#' @param df A matrix containing missing data
+#' @param df A matrix containing non availables data
+#' @return A matrix with imputed values
 imputeMean <- function(df){
     if (any(is.na(df))) {
         df <- matrix(unlist(
@@ -384,7 +385,7 @@ imputeMean <- function(df){
 #'
 #' @param c A symmetric matrix containing 1 and 0
 #' @param blocks A list of matrix
-#' @export checkConnection
+#' @export
 checkConnection <- function(c, blocks) {
 
     if (!isSymmetric.matrix(unname(c)))
@@ -433,7 +434,7 @@ checkConnection <- function(c, blocks) {
 #' blocks = lapply(seq_len(4), function(x) matrix(runif(47 * 5), 47, 5))
 #' setConnection (blocks, 'data/connection.tsv')
 #' }
-#' @export setConnection
+#' @export
 setConnection <- function(blocks,
     superblock = FALSE,
     file = NULL,
@@ -484,7 +485,7 @@ setConnection <- function(blocks,
 #' blocks = lapply(seq_len(3), function(x) matrix(runif(47 * 5), 47, 5))
 #' setResponse (blocks, 'data/response3.tsv')
 #' }
-#' @export setResponse
+#' @export
 setResponse <- function(
     blocks = NULL,
     file = NULL,
@@ -553,7 +554,7 @@ setResponse <- function(
 #' # FALSE TRUE
 #' isCharacter(LETTERS[seq_len(10)])
 #' # TRUE
-#' @export isCharacter
+#' @export 
 isCharacter <- function(x) {
     # is. character() consider a string with '1.2' as a character, not this function.
     # NA are produced by converting a character into an integer as.vector, avoid
@@ -585,7 +586,7 @@ isCharacter <- function(x) {
 #'
 #' @param list_m A list of dataframe
 #' @return A vector of character with the common rownames
-#' @export commonRow
+#' @export
 commonRow <- function(list_m) {
     common_row <- row.names(list_m[[1]])
     for (i in 2:length(list_m))
@@ -597,7 +598,7 @@ commonRow <- function(list_m) {
 #'
 #' @param list_m A list of dataframe
 #' @return A list of dataframe
-#' @export keepCommonRow
+#' @export
 keepCommonRow <- function(list_m) {
 
     names <- names(list_m)
@@ -614,7 +615,11 @@ keepCommonRow <- function(list_m) {
 #'
 #' @param list_m A list of dataframe
 #' @return A list of dataframe
-#' @export removeColumnSdNull
+#' @examples
+#' df = sapply(seq(3), function(x) runif(10))
+#' df = cbind(df, rep(1, 10))
+#' removeColumnSdNull(list(df))
+#' @export
 removeColumnSdNull <- function(list_m) {
 
     names <- names(list_m)

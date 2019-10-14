@@ -1,5 +1,5 @@
 # Author: Etienne CAMENEN
-# Date: 20198
+# Date: 2019
 # Contact: arthur.tenenhaus@l2s.centralesupelec.fr
 # Key-words: omics, RGCCA, multi-block
 # EDAM operation: analysis, correlation, visualisation
@@ -36,35 +36,34 @@ checkNbBlocks <- function(blocks, type) {
 #'
 #' Define the correct parameters according to the type of the analysis
 #'
-#' @param A A list of matrix
+#' @inheritParams plotVariablesSpace
 #' @param opt An OptionParser object
-#' @param C A matrix giving the connection between the blocks
+#' @param connection A matrix giving the connection between the blocks
 #' @param tau A vector of float (or character for 'optimal' setting) giving the
-#'  shrinkage parameter for covariance maximization
+#' shrinkage parameter for covariance maximization
 #' @param ncomp A vector of integer giving the number of component for each
 #' blocks
 #' @param scheme A character giving the link function for covariance maximization
-#' @param superblock A boolean giving the presence (TRUE) / absence (FALSE)
-#' of a superblock
 #' @param type A character giving the type of analysis
 #' @param verbose A boolean displaying the warnings
 #' @param quiet A boolean hidding the warnings
-#' @return blocks A list of matrix
-#' @return scheme A character giving the link function for covariance
-#' maximization
-#' @return tau A vector of float (or character for 'optimal' setting) giving
-#' the shrinkage parameter for covariance maximization
-#' @return ncomp A vector of integer giving the number of component for each
-#' blocks
-#' @return connection matrix giving the connection between the blocks
-#' @return superblock A boolean giving the presence (TRUE) / absence (FALSE)
-#' of a superblock
-
-select.type <- function(A = blocks,
+#' @return \item{blocks}{A list of matrix}
+#' @return \item{scheme}{A character giving the link function for covariance
+#' maximization}
+#' @return \item{tau}{A vector of float (or character for 'optimal' setting) giving
+#' the shrinkage parameter for covariance maximization}
+#' @return \item{ncomp}{A vector of integer giving the number of component for each
+#' blocks}
+#' @return \item{connection}{matrix giving the connection between the blocks}
+#' @return \item{superblock}{A boolean giving the presence (TRUE) / absence (FALSE)
+#' of a superblock}
+#' @export
+select.type <- function(
+    blocks = blocks,
     opt = NULL,
-    C = 1 - diag(length(A)),
-    tau = rep(1, length(A)),
-    ncomp = rep(1, length(A)),
+    connection = 1 - diag(length(blocks)),
+    tau = rep(1, length(blocks)),
+    ncomp = rep(1, length(blocks)),
     scheme = "centroid",
     superblock = TRUE,
     type  = "rgcca",
@@ -73,7 +72,7 @@ select.type <- function(A = blocks,
     
         if (!is.null(opt)) {
             scheme <- opt$scheme
-            C <- opt$connection
+            connection <- opt$connection
             superblock <- opt$superblock
             type <- opt$type
             tau <- opt$tau
@@ -105,7 +104,7 @@ select.type <- function(A = blocks,
             }))
         }
 
-        J <- length(A)
+        J <- length(blocks)
         MSG_SUPER <- "a superbloc is used"
         MSG_TYPE <- paste0("By using a ", toupper(type), ", ")
         warn.type.value <- warn.type.par <- warn.msg.super <- character(0)
@@ -136,7 +135,7 @@ select.type <- function(A = blocks,
         }
 
         warnSuper <- function(x) {
-            if (length(x) < (length(A))) {
+            if (length(x) < (length(blocks))) {
                 warn.msg.super <<- c(warn.msg.super, deparse(substitute(x)))
                 return(c(x, x[1]))
             } else
@@ -144,18 +143,18 @@ select.type <- function(A = blocks,
         }
 
         setSuperbloc <- function(verbose = TRUE) {
-            A <<- c(A, Superblock = list(Reduce(cbind, A)))
+            blocks <<- c(blocks, Superblock = list(Reduce(cbind, blocks)))
             superblock <<- TRUE
-            C <<- NULL
+            connection <<- NULL
             ncomp <<- warnSuper(ncomp)
         }
 
         set2Block <- function(type) {
-            if (length(A) != 2)
-                checkNbBlocks(A, type)
+            if (length(blocks) != 2)
+                checkNbBlocks(blocks, type)
 
             scheme <<- setScheme("horst")
-            C <<- setConnection(1 - diag(2))
+            connection <<- setConnection(1 - diag(2))
         }
 
         ### CHECK TYPES ###
@@ -176,8 +175,8 @@ select.type <- function(A = blocks,
         }
 
         else if (tolower(type) == "pca") {
-            if (length(A) != 1)
-                checkNbBlocks(A, type)
+            if (length(blocks) != 1)
+                checkNbBlocks(blocks, type)
 
             scheme   <- setScheme("horst")
             tau      <- setTau(c(1, 1))
@@ -207,7 +206,7 @@ select.type <- function(A = blocks,
                                     "sumcov-1",
                                     "maxbet",
                                     "sabscov")) {
-            C <- setConnection(matrix(1, J, J))
+            connection <- setConnection(matrix(1, J, J))
 
             # COR models
             if (tolower(type) %in% c("sumcor", "ssqcor", "sabscor")) {
@@ -261,7 +260,7 @@ select.type <- function(A = blocks,
                                     "maxbet-b",
                                     "ssqcov-2",
                                     "maxdiff-b")) {
-            C <- setConnection(1 - diag(J))
+            connection <- setConnection(1 - diag(J))
 
             if (tolower(type) %in% c("sumcov-2", "maxdiff")) {
                 scheme   <- setScheme("horst")
@@ -397,11 +396,11 @@ select.type <- function(A = blocks,
             #    " of the superblock ", grammar," of the first block."))
         }
 
-        opt$blocks <- A
+        opt$blocks <- blocks
         opt$scheme <- scheme
         opt$tau <- tau
         opt$ncomp <- ncomp
-        opt$connection <- C
+        opt$connection <- connection
         opt$superblock <- superblock
 
         return(opt)
@@ -410,31 +409,32 @@ select.type <- function(A = blocks,
 #' Performs a r/sgcca
 #'
 #' Performs a r/sgcca with predefined parameters
-#'
-#' @param blocks A list of matrix
-#' @param connection A matrix giving the connection between the blocks
-#' @param tau A vector of float (or character for 'optimal' setting) giving the
-#' shrinkage parameter for covariance maximization
-#' @param ncomp A vector of integer giving the number of component for each blocks
-#' @param scheme A character giving the link function for covariance maximization
+#' @inheritParams select.type
 #' @param scale A boolean scaling the blocks
 #' @param init A character among "svd" (Singular Value Decompostion) or "random"
-#'  for alorithm initialization
+#' for alorithm initialization
 #' @param bias A boolean for a biased variance estimator
 #' @param type A character giving the type of analysis
 #' @param verbose A boolean to display the progress of the analysis
-#' @return superblock A RGCCA object
-
-rgcca.analyze <- function(blocks,
-                        connection = 1 - diag(length(blocks)),
-                        tau = rep(1, length(blocks)),
-                        ncomp = rep(2, length(blocks)),
-                        scheme = "factorial",
-                        scale = TRUE,
-                        init = "svd",
-                        bias = TRUE,
-                        type = "rgcca",
-                        verbose = TRUE) {
+#' @return A RGCCA object
+#' @examples 
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'     politic = Russett[, 6:11] )
+#' rgcca.analyze(blocks)
+#' @export
+rgcca.analyze <- function(
+    blocks,
+    connection = 1 - diag(length(blocks)),
+    tau = rep(1, length(blocks)),
+    ncomp = rep(2, length(blocks)),
+    scheme = "factorial",
+    scale = TRUE,
+    init = "svd",
+    bias = TRUE,
+    type = "rgcca",
+    verbose = TRUE) {
 
     WARN <- FALSE
 
@@ -480,26 +480,24 @@ rgcca.analyze <- function(blocks,
 #' 
 #' Internal function for computing boostrap of RGCCA
 #' 
-#' @param blocks A list of matrix
-#' @param rgcca A list giving the results of a R/SGCCA
-#' @param scale A boolean scaling the blocks
-#' @param init A character among "svd" (Singular Value Decompostion) or "random"
-#'  for alorithm initialization
-#' @param bias A boolean for a biased variance estimator
-#' @example 
+#' @inheritParams rgcca.analyze
+#' @inheritParams plotVariablesSpace
+#' @return A list of RGCCA bootstrap weights
+#' @examples 
 #' library(RGCCA)
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
-#'   politic = Russett[, 6:11] )
-#' rgcca.res = rgcca(blocks, ncomp = rep(2,3), verbose = FALSE)
-#' names(rgcca.res$a) = names(blocks)
+#'     politic = Russett[, 6:11] )
+#' rgcca.res = rgcca.analyze(blocks)
 #' bootstrap_k(blocks, rgcca.res, FALSE)
-bootstrap_k <- function(blocks,
-                    rgcca,
-                    scale = TRUE,
-                    init = "svd",
-                    bias = TRUE) {
-    
+#' @export
+bootstrap_k <- function(
+    blocks,
+    rgcca,
+    scale = TRUE,
+    init = "svd",
+    bias = TRUE) {
+
     # Shuffle rows
     id_boot <- sample(NROW(blocks[[1]]), replace = TRUE)
 
@@ -516,7 +514,7 @@ bootstrap_k <- function(blocks,
 
     boot_blocks <- removeColumnSdNull(boot_blocks)
     
-    if (class(rgcca) == "sgcca")
+    if (is(rgcca, "sgcca"))
         tau <- rgcca$c1
     else
         tau <- rgcca$tau
@@ -546,7 +544,7 @@ bootstrap_k <- function(blocks,
                                 rgcca$ncomp[x],
                                 dimnames = list(missing_var[[x]], seq_len(rgcca$ncomp[x]))
                             ))
-    
+
     # bug mapply with pca
     w <- lapply(seq_len(length(w)), function(x)
         rbind(w[[x]], missing_tab[[x]]))
@@ -561,22 +559,19 @@ bootstrap_k <- function(blocks,
 #' 
 #' Computing boostrap of RGCCA
 #' 
-#' @param blocks A list of matrix
-#' @param rgcca A list giving the results of a R/SGCCA
+#' @inheritParams rgcca.analyze
+#' @inheritParams plotVariablesSpace
 #' @param n_boot A integer for the number of boostrap
-#' @param scale A boolean scaling the blocks
-#' @param init A character among "svd" (Singular Value Decompostion) or "random"
-#'  for alorithm initialization
-#' @param bias A boolean for a biased variance estimator
 #' @param nb_cores An integer for the number of cores used in parallelization
-#' @example 
+#' @return A list of RGCCA bootstrap weights
+#' @examples 
 #' library(RGCCA) 
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
-#'   politic = Russett[, 6:11] )
-#' rgcca.res = rgcca(blocks, ncomp = rep(2,3), verbose = FALSE)
-#' names(rgcca.res$a) = names(blocks)
+#'     politic = Russett[, 6:11] )
+#' rgcca.res = rgcca.analyze(blocks)
 #' bootstrap(blocks, rgcca.res, 2, FALSE)
+#' @export
 bootstrap <- function(
     blocks,
     rgcca,
@@ -585,15 +580,15 @@ bootstrap <- function(
     init = "svd",
     bias = TRUE,
     nb_cores = parallel::detectCores() - 1) {
-    
-    if(nb_cores == 0)
+
+    if (nb_cores == 0)
         nb_cores <- 1
 
     if (any(unlist(lapply(blocks, ncol) > 1000)))
         verbose <- TRUE
 
     w1 <- rgcca$a
-    
+
     cat("Bootstrap in progress...")
 
     W <- parallel::mclapply(seq_len(n_boot), function(x) {
@@ -615,7 +610,7 @@ bootstrap <- function(
         return(w)
 
     }, mc.cores = nb_cores)
-    
+
     cat("OK", append = TRUE)
 
     return(W)
@@ -625,20 +620,21 @@ bootstrap <- function(
 #' 
 #' Extract statistical information from a bootstrap
 #'
-#' @param rgcca A list giving the results of a R/SGCCA
+#' @inheritParams bootstrap
+#' @inheritParams plotHistogram
+#' @inheritParams plotVariablesSpace
 #' @param W A list of list weights (one per bootstrap per blocks)
 #' @param comp An integer giving the index of the analysis components
-#' @param i_block An integer giving the index of a list of blocks
-#' @param collapse A boolean to combine the variables of each blocks as result
-#' @param nb_cores An integer for the number of cores used in parallelization
+#' @return A matrix containing the means, 95% intervals, bootstrap ratio and p-values
+#' @examples
 #' library(RGCCA)
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
-#'   politic = Russett[, 6:11] )
-#' rgcca.res = rgcca(blocks, ncomp = rep(2,3), verbose = FALSE)
-#' names(rgcca.res$a)= names(blocks)
+#'     politic = Russett[, 6:11] )
+#' rgcca.res = rgcca.analyze(blocks)
 #' boot = bootstrap(blocks, rgcca.res, 2, FALSE)
 #' getBootstrap(rgcca.res, boot)
+#' @export
 getBootstrap <- function(
     rgcca,
     W,
@@ -646,10 +642,10 @@ getBootstrap <- function(
     i_block = NULL,
     collapse = TRUE,
     nb_cores = parallel::detectCores() - 1) {
-    
-    if(nb_cores == 0)
+
+    if (nb_cores == 0)
         nb_cores <- 1
-    
+
     if (is.null(i_block))
         i_block <- length(W[[1]])
 
@@ -660,14 +656,14 @@ getBootstrap <- function(
     cat("Binding in progress...")
     
     mean <- weight <- sd <- occ <- list()
-    
+
     if (collapse)
-        J <- 1:length(rgcca$a)
+        J <- seq(length(rgcca$a))
     else
         J <- i_block
-    
-    for (i in J){
-            
+
+    for (i in J) {
+
         W_bind <- parallel::mclapply(
             W,
             function(x) x[[i]][, comp],
@@ -679,20 +675,22 @@ getBootstrap <- function(
         colnames(W_select) <- names(weight[[i]])
         rm(W_bind); gc()
 
-        if (class(rgcca) == "sgcca") {
+        n <- seq(ncol(W_select))
 
-            occ[[i]] <- unlist(parallel::mclapply(1:ncol(W_select),
+        if (is(rgcca, "sgcca")) {
+
+            occ[[i]] <- unlist(parallel::mclapply(n,
                 function(x) sum(W_select[,x] != 0) / length(W_select[, x]),
                 mc.cores = nb_cores
             ))
 
         }
             
-        mean[[i]] <- unlist(parallel::mclapply(1:ncol(W_select),
+        mean[[i]] <- unlist(parallel::mclapply(n,
             function(x) mean(W_select[,x]),
             mc.cores = nb_cores
         ))
-        sd[[i]] <- unlist(parallel::mclapply(1:ncol(W_select),
+        sd[[i]] <- unlist(parallel::mclapply(n,
             function(x) sd(W_select[,x]),
             mc.cores = nb_cores
         ))
@@ -706,12 +704,12 @@ getBootstrap <- function(
     mean <- unlist(mean)
     weight <- unlist(weight)
     sd <- unlist(sd)
-    
+
     cat("OK", append = TRUE)
 
     p.vals <- pnorm(0, mean = abs(mean), sd = sd)
     tail <- qnorm(1 - .05 / 2)
-    
+
     df <- data.frame(
         mean = mean,
         rgcca = weight,
@@ -722,29 +720,45 @@ getBootstrap <- function(
         BH = p.adjust(p.vals, method = "BH")
     )
 
-    if (class(rgcca) == "sgcca"){
+    if (is(rgcca, "sgcca")) {
         index <- 8
         df$occ <- occ
     }else{
         index <- 5
         df$sign <- rep("", nrow(df))
-    
-        for (i in 1:nrow(df))
-            if(df$intneg[i]/df$intpos[i] > 0)
+
+        for (i in seq(nrow(df)))
+            if (df$intneg[i]/df$intpos[i] > 0)
                 df$sign[i] <- "*"
     }
-    
+
     if (collapse)
         df$color <- as.factor(getBlocsVariables(rgcca$a, collapse = collapse))
     
     zero_var <- which(df[, 1] == 0)
-    if(length(zero_var) != 0)
+    if (length(zero_var) != 0)
         df <- df[-zero_var, ]
     
     data.frame(getRankedValues(df, index, allCol = TRUE), order = nrow(df):1)
 }
 
-
+#' Plot a bootstrap
+#' 
+#' Plot the top variables from a bootstrap
+#'
+#' @inheritParams plotHistogram
+#' @inheritParams plotVariablesSpace
+#' @param show.boot A boolean to show the bootstrap mean and sd on the graphic
+#' @examples
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'     politic = Russett[, 6:11] )
+#' rgcca.res = rgcca.analyze(blocks)
+#' boot = bootstrap(blocks, rgcca.res, 2, FALSE)
+#' selected.var = getBootstrap(rgcca.res, boot)
+#' plotBootstrap(selected.var, rgcca.res)
+#' @export
 plotBootstrap <- function(
     df,
     rgcca,
@@ -752,7 +766,7 @@ plotBootstrap <- function(
     show.boot = TRUE,
     n_mark = 30) {
 
-    color <- V2 <- V3 <- intneg <- intpos <- NULL
+    color <- intneg <- intpos <- NULL
     J <- names(rgcca$a)
 
     if (nrow(df) > n_mark)
@@ -761,20 +775,20 @@ plotBootstrap <- function(
     if (superblock) {
         color2 <- factor(df$color)
         levels(color2) <- colorGroup(color2)
-        p <- ggplot(df, aes(order, weights, fill = color))
+        p <- ggplot(df, aes(order, mean, fill = color))
     } else{
         color2 <- "black"
-        p <- ggplot(df, aes(order, weights, fill = abs(weights)))
+        p <- ggplot(df, aes(order, mean, fill = abs(mean)))
     }
 
-    p <- plotHistogram(p, df, "Variable weights", as.character(color2))
+    p <- plotHistogram(p, df, "Variable mean", as.character(color2))
     
-    if (show.boot){
+    if (show.boot) {
     p <- p +
         geom_line(aes(x = order, y = mean), inherit.aes = FALSE, lwd = 0.7) +
         geom_point(aes(x = order, y = mean), inherit.aes = FALSE, size = 1.5)
 
-        if (class(rgcca) == "rgcca" )
+        if (is(rgcca, "rgcca" ))
             p <- p +
                 geom_errorbar(aes(ymin = intneg, ymax = intpos))
     }
@@ -782,18 +796,37 @@ plotBootstrap <- function(
     if (superblock)
         col <- J
     else
-       col <- J[-length(J)]
+        col <- J[-length(J)]
         
     if (superblock) {
         matched <- match(rev(unique(df$color)), col)
-        p <- orderColorPerBlocs(rgcca, p, matched, superblock)
+        p <- orderColorPerBlocs(rgcca$a, p, matched, superblock)
     }
-    
+
     return(p)
 }
 
+#' Plot a bootstrap in 2D
+#' 
+#' Biplot of the top variables from a SGCCA bootstrap with the number of 
+#' non-zero occurences in x-axis and the boot-ratio (mean/sd) in y-axis. 
+#' Negative weights are colored in red and the positive ones are in green.
+#'
+#' @param b A matrix of boostrap
+#' @param x A character for the column to plot in x-axis
+#' @param y A character for the column to plot in y-axis
+#' @examples
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'     politic = Russett[, 6:11] )
+#' rgcca.res = rgcca.analyze(blocks, type = "sgcca")
+#' boot = bootstrap(blocks, rgcca.res, 2, FALSE)
+#' selected.var = getBootstrap(rgcca.res, boot)
+#' plotBootstrap2D(selected.var)
+#' @export
 plotBootstrap2D <- function(b, x = "br", y = "occ"){
-    
+
     axis <- function(margin){
         element_text(
             face = AXIS_FONT,
@@ -807,7 +840,7 @@ plotBootstrap2D <- function(b, x = "br", y = "occ"){
         aes(
             x = abs(b[, x]),
             y = b[, y],
-            label = row.names(b),            , 
+            label = row.names(b),
             color = as.factor(mean > 0)
         )
     ) + 
@@ -826,12 +859,33 @@ plotBootstrap2D <- function(b, x = "br", y = "occ"){
         axis.title.y = axis(margin(0, 20, 0, 0)),
         axis.title.x = axis(margin(20, 0, 0, 0))
     ) +
-    scale_color_manual(values = colorGroup(1:2))
+    scale_color_manual(values = colorGroup(seq(2)))
 }
 
+#' Plot a bootstrap in 1D
+#' 
+#' Histogram of the best variables of an RGCCA bootstrap with, on the x-axis, 
+#' the number of non-zero occurrences (SGCCA) or the bootstrap-ratio 
+#' (mean/sd; RCCA). The bars are colored according to the average weight of 
+#' the boostrap  (according to an ascending gradient from red to blue)
+#'
+#' @param b A matrix of boostrap
+#' @param x A character for the column used in the plot
+#' @param y A character for the column to color the bars
+#' @param n An integer giving the number maximum of top variables
+#' @examples
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'     politic = Russett[, 6:11] )
+#' rgcca.res = rgcca.analyze(blocks)
+#' boot = bootstrap(blocks, rgcca.res, 2, FALSE)
+#' selected.var = getBootstrap(rgcca.res, boot)
+#' plotBootstrap1D(selected.var)
+#' @export
 plotBootstrap1D <- function(b, x = "occ", y = "mean", n = 50){
-    
-    if (!("occ" %in% colnames(b))){
+
+    if (!("occ" %in% colnames(b))) {
         title <- "Bootstrap ratio"
         x <- "br"
     }else
@@ -851,9 +905,9 @@ plotBootstrap1D <- function(b, x = "occ", y = "mean", n = 50){
         b,
         title,
         "black",
-        low_col = colorGroup(1:3)[1],
+        low_col = colorGroup(seq(3))[1],
         mid_col = "white", 
-        high_col = colorGroup(1:3)[3]
+        high_col = colorGroup(seq(3))[3]
     ) +
     labs(fill = "Mean weights")
 }

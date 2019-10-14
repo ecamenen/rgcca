@@ -292,8 +292,7 @@ checkArg <- function(opt) {
     else if (!opt$scheme %in% seq_len(4)) {
         stop(
             paste0(
-                "--scheme must be comprise between 1 and 4 [by default: 2],
-                not be equal to ",
+                "--scheme must be comprise between 1 and 4 [by default: 2], not be equal to ",
                 opt$scheme,
                 "."
             ),
@@ -310,8 +309,7 @@ checkArg <- function(opt) {
     if (!opt$separator %in% seq_len(3)) {
         stop(
             paste0(
-                "--separator must be comprise between 1 and 3 (1: Tabulation,
-                2: Semicolon, 3: Comma) [by default: 2], not be equal to ",
+                "--separator must be comprise between 1 and 3 (1: Tabulation, 2: Semicolon, 3: Comma) [by default: 2], not be equal to ",
                 opt$separator,
                 "."
             ),
@@ -442,8 +440,7 @@ postCheckArg <- function(opt, blocks) {
         }
     })
     
-    MSG <- "--tau must be comprise between 0 and 1 or must correspond to the
-    character 'optimal' for automatic setting"
+    MSG <- "--tau must be comprise between 0 and 1 or must correspond to the character 'optimal' for automatic setting"
     if (all(opt$tau != "optimal")) {
         tryCatch({
             list_tau <- as.list(opt$tau)

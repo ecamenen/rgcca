@@ -1,5 +1,5 @@
 # Author: Etienne CAMENEN
-# Date: 20198
+# Date: 2019
 # Contact: arthur.tenenhaus@l2s.centralesupelec.fr
 # Key-words: omics, RGCCA, multi-block
 # EDAM operation: analysis, correlation, visualisation
@@ -190,24 +190,17 @@ changeText <- function(p) {
             p$x$data[[i]]$text)
     return(p)
 }
-# Creates a circle
-circleFun <- function(center = c(0, 0), diameter = 2, npoints = 100) {
-        r <- diameter / 2
-        tt <- seq(0, 2 * pi, length.out = npoints)
-        xx <- center[1] + r * cos(tt)
-        yy <- center[2] + r * sin(tt)
-        return(data.frame(x = xx, y = yy))
-    }
 
 #' Print the variance of a component
 #'
 #' Prints the percent of explained variance for a component of a block 
 #' (by default, the superblock or the last one) analysed by R/SGCCA
 #'
-#' @param rgcca A list giving the results of a R/SGCCA
+#' @inheritParams plotSamplesSpace
 #' @param n An integer giving the index of the analysis component
 #' @param i An integer giving the index of a list of blocks
 #' @param outer A boolean for ave plot case
+#' @return A string for the variance on the component
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' AVE = list(c(0.6, 0.5), c(0.7, 0.45))
@@ -218,7 +211,7 @@ circleFun <- function(center = c(0, 0), diameter = 2, npoints = 100) {
 #' # For the first block
 #' printAxis(rgcca.res, 2, 1)
 #' # "Axis 2 (50%)"
-#' @export printAxis
+#' @export
 printAxis <- function(rgcca, n = NULL, i = NULL, outer = FALSE) {
     
     # by default, take the last block
@@ -284,9 +277,9 @@ colorGroup <- function(group) {
     palette[0:length(levels(as.factor(group)))]
 }
 
-#' Plot of samples space
+#' Plot the two components of a RGCCA
 #'
-#' Plots samples on two components of a RGCCA
+#' Plot the two components of a RGCCA
 #'
 #' @param rgcca A list giving the results of a R/SGCCA
 #' @param resp A vector of characters corresponding either to a qualitative
@@ -305,14 +298,14 @@ colorGroup <- function(group) {
 #' @param predicted A list containing as  2nd element a matrix of predicted components 
 #' @examples
 #' coord = lapply(seq_len(3),
-#'   function(x) matrix(runif(15 * 2, min = -1), 15, 2))
+#'    function(x) matrix(runif(15 * 2, min = -1), 15, 2))
 #' AVE_X = lapply(seq_len(3), function(x) runif(2))
 #' rgcca.res = list(Y = coord, AVE = list(AVE_X = AVE_X))
 #' # Using a superblock
 #' plotSamplesSpace(rgcca.res, rep(LETTERS[seq_len(3)], each = 5))
 #' # Using the first block
 #' plotSamplesSpace(rgcca.res, runif(15, min=-15, max = 15), 1, 2, 1)
-#' @export plotSamplesSpace
+#' @export
 plotSamplesSpace <- function(
     rgcca,
     resp,
@@ -341,7 +334,7 @@ plotSamplesSpace <- function(
     if (nrow(df) > 100)
         PCH_TEXT_CEX <- 2
 
-    if(!is.null(predicted)){
+    if (!is.null(predicted)) {
 
             df <- rbind(df, predicted[[2]][[i_block]][, c(comp_x, comp_y)])
             df$resp <- resp <- rep(c("obs", "pred"), each = nrow(rgcca$Y[[1]]))
@@ -426,7 +419,7 @@ plotSamplesSpace <- function(
 #' names(rgcca.res$a) = LETTERS[seq_len(4)]
 #' getBlocsVariables(rgcca.res)
 #' # a, b, c
-#' @export getBlocsVariables
+#' @export
 getBlocsVariables <- function(df, collapse = FALSE) {
     
     if (!collapse)
@@ -452,30 +445,22 @@ getBlocsVariables <- function(df, collapse = FALSE) {
 #'
 #' Correlation circle highlighting the contribution of each variables to the
 #' construction of the RGCCA components
-#' @param rgcca A list giving the results of a R/SGCCA
+#' @inheritParams plotSamplesSpace
 #' @param blocks A list of matrix
-#' @param comp_x An integer giving the index of the analysis component used
-#' for the x-axis
-#' @param comp_y An integer giving the index of the analysis component used
-#' for the y-axis
 #' @param superblock A boolean giving the presence (TRUE) / absence (FALSE)
 #' of a superblock
-#' @param i_block An integer giving the index of a list of blocks
-#' @param text A bolean to represent the points with their row names (TRUE)
-#' or with circles
 #' @param removeVariable A bolean to keep only the 100 variables of each
 #' component with the biggest correlation#'
 #' @param n_mark An integer giving the number of top variables to select
-#' @param no_Overlap A boolean to avoid overlap in plotted text
 #' @param collapse A boolean to combine the variables of each blocks as result
 #' @examples
 #' setMatrix = function(nrow, ncol, iter = 3) lapply(seq_len(iter),
-#'    function(x) matrix(runif(nrow * ncol), nrow, ncol))
+#'     function(x) matrix(runif(nrow * ncol), nrow, ncol))
 #' blocks = setMatrix(10, 5)
 #' blocks[[4]] = Reduce(cbind, blocks)
 #' for (i in seq_len(4))
-#'    colnames(blocks[[i]]) = paste0( LETTERS[i],
-#'    as.character(seq_len(NCOL(blocks[[i]]))))
+#'     colnames(blocks[[i]]) = paste0( LETTERS[i],
+#'     as.character(seq_len(NCOL(blocks[[i]]))))
 #' coord = setMatrix(10, 2, 4)
 #' a = setMatrix(5, 2)
 #' a[[4]] = matrix(runif(15 * 2), 15, 2)
@@ -486,7 +471,7 @@ getBlocsVariables <- function(df, collapse = FALSE) {
 #' plotVariablesSpace(rgcca.res, blocks, 1, 2, TRUE)
 #' # Using the first block
 #' plotVariablesSpace(rgcca.res, blocks, 1, 2, FALSE, 1)
-#' @export plotVariablesSpace
+#' @export
 plotVariablesSpace <- function(
     rgcca,
     blocks,
@@ -501,8 +486,17 @@ plotVariablesSpace <- function(
     no_Overlap = FALSE) {
 
     x <- y <- selectedVar <- NULL
+
     if (is.null(i_block))
         i_block <- length(blocks)
+
+    circleFun <- function(center = c(0, 0), diameter = 2, npoints = 100) {
+        r <- diameter / 2
+        tt <- seq(0, 2 * pi, length.out = npoints)
+        xx <- center[1] + r * cos(tt)
+        yy <- center[2] + r * sin(tt)
+        return(data.frame(x = xx, y = yy))
+    }
     
     if (collapse) {
         superblock <- TRUE
@@ -510,12 +504,13 @@ plotVariablesSpace <- function(
         blocks <- rep(list(Reduce(cbind, blocks)), length(blocks))
         names(blocks) <- names(blocks.all)
     }
+
     df <- getVar(rgcca, blocks, comp_x, comp_y, i_block, "cor", collapse)
 
     if (is(rgcca, "sgcca")) {
 
         if (collapse)
-            J <- 1:length(rgcca$a)
+            J <- seq(length(rgcca$a))
         else
             J <- i_block
 
@@ -537,7 +532,7 @@ plotVariablesSpace <- function(
 
     # if superblock is selected, color by blocks
     if (superblock & (collapse | (i_block == length(rgcca$a)))) {
-         
+
         if (collapse)
             color <- getBlocsVariables(lapply(blocks.all, t), TRUE)
         else 
@@ -595,32 +590,22 @@ plotVariablesSpace <- function(
 #'
 #' Plots RGCCA components in a bi-dimensional space
 #'
-#' @param rgcca A list giving the results of a R/SGCCA
+#' @inheritParams plotSamplesSpace
+#' @inheritParams plotVariablesSpace
 #' @param df A dataframe
 #' @param title A character with the name of the space (either "Variables" or
 #' "Samples")
 #' @param group A vector of character with levels used to color the points
 #' @param name_group A character giving the type of groups (either "Blocs" or
 #' "Response")
-#' @param comp_x An integer giving the index of the analysis component used
-#' for the x-axis
-#' @param comp_y An integer giving the index of the analysis component used
-#' for the y-axis
-#' @param i_block An integer giving the index of a list of blocks
 #' @param p A ggplot object
-#' @param text A bolean to represent the points with their row names (TRUE) or
-#' with circles (FALSE)
-#' @param i_block_y An integer giving the index of a list of blocks 
-#' (another one, different from the one used in i_block)
-#' @param colours A vectof of character to color quantitative data
-#' @param no_Overlap A boolean to avoid overlap in plotted text
-#' @param collapse A boolean to combine the variables of each blocks as result
+#' @param colours A vectof of character to color quantitative dat
 #' @examples
 #' df = as.data.frame(matrix(runif(20*2, min = -1), 20, 2))
 #' AVE = lapply(seq_len(4), function(x) runif(2))
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
 #' plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
-#' @export plotSpace
+#' @export
 plotSpace <- function(
     rgcca,
     df,
@@ -746,17 +731,12 @@ orderColorPerBlocs <- function(df, p, matched = NULL, collapse = FALSE) {
 #' Histogram of the higher outer weight vectors for a component of a block 
 #' (by default, the superblock or the last one) analysed by R/SGCCA
 #'
-#' @param rgcca A list giving the results of a R/SGCCA
-#' @param blocks A list of matrix
+#' @inheritParams plotVariablesSpace
 #' @param comp An integer giving the index of the analysis components
-#' @param n_mark An integer giving the number of top variables to select
-#' @param superblock A boolean giving the presence (TRUE) / absence (FALSE)
 #' of a superblock
-#' @param i_block An integer giving the index of a list of blocks
 #' @param type A string giving the criterion to selects biomarkers : either 
 #' "cor" for correlation between the component and the block
 #' or "weight" for the weight of the RGCCA
-#' @param collapse A boolean to combine the variables of each blocks as result
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' weights = lapply(seq_len(3), function(x) matrix(runif(7*2), 7, 2))
@@ -765,12 +745,12 @@ orderColorPerBlocs <- function(df, p, matched = NULL, collapse = FALSE) {
 #' names(rgcca.res$a) = LETTERS[seq_len(4)]
 #' for(i in seq(1,4))
 #' row.names(rgcca.res$a[[i]]) <- paste0(letters[i],
-#'   letters[seq_len(nrow(rgcca.res$a[[i]]))])
+#'      letters[seq_len(nrow(rgcca.res$a[[i]]))])
 #' # With the 1rst component of the superblock
 #' plotFingerprint(rgcca.res, NULL, 1, TRUE, type = "weigth")
 #' # With the 2nd component of the 1rst block by selecting the ten higher weights
 #' plotFingerprint(rgcca.res, NULL, 2, FALSE, 10, 1, type = "weigth")
-#' @export plotFingerprint
+#' @export
 plotFingerprint <- function(rgcca,
     blocks = NULL,
     comp = 1,
@@ -802,7 +782,7 @@ plotFingerprint <- function(rgcca,
     
     # Get a qualitative variable with which block is associated
     # with each variables
-    if (superblock & (collapse | (i_block == length(rgcca$a)))){
+    if (superblock & (collapse | (i_block == length(rgcca$a)))) {
         
         if (collapse)
             color <- getBlocsVariables(lapply(blocks.all, t), TRUE)
@@ -865,19 +845,19 @@ plotFingerprint <- function(rgcca,
 #' Histogram of the model quality (based on Average Variance Explained)
 #' for each blocks and sorted in decreasing order
 #'
-#' @param rgcca A list giving the results of a R/SGCCA
+#' @inheritParams plotSamplesSpace
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' random_val = function(y=1) lapply(seq_len(4),
 #' function(x) matrix(runif(4), y, 2))
 #' rgcca.res = list(AVE = list(AVE_X = random_val()),
-#'   a = random_val(2), ncomp = rep(2, 4))
+#'      a = random_val(2), ncomp = rep(2, 4))
 #' names(rgcca.res$a) <- LETTERS[seq_len(4)]
 #' library("ggplot2")
 #' for(i in seq(1,4))
 #' names(rgcca.res$AVE$AVE_X[[i]]) <- c(1,2)
 #' plotAVE(rgcca.res)
-#' @export plotAVE
+#' @export
 plotAVE <- function(rgcca) {
 
     ave <- 100 * unlist(rgcca$AVE$AVE_X)
@@ -924,9 +904,7 @@ plotAVE <- function(rgcca) {
 #'
 #' Default font for a vertical barplot.
 #'
-#' @param p A ggplot object.
-#' @param df A dataframe with a column named "order"
-#' @param title A character string giving a graphic title
+#' @inheritParams plotSpace
 #' @param color A vector of character giving the colors for the rows
 #' @param low_col A character giving the color used for the lowest part of
 #' the gradient
@@ -943,8 +921,9 @@ plotAVE <- function(rgcca) {
 #' df$color = rep(c(1,2,3), each=10)
 #' p = ggplot(df, aes(order, x, fill = color))
 #' plotHistogram(p, df, "Histogram", as.character(df$color))
-#' @export plotHistogram
-plotHistogram <- function(p,
+#' @export
+plotHistogram <- function(
+    p,
     df,
     title = "",
     color = "black",
@@ -997,7 +976,7 @@ plotHistogram <- function(p,
             scale_x_continuous(breaks = df$order, labels = rownames(df)) +
             labs(fill = "Blocks")
         if (length(color) == 1) {
-            if(is.null(mid_col))
+            if (is.null(mid_col))
                 p <- p +
                     scale_fill_gradient(low = low_col, high = high_col) +
                     theme(legend.position = "none")
@@ -1087,6 +1066,11 @@ getVar <- function(rgcca,
 #' @param df A dataframe
 #' @param comp An integer giving the index of the analysis components
 #' @param allCol A boolean to use all the column of the dataframe
+#' @return A datafram with ordered values
+#' @examples 
+#' df = sapply(seq(2), function(x) runif(10))
+#' getRankedValues(df)
+#' @export
 getRankedValues <- function(df, comp = 1, allCol = TRUE) {
     
     ordered <- order(abs(df[, comp]), decreasing = TRUE)
