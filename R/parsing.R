@@ -363,6 +363,10 @@ setBlocks <- function(file,
 #' Impute non availabe by means
 #' 
 #' @param df A matrix containing non availables data
+#' @examples
+#' df = cbind(runif(9), runif(9))
+#' df = rbind(df, c(NA, NA))
+#' imputeMean(df)
 #' @return A matrix with imputed values
 imputeMean <- function(df){
     if (any(is.na(df))) {

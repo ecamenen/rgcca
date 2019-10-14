@@ -13,8 +13,6 @@ AXIS_TITLE_CEX <- 19 * CEX
 SUBTITLE_CEX <- 16 * CEX
 AXIS_TEXT_CEX <- 10 * CEX
 PCH_TEXT_CEX <- 3 * CEX
-AXIS_FONT <- "italic"
-SAMPLES_COL_DEFAULT <- "#cd5b45"
 
 # X- Y axis format for plotly objets : no axis, no ticks
 ax <- list(linecolor = "white",
@@ -235,13 +233,13 @@ printAxis <- function(rgcca, n = NULL, i = NULL, outer = FALSE) {
     }
 }
 
-
+# Variables with a non-zero weight
 varSelected <- function(rgcca, i_block, comp) {
     # Get the variables with a weight != 0
     sum(rgcca$a[[i_block]][, comp] != 0)
 }
 
-#' Default font for plots
+# Default theme for ggplot
 theme_perso <- function() {
     theme(
         legend.text = element_text(size = 13 * CEX),
@@ -255,11 +253,17 @@ theme_perso <- function() {
     )
 }
 
-colorGroup <- function(group) {
+#' Groups of color
+#' 
+#' Returns a color vector of equal size to the input vector
+#' @param x A vector
+#' @example colorGroup(seq(10))
+#' @return A color vector of equal size to the input vector
+colorGroup <- function(x) {
     palette <-
         rep(
             c(
-                SAMPLES_COL_DEFAULT,
+                "#cd5b45",
                 "#71ad65",
                 "#3c78b4",
                 "#ffc600",
@@ -274,7 +278,7 @@ colorGroup <- function(group) {
             ),
             10
         )
-    palette[0:length(levels(as.factor(group)))]
+    palette[0:length(levels(as.factor(x)))]
 }
 
 #' Plot the two components of a RGCCA
@@ -403,6 +407,7 @@ plotSamplesSpace <- function(
     else
         p
 }
+
 #' Get the blocs of each variables
 #'
 #' Get a vector of block names for each corresponding variable. The last block 
@@ -514,7 +519,7 @@ plotVariablesSpace <- function(
         else
             J <- i_block
 
-        selectedVar <- unlist( lapply( J, function(x) rgcca$a[[x]][, comp_x] != 0 | rgcca$a[[x]][, comp_y] != 0 ) )
+        selectedVar <- unlist( lapply( J, function(x) varSelected(rgcca, x, comp_x) | varSelected(rgcca, x, comp_y) ) )
         df <- df[ names(which(selectedVar)), ]
 
     }
@@ -618,7 +623,7 @@ plotSpace <- function(
     p = NULL,
     text = TRUE,
     i_block_y = NULL,
-    colours = c("blue", "gray", SAMPLES_COL_DEFAULT),
+    colours = c("blue", "gray", "#cd5b45"),
     collapse = FALSE,
     no_Overlap = FALSE) {
 
@@ -656,7 +661,7 @@ plotSpace <- function(
     
     axis <- function(margin){
         element_text(
-            face = AXIS_FONT,
+            face = "italic",
             size = AXIS_TITLE_CEX * 0.75,
             margin = margin
         )
@@ -702,7 +707,7 @@ plotSpace <- function(
         p + scale_color_gradientn(colours = colours, na.value = "black")
 }
 
-
+# Reorder the color of a ggplot (in case of a missing modality)
 orderColorPerBlocs <- function(df, p, matched = NULL, collapse = FALSE) {
 
     J <- names(df)
@@ -946,21 +951,21 @@ plotHistogram <- function(
     else
         MAR <- 0
 
+    axis <- function(margin){
+        element_text(
+            size = AXIS_TEXT_CEX,
+            face = "italic",
+            color = "gray40"
+        )
+    }
+
     p <- p + geom_bar(stat = "identity", width = WIDTH) +
         coord_flip() + labs(title = title,  x = "", y = "") +
         theme_classic() +
         theme_perso() +
         theme(
-            axis.text.y = element_text(
-            size = AXIS_TEXT_CEX,
-            face = AXIS_FONT,
-            color = "gray40"
-            ),
-            axis.text.x = element_text(
-                size = AXIS_TEXT_CEX,
-                face = AXIS_FONT,
-                color = "gray40"
-            ),
+            axis.text.y = axis(),
+            axis.text.x = axis(),
             axis.line = element_blank(),
             axis.ticks = element_blank(),
             plot.subtitle = element_text(
@@ -989,46 +994,23 @@ plotHistogram <- function(
     return(p)
 }
 
-corResponse <- function(rgcca,
-    blocks,
-    i_response = NULL,
-    comp = 1,
-    i_block = 1) {
-    
-
-    if (is.null(i_response))
-        response <- blocks[[length(rgcca$a)]]
-    else{
-        response <- blocks[[i_response]]
-        diff_column <- setdiff(row.names(blocks[[i_block]]), row.names(response))
-        response[diff_column, ] <- NA
-        response <- response[row.names(rgcca$Y[[i_block]]),]
-        #options(warn = -1)
-        # Disabling automatic factor conversion for some columns
-        response <- apply(response, 2, as.double)
-        #options(warn = 0)
-    }
-
-    cor.res <- matrix(cor(rgcca$Y[[i_block]][, comp],
-                        response,
-                        use = "pairwise.complete.obs"),
-                    dimnames = list(colnames(response, NULL)))
-    res <- data.frame(cor = cor.res[order(abs(cor.res[, 1]),
-                                        decreasing = TRUE),],
-                    order = length(cor.res):1)
-
-    if (VERBOSE)
-        print(res)
-
-    p <- ggplot(res, aes(order, cor, fill = abs(res[, 1])))
-
-    plotHistogram(p, res, "Correlation with response") +
-        labs(subtitle = printAxis(rgcca, comp, i_block)) +
-        theme(legend.position = "none")
-}
-
-# blocks : should not be null with cor mode
-getVar <- function(rgcca,
+#' Variable contribution
+#' 
+#' Extract the contibution of variables to the model by using correlation or weight
+#' @inheritParams plotVariablesSpace
+#' @param type A character giving the choice ot the index between cor or weight
+#' @examples
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'     politic = Russett[, 6:11] )
+#' rgcca.res = rgcca.analyze(blocks)
+#' getVar(rgcca.res, blocks)
+#' getVar(rgcca.res, blocks, 2, 1, 2, "weights", TRUE)
+#' @return A dataframe containing the indexes for each selected components
+#' @export
+getVar <- function(
+    rgcca,
     blocks = NULL,
     comp_x = 1,
     comp_y = 2,
@@ -1087,8 +1069,9 @@ getRankedValues <- function(df, comp = 1, allCol = TRUE) {
 }
 
 
-# Print variables analysis attributes
-saveVars <- function(rgcca,
+#' Print and save variables analysis attributes
+saveVars <- function(
+    rgcca,
     blocks,
     comp_x = 1,
     comp_y = 2,
@@ -1096,23 +1079,25 @@ saveVars <- function(rgcca,
     
     indexes <- c("cor", "weight")
 
-        vars <- Reduce(rbind, lapply(seq_len(length(blocks)), function(i)
-                data.frame(
-                    Reduce(cbind,
-                            lapply(indexes, function(x)
-                                getVar(rgcca, blocks, comp_x, comp_y, i, x))),
-                    names(blocks)[i]
-                )))
+    vars <- Reduce(rbind, lapply(seq_len(length(blocks)), function(i)
+            data.frame(
+                Reduce(cbind,
+                        lapply(indexes, function(x)
+                            getVar(rgcca, blocks, comp_x, comp_y, i, x))),
+                names(blocks)[i]
+            )))
 
-        colnames(vars) <- c(as.vector(sapply(indexes, function(x)
-                paste0(x, ".", paste0("axis.", c(comp_x, comp_y))))), "block")
+    colnames(vars) <- c(as.vector(sapply(indexes, function(x)
+            paste0(x, ".", paste0("axis.", c(comp_x, comp_y))))), "block")
 
-        write.table(vars, file, sep = "\t")
+    write.table(vars, file, sep = "\t")
 
-        invisible(vars)
-    }
+    invisible(vars)
+}
 
-saveInds <- function(rgcca,
+#' Print and save indidvidual analysis attributes
+saveInds <- function(
+    rgcca,
     blocks,
     comp_x = 1,
     comp_y = 2,

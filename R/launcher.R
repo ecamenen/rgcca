@@ -269,8 +269,7 @@ getArgs <- function() {
             help = "Path for the response correlation plot [default: %default]"
         )
     )
-    args <- commandArgs(trailingOnly = TRUE)
-    return (OptionParser(option_list = option_list))
+    return(OptionParser(option_list = option_list))
 }
 
 checkFile <- function(f) {

@@ -8,8 +8,6 @@
 # and produces textual and graphical outputs (e.g. variables and individuals
 # plots).
 
-VERBOSE <- FALSE
-
 checkNbBlocks <- function(blocks, type) {
     if (tolower(type) == "pca") {
         msg <- "Only one block is"
