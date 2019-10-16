@@ -22,21 +22,40 @@ samplesPlot3D <- function(df, i_block, text = TRUE){
         df[which(df[, 3] == levels(df$resp)[x]), ]
 
     add_trace_manual <- function(p, x){
-        add_trace(
-            p,
-            name = levels(df$resp)[x],
-            x = ~ subdf(x)[, 1],
-            y = ~ subdf(x)[, 2],
-            z = ~ subdf(x)[, 4],
-            type = "scatter3d",
-            mode = "text",
-            text = ~ row.names(subdf(x)),
-            textfont = list(
+        
+        func <- quote(
+            add_trace(
+                p,
+                name = levels(df$resp)[x],
+                x = ~ subdf(x)[, 1],
+                y = ~ subdf(x)[, 2],
+                z = ~ subdf(x)[, 4],
+                type = "scatter3d",
+                showlegend = TRUE
+            )
+        )
+        
+        font = list(
+            color = colorGroup(1:3)[x],
+            size = PCH_TEXT_CEX * 2.5
+        )
+        
+        if (text) {
+            func$mode = "text"
+            func$text = ~ row.names(subdf(x))
+            func$textfont = list(
                 color = colorGroup(1:3)[x],
                 size = PCH_TEXT_CEX * 2.5
-            ),
-            showlegend = TRUE
-        )
+            )
+        }else{
+            func$mode = "markers"
+            func$marker = font = list(
+                color = colorGroup(1:3)[x],
+                size = PCH_TEXT_CEX
+            )
+        }
+        
+        eval(func)
     }
     
     
