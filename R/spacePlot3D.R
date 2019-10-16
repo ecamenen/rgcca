@@ -1,8 +1,22 @@
-samplesPlot3D <- function(df, i_block, text = TRUE){
-
-    axis <- function(x)
+#' df = getComponents(rgcca.res, response, comp_z = 3)
+#' spacePlot3D(df, 3, text = FALSE)
+#' spacePlot3D(df, 3)
+spacePlot3D <- function(
+    df,
+    i_block,
+    comp_x = 1,
+    comp_y = 2,
+    comp_z = 3,
+    i_block_y = i_block,
+    i_block_z = i_block,
+    text = TRUE) {
+    
+    # if (length(unique(resp)) == 1)
+        # TODO
+    
+    axis <- function(x, i)
         list(
-                title = printAxis(rgcca.res, x, i_block),
+                title = printAxis(rgcca.res, x, i),
                 titlefont = list(
                         size = AXIS_TITLE_CEX * 0.75,
                         fac = "italic"
@@ -19,38 +33,37 @@ samplesPlot3D <- function(df, i_block, text = TRUE){
     }
     
     subdf <- function(x) 
-        df[which(df[, 3] == levels(df$resp)[x]), ]
+        df[which(df$resp == levels(df$resp)[x]), ]
 
     add_trace_manual <- function(p, x){
-        
+
+        l <- levels(df$resp)
+
         func <- quote(
             add_trace(
                 p,
-                name = levels(df$resp)[x],
+                name = l[x],
                 x = ~ subdf(x)[, 1],
                 y = ~ subdf(x)[, 2],
-                z = ~ subdf(x)[, 4],
+                z = ~ subdf(x)[, 3],
                 type = "scatter3d",
                 showlegend = TRUE
             )
         )
         
-        font = list(
-            color = colorGroup(1:3)[x],
-            size = PCH_TEXT_CEX * 2.5
-        )
+        color <- colorGroup(1:length(l))[x]
         
         if (text) {
-            func$mode = "text"
-            func$text = ~ row.names(subdf(x))
-            func$textfont = list(
-                color = colorGroup(1:3)[x],
+            func$mode <- "text"
+            func$text <- ~row.names(subdf(x))
+            func$textfont <- list(
+                color = color,
                 size = PCH_TEXT_CEX * 2.5
             )
         }else{
-            func$mode = "markers"
-            func$marker = font = list(
-                color = colorGroup(1:3)[x],
+            func$mode <- "markers"
+            func$marker <- list(
+                color = color,
                 size = PCH_TEXT_CEX
             )
         }
@@ -70,7 +83,7 @@ samplesPlot3D <- function(df, i_block, text = TRUE){
             name = "samples",
             x = ~ df[, 1],
             y = ~ df[, 2],
-            z = ~ df[, 4],
+            z = ~ df[, 3],
             mode = "markers",
             type = "scatter3d",
             showlegend = FALSE,
@@ -86,7 +99,7 @@ samplesPlot3D <- function(df, i_block, text = TRUE){
                     name = "samples",
                     x = ~ df[, 1],
                     y = ~ df[, 2],
-                    z = ~ df[, 4],
+                    z = ~ df[, 3],
                     mode = "text",
                     type = "scatter3d",
                     text = ~ row.names(df),
@@ -101,10 +114,10 @@ samplesPlot3D <- function(df, i_block, text = TRUE){
 
 
     }else{
-        p <- plot_ly() %>% 
-            add_trace_manual(1) %>% 
-            add_trace_manual(2) %>% 
-            add_trace_manual(3)
+        p <- plot_ly()
+        
+        for (i in seq(length(levels(df$resp))))
+            p <- p %>% add_trace_manual(i)
     }
     
 
@@ -119,9 +132,9 @@ samplesPlot3D <- function(df, i_block, text = TRUE){
             ),
             scene = list(
                 aspectmode = 'cube',
-                xaxis = axis(1),
-                yaxis = axis(2),
-                zaxis = axis(3)
+                xaxis = axis(comp_x, i_block),
+                yaxis = axis(comp_y, i_block_y),
+                zaxis = axis(comp_z, i_block_z)
             ),
             title = list(
                 text = 'Sample plot',

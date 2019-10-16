@@ -1,0 +1,73 @@
+#' @examples 
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
+#'     politic = Russett[, 6:11] )
+#' rgcca.res = rgcca.analyze(blocks)
+#' response = factor( apply(Russett[, 9:11], 1, which.max),
+#'                   labels = colnames(Russett)[9:11] )
+#' df = getComponents(rgcca.res, as.matrix(response), comp_z = 3)
+getComponents <- function(
+    rgcca,
+    resp,
+    comp_x = 1,
+    comp_y = 2,
+    comp_z = NULL,
+    i_block = length(rgcca$Y),
+    i_block_y = i_block,
+    i_block_z = i_block,
+    predicted = NULL){
+
+
+    df <- data.frame(
+        rgcca$Y[[i_block]][, comp_x], 
+        rgcca$Y[[i_block_y]][, comp_y],
+        rgcca$Y[[i_block_z]][, comp_z]
+    )
+    
+    if (!is.null(predicted)) {
+
+            df <- rbind(df, predicted[[2]][[i_block]][, c(comp_x, comp_y, comp_z)])
+            df$resp <- resp <- rep(c("obs", "pred"), each = nrow(rgcca$Y[[1]]))
+
+    } else if (length(unique(as.matrix(resp))) > 1) {
+        names <- row.names(resp)
+        resp <- apply(as.matrix(resp), 1, as.character)
+
+        if (!is.null(names)) {
+
+            resp <- as.matrix(resp, row.names = names)
+            name_blocks <- row.names(rgcca$Y[[i_block]])
+            diff_column <- setdiff(name_blocks, names)
+
+            if (identical(diff_column, name_blocks)) {
+                warning("No match has been found with the row names of the group file.")
+                resp <- rep("NA", nrow(df))
+
+            } else {
+                if (length(diff_column) > 0) {
+                    resp[diff_column] <- "NA"
+                    names(resp)[names(resp) == ""] <- names
+                } else {
+                    names(resp) <- names
+                }
+                resp <- resp[row.names(rgcca$Y[[i_block]])]
+            }
+        } else {
+            warning("No row names have been found in the group file.")
+            resp <- rep("NA", nrow(df))
+        }
+    }
+        
+    if (!unique(isCharacter(as.vector(resp))) &&
+        length(unique(resp)) > 5) {
+
+        resp[resp == "NA"] <- NA
+        resp <- as.numeric(resp)
+    }
+    
+    df$resp <- as.factor(resp)
+    
+    return(df)
+
+}
