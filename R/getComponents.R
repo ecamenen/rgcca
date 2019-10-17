@@ -7,6 +7,9 @@
 #' response = factor( apply(Russett[, 9:11], 1, which.max),
 #'                   labels = colnames(Russett)[9:11] )
 #' df = getComponents(rgcca.res, as.matrix(response), comp_z = 3)
+#' response = as.matrix(runif(nrow(blocks[[1]])))
+#' row.names(response) = row.names(blocks[[1]])
+#' df = getComponents(rgcca.res, response)
 getComponents <- function(
     rgcca,
     resp,
@@ -28,7 +31,7 @@ getComponents <- function(
     if (!is.null(predicted)) {
 
             df <- rbind(df, predicted[[2]][[i_block]][, c(comp_x, comp_y, comp_z)])
-            df$resp <- resp <- rep(c("obs", "pred"), each = nrow(rgcca$Y[[1]]))
+            resp <- rep(c("obs", "pred"), each = nrow(rgcca$Y[[1]]))
 
     } else if (length(unique(as.matrix(resp))) > 1) {
         names <- row.names(resp)

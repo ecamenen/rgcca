@@ -312,7 +312,7 @@ colorGroup <- function(x) {
 #' @export
 plotSamplesSpace <- function(
     rgcca,
-    resp,
+    df,
     comp_x = 1,
     comp_y = 2,
     i_block = NULL,
@@ -322,76 +322,26 @@ plotSamplesSpace <- function(
     no_Overlap = FALSE,
     predicted = NULL) {
 
-
-    # resp : color the points with a vector
-    if (is.null(i_block))
-        i_block <- length(rgcca$Y)
-
-    if (is.null(i_block_y))
-        df <- data.frame(rgcca$Y[[i_block]][, c(comp_x, comp_y)])
-    else
-        df <- data.frame(
-            comp1 = rgcca$Y[[i_block]][, comp_x], 
-            comp2 = rgcca$Y[[i_block_y]][, comp_y]
-        )
-
     if (nrow(df) > 100)
         PCH_TEXT_CEX <- 2
 
-    if (!is.null(predicted)) {
+    if (!is.null(predicted))
+            p <- ggplot(df, aes(df[, 1], df[, 2], color = df$resp))
 
-            df <- rbind(df, predicted[[2]][[i_block]][, c(comp_x, comp_y)])
-            df$resp <- resp <- rep(c("obs", "pred"), each = nrow(rgcca$Y[[1]]))
-            p <- ggplot(df, aes(df[, 1], df[, 2], color = resp))
+    else if (length(unique(as.matrix(df$resp))) > 5 && 
+            !unique(isCharacter(as.vector(df$resp))) ){
+        
+        df$resp <- as.factor(resp)
+        p <- ggplot(df, aes(df[, 1], df[, 2], color = df$resp))
 
-    } else if (length(unique(as.matrix(resp))) > 1) {
-    # if the resp is numeric
-
-        names <- row.names(resp)
-        resp <- apply(as.matrix(resp), 1, as.character)
-
-        if (!is.null(names)) {
-
-            resp <- as.matrix(resp, row.names = names)
-            name_blocks <- row.names(rgcca$Y[[i_block]])
-            diff_column <- setdiff(name_blocks, names)
-
-            if (identical(diff_column, name_blocks)) {
-                warning("No match has been found with the row names of the group file.")
-                resp <- rep("NA", nrow(df))
-
-            } else {
-                if (length(diff_column) > 0) {
-                    resp[diff_column] <- "NA"
-                    names(resp)[names(resp) == ""] <- names
-                } else {
-                    names(resp) <- names
-                }
-                resp <- resp[row.names(rgcca$Y[[i_block]])]
-            }
-        } else {
-            warning("No row names have been found in the group file.")
-            resp <- rep("NA", nrow(df))
-        }
-        if (!unique(isCharacter(as.vector(resp))) &&
-            length(unique(resp)) > 5) {
-
-            resp[resp == "NA"] <- NA
-            resp <- as.numeric(resp)
-            df$resp <- resp
-            # add some transparency
-            p <- ggplot(df, aes(df[, 1], df[, 2], color = resp))
-
-        } else
-            p <- NULL
-    } else
+    }else
         p <- NULL
 
 
     p <- plotSpace(rgcca,
                     df,
                     "Sample",
-                    resp,
+                    df$resp,
                     reponse_name,
                     comp_x,
                     comp_y,
@@ -402,7 +352,7 @@ plotSamplesSpace <- function(
                     no_Overlap = no_Overlap)
 
     # remove legend if missing
-    if (length(unique(resp)) == 1)
+    if (length(unique(df$resp)) == 1)
         p + theme(legend.position = "none")
     else
         p
@@ -622,14 +572,10 @@ plotSpace <- function(
     i_block = NULL,
     p = NULL,
     text = TRUE,
-    i_block_y = NULL,
+    i_block_y = i_block,
     colours = c("blue", "gray", "#cd5b45"),
     collapse = FALSE,
     no_Overlap = FALSE) {
-
-    
-    if (is.null(i_block_y))
-        i_block_y <- i_block
 
     if (!isTRUE(text)) {
         func <- quote(geom_point(size = PCH_TEXT_CEX))
