@@ -1,6 +1,15 @@
 #' df = getComponents(rgcca.res, response, comp_z = 3)
 #' spacePlot3D(df, 3, text = FALSE)
 #' spacePlot3D(df, 3)
+#' rgcca.res = rgcca.analyze(blocks[c(3,1)], ncomp = rep(3,2))
+#' df = getVariablesIndexes(rgcca.res, c(blocks[3], blocks[1]), comp_z = 3, i_block = 1, collapse = TRUE)
+ spacePlot3D(df, 1) %>% 
+ add_layout(shapes = list(
+     list(
+         type = "circle",
+         
+     )
+ ))
 spacePlot3D <- function(
     df,
     i_block,
