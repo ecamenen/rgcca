@@ -21,9 +21,8 @@ getComponents <- function(
     i_block_z = i_block,
     predicted = NULL){
 
-
     df <- data.frame(
-        rgcca$Y[[i_block]][, comp_x], 
+        rgcca$Y[[i_block]][, comp_x],
         rgcca$Y[[i_block_y]][, comp_y],
         rgcca$Y[[i_block_z]][, comp_z]
     )

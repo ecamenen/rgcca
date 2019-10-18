@@ -386,8 +386,7 @@ getBlocsVariables <- function(df, collapse = FALSE) {
         bl.names,
         sapply(
             df[seq_len(length(df) - as.integer(!collapse))],
-            function(x)
-            nrow(as.matrix(x))
+            function(x) nrow(as.matrix(x))
         )
     )
     
@@ -426,24 +425,25 @@ getBlocsVariables <- function(df, collapse = FALSE) {
 #' plotVariablesSpace(rgcca.res, blocks, 1, 2, TRUE)
 #' # Using the first block
 #' plotVariablesSpace(rgcca.res, blocks, 1, 2, FALSE, 1)
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'     politic = Russett[, 6:11] )
+#' df = getVariablesIndexes(rgcca.res, blocks, collapse = TRUE)
+#' plotVariablesSpace(rgcca, df, collapse = TRUE)
 #' @export
 plotVariablesSpace <- function(
     rgcca,
-    blocks,
+    df,
     comp_x = 1,
     comp_y = 2,
     superblock = TRUE,
-    i_block = NULL,
+    i_block = length(blocks),
     text = TRUE,
-    removeVariable = TRUE,
-    n_mark = 100,
+    #removeVariable = TRUE,
+   # n_mark = 100,
     collapse = FALSE,
     no_Overlap = FALSE) {
-
-    x <- y <- selectedVar <- NULL
-
-    if (is.null(i_block))
-        i_block <- length(blocks)
 
     circleFun <- function(center = c(0, 0), diameter = 2, npoints = 100) {
         r <- diameter / 2
@@ -453,92 +453,41 @@ plotVariablesSpace <- function(
         return(data.frame(x = xx, y = yy))
     }
     
-    if (collapse) {
-        superblock <- TRUE
-        blocks.all <- blocks
-        blocks <- rep(list(Reduce(cbind, blocks)), length(blocks))
-        names(blocks) <- names(blocks.all)
-    }
+    if (superblock)
+        collapse <- TRUE
 
-    df <- getVar(rgcca, blocks, comp_x, comp_y, i_block, "cor", collapse)
-
-    if (is(rgcca, "sgcca")) {
-
-        if (collapse)
-            J <- seq(length(rgcca$a))
-        else
-            J <- i_block
-
-        selectedVar <- unlist( lapply( J, function(x) varSelected(rgcca, x, comp_x) | varSelected(rgcca, x, comp_y) ) )
-        df <- df[ names(which(selectedVar)), ]
-
-    }
-
-    if (n_mark < 2)
-        n_mark <- nrow(df)
-
-    if (removeVariable & nrow(df) > 2 * n_mark) {
-        selectedVar <- unique(as.vector(unique(
-            sapply(c(1, 2), function(x)
-                row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE), ])[seq_len(n_mark), ]))
-        )))
-        df <- df[selectedVar, ]
-    }
-
-    # if superblock is selected, color by blocks
-    if (superblock & (collapse | (i_block == length(rgcca$a)))) {
-
-        if (collapse)
-            color <- getBlocsVariables(lapply(blocks.all, t), TRUE)
-        else 
-            color <- getBlocsVariables(rgcca$a)
-    
-            if ( is(rgcca, "sgcca") | collapse)
-                color <- color[row.names(df)]
-            else {
-                if (!is.null(selectedVar))
-                    color <- color[
-                        unlist(
-                            lapply(
-                                seq_len(length(selectedVar)),
-                                function(x) which(colnames(blocks[[length(blocks)]]) == selectedVar[x])
-                            )
-                        )
-                    ]
-            }
-    } else
-        color <- rep(1, NROW(df))
-
-    df <- data.frame(df, color)
-    p <- plotSpace(rgcca,
-                    df,
-                    "Variable",
-                    color,
-                    "Blocks",
-                    comp_x,
-                    comp_y,
-                    i_block,
-                    text = text,
-                    collapse =  collapse,
-                    no_Overlap = no_Overlap) +
-    geom_path(
-        aes(x, y),
-        data = circleFun(),
-        col = "grey",
-        size = 1
-    ) +
-    geom_path(
+    p <- plotSpace(
+            rgcca,
+            df,
+            "Variable",
+            df$resp,
+            "Blocks",
+            comp_x,
+            comp_y,
+            i_block,
+            text = text,
+            collapse =  collapse,
+            no_Overlap = no_Overlap
+        ) +
+        geom_path(
+            aes(x, y),
+            data = circleFun(),
+            col = "grey",
+            size = 1
+        ) +
+        geom_path(
             aes(x, y),
             data = circleFun() / 2,
             col = "grey",
             size = 1,
             lty = 2
         )
+    
     # remove legend if not on superblock
-        if (!superblock || i_block != length(blocks))
+    if (!superblock || i_block != length(rgcca$a))
         p + theme(legend.position = "none")
-        else
-            p
+    else
+        p
 }
 
 #' Plot of components space
@@ -701,76 +650,48 @@ orderColorPerBlocs <- function(df, p, matched = NULL, collapse = FALSE) {
 #' plotFingerprint(rgcca.res, NULL, 1, TRUE, type = "weigth")
 #' # With the 2nd component of the 1rst block by selecting the ten higher weights
 #' plotFingerprint(rgcca.res, NULL, 2, FALSE, 10, 1, type = "weigth")
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'     politic = Russett[, 6:11] )
+#' df = getVariablesIndexes(rgcca.res, blocks, collapse = TRUE)
+#' plotFingerprint(rgcca.res, df, collapse = TRUE)
 #' @export
-plotFingerprint <- function(rgcca,
-    blocks = NULL,
+plotFingerprint <- function(
+    rgcca,
+    df,
     comp = 1,
     superblock = TRUE,
     n_mark = 100,
-    i_block = NULL,
+    i_block = length(rgcca$a),
     type = "cor",
     collapse = FALSE) {
     
-    color <- NULL
     J <- names(rgcca$a)
-    # if no specific block is selected, by default, the superblock is
-    # selected (or the last one)
 
-    if (is.null(i_block))
-        i_block <- length(rgcca$a)
-    
     title <- ifelse(type == "cor",
             "Variable correlations with",
             "Variable weights on")
-    
-    if (collapse) {
-        superblock <- TRUE
-        blocks.all <- blocks
-        blocks <- rep(list(Reduce(cbind, blocks)), length(blocks))
-        names(blocks) <- names(blocks.all)
-    }
-    df <- getVar(rgcca, blocks, comp, comp, i_block, type, collapse)
-    
-    # Get a qualitative variable with which block is associated
-    # with each variables
-    if (superblock & (collapse | (i_block == length(rgcca$a)))) {
-        
-        if (collapse)
-            color <- getBlocsVariables(lapply(blocks.all, t), TRUE)
-        else 
-            color <- getBlocsVariables(rgcca$a)
-        
-        color <- color[row.names(df)]
-        df <- data.frame(df, color = as.factor(color))
-    }
 
     # sort in decreasing order
     df <- data.frame(getRankedValues(df, 1, TRUE), order = nrow(df):1)
-    
-    # selected variables in sgcca
-    if (!collapse) {
-        nvar_select <- varSelected(rgcca, i_block, comp)
-    
-        if (n_mark > nvar_select)
-            n_mark <- nvar_select
-    }
 
     # max threshold for n
-    if (NROW(df) >= n_mark)
-        df <- df[seq_len(n_mark), ]
+    if (nrow(df) >= n_mark)
+        df <- df[seq(n_mark), ]
 
     # if the superblock is selected, color the text of the y-axis according
     # to their belonging to each blocks
     if (superblock & (collapse | (i_block == length(rgcca$a)))) {
-        color2 <- factor(df$color)
-        levels(color2) <- colorGroup(color2)
-        p <- ggplot(df, aes(order, df[, 1], fill = color))
+        color <- factor(df$resp)
+        levels(color) <- colorGroup(color)
+        p <- ggplot(df, aes(order, df[, 1], fill = resp))
     } else {
-        color2 <- "black"
+        color <- "black"
         p <- ggplot(df, aes(order, df[, 1], fill = abs(df[, 1])))
     }
 
-    p <- plotHistogram(p, df, title, as.character(color2)) + 
+    p <- plotHistogram(p, df, title, as.character(color)) + 
         labs(subtitle = printAxis(rgcca, comp, i_block))
 
     # If some blocks have any variables in the top hit, selects the ones
@@ -780,10 +701,10 @@ plotFingerprint <- function(rgcca,
     else
         col <- J[-length(J)]
 
-    matched <- match(rev(unique(df$color)), col)
+    matched <- match(rev(unique(df$resp)), col)
 
     # Force all the block names to appear on the legend
-    if (length(color2) != 1)
+    if (length(color) != 1)
         p <- orderColorPerBlocs(rgcca$a, p, matched, collapse)
     if ( !superblock | (!collapse & i_block != length(rgcca$a)))
             p <- p + theme(legend.position = "none")

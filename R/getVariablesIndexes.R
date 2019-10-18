@@ -59,6 +59,7 @@ getVariablesIndexes <- function(
     if (n_mark > nrow(df))
         n_mark <- nrow(df)
 
+    # TODO: function in other place
     if (removeVariable) {
         selectedVar <- unique(as.vector(
             sapply(seq(length(c(comp_x, comp_y, comp_z))), function(x)
