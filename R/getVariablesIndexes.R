@@ -1,8 +1,10 @@
 #' Get the indexes of the analysis
 #' 
 #' Get the indexes of the analysis
-#' @return A matrix containg the indexes (correlation of the blocks with a component or their weights) for each selected component and an associated response
 #' @inheritParams plotVariablesSpace
+#' @inheritParams getVar
+#' @return A matrix containg the indexes (correlation of the blocks with a 
+#' component or their weights) for each selected component and an associated response
 #' @examples
 #' library(RGCCA)
 #' data("Russett")
@@ -15,6 +17,7 @@
 #' getVariablesIndexes(rgcca.res, blocks, comp_z = 3, i_block = 1, collapse = TRUE)
 #' getVariablesIndexes(rgcca.res, blocks, 1, 2, 3, 1, "weights", collapse = TRUE, n_mark = 5)
 #' getVariablesIndexes(rgcca.res, blocks, collapse = TRUE)
+#' @export
 getVariablesIndexes <- function(
     rgcca,
     blocks,

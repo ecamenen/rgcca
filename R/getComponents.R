@@ -2,8 +2,11 @@
 #' 
 #' Get the components of the analysis
 #' @inheritParams plotSamplesSpace
-#' @param comp_z something cool
-#' @param i_block_z another thing
+#' @inheritParams getVar
+#' @param comp_z An integer giving the index of the analysis component used
+#' for the z-axis
+#' @param i_block_z An integer giving the index of a list of blocks (another
+#' one, different from the one used in i_block)
 #' @return A matrix containg each selected components and an associated response
 #' @examples 
 #' library(RGCCA)
@@ -17,9 +20,10 @@
 #' response = as.matrix(runif(nrow(blocks[[1]])))
 #' row.names(response) = row.names(blocks[[1]])
 #' getComponents(rgcca.res, response)
+#' @export
 getComponents <- function(
     rgcca,
-    resp,
+    resp = rep(1, nrow(rgcca$Y[[1]])),
     comp_x = 1,
     comp_y = 2,
     comp_z = NULL,
@@ -33,6 +37,8 @@ getComponents <- function(
         rgcca$Y[[i_block_y]][, comp_y],
         rgcca$Y[[i_block_z]][, comp_z]
     )
+    
+    resp = as.matrix(resp)
 
     if (!is.null(predicted)) {
 
@@ -68,11 +74,13 @@ getComponents <- function(
         }
     }
 
-    if (!unique(isCharacter(as.vector(resp))) &&
-        length(unique(resp)) > 5)
+    if ((!unique(isCharacter(as.vector(resp))) &&
+        length(unique(resp)) > 5) || 
+            unique(resp) == 1 ) {
         resp[resp == "NA"] <- NA
-    
-    df$resp <- as.factor(resp)
+        df$resp <- as.numeric(resp)
+    }else
+        df$resp <- as.factor(resp)
 
     return(df)
 }

@@ -10,4 +10,4 @@ individuals.tsv
 variables.tsv
 ^\.git$
 ^\.idea$
-^\data/
+^data/

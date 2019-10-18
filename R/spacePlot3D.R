@@ -1,8 +1,21 @@
-#' df = getComponents(rgcca.res, response, comp_z = 3)
-#' spacePlot3D(df, 3, text = FALSE)
-#' spacePlot3D(df, 3)
-#' rgcca.res = rgcca.analyze(blocks[c(3,1)], ncomp = rep(3,2))
-#' df = getVariablesIndexes(rgcca.res, c(blocks[3], blocks[1]), comp_z = 3, i_block = 1, collapse = TRUE)
+#' @examples 
+#' library(RGCCA)
+#' data("Russett")
+# blocks = list(agriculture = Russett[, seq(3)],
+#     politic = Russett[, 6:11] )
+# rgcca.res = rgcca.analyze(blocks, ncomp = rep(3, 2))
+# df = getComponents(rgcca.res, comp_z = 3)
+# spacePlot3D(df, 2)
+# spacePlot3D(df, 2, text = FALSE)
+# response = factor( apply(Russett[, 9:11], 1, which.max),
+#                   labels = colnames(Russett)[9:11] )
+# response = blocks[[2]][, 1]
+# names(response) = row.names(blocks[[2]])
+# df = getComponents(rgcca.res, response, comp_z = 3)
+# spacePlot3D(df, 2, text = FALSE)
+# spacePlot3D(df, 2)
+# df = getVariablesIndexes(rgcca.res, blocks, comp_z = 3, i_block = 1, collapse = TRUE)
+# spacePlot3D(df, 2)
 spacePlot3D <- function(
     df,
     i_block,
@@ -11,17 +24,20 @@ spacePlot3D <- function(
     comp_z = 3,
     i_block_y = i_block,
     i_block_z = i_block,
-    text = TRUE) {
+    text = TRUE,
+    title = "Sample plot") {
     
-    # if (length(unique(resp)) == 1)
-        # TODO
+    if (length(unique(df$resp)) == 1) {
+        df$resp = as.factor(rep("a", length(df$resp)))
+        midcol = "#cd5b45"
+    } else
+        midcol = "gray"
 
     axis <- function(x, i)
         list(
-                title = printAxis(rgcca.res, x, i),
+                title = paste0("<i>", printAxis(rgcca.res, x, i), "</i>"),
                 titlefont = list(
-                        size = AXIS_TITLE_CEX * 0.75,
-                        fac = "italic"
+                        size = AXIS_TITLE_CEX * 0.75
                     )
             )
     
@@ -30,7 +46,7 @@ spacePlot3D <- function(
          cut(
              x, 
              breaks = n,
-             labels = colorRampPalette(c("#A50026", "gray",  "#313695"))(n), 
+             labels = colorRampPalette(c("#A50026", midcol,  "#313695"))(n), 
              include.lowest = TRUE)
     }
     
@@ -60,13 +76,13 @@ spacePlot3D <- function(
             func$text <- ~row.names(subdf(x))
             func$textfont <- list(
                 color = color,
-                size = PCH_TEXT_CEX * 2.5
+                size = PCH_TEXT_CEX * 4
             )
         }else{
             func$mode <- "markers"
             func$marker <- list(
                 color = color,
-                size = PCH_TEXT_CEX
+                size = PCH_TEXT_CEX * 1.5
             )
         }
         
@@ -91,9 +107,9 @@ spacePlot3D <- function(
             showlegend = FALSE,
             color = df$resp,
             size = I(200),
-            colors = c("#A50026", "gray",  "#313695"),
+            colors = c("#A50026", midcol,  "#313695"),
             visible = visible
-        ) 
+        )
 
         if (text) {
             p <- p %>%
@@ -107,13 +123,12 @@ spacePlot3D <- function(
                     text = ~ row.names(df),
                     textfont = list(
                         color = colorNumeric(df$resp),
-                        size = PCH_TEXT_CEX * 2.5
+                        size = PCH_TEXT_CEX * 4
                     ),
                     showlegend = FALSE,
                     visible = TRUE
                 )
         }
-
 
     }else{
         p <- plot_ly()
@@ -121,7 +136,6 @@ spacePlot3D <- function(
         for (i in seq(length(levels(df$resp))))
             p <- p %>% add_trace_manual(i)
     }
-    
 
     p %>%
         layout(
@@ -139,7 +153,7 @@ spacePlot3D <- function(
                 zaxis = axis(comp_z, i_block_z)
             ),
             title = list(
-                text = 'Sample plot',
+                text = paste0('<b>', title, '</b>'),
                 font = list(
                     size = 25 * CEX,
                     face = "bold"
