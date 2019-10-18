@@ -461,7 +461,7 @@ rgcca.analyze <- function(
             scheme = scheme,
             ncomp = ncomp,
             scale = scale,
-            verbose = VERBOSE,
+            verbose = FALSE,
             init = init,
             bias = bias
         )

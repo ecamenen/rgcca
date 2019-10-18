@@ -8,7 +8,7 @@
 # and produces textual and graphical outputs (e.g. variables and individuals
 # plots).
 
-CEX <- 1.5
+CEX <- 1
 AXIS_TITLE_CEX <- 19 * CEX
 SUBTITLE_CEX <- 16 * CEX
 AXIS_TEXT_CEX <- 10 * CEX
@@ -257,8 +257,10 @@ theme_perso <- function() {
 #' 
 #' Returns a color vector of equal size to the input vector
 #' @param x A vector
-#' @example colorGroup(seq(10))
 #' @return A color vector of equal size to the input vector
+#' @examples
+#' colorGroup(seq(10))
+#' @export
 colorGroup <- function(x) {
     palette <-
         rep(
@@ -304,23 +306,42 @@ colorGroup <- function(x) {
 #' coord = lapply(seq_len(3),
 #'    function(x) matrix(runif(15 * 2, min = -1), 15, 2))
 #' AVE_X = lapply(seq_len(3), function(x) runif(2))
+#' for (i in 1:length(coord))
+#' row.names(coord[[i]]) = seq(15)
 #' rgcca.res = list(Y = coord, AVE = list(AVE_X = AVE_X))
 #' # Using a superblock
-#' plotSamplesSpace(rgcca.res, rep(LETTERS[seq_len(3)], each = 5))
+#' resp = as.matrix(rep(LETTERS[seq_len(3)], each = 5))
+#' row.names(resp) = seq(15)
+#' plotSamplesSpace(rgcca.res, resp)
 #' # Using the first block
-#' plotSamplesSpace(rgcca.res, runif(15, min=-15, max = 15), 1, 2, 1)
+#' resp = as.matrix(runif(15, min=-15, max = 15))
+#' row.names(resp) = seq(15)
+#' plotSamplesSpace(rgcca.res, resp, 1, 2, 1)
 #' @export
 plotSamplesSpace <- function(
     rgcca,
-    df,
+    resp,
     comp_x = 1,
     comp_y = 2,
-    i_block = NULL,
+    i_block = length(rgcca$Y),
     text = TRUE,
-    i_block_y = NULL,
+    i_block_y = i_block,
     reponse_name = "Response",
     no_Overlap = FALSE,
     predicted = NULL) {
+
+    if (is.null(i_block_y))
+        i_block_y <- i_block
+
+    df <- getComponents(
+        rgcca = rgcca,
+        resp = resp,
+        comp_x = comp_x,
+        comp_y = comp_y,
+        i_block = i_block,
+        i_block_y = i_block_y,
+        predicted = predicted
+    )
 
     if (nrow(df) > 100)
         PCH_TEXT_CEX <- 2
@@ -329,9 +350,9 @@ plotSamplesSpace <- function(
             p <- ggplot(df, aes(df[, 1], df[, 2], color = df$resp))
 
     else if (length(unique(as.matrix(df$resp))) > 5 && 
-            !unique(isCharacter(as.vector(df$resp))) ){
+            !unique(isCharacter(as.vector(df$resp))) ) {
         
-        df$resp <- as.factor(resp)
+        df$resp <- as.numeric(resp)
         p <- ggplot(df, aes(df[, 1], df[, 2], color = df$resp))
 
     }else
@@ -429,21 +450,37 @@ getBlocsVariables <- function(df, collapse = FALSE) {
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
-#' df = getVariablesIndexes(rgcca.res, blocks, collapse = TRUE)
-#' plotVariablesSpace(rgcca, df, collapse = TRUE)
+#' rgcca.res = rgcca.analyze(blocks)
+#' # Without superblock but with the of all variables to the first block
+#' plotVariablesSpace(rgcca.res, blocks, collapse = TRUE)
 #' @export
 plotVariablesSpace <- function(
     rgcca,
-    df,
+    blocks,
     comp_x = 1,
     comp_y = 2,
     superblock = TRUE,
     i_block = length(blocks),
     text = TRUE,
-    #removeVariable = TRUE,
-   # n_mark = 100,
+    removeVariable = TRUE,
+    n_mark = 100,
     collapse = FALSE,
     no_Overlap = FALSE) {
+
+    y <- NULL
+
+    df <- getVariablesIndexes(
+        rgcca = rgcca,
+        blocks = blocks,
+        comp_x = comp_x,
+        comp_y = comp_y,
+        i_block = i_block,
+        type = "cor",
+        superblock = superblock,
+        n_mark = n_mark,
+        collapse = collapse,
+        removeVariable = removeVariable
+    )
 
     circleFun <- function(center = c(0, 0), diameter = 2, npoints = 100) {
         r <- diameter / 2
@@ -594,12 +631,13 @@ plotSpace <- function(
         # For qualitative response OR no response
     } else if ( isCharacter(group[!is.na(group)]) ||
                 length(unique(group)) <= 5 || 
-            all( levels(as.factor(group)) == c("obs", "pred") ) 
+            all( levels(as.factor(group)) %in% c("obs", "pred") )
         ) {
         p + scale_color_manual(values = colorGroup(group))
-        # For quantitative response
-    } else
+        # quantitative response
+    } else{
         p + scale_color_gradientn(colours = colours, na.value = "black")
+    }
 }
 
 # Reorder the color of a ggplot (in case of a missing modality)
@@ -640,12 +678,12 @@ orderColorPerBlocs <- function(df, p, matched = NULL, collapse = FALSE) {
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' weights = lapply(seq_len(3), function(x) matrix(runif(7*2), 7, 2))
+#' #' for(i in seq(3))
+#' row.names(weights[[i]]) <- paste0(letters[i],
+#'      letters[seq_len(nrow(weights[[i]]))])
 #' weights[[4]] = Reduce(rbind, weights)
 #' rgcca.res = list(a = weights)
 #' names(rgcca.res$a) = LETTERS[seq_len(4)]
-#' for(i in seq(1,4))
-#' row.names(rgcca.res$a[[i]]) <- paste0(letters[i],
-#'      letters[seq_len(nrow(rgcca.res$a[[i]]))])
 #' # With the 1rst component of the superblock
 #' plotFingerprint(rgcca.res, NULL, 1, TRUE, type = "weigth")
 #' # With the 2nd component of the 1rst block by selecting the ten higher weights
@@ -654,18 +692,32 @@ orderColorPerBlocs <- function(df, p, matched = NULL, collapse = FALSE) {
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
+#' getVariablesIndexes(rgcca.res, blocks, superblock = FALSE)
 #' df = getVariablesIndexes(rgcca.res, blocks, collapse = TRUE)
-#' plotFingerprint(rgcca.res, df, collapse = TRUE)
+#' plotFingerprint(rgcca.res, blocks, collapse = TRUE)
 #' @export
 plotFingerprint <- function(
     rgcca,
-    df,
+    blocks = NULL,
     comp = 1,
     superblock = TRUE,
     n_mark = 100,
     i_block = length(rgcca$a),
     type = "cor",
     collapse = FALSE) {
+
+    df <- getVariablesIndexes(
+        rgcca = rgcca,
+        blocks = blocks,
+        comp_x = comp,
+        comp_y = comp,
+        i_block = i_block,
+        type = type,
+        superblock = superblock,
+        n_mark = n_mark,
+        collapse = collapse,
+        removeVariable = FALSE
+    )
     
     J <- names(rgcca$a)
 
@@ -685,8 +737,9 @@ plotFingerprint <- function(
     if (superblock & (collapse | (i_block == length(rgcca$a)))) {
         color <- factor(df$resp)
         levels(color) <- colorGroup(color)
-        p <- ggplot(df, aes(order, df[, 1], fill = resp))
+        p <- ggplot(df, aes(order, df[, 1], fill = df$resp))
     } else {
+
         color <- "black"
         p <- ggplot(df, aes(order, df[, 1], fill = abs(df[, 1])))
     }
@@ -964,14 +1017,14 @@ saveVars <- function(
     comp_x = 1,
     comp_y = 2,
     file = "variables.tsv") {
-    
+
     indexes <- c("cor", "weight")
 
     vars <- Reduce(rbind, lapply(seq_len(length(blocks)), function(i)
             data.frame(
                 Reduce(cbind,
                         lapply(indexes, function(x)
-                            getVar(rgcca, blocks, comp_x, comp_y, i, x))),
+                            getVar(rgcca, blocks, comp_x, comp_y, i_block = i, type = x))),
                 names(blocks)[i]
             )))
 

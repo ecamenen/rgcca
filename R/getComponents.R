@@ -1,3 +1,10 @@
+#' Get the components of the analysis
+#' 
+#' Get the components of the analysis
+#' @inheritParams plotSamplesSpace
+#' @param comp_z something cool
+#' @param i_block_z another thing
+#' @return A matrix containg each selected components and an associated response
 #' @examples 
 #' library(RGCCA)
 #' data("Russett")
@@ -6,10 +13,10 @@
 #' rgcca.res = rgcca.analyze(blocks)
 #' response = factor( apply(Russett[, 9:11], 1, which.max),
 #'                   labels = colnames(Russett)[9:11] )
-#' df = getComponents(rgcca.res, as.matrix(response), comp_z = 3)
+#' getComponents(rgcca.res, as.matrix(response))
 #' response = as.matrix(runif(nrow(blocks[[1]])))
 #' row.names(response) = row.names(blocks[[1]])
-#' df = getComponents(rgcca.res, response)
+#' getComponents(rgcca.res, response)
 getComponents <- function(
     rgcca,
     resp,
@@ -26,7 +33,7 @@ getComponents <- function(
         rgcca$Y[[i_block_y]][, comp_y],
         rgcca$Y[[i_block_z]][, comp_z]
     )
-    
+
     if (!is.null(predicted)) {
 
             df <- rbind(df, predicted[[2]][[i_block]][, c(comp_x, comp_y, comp_z)])
@@ -60,16 +67,12 @@ getComponents <- function(
             resp <- rep("NA", nrow(df))
         }
     }
-        
-    if (!unique(isCharacter(as.vector(resp))) &&
-        length(unique(resp)) > 5) {
 
+    if (!unique(isCharacter(as.vector(resp))) &&
+        length(unique(resp)) > 5)
         resp[resp == "NA"] <- NA
-        resp <- as.numeric(resp)
-    }
     
     df$resp <- as.factor(resp)
-    
-    return(df)
 
+    return(df)
 }

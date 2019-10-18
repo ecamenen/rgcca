@@ -63,11 +63,14 @@ We consider J data matrices X1 ,..., XJ. Each n × pj data matrix Xj = [ xj1, ..
 
 ```{r setup, include = FALSE, echo = FALSE, warning = FALSE, message = FALSE}
 
+
+getwd()
 # Load functions
-source("../R/parsing.R")
-source("../R/select.type.R")
-source("../R/plot.R")
-source("../R/network.R")
+wd <- "../R/"
+for (f in list.files(wd)) {
+    if ( f != "launcher.R")
+        source(paste0(wd, f))
+}
 
 loadLibraries(c("RGCCA", "ggplot2", "optparse", "scales", "igraph", "ggrepel"))
 

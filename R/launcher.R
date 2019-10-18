@@ -10,13 +10,13 @@
 
 #' @import RGCCA
 #' @import ggplot2
-#' @importFrom grDevices dev.off rgb colorRamp pdf
+#' @importFrom grDevices dev.off rgb colorRamp pdf colorRampPalette
 #' @importFrom graphics plot
 #' @importFrom stats cor quantile runif sd na.omit p.adjust pnorm qnorm weights
 #' @importFrom utils read.table write.table packageVersion installed.packages head
 #' @importFrom scales hue_pal
 #' @importFrom optparse OptionParser make_option parse_args
-#' @importFrom plotly layout ggplotly style plotly_build %>%
+#' @importFrom plotly layout ggplotly style plotly_build %>% plot_ly add_trace
 #' @importFrom visNetwork visNetwork visNodes visEdges
 #' @importFrom igraph graph_from_data_frame V<- E<-
 #' @importFrom methods is
@@ -34,7 +34,7 @@ getArgs <- function() {
             opt_str = c("-d", "--datasets"),
             type = "character",
             metavar = "path list",
-            default = opt[21],
+            default = opt[20],
             help = "List of comma-separated file paths corresponding to the
             blocks to be analyzed (one per block and without spaces between
             them; e.g., path/file1.txt,path/file2.txt) [required]"
@@ -260,13 +260,6 @@ getArgs <- function() {
             metavar = "path",
             default = opt[19],
             help = "Path for the analysis results in RData [default: %default]"
-        ),
-        make_option(
-            opt_str = "--o9",
-            type = "character",
-            metavar = "path",
-            default = opt[20],
-            help = "Path for the response correlation plot [default: %default]"
         )
     )
     return(OptionParser(option_list = option_list))
@@ -529,7 +522,6 @@ opt <- list(
     o6 = "individuals.tsv",
     o7 = "variables.tsv",
     o8 = "rgcca.result.RData",
-    o9 = "response_correlation.pdf",
     datasets = paste0("inst/extdata/",
         c("agriculture","industry","politic"),
         ".tsv",
@@ -551,11 +543,10 @@ tryCatch({
 # Load functions
 setwd(opt$directory)
 
-source("R/parsing.R")
-source("R/select.type.R")
-source("R/plot.R")
-source("R/network.R")
-
+for (f in list.files("R/")) {
+    if ( f != "launcher.R")
+        source(paste0("R/", f))
+}
 
 # Set missing parameters by default
 opt$header <- !("header" %in% names(opt))
@@ -664,19 +655,6 @@ if (opt$type != "pca") {
     edges <- getEdges(connection, blocks)
     conNet <- function()plotNetwork(nodes, edges, blocks)
     savePlot(opt$o5, conNet)
-}
-
-if (!is.null(opt$response)) {
-    (
-        correlation <- corResponse(
-                rgcca.out,
-                blocks,
-                opt$response,
-                comp = opt$compx,
-                i_block = opt$block
-            )
-    )
-    savePlot(opt$o9, correlation)
 }
 
 saveInds(rgcca.out, blocks, 1, 2, opt$o6)

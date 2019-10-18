@@ -1,3 +1,8 @@
+#' Get the indexes of the analysis
+#' 
+#' Get the indexes of the analysis
+#' @return A matrix containg the indexes (correlation of the blocks with a component or their weights) for each selected component and an associated response
+#' @inheritParams plotVariablesSpace
 #' @examples
 #' library(RGCCA)
 #' data("Russett")
@@ -5,9 +10,10 @@
 #'     politic = Russett[, 6:11] )
 #' rgcca.res = rgcca.analyze(blocks, ncomp = c(3, 2, 4))
 #' getVariablesIndexes(rgcca.res, blocks, superblock = FALSE)
-#' rgcca.res = rgcca.analyze(blocks[c(1,3)], ncomp = c(3,4))
-#' getVariablesIndexes(rgcca.res, c(blocks[1], blocks[3]), comp_z = 3, i_block = 1, collapse = TRUE)
-#' getVariablesIndexes(rgcca.res, c(blocks[1], blocks[3]), 1, 2, 3, "weights", collapse = TRUE, n_mark = 3)
+#' blocks = blocks[c(1,3)]
+#' rgcca.res = rgcca.analyze(blocks, ncomp = c(3,4))
+#' getVariablesIndexes(rgcca.res, blocks, comp_z = 3, i_block = 1, collapse = TRUE)
+#' getVariablesIndexes(rgcca.res, blocks, 1, 2, 3, 1, "weights", collapse = TRUE, n_mark = 5)
 #' getVariablesIndexes(rgcca.res, blocks, collapse = TRUE)
 getVariablesIndexes <- function(
     rgcca,
@@ -23,7 +29,7 @@ getVariablesIndexes <- function(
     removeVariable = TRUE) {
 
     x <- y <- selectedVar <- NULL
-    
+
     if (collapse) {
         superblock <- TRUE
         blocks.all <- blocks
@@ -73,12 +79,9 @@ getVariablesIndexes <- function(
 
         if (collapse)
             resp <- getBlocsVariables(lapply(blocks.all, t), TRUE)
-        else 
+        else{
             resp <- getBlocsVariables(rgcca$a)
-    
-        if ( is(rgcca, "sgcca") | collapse)
-            resp <- resp[row.names(df)]
-        else {
+
             if (!is.null(selectedVar))
                 resp <- resp[
                     unlist(
@@ -89,6 +92,8 @@ getVariablesIndexes <- function(
                     )
                 ]
         }
+       # df <- resp[row.names(df)]
+
     } else
         resp <- rep(1, NROW(df))
 

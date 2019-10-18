@@ -3,13 +3,6 @@
 #' spacePlot3D(df, 3)
 #' rgcca.res = rgcca.analyze(blocks[c(3,1)], ncomp = rep(3,2))
 #' df = getVariablesIndexes(rgcca.res, c(blocks[3], blocks[1]), comp_z = 3, i_block = 1, collapse = TRUE)
- spacePlot3D(df, 1) %>% 
- add_layout(shapes = list(
-     list(
-         type = "circle",
-         
-     )
- ))
 spacePlot3D <- function(
     df,
     i_block,
@@ -22,7 +15,7 @@ spacePlot3D <- function(
     
     # if (length(unique(resp)) == 1)
         # TODO
-    
+
     axis <- function(x, i)
         list(
                 title = printAxis(rgcca.res, x, i),
