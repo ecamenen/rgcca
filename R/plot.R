@@ -215,8 +215,8 @@ printAxis <- function(rgcca, n = NULL, i = NULL, outer = FALSE) {
     # by default, take the last block
     if (is.null(i))
         i <- length(rgcca$AVE$AVE_X)
-    
-    nvar <- varSelected(rgcca, i, n)
+
+    nvar <- sum(rgcca$a[[i]][, n] != 0)
     if (!is(rgcca, "sgcca") | nvar == length(rgcca$a[[i]][, n]))
         varText <- ""
     else
@@ -231,12 +231,6 @@ printAxis <- function(rgcca, n = NULL, i = NULL, outer = FALSE) {
         AVE <- rgcca$AVE$AVE_X[[i]]
         paste0("Comp. ", n, " (", varText, eval(ave), ")")
     }
-}
-
-# Variables with a non-zero weight
-varSelected <- function(rgcca, i_block, comp) {
-    # Get the variables with a weight != 0
-    sum(rgcca$a[[i_block]][, comp] != 0)
 }
 
 # Default theme for ggplot
@@ -549,9 +543,9 @@ plotVariablesSpace <- function(
 plotSpace <- function(
     rgcca,
     df,
-    title,
+    title = "Biplot",
     group,
-    name_group,
+    name_group = "Response",
     comp_x = 1,
     comp_y = 2,
     i_block = NULL,
@@ -634,9 +628,9 @@ plotSpace <- function(
         ) {
         p + scale_color_manual(values = colorGroup(group))
         # quantitative response
-    } else{
+    } else
         p + scale_color_gradientn(colours = colours, na.value = "black")
-    }
+
 }
 
 # Reorder the color of a ggplot (in case of a missing modality)

@@ -1,27 +1,34 @@
-#' @examples 
+#' Plot in 3 dimensions
+#' 
+#' Plot in 3 dimensions either to visualize the components of an analyse or the variables
+#' @inheritParams plotSamplesSpace
+#' @inheritParams plotSpace
+#' @inheritParams getComponents
+#' @examples
 #' library(RGCCA)
 #' data("Russett")
 # blocks = list(agriculture = Russett[, seq(3)],
 #     politic = Russett[, 6:11] )
 # rgcca.res = rgcca.analyze(blocks, ncomp = rep(3, 2))
 # df = getComponents(rgcca.res, comp_z = 3)
-# spacePlot3D(df, 2)
-# spacePlot3D(df, 2, text = FALSE)
+# spacePlot3D(df, i_block = 2)
+# spacePlot3D(df, i_block = 2, text = FALSE)
 # response = factor( apply(Russett[, 9:11], 1, which.max),
 #                   labels = colnames(Russett)[9:11] )
 # response = blocks[[2]][, 1]
 # names(response) = row.names(blocks[[2]])
 # df = getComponents(rgcca.res, response, comp_z = 3)
-# spacePlot3D(df, 2, text = FALSE)
-# spacePlot3D(df, 2)
+# spacePlot3D(df, i_block = 2, text = FALSE)
+# spacePlot3D(df, i_block = 2)
 # df = getVariablesIndexes(rgcca.res, blocks, comp_z = 3, i_block = 1, collapse = TRUE)
-# spacePlot3D(df, 2)
+# spacePlot3D(df, i_block = 2)
+#' @export
 spacePlot3D <- function(
     df,
-    i_block,
     comp_x = 1,
     comp_y = 2,
     comp_z = 3,
+    i_block,
     i_block_y = i_block,
     i_block_z = i_block,
     text = TRUE,
