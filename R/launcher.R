@@ -363,7 +363,7 @@ postCheckArg <- function(opt, blocks) {
             strsplit(gsub(" ", "", opt$names), ",")[[1]], "names"
         )
     
-    opt <- select.type(blocks, opt)
+    opt <- select_type(blocks, opt)
     
     if (opt$superblock | opt$type == "pca")
         blocks <- c(blocks, list(Reduce(cbind, blocks)))

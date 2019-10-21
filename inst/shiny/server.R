@@ -665,7 +665,7 @@ server <- function(input, output, session) {
 
 
         pars <- showWarn(
-            select.type(
+            select_type(
                 blocks = blocks,
                 connection = NULL,
                 tau = tau,

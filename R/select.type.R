@@ -56,7 +56,7 @@ checkNbBlocks <- function(blocks, type) {
 #' @return \item{superblock}{A boolean giving the presence (TRUE) / absence (FALSE)
 #' of a superblock}
 #' @export
-select.type <- function(
+select_type <- function(
     blocks = blocks,
     opt = NULL,
     connection = 1 - diag(length(blocks)),
@@ -407,7 +407,7 @@ select.type <- function(
 #' Performs a r/sgcca
 #'
 #' Performs a r/sgcca with predefined parameters
-#' @inheritParams select.type
+#' @inheritParams select_type
 #' @param scale A boolean scaling the blocks
 #' @param init A character among "svd" (Singular Value Decompostion) or "random"
 #' for alorithm initialization
@@ -827,7 +827,7 @@ plotBootstrap2D <- function(b, x = "br", y = "occ"){
 
     axis <- function(margin){
         element_text(
-            face = AXIS_FONT,
+            face = "italic",
             size = AXIS_TITLE_CEX * 0.75,
             margin = margin
         )

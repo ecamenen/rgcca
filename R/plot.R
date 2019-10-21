@@ -913,6 +913,8 @@ plotHistogram <- function(
 #' Extract the contibution of variables to the model by using correlation or weight
 #' @inheritParams plotVariablesSpace
 #' @param type A character giving the choice ot the index between cor or weight
+#' @param comp_z An integer giving the index of the analysis component used
+#' for the z-axis
 #' @examples
 #' library(RGCCA)
 #' data("Russett")
@@ -1004,7 +1006,7 @@ getRankedValues <- function(df, comp = 1, allCol = TRUE) {
 }
 
 
-#' Print and save variables analysis attributes
+# Print and save variables analysis attributes
 saveVars <- function(
     rgcca,
     blocks,
@@ -1030,7 +1032,7 @@ saveVars <- function(
     invisible(vars)
 }
 
-#' Print and save indidvidual analysis attributes
+# Print and save indidvidual analysis attributes
 saveInds <- function(
     rgcca,
     blocks,

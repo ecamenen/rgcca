@@ -11,7 +11,7 @@
 #' Creates the nodes for a design matrix
 #' 
 #' @inheritParams plotVariablesSpace
-#' @inheritParams select.type
+#' @inheritParams select_type
 #' @return A dataframe with blocks in rows and the number of variables, of rows 
 #' and tau or c1 in columns
 #' @examples
@@ -61,7 +61,7 @@ getNodes <- function(blocks, tau = NULL, rgcca = NULL) {
 
 #' Creates the edges for a design matrix
 #' 
-#' @inheritParams select.type
+#' @inheritParams select_type
 #' @return A dataframe with tuples of connected blocks
 #' @examples
 #' data("Russett")
@@ -99,7 +99,7 @@ colorNodes <- function(nodes) {
 
 #' Plot the connection between blocks
 #' 
-#' @inheritParams select.type
+#' @inheritParams select_type
 #' @param nodes A dataframe containing metadata for each blocks
 #' @param edges A dataframe of connection between blocks
 #' @return A dataframe with tuples of connected blocks
@@ -160,7 +160,7 @@ plotNetwork <- function(nodes, edges, blocks) {
 
 #' Plot the connection between blocks (dynamic plot)
 #' 
-#' @inheritParams select.type
+#' @inheritParams select_type
 #' @inheritParams plotNetwork
 #' @return A dataframe with tuples of connected blocks
 #' @examples

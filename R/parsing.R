@@ -360,7 +360,7 @@ setBlocks <- function(file,
 
 #' Impute NA
 #' 
-#' Impute non availabe by means
+#' Impute non available by means
 #' 
 #' @param df A matrix containing non availables data
 #' @examples
@@ -368,6 +368,7 @@ setBlocks <- function(file,
 #' df = rbind(df, c(NA, NA))
 #' imputeMean(df)
 #' @return A matrix with imputed values
+#' @export
 imputeMean <- function(df){
     if (any(is.na(df))) {
         df <- matrix(unlist(
