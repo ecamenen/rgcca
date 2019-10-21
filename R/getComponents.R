@@ -20,7 +20,6 @@
 #' response = as.matrix(runif(nrow(blocks[[1]])))
 #' row.names(response) = row.names(blocks[[1]])
 #' getComponents(rgcca.res, response)
-#' @export
 getComponents <- function(
     rgcca,
     resp = rep(1, nrow(rgcca$Y[[1]])),

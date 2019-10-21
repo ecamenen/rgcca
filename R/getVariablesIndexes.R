@@ -17,7 +17,6 @@
 #' getVariablesIndexes(rgcca.res, blocks, comp_z = 3, i_block = 1, collapse = TRUE)
 #' getVariablesIndexes(rgcca.res, blocks, 1, 2, 3, 1, "weights", collapse = TRUE, n_mark = 5)
 #' getVariablesIndexes(rgcca.res, blocks, collapse = TRUE)
-#' @export
 getVariablesIndexes <- function(
     rgcca,
     blocks,
