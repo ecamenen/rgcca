@@ -164,7 +164,7 @@ Rscript R/launcher.R -d inst/extdata/agriculture.tsv,inst/extdata/industry.tsv,i
 ```
 
 #### Files parameters
-By default, on tabulated files with a header without response groups. The names of the blocks are the filename (or the name of the sheets for an Excel file) without the extension.
+By default, on tabulated files with a header. The names of the blocks are the filename (or the name of the sheets for an Excel file) without the extension.
 
 - ```-d (--datasets)``` (PATH LIST) [REQUIRED] List of comma-separated file paths corresponding to the blocks to be analyzed (one per block and without spaces between them; e.g. path/file1.txt,path/file2.txt)
 - ```-c (--connection)``` (PATH) Path of the file defining the connections between the blocks [if not used, activates the superblock mode]
@@ -184,7 +184,7 @@ By default, on tabulated files with a header without response groups. The names 
 - ```--o9``` (PATH) Path for the response correlation plot [default: ```response_correlation.pdf```]
 
 #### Analyse parameters
-By default, the analysis : scales the blocks, initiates the algorithm with Singular Value Decomposition, uses a superblock with a factorial scheme function, a biased estimator of the variance, a tau equals to one and two components for each block.
+By default, the analysis: is a Regularised Generalised Canonical Correlation Analysis, scales the blocks, uses a superblock with a factorial scheme function, a tau equals to one and two components for each block.
 
 - ```--type``` (STRING) Type of analysis [default: rgcca] (among: rgcca, pca, cca, gcca, cpca-w, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov)
 - ```--scale``` DO NOT scale the blocks (i.e., a data centering step is always performed). Otherwhise, each block is normalised and divided by the square root of its number of variables.
@@ -193,11 +193,8 @@ By default, the analysis : scales the blocks, initiates the algorithm with Singu
 - ```--tau``` (INTEGER/FLOAT) A regularization parameter for each block (i.e., tau) [default: optimal value by an ad hoc algorithm]. Tau varies from 0 (maximizing the correlation) to 1 (maximizing the covariance). For SGCCA, tau is automatically set to 1. A shrinkage parameter can be defined instead for automatic variable selection, varying from the square root of the variable number (the fewest selected variables) to 1 (all the variables are included). It can be a single values or a comma-separated list (e.g. 0,1,0.75,1).
 - ```-g (--scheme)``` (INTEGER) Link (i.e. scheme) function for covariance maximization (1: x, 2: x^2, 3: |x|, 4: x^4) [default: factorial]. Only, the x function penalizes structural negative correlation. The x^4 function discriminates more strongly the blocks than the x^2 one.
 
-Scheme function among 1: Horst, 2: Factorial, 3: Centroid, 4: x^4 (by default, factorial scheme).
-The identity (horst scheme) maximizes the sum of covariances between block components. The absolute value (centroid scheme) maximizes of the sum of the absolute values of the covariances. The square function (factorial scheme) maximizes the sum of squared covariances, or, more generally, for any even integer m, g(x)=x^m (m-scheme), maximizes the power of m of the sum of covariances.
-
 #### Graphical parameters
-By default, the x-axis and y-axis are respectively the first and the second components, the number of top biomarkers is 100 and the superblock is used in graphics.
+By default, the x-axis and y-axis are respectively the first and the second components, the number of top variables is 100 and  superblock is used.
 - ```--text``` Display the name of the points instead of shapes when plotting.
 - ```--compx``` (INTEGER) Component used in the X-axis for biplots and the only component used for histograms [default: 1] (should not be greater than the ```--ncomp``` parameter). 
 - ```--compy``` (INTEGER) Component used in the Y-axis for biplots [default: 2] should not be greater than the ```--ncomp``` parameter).

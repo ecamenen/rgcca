@@ -17,8 +17,8 @@ temp/
 \.idea/
 vignettes/data/
 vignettes/images/
-inst/doc/
 individuals\.tsv
 variables\.tsv
 inst/doc
 inst/shiny/rsconnect
+data/
