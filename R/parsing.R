@@ -34,11 +34,6 @@ stop <- function(message,
     ))
 }
 
-# Global settings
-MSG_HEADER <-
-" Possible mistake: header parameter is disabled, check if the file doesn't have one."
-ROW_NAMES <- 1  # column of row names
-
 #' File name from a path
 #'
 #' Get the file name from a path
@@ -238,7 +233,7 @@ checkQuantitative <- function(df, fo, h = FALSE) {
             )
 
         if (!h)
-            msg <- paste0(msg, MSG_HEADER)
+            msg <- paste0(msg, "Possible mistake: header parameter is disabled, check if the file doesn't have one.")
 
         stop(paste(msg, "\n"), exit_code = 100)
     }
@@ -273,7 +268,7 @@ setBlocks <- function(file,
     names = NULL,
     sep = "\t",
     header = TRUE,
-    rownames = ROW_NAMES) {
+    rownames = 1) {
     
     # Parse args containing files path
     isXls <- (length(grep("xlsx?", file)) == 1)
@@ -496,7 +491,7 @@ setResponse <- function(
     file = NULL,
     sep = "\t",
     header = TRUE,
-    rownames = ROW_NAMES) {
+    rownames = 1) {
     
 
     if (!is.null(file)) {
