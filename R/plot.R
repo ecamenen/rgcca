@@ -314,7 +314,7 @@ colorGroup <- function(x) {
 #' @export
 plotSamplesSpace <- function(
     rgcca,
-    resp,
+    resp = rep(1, NROW(rgcca$Y[[1]])),
     comp_x = 1,
     comp_y = 2,
     i_block = length(rgcca$Y),
@@ -672,25 +672,23 @@ orderColorPerBlocs <- function(df, p, matched = NULL, collapse = FALSE) {
 #' or "weight" for the weight of the RGCCA
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
-# weights = lapply(seq_len(3), function(x) matrix(runif(7*2), 7, 2))
+#' weights = lapply(seq_len(3), function(x) matrix(runif(7*2), 7, 2))
 #' for(i in seq(3))
-# row.names(weights[[i]]) <- paste0(letters[i],
-#      letters[seq_len(nrow(weights[[i]]))])
-# weights[[4]] = Reduce(rbind, weights)
-# rgcca.res = list(a = weights)
-# names(rgcca.res$a) = LETTERS[seq_len(4)]
-# # With the 1rst component of the superblock
-# plotFingerprint(rgcca.res, NULL, 1, TRUE, type = "weigth")
-# # With the 2nd component of the 1rst block by selecting the ten higher weights
-# plotFingerprint(rgcca.res, NULL, 2, FALSE, 10, 1, type = "weigth")
-# library(RGCCA)
-# data("Russett")
-# blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
-#     politic = Russett[, 6:11] )
-# rgcca.res = rgcca.analyze(blocks)
-# getVariablesIndexes(rgcca.res, blocks, superblock = FALSE)
-# df = getVariablesIndexes(rgcca.res, blocks, collapse = TRUE)
-# plotFingerprint(rgcca.res, blocks, collapse = TRUE)
+#' row.names(weights[[i]]) <- paste0(letters[i],
+#'      letters[seq_len(nrow(weights[[i]]))])
+#' weights[[4]] = Reduce(rbind, weights)
+#' rgcca.res = list(a = weights)
+#' names(rgcca.res$a) = LETTERS[seq_len(4)]
+#' # With the 1rst component of the superblock
+#' plotFingerprint(rgcca.res, NULL, 1, TRUE, type = "weigth")
+#' # With the 2nd component of the 1rst block by selecting the ten higher weights
+#' plotFingerprint(rgcca.res, NULL, 2, FALSE, 10, 1, type = "weigth")
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'     politic = Russett[, 6:11] )
+#' rgcca.res = rgcca.analyze(blocks)
+#' plotFingerprint(rgcca.res, blocks, collapse = TRUE)
 #' @export
 plotFingerprint <- function(
     rgcca,

@@ -16,7 +16,6 @@
 #' getVariablesIndexes(rgcca.res, blocks, comp_z = 3, i_block = 1, collapse = TRUE)
 #' getVariablesIndexes(rgcca.res, blocks, 1, 2, 3, 1, "weights", collapse = TRUE, n_mark = 5)
 #' getVariablesIndexes(rgcca.res, blocks, collapse = TRUE)
-#' @export
 getVariablesIndexes <- function(
     rgcca,
     blocks,
@@ -89,7 +88,7 @@ getVariablesIndexes <- function(
                 unlist(
                     lapply(
                         seq_len(length(selectedVar)),
-                        function(x) which(colnames(blocks[[length(blocks)]]) == selectedVar[x])
+                        function(x) which(row.names(rgcca$a[[length(rgcca$a)]]) == selectedVar[x])
                     )
                 )
             ]
