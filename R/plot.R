@@ -8,12 +8,6 @@
 # and produces textual and graphical outputs (e.g. variables and individuals
 # plots).
 
-CEX <- 1
-AXIS_TITLE_CEX <- 19 * CEX
-SUBTITLE_CEX <- 16 * CEX
-AXIS_TEXT_CEX <- 10 * CEX
-PCH_TEXT_CEX <- 3 * CEX
-
 # X- Y axis format for plotly objets : no axis, no ticks
 ax <- list(linecolor = "white",
         ticks = "",
@@ -31,7 +25,7 @@ ax2 <- list(linecolor = "white",
 # (otherwhise samplesPlot which do not have traces could not be convereted
 # in ggplotly)
 # return a plotly object
-dynamicPlot <- function(f,
+dynamicPlot <- function(f, 
     ax,
     text = "name+x+y",
     legend = TRUE,
@@ -46,7 +40,8 @@ dynamicPlot <- function(f,
                     xaxis = ax,
                     yaxis = ax,
                     annotations = list(showarrow = FALSE, text = "")
-                ) %>% style(hoverinfo = text)
+                ) %>% 
+                style(hoverinfo = text)
             )
         
         if (legend) {
@@ -234,12 +229,12 @@ printAxis <- function(rgcca, n = NULL, i = NULL, outer = FALSE) {
 }
 
 # Default theme for ggplot
-theme_perso <- function() {
+theme_perso <- function(cex = 1, subtitle_cex = 16 * cex) {
     theme(
-        legend.text = element_text(size = 13 * CEX),
-        legend.title = element_text(face = "bold.italic", size = SUBTITLE_CEX ),
+        legend.text = element_text(size = 13 * cex),
+        legend.title = element_text(face = "bold.italic", size = subtitle_cex ),
         plot.title = element_text(
-            size = 25 * CEX,
+            size = 25 * cex,
             face = "bold",
             hjust = 0.5,
             margin = margin(0, 0, 20, 0)
@@ -322,7 +317,12 @@ plotSamplesSpace <- function(
     i_block_y = i_block,
     reponse_name = "Response",
     no_Overlap = FALSE,
-    predicted = NULL) {
+    predicted = NULL,
+    cex = 1,
+    subtitle_cex = 16 * cex,
+    pch_text_cex = 3 * cex,
+    axis_title_cex = 19 * cex
+    ) {
 
     if (is.null(i_block_y))
         i_block_y <- i_block
@@ -338,7 +338,7 @@ plotSamplesSpace <- function(
     )
 
     if (nrow(df) > 100)
-        PCH_TEXT_CEX <- 2
+        pch_text_cex <- 2
 
     if (!is.null(predicted))
             p <- ggplot(df, aes(df[, 1], df[, 2], color = df$resp))
@@ -352,18 +352,24 @@ plotSamplesSpace <- function(
         p <- NULL
 
 
-    p <- plotSpace(rgcca,
-                    df,
-                    "Sample",
-                    df$resp,
-                    reponse_name,
-                    comp_x,
-                    comp_y,
-                    i_block,
-                    p,
-                    text,
-                    i_block_y,
-                    no_Overlap = no_Overlap)
+    p <- plotSpace(
+            rgcca,
+            df,
+            "Sample",
+            df$resp,
+            reponse_name,
+            comp_x,
+            comp_y,
+            i_block,
+            p,
+            text,
+            i_block_y,
+            no_Overlap = no_Overlap,
+            cex = cex,
+            subtitle_cex = subtitle_cex,
+            pch_text_cex = pch_text_cex,
+            axis_title_cex = axis_title_cex
+        )
 
     # remove legend if missing
     if (length(unique(df$resp)) == 1)
@@ -458,7 +464,11 @@ plotVariablesSpace <- function(
     removeVariable = TRUE,
     n_mark = 100,
     collapse = FALSE,
-    no_Overlap = FALSE) {
+    no_Overlap = FALSE
+    cex = 1,
+    subtitle_cex = 16 * cex,
+    pch_text_cex = 3 * cex,
+    axis_title_cex = 19 * cex) {
 
     y <- NULL
     
@@ -488,17 +498,21 @@ plotVariablesSpace <- function(
     }
 
     p <- plotSpace(
-            rgcca,
-            df,
-            "Variable",
-            df$resp,
-            "Blocks",
-            comp_x,
-            comp_y,
-            i_block,
-            text = text,
-            collapse =  collapse,
-            no_Overlap = no_Overlap
+        rgcca,
+        df,
+        "Variable",
+        df$resp,
+        "Blocks",
+        comp_x,
+        comp_y,
+        i_block,
+        text = text,
+        collapse =  collapse,
+        no_Overlap = no_Overlap
+        cex = cex,
+        subtitle_cex = subtitle_cex,
+        pch_text_cex = pch_text_cex,
+        axis_title_cex = axis_title_cex
         ) +
         geom_path(
             aes(x, y),
@@ -555,10 +569,14 @@ plotSpace <- function(
     i_block_y = i_block,
     colours = c("blue", "gray", "#cd5b45"),
     collapse = FALSE,
-    no_Overlap = FALSE) {
+    no_Overlap = FALSE,
+    cex = 1,
+    subtitle_cex = 16 * cex,
+    pch_text_cex = 3 * cex,
+    axis_title_cex = 19 * cex) {
 
     if (!isTRUE(text)) {
-        func <- quote(geom_point(size = PCH_TEXT_CEX))
+        func <- quote(geom_point(size = pch_text_cex))
         if (!is.numeric(na.omit(group)))
             func$mapping <- aes(shape = as.factor(group))
     } else {
@@ -566,11 +584,11 @@ plotSpace <- function(
         f <- "geom_text"
         func <- quote(
             get(f)(aes(label = rownames(df)),
-            size = PCH_TEXT_CEX)
+            size = pch_text_cex)
         )
         
         if (no_Overlap && nrow(df) <= 200) {
-            f = paste0(f, '_repel') 
+            f = paste0(f, '_repel')
             func$force = 0.2
             func$max.iter = 500
         }
@@ -588,7 +606,7 @@ plotSpace <- function(
     axis <- function(margin){
         element_text(
             face = "italic",
-            size = AXIS_TITLE_CEX * 0.75,
+            size = axis_title_cex * 0.75,
             margin = margin
         )
     }
@@ -612,7 +630,7 @@ plotSpace <- function(
         ) + 
         scale_y_continuous(breaks = NULL) +
         scale_x_continuous(breaks = NULL) +
-        theme_perso() +
+        theme_perso(cex, subtitle_cex) +
         theme(
             legend.key.width = unit(nchar(name_group), "mm"),
             axis.text = element_blank(),
@@ -698,7 +716,10 @@ plotFingerprint <- function(
     n_mark = 100,
     i_block = length(rgcca$a),
     type = "cor",
-    collapse = FALSE) {
+    collapse = FALSE,
+    cex = 1,
+    subtitle_cex = 16 * cex,
+    axis_text_cex = 10 * cex) {
 
     df <- getVariablesIndexes(
         rgcca = rgcca,
@@ -737,7 +758,14 @@ plotFingerprint <- function(
         p <- ggplot(df, aes(order, df[, 1], fill = abs(df[, 1])))
     }
 
-    p <- plotHistogram(p, df, title, as.character(color)) + 
+    p <- plotHistogram(p,
+            df,
+            title,
+            as.character(color),
+            cex = cex,
+            subtitle_cex = subtitle_cex,
+            axis_text_cex = axis_text_cex
+        ) +
         labs(subtitle = printAxis(rgcca, comp, i_block))
 
     # If some blocks have any variables in the top hit, selects the ones
@@ -776,7 +804,11 @@ plotFingerprint <- function(
 #' names(rgcca.res$AVE$AVE_X[[i]]) <- c(1,2)
 #' plotAVE(rgcca.res)
 #' @export
-plotAVE <- function(rgcca) {
+plotAVE <- function(
+    rgcca,
+    cex = 1,
+    subtitle_cex = 16 * cex,
+    axis_text_cex = 10 * cex) {
 
     ave <- 100 * unlist(rgcca$AVE$AVE_X)
     blocks <- factor(unlist(lapply(seq_len(length(names(rgcca$a))), 
@@ -806,14 +838,20 @@ plotAVE <- function(rgcca) {
             label = ave_label
         ))
 
-    p <- plotHistogram(p, df, "Average Variance Explained") +
-        scale_fill_manual(
-            values = colorGroup(levels(df$ncomp)),
-            labels = gsub("comp", " ", levels(df$ncomp))) + 
-        geom_col(position = position_stack(reverse = TRUE)) +
-        labs(subtitle = printAxis(rgcca, outer = TRUE)) +
-        geom_text(aes(y = y_ave_cum),  cex = 3.5 * CEX, color = "white") +
-        labs(fill = "Components")
+    p <- plotHistogram(
+        p, 
+        df, 
+        "Average Variance Explained",
+        cex = cex,
+        subtitle_cex = subtitle_cex,
+        axis_text_cex = axis_text_cex) +
+    scale_fill_manual(
+        values = colorGroup(levels(df$ncomp)),
+        labels = gsub("comp", " ", levels(df$ncomp))) + 
+    geom_col(position = position_stack(reverse = TRUE)) +
+    labs(subtitle = printAxis(rgcca, outer = TRUE)) +
+    geom_text(aes(y = y_ave_cum),  cex = 3.5 * cex, color = "white") +
+    labs(fill = "Components")
 
     return(p)
 }
@@ -847,35 +885,38 @@ plotHistogram <- function(
     color = "black",
     low_col = "khaki2",
     high_col = "coral3",
-    mid_col = NULL) {
+    mid_col = NULL,    
+    cex = 1,
+    subtitle_cex = 16 * cex,
+    axis_text_cex = 10 * cex) {
     
 
     if (nrow(df) <= 10 || title == "Average Variance Explained") {
-        WIDTH <- NULL
+        width <- NULL
         if (title == "Average Variance Explained")
-            AXIS_TEXT_CEX <- 12
+            axis_text_cex <- 12
     } else
-        WIDTH <- 1
+        width <- 1
 
     if (nrow(df) < 3)
-        MAR <- 60
+        mar <- 60
     else if (nrow(df) < 5)
-        MAR <- 30
+        mar <- 30
     else
-        MAR <- 0
+        mar <- 0
 
     axis <- function(margin){
         element_text(
-            size = AXIS_TEXT_CEX,
+            size = axis_text_cex,
             face = "italic",
             color = "gray40"
         )
     }
 
-    p <- p + geom_bar(stat = "identity", width = WIDTH) +
+    p <- p + geom_bar(stat = "identity", width = width) +
         coord_flip() + labs(title = title,  x = "", y = "") +
         theme_classic() +
-        theme_perso() +
+        theme_perso(cex, subtitle_cex) +
         theme(
             axis.text.y = axis(),
             axis.text.x = axis(),
@@ -883,10 +924,10 @@ plotHistogram <- function(
             axis.ticks = element_blank(),
             plot.subtitle = element_text(
                 hjust = 0.5,
-                size = SUBTITLE_CEX,
+                size = subtitle_cex,
                 face = "italic"
             ),
-            plot.margin = margin(0, 0, MAR, 0, "mm")
+            plot.margin = margin(0, 0, mar, 0, "mm")
     )
 
     if (title != "Average Variance Explained") {
@@ -1030,6 +1071,7 @@ saveVars <- function(
 
     invisible(vars)
 }
+
 
 # Print and save indidvidual analysis attributes
 saveInds <- function(

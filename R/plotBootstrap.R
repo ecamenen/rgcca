@@ -20,7 +20,10 @@ plotBootstrap <- function(
     rgcca,
     superblock = TRUE,
     show.boot = TRUE,
-    n_mark = 30) {
+    n_mark = 30,
+    cex = 1,
+    subtitle_cex = 16 * cex,
+    axis_text_cex = 10 * cex) {
 
     color <- intneg <- intpos <- NULL
     J <- names(rgcca$a)
@@ -37,7 +40,14 @@ plotBootstrap <- function(
         p <- ggplot(df, aes(order, mean, fill = abs(mean)))
     }
 
-    p <- plotHistogram(p, df, "Variable mean", as.character(color2))
+    p <- plotHistogram(
+        p,
+        df,
+        "Variable mean",
+        as.character(color2),
+        cex = cex,
+        subtitle_cex = subtitle_cex,
+        axis_text_cex = axis_text_cex)
 
     if (show.boot) {
         p <- p +

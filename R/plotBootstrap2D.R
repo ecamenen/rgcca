@@ -17,12 +17,19 @@
 #' selected.var = getBootstrap(rgcca.res, boot)
 #' plotBootstrap2D(selected.var)
 #' @export
-plotBootstrap2D <- function(b, x = "br", y = "occ"){
+plotBootstrap2D <- function(
+    b,
+    x = "br",
+    y = "occ",
+    cex = 1,
+    subtitle_cex = 16 * cex,
+    pch_text_cex = 3 * cex,
+    axis_title_cex = 19 * cex){
 
     axis <- function(margin){
         element_text(
         face = "italic",
-        size = AXIS_TITLE_CEX * 0.75,
+        size = axis_title_cex * 0.75,
         margin = margin
         )
     }
@@ -35,7 +42,7 @@ plotBootstrap2D <- function(b, x = "br", y = "occ"){
             color = as.factor(mean > 0)
     )) +
     geom_text(
-        size = PCH_TEXT_CEX * 0.75
+        size = pch_text_cex * 0.75
     ) +
     labs(
         y = "Non-zero occurences",
@@ -43,7 +50,7 @@ plotBootstrap2D <- function(b, x = "br", y = "occ"){
         title = "Occurences selection\nby bootstrap"
     ) +
     theme_classic() +
-    theme_perso() +
+    theme_perso(cex, subtitle_cex) +
     theme(
         legend.position = "none",
         axis.title.y = axis(margin(0, 20, 0, 0)),

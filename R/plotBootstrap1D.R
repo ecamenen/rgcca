@@ -19,7 +19,14 @@
 #' selected.var = getBootstrap(rgcca.res, boot)
 #' plotBootstrap1D(selected.var)
 #' @export
-plotBootstrap1D <- function(b, x = "occ", y = "mean", n = 50){
+plotBootstrap1D <- function(
+    b, 
+    x = "occ", 
+    y = "mean", 
+    n = 50,    
+    cex = 1,
+    subtitle_cex = 16 * cex,
+    axis_text_cex = 10 * cex) {
 
     if (!("occ" %in% colnames(b))) {
         title <- "Bootstrap ratio"
@@ -40,7 +47,10 @@ plotBootstrap1D <- function(b, x = "occ", y = "mean", n = 50){
         "black",
         low_col = colorGroup(seq(3))[1],
         mid_col = "white",
-        high_col = colorGroup(seq(3))[3]
+        high_col = colorGroup(seq(3))[3],
+        cex = cex,
+        subtitle_cex = subtitle_cex,
+        axis_text_cex = axis_text_cex) +
     ) +
     labs(fill = "Mean weights")
 }
