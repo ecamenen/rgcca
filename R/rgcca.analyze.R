@@ -38,7 +38,7 @@ rgcca.analyze <- function(
     }
 
     if (WARN & verbose)
-    message("RGCCA in progress ...")
+        message("RGCCA in progress ...")
 
     if (tolower(type) == "sgcca") {
         func <- sgcca
@@ -49,16 +49,16 @@ rgcca.analyze <- function(
     }
 
     func.complete <- quote(
-    func(
-    A = blocks,
-    C = connection,
-    scheme = scheme,
-    ncomp = ncomp,
-    scale = scale,
-    verbose = FALSE,
-    init = init,
-    bias = bias
-    )
+        func(
+            A = blocks,
+            C = connection,
+            scheme = scheme,
+            ncomp = ncomp,
+            scale = scale,
+            verbose = FALSE,
+            init = init,
+            bias = bias
+        )
     )
     func.complete[[par]] <- tau
 

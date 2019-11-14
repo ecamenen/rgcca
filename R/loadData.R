@@ -17,14 +17,14 @@ loadData <- function(f, sep = "\t", rownames = 1, h = TRUE) {
     rownames <- NULL
 
     func <- function(x = rownames)
-    as.matrix(read.table(
-    f,
-    sep = sep,
-    header = h,
-    row.names = x,
-    na.strings = "NA",
-    dec = ","
-    ))
+        as.matrix(read.table(
+            f,
+            sep = sep,
+            header = h,
+            row.names = x,
+            na.strings = "NA",
+            dec = ","
+        ))
 
     tryCatch({
         func()

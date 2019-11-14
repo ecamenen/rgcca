@@ -6,7 +6,7 @@ setPosPar <- function(opt, blocks, i_resp) {
 
     par <- c("blocks", "block_names", "ncomp")
     if (all(opt$tau != "optimal"))
-    par[length(par) + 1] <- "tau"
+        par[length(par) + 1] <- "tau"
 
     for (i in seq_len(length(par))) {
         temp <- opt[[par[i]]][[J]]

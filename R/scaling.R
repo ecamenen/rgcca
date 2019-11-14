@@ -1,4 +1,5 @@
-scaling = function(blocks,
+scaling = function(
+    blocks,
     scale = TRUE,
     bias = TRUE) {
 

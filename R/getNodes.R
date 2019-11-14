@@ -20,7 +20,8 @@ getNodes <- function(blocks, tau = NULL, rgcca = NULL) {
 
     if (any(tau == "optimal")) {
         if (!is.null(rgcca))
-            tau <- unlist(lapply(seq_len(ncol(rgcca[[par.rgcca]])), function(x)
+            tau <- unlist(lapply(seq_len(ncol(rgcca[[par.rgcca]])), 
+                function(x)
                     Reduce(paste, round(rgcca[[par.rgcca]][, x], 2))))
         else
             tau <- rep(NA, length(blocks))
@@ -28,7 +29,8 @@ getNodes <- function(blocks, tau = NULL, rgcca = NULL) {
 
     if (is.null(tau)) {
         if (is.matrix(rgcca[[par.rgcca]]))
-            tau <-  unlist(lapply(seq_len(ncol(rgcca[[par.rgcca]])), function(x)
+            tau <-  unlist(lapply(seq_len(ncol(rgcca[[par.rgcca]])), 
+                function(x)
                     Reduce(paste, round(rgcca[[par.rgcca]][, x], 2))))
         else
             tau <- rgcca[[par.rgcca]]

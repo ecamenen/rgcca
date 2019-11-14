@@ -21,20 +21,17 @@ isCharacter <- function(x) {
 
     if (is.matrix(x)) {
         test <- sapply(seq_len(NCOL(x)), function(i)
-        unique(is.na(
-        tryCatch(
-        as.integer(
-        na.omit(as.vector(x[, i])[as.vector(x[, i]) != "NA"])),
-        warning = function(w)
-        return(NA)
-        ))))
+            unique(is.na(tryCatch(
+                as.integer(na.omit(as.vector(x[, i])[as.vector(x[, i]) != "NA"])),
+                warning = function(w)
+                    return(NA)
+            ))))
     } else
-    test <- unique(is.na(
-    tryCatch(
-    as.integer(na.omit(as.vector(x)[as.vector(x) != "NA"])),
-    warning = function(w)
-    return(NA)
-    )))
+        test <- unique(is.na(tryCatch(
+            as.integer(na.omit(as.vector(x)[as.vector(x) != "NA"])),
+            warning = function(w)
+                return(NA)
+        )))
 
     return(test)
 }

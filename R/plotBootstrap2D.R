@@ -27,29 +27,27 @@ plotBootstrap2D <- function(b, x = "br", y = "occ"){
         )
     }
 
-    ggplot(
-    b,
-    aes(
-    x = abs(b[, x]),
-    y = b[, y],
-    label = row.names(b),
-    color = as.factor(mean > 0)
-    )
-    ) +
-        geom_text(
+    ggplot(b,
+        aes(
+            x = abs(b[, x]),
+            y = b[, y],
+            label = row.names(b),
+            color = as.factor(mean > 0)
+    )) +
+    geom_text(
         size = PCH_TEXT_CEX * 0.75
-        ) +
-        labs(
+    ) +
+    labs(
         y = "Non-zero occurences",
         x = "Bootstrap-ratio",
         title = "Occurences selection\nby bootstrap"
-        ) +
-        theme_classic()  +
-        theme_perso() +
-        theme(
+    ) +
+    theme_classic() +
+    theme_perso() +
+    theme(
         legend.position = "none",
         axis.title.y = axis(margin(0, 20, 0, 0)),
         axis.title.x = axis(margin(20, 0, 0, 0))
-        ) +
-        scale_color_manual(values = colorGroup(seq(2)))
+    ) +
+    scale_color_manual(values = colorGroup(seq(2)))
 }

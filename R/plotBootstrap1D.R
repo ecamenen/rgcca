@@ -25,25 +25,22 @@ plotBootstrap1D <- function(b, x = "occ", y = "mean", n = 50){
         title <- "Bootstrap ratio"
         x <- "br"
     }else
-    title <- "Occurences selection\nby bootstrap"
+        title <- "Occurences selection\nby bootstrap"
 
     b <- head(b, n)
     p <- ggplot(b,
-    aes(
-    x = order,
-    y = b[, x],
-    fill = b[, y]
-    )
-    )
+        aes(x = order,
+            y = b[, x],
+            fill = b[, y]))
 
     plotHistogram(
-    p,
-    b,
-    title,
-    "black",
-    low_col = colorGroup(seq(3))[1],
-    mid_col = "white",
-    high_col = colorGroup(seq(3))[3]
+        p,
+        b,
+        title,
+        "black",
+        low_col = colorGroup(seq(3))[1],
+        mid_col = "white",
+        high_col = colorGroup(seq(3))[3]
     ) +
     labs(fill = "Mean weights")
 }

@@ -25,10 +25,10 @@ bootstrap <- function(
     nb_cores = parallel::detectCores() - 1) {
 
     if (nb_cores == 0)
-    nb_cores <- 1
+        nb_cores <- 1
 
     if (any(unlist(lapply(blocks, ncol) > 1000)))
-    verbose <- TRUE
+        verbose <- TRUE
 
     w1 <- rgcca$a
 
@@ -36,17 +36,18 @@ bootstrap <- function(
 
     W <- parallel::mclapply(seq_len(n_boot), function(x) {
 
-        w <- bootstrap_k(blocks,
-        rgcca,
-        scale,
-        init,
-        bias)
+        w <- bootstrap_k(
+            blocks,
+            rgcca,
+            scale,
+            init,
+            bias)
 
         # Test on the sign of the correlation
         for (k in seq_len(length(blocks))) {
             for (j in seq_len(ncol(w[[k]]))) {
                 if (cor(w1[[k]][, j], w[[k]][, j]) < 0)
-                w[[k]][, j] <- -1 * w[[k]][, j]
+                    w[[k]][, j] <- -1 * w[[k]][, j]
             }
         }
 

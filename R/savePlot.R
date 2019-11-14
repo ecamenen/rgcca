@@ -18,26 +18,26 @@ savePlot <- function(f, p) {
 
     # dynamic loading of formattion depending of the extension
     if (format == "dat")
-    formatFunc <- pdf
+        formatFunc <- pdf
     else
-    formatFunc <- get(format)
+        formatFunc <- get(format)
 
     # save
     if (format %in% c("pdf", "dat"))
-    formatFunc(f, width = 10, height = 8)
+        formatFunc(f, width = 10, height = 8)
     else
-    formatFunc(
-    f,
-    width = 10,
-    height = 8,
-    units = "in",
-    res = 200
-    )
+        formatFunc(
+            f,
+            width = 10,
+            height = 8,
+            units = "in",
+            res = 200
+        )
 
     if (is.function(p))
-    p()
+        p()
     else
-    plot(p)
+        plot(p)
 
     invisible(dev.off())
 }

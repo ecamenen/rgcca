@@ -24,48 +24,51 @@ bootstrap_k <- function(
     id_boot <- sample(NROW(blocks[[1]]), replace = TRUE)
 
     if (isTRUE(scale))
-    boot_blocks <- lapply(blocks, function(x)
-    scale(
-    x[id_boot, ],
-    center = attr(blocks, "scaled:center"),
-    scale = attr(blocks, "scaled:scale")
-    ) / sqrt(ncol(x)))
+        boot_blocks <- lapply(
+            blocks, 
+            function(x)
+                scale(
+                    x[id_boot,],
+                    center = attr(blocks, "scaled:center"),
+                    scale = attr(blocks, "scaled:scale")
+                ) / sqrt(ncol(x)))
     else
-    boot_blocks <- lapply(blocks, function(x)
-    scale2(x[id_boot, ], scale = FALSE))
+        boot_blocks <- lapply(blocks, function(x)
+            scale2(x[id_boot, ], scale = FALSE))
 
     boot_blocks <- removeColumnSdNull(boot_blocks)
 
     if (is(rgcca, "sgcca"))
-    tau <- rgcca$c1
+        tau <- rgcca$c1
     else
-    tau <- rgcca$tau
+        tau <- rgcca$tau
 
     # Get boostraped weights
     w <- rgcca.analyze(
-    boot_blocks,
-    rgcca$C,
-    tau = tau,
-    ncomp = rgcca$ncomp,
-    scheme = rgcca$scheme,
-    scale = FALSE,
-    init = init,
-    bias = bias,
-    type = class(rgcca),
-    verbose = FALSE
-    )$a
+            boot_blocks,
+            rgcca$C,
+            tau = tau,
+            ncomp = rgcca$ncomp,
+            scheme = rgcca$scheme,
+            scale = FALSE,
+            init = init,
+            bias = bias,
+            type = class(rgcca),
+            verbose = FALSE
+        )$a
 
     # Add removed variables
     missing_var <- lapply(seq_len(length(blocks)), function(x)
     setdiff(colnames(blocks[[x]]), rownames(w[[x]])))
-    missing_tab <- lapply(seq_len(length(missing_var)),
-    function(x)
-    matrix(
-    0,
-    length(missing_var[[x]]),
-    rgcca$ncomp[x],
-    dimnames = list(missing_var[[x]], seq_len(rgcca$ncomp[x]))
-    ))
+    missing_tab <- lapply(
+        seq_len(length(missing_var)),
+        function(x)
+            matrix(
+                0,
+                length(missing_var[[x]]),
+                rgcca$ncomp[x],
+                dimnames = list(missing_var[[x]], seq_len(rgcca$ncomp[x]))
+        ))
 
     # bug mapply with pca
     w <- lapply(seq_len(length(w)), function(x)

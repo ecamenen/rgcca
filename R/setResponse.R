@@ -25,24 +25,23 @@ setResponse <- function(
         isXls <- length(grep("xlsx?", file))
 
         if (!isXls)
-        response <- loadData(file, sep, rownames, header)
-        # else response = loadExcel(file, 1, rownames, h = header, num = FALSE)
+            response <- loadData(file, sep, rownames, header)
+            # else response = loadExcel(file, 1, rownames, h = header, num = FALSE)
 
         qualitative <- unique(isCharacter(response))
 
         if (length(qualitative) > 1)
-        stop(
-        "Please, select a response file with either qualitative data only or quantitative data only.",
-        108
-        )
+            stop(
+            "Please, select a response file with either qualitative data only or quantitative data only.",
+            108
+            )
 
         if (!qualitative)
-        response <- convertMatrixNumeric(response)
+            response <- convertMatrixNumeric(response)
 
 
         if (NCOL(response) > 1) {
             disjunctive <- unique(apply(response, 1, sum))
-
 
 
             if (length(disjunctive) &&
@@ -51,9 +50,10 @@ setResponse <- function(
                 if (header) {
                     levels(response2) <- colnames(response)
                 }
-                response <- as.matrix(data.frame(
-                as.character(response2),
-                row.names = rownames(response)
+                response <- as.matrix(
+                    data.frame(
+                        as.character(response2),
+                        row.names = rownames(response)
                 ))
 
             } else {

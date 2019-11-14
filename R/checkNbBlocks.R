@@ -8,14 +8,14 @@ checkNbBlocks <- function(blocks, type) {
     }
 
     stop(
-    paste0(
-    length(blocks),
-    " blocks used in the analysis. ",
-    msg ,
-    " required for a ",
-    type,
-    "."
-    ),
-    exit_code = exit_code
+        paste0(
+            length(blocks),
+            " blocks used in the analysis. ",
+            msg ,
+            " required for a ",
+            type,
+            "."
+        ),
+        exit_code = exit_code
     )
 }

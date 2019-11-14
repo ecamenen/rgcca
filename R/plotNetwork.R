@@ -22,9 +22,10 @@ plotNetwork <- function(nodes, edges, blocks) {
 
     par <- ifelse("sparsity" %in% names(nodes), "sparsity", "tau")
 
-    net <- graph_from_data_frame(d = edges,
-            vertices = nodes,
-            directed = FALSE)
+    net <- graph_from_data_frame(
+        d = edges,
+        vertices = nodes,
+        directed = FALSE)
 
     if (all(is.na(nodes[, par]))) {
         nodes[, par] <- rep("optimal", length(blocks))
@@ -32,15 +33,15 @@ plotNetwork <- function(nodes, edges, blocks) {
     }
 
     V(net)$color <- "khaki2"
-    V(net)$label <-
-        paste(nodes$id,
-            "\nP =",
-            nodes$P,
-            paste0("\n", par, " ="),
-            nodes[,par],
-            "\nN =",
-            nodes$nrow,
-            sep = " ")
+    V(net)$label <- paste(
+        nodes$id,
+        "\nP =",
+        nodes$P,
+        paste0("\n", par, " ="),
+        nodes[,par],
+        "\nN =",
+        nodes$nrow,
+        sep = " ")
     V(net)$shape <- "square"
     E(net)$width <- E(net)$weight * 2
 

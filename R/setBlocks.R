@@ -25,7 +25,7 @@ setBlocks <- function(file,
     # test if extension filename is xls
     if (!isXls)
     # if it is not, parse the name of file from the arg list
-    blocksFilename <- parseList(file)
+        blocksFilename <- parseList(file)
     else {
         # # if xls, check file exists
         # checkFile(file)
@@ -37,8 +37,8 @@ setBlocks <- function(file,
 
     # Parse optional names of blocks
     if (!is.null(names))
-    # default name is filename, otherwise, the user could name the blocs
-    blocksName <- parseList(names)
+        # default name is filename, otherwise, the user could name the blocs
+        blocksName <- parseList(names)
 
     # Load each dataset
     blocks <- list()
@@ -51,15 +51,15 @@ setBlocks <- function(file,
 
         #Get names of blocs
         if (!is.null(names))
-        # names of blocks are those parsed from args
-        fo <- getFileName(blocksName[i])
+            # names of blocks are those parsed from args
+            fo <- getFileName(blocksName[i])
         else {
             if (!isXls)
-            # if not xls, the name is the files without the extension .tsv
-            fo <- getFileName(fi)
+                # if not xls, the name is the files without the extension .tsv
+                fo <- getFileName(fi)
             else
-            # for xls, the names are those of the sheets
-            fo <- blocksFilename[i]
+                # for xls, the names are those of the sheets
+                fo <- blocksFilename[i]
         }
 
         #load the data
@@ -74,8 +74,8 @@ setBlocks <- function(file,
 
         #if one-column file, it is a tabulation error
         if (NCOL(df) == 0)
-        stop(paste(fo, "block file has an only-column. Check the separator."),
-        exit_code = 102)
+            stop(paste(fo, "block file has an only-column. Check the separator."),
+            exit_code = 102)
 
         dimnames <- list(row.names(df), colnames(df))
         df <- convertMatrixNumeric(df)
@@ -90,15 +90,15 @@ setBlocks <- function(file,
     nrow <- lapply(blocks, NROW)
 
     if (length(blocks) > 1)
-    blocks <- keepCommonRow(blocks)
+        blocks <- keepCommonRow(blocks)
 
     blocks <- removeColumnSdNull(blocks)
 
     for (i in seq_len(length(blocks)))
-    attributes(blocks[[i]])$nrow <- nrow[[i]]
+        attributes(blocks[[i]])$nrow <- nrow[[i]]
 
     if (nrow(blocks[[1]]) > 0)
-    return(blocks)
+        return(blocks)
     else
-    stop("There is no rows in common between the blocks.", exit_code = 108)
+        stop("There is no rows in common between the blocks.", exit_code = 108)
 }

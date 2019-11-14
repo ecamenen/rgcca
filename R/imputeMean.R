@@ -11,16 +11,17 @@
 #' @export
 imputeMean <- function(df){
     if (any(is.na(df))) {
-        df <- matrix(unlist(
-        lapply(seq_len(ncol(df)),
-        function(x)
-        unlist(lapply(as.list(df[, x]),
-        function(y)
-        ifelse(is.na(y),
-        mean(unlist(df[, x]), na.rm = TRUE), y))))),
-        nrow(df),
-        ncol(df),
-        dimnames = list(row.names(df), colnames(df)))
+        df <- matrix(
+            unlist(
+                lapply(seq_len(ncol(df)),
+                function(x)
+                    unlist(lapply(as.list(df[, x]),
+                        function(y)
+                            ifelse(is.na(y),
+                                mean(unlist(df[, x]), na.rm = TRUE), y))))),
+            nrow(df),
+            ncol(df),
+            dimnames = list(row.names(df), colnames(df)))
     }
     return(df)
 }

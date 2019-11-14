@@ -18,12 +18,12 @@ checkQuantitative <- function(df, fo, h = FALSE) {
 
     if (length(qualitative) > 1 || qualitative) {
         msg <- paste(
-        fo,
-        "file contains qualitative data. Please, transform them in a disjunctive table."
+            fo,
+            "file contains qualitative data. Please, transform them in a disjunctive table."
         )
 
         if (!h)
-        msg <- paste0(msg, "Possible mistake: header parameter is disabled, check if the file doesn't have one.")
+            msg <- paste0(msg, "Possible mistake: header parameter is disabled, check if the file doesn't have one.")
 
         stop(paste(msg, "\n"), exit_code = 100)
     }

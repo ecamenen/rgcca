@@ -23,7 +23,6 @@ setConnection <- function(
     h = FALSE,
     rownames = NULL) {
 
-
     J <- length(blocks)
 
     if (superblock) {
@@ -31,17 +30,17 @@ setConnection <- function(
         connection[seq_len(J - 1), J] <- connection[J, seq_len(J - 1)] <- 1
 
     } else if (is.null(file))
-    connection <- 1 - diag(J)
+        connection <- 1 - diag(J)
     else {
         isXls <- (length(grep("xlsx?", file)) == 1)
 
         if (!isXls)
-        connection <- loadData(
-        f = file,
-        sep = sep,
-        rownames = rownames,
-        h = h
-        )
+            connection <- loadData(
+                f = file,
+                sep = sep,
+                rownames = rownames,
+                h = h
+            )
         # else
         # connection = loadExcel(f = file, sheet = 1, rownames = rownames, h = h)
     }

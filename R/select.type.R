@@ -135,8 +135,8 @@ select_type <- function(
         superblock <- FALSE
 
     if (length(grep("pls-?pm", tolower(type))) == 1) {
-        scheme   <- setScheme("centroid")
-        tau      <- setTau(rep(0, J))
+        scheme <- setScheme("centroid")
+        tau <- setTau(rep(0, J))
         # TODO: superblock allowed in PLS-PM, whos gonna call : Arthur
     }
 
@@ -144,8 +144,8 @@ select_type <- function(
         if (length(blocks) != 1)
             checkNbBlocks(blocks, type)
 
-        scheme   <- setScheme("horst")
-        tau      <- setTau(c(1, 1))
+        scheme <- setScheme("horst")
+        tau <- setTau(c(1, 1))
         setSuperbloc()
     }
 
@@ -203,16 +203,16 @@ select_type <- function(
             "sabscov",
             "sabscov-1"
         )) {
-            tau      <- setTau(rep(1, J))
+            tau <- setTau(rep(1, J))
 
             if (tolower(type) %in% c("sumcov", "sumcov-1", "maxbet"))
-                scheme   <- setScheme("horst")
+                scheme <- setScheme("horst")
 
             else if (tolower(type) %in% c("ssqcov", "ssqcov-1", "maxbet-b"))
-                scheme   <- setScheme("factorial")
+                scheme <- setScheme("factorial")
 
             else if (tolower(type) %in% c("sabscov", "sabscov-1"))
-                scheme   <- setScheme("centroid")
+                scheme <- setScheme("centroid")
 
         }
 
@@ -229,13 +229,13 @@ select_type <- function(
         connection <- setConnection(1 - diag(J))
 
         if (tolower(type) %in% c("sumcov-2", "maxdiff")) {
-            scheme   <- setScheme("horst")
-            tau      <- setTau(rep(0, J))
+            scheme <- setScheme("horst")
+            tau <- setTau(rep(0, J))
         }
 
         else if (tolower(type) %in% c("ssqcov-2", "maxdiff-b")) {
-            scheme   <- setScheme("factorial")
-            tau      <- setTau(rep(1, J))
+            scheme <- setScheme("factorial")
+            tau <- setTau(rep(1, J))
         }
 
     }
@@ -260,14 +260,14 @@ select_type <- function(
         setSuperbloc()
 
         if (tolower(type) %in% c("maxvar-b", "gcca", "niles", "maxvar")) {
-            scheme   <- setScheme("factorial")
-            tau      <- setTau(rep(0, J + 1))
+            scheme <- setScheme("factorial")
+            tau <- setTau(rep(0, J + 1))
         }
 
         else if (tolower(type) == "hpca") {
-            scheme   <- function(x)
+            scheme <- function(x)
                 x ^ 4
-            tau      <- setTau(c(rep(1, J), 0))
+            tau <- setTau(c(rep(1, J), 0))
         }
 
         else if (tolower(type) %in% c(
@@ -278,8 +278,8 @@ select_type <- function(
             "sum-pca",
             "mcoa"
         )) {
-            scheme   <- setScheme("factorial")
-            tau      <- setTau(c(rep(1, J), 0))
+            scheme <- setScheme("factorial")
+            tau <- setTau(c(rep(1, J), 0))
         }
 
         #TODO: verify these three last algo parameters
@@ -288,12 +288,12 @@ select_type <- function(
             tau <- warnSuper(tau)
 
         else if (tolower(type) == "ridge-gca") {
-            scheme   <- setScheme("factorial")
-            tau      <- setTau(c(tau[seq_len(J)], 0))
+            scheme <- setScheme("factorial")
+            tau <- setTau(c(tau[seq_len(J)], 0))
         }
 
         else if (tolower(type) == "r-maxvar") {
-            scheme   <- setScheme("factorial")
+            scheme <- setScheme("factorial")
             tau <- warnSuper(tau)
         }
 

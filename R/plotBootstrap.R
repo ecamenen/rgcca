@@ -26,7 +26,7 @@ plotBootstrap <- function(
     J <- names(rgcca$a)
 
     if (nrow(df) > n_mark)
-    df <- df[seq_len(n_mark), ]
+        df <- df[seq_len(n_mark), ]
 
     if (superblock) {
         color2 <- factor(df$color)
@@ -45,14 +45,14 @@ plotBootstrap <- function(
             geom_point(aes(x = order, y = mean), inherit.aes = FALSE, size = 1.5)
 
         if (is(rgcca, "rgcca" ))
-        p <- p +
-        geom_errorbar(aes(ymin = intneg, ymax = intpos))
+            p <- p +
+                geom_errorbar(aes(ymin = intneg, ymax = intpos))
     }
 
     if (superblock)
-    col <- J
+        col <- J
     else
-    col <- J[-length(J)]
+        col <- J[-length(J)]
 
     if (superblock) {
         matched <- match(rev(unique(df$color)), col)
