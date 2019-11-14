@@ -1180,7 +1180,7 @@ server <- function(input, output, session) {
 
             p <- showWarn(
                 changeHovertext(
-                    dynamicPlot(samples(), ax, "text", TRUE, TRUE),
+                    dynamicPlot(samples(), NULL, "text", TRUE, TRUE),
                     if_text
                 ), warn = FALSE)
 
@@ -1201,7 +1201,7 @@ server <- function(input, output, session) {
                 msgSave()
             })
 
-            p <- changeHovertext(dynamicPlot(corcircle(), ax, "text"), if_text)
+            p <- changeHovertext(dynamicPlot(corcircle(), NULL, "text"), if_text)
             n <- length(p$x$data)
             (style(
                 p,

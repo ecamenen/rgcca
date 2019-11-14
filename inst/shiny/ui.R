@@ -51,6 +51,8 @@ comp_x <<- 1
 nb_comp <<- comp_y <<- 2
 nb_mark <<- 100
 BSPLUS <<- R.Version()$minor >= 3
+ax2 <<- list(linecolor = "white",
+        tickfont = list(size = 10, color = "grey"))
 
 # config for shinyapps.io
 appDir <- ifelse("packrat" %in% list.files(), "", "../../R/")

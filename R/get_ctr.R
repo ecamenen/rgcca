@@ -1,0 +1,71 @@
+#' Variable contribution
+#' 
+#' Extract the contibution of variables to the model by using correlation or weight
+#' @inheritParams plotVariablesSpace
+#' @param type A character giving the choice ot the index between cor or weight
+#' @param comp_z An integer giving the index of the analysis component used
+#' for the z-axis
+#' @examples
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#'     politic = Russett[, 6:11] )
+#' rgcca.res = rgcca.analyze(blocks, ncomp = c(3,2,4))
+#' getVar(rgcca.res, blocks)
+#' # On the first block and with weights
+#' getVar(rgcca.res, blocks, 2, 1, i_block = 1, type = "weights")
+#' # With 3 components and on the variables of two blocks
+#' superblocks <- rep(list(Reduce(cbind, c(blocks[1], blocks[3]))), 2)
+#' names(superblocks) <- names(blocks)[c(1, 3)]
+#' rgcca.res = rgcca.analyze(blocks[c(1,3)], ncomp = c(3,4))
+#' getVar(rgcca.res, superblocks, comp_z = 3, i_block = 1, type = "cor", collapse = TRUE)
+#' getVar(rgcca.res, superblocks, 2, 1, 3, 1, "weights", TRUE)
+#' @return A dataframe containing the indexes for each selected components
+#' @export
+getVar <- function(
+    rgcca,
+    blocks = NULL,
+    comp_x = 1,
+    comp_y = 2,
+    comp_z = NULL,
+    i_block = length(blocks),
+    type = "cor",
+    collapse = FALSE) {
+
+    if (!collapse)
+        i_block_2 <- i_block
+    else
+        i_block_2 <- 1
+
+    if (is.null(blocks))
+        row.names = row.names(rgcca$a[[i_block]])
+    else
+        row.names = colnames(blocks[[i_block]])
+
+    if (type == "cor")
+        f <- function(x) cor(
+                blocks[[i_block_2]],
+                rgcca$Y[[i_block]][, x],
+                use = "pairwise.complete.obs"
+            )
+    else{
+        if (!collapse)
+            f <- function(x) rgcca$a[[i_block]][, x]
+        else
+            f <- function(x) unlist(
+                sapply(
+                    1:length(blocks),
+                    function(y) rgcca$a[[y]][, x]
+                )
+            )
+    }
+
+    data.frame(
+        sapply(
+            c(comp_x, comp_y, comp_z[comp_z >= rgcca$ncomp[i_block]]), 
+            function(x) f(x)
+        ),
+        row.names = row.names
+    )
+
+}
