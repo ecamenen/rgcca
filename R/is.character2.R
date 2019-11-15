@@ -6,10 +6,10 @@
 #' @return A bolean for the presence (FALSE) or the absence (TRUE) of at least
 #' one quantitative variable
 #' @examples
-#' x = matrix(c(runif(10), LETTERS[seq_len(10)]), 10, 2)
+#' x = matrix(c(runif(10), LETTERS[seq(10)]), 10, 2)
 #' is.character2(x)
 #' # FALSE TRUE
-#' is.character2(LETTERS[seq_len(10)])
+#' is.character2(LETTERS[seq(10)])
 #' # TRUE
 is.character2 <- function(x) {
     # is. character() consider a string with '1.2' as a character, not this function.
@@ -19,7 +19,7 @@ is.character2 <- function(x) {
     # NA tolerance :
 
     if (is.matrix(x)) {
-        test <- sapply(seq_len(NCOL(x)), function(i)
+        test <- sapply(seq(ncol(x)), function(i)
             unique(is.na(tryCatch(
                 as.integer(na.omit(as.vector(x[, i])[as.vector(x[, i]) != "NA"])),
                 warning = function(w)

@@ -5,12 +5,12 @@
 #' @inheritParams rgcca.analyze
 #' @inheritParams plot_var_2D
 #' @param n_boot A integer for the number of boostrap
-#' @param nb_cores An integer for the number of cores used in parallelization
+#' @param n_cores An integer for the number of cores used in parallelization
 #' @return A list of RGCCA bootstrap weights
 #' @examples
 #' library(RGCCA)
 #' data("Russett")
-#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca.res = rgcca.analyze(blocks)
 #' bootstrap(blocks, rgcca.res, 2, FALSE)
@@ -22,10 +22,10 @@ bootstrap <- function(
     scale = TRUE,
     init = "svd",
     bias = TRUE,
-    nb_cores = parallel::detectCores() - 1) {
+    n_cores = parallel::detectCores() - 1) {
 
-    if (nb_cores == 0)
-        nb_cores <- 1
+    if (n_cores == 0)
+        n_cores <- 1
 
     if (any(unlist(lapply(blocks, ncol) > 1000)))
         verbose <- TRUE
@@ -34,7 +34,7 @@ bootstrap <- function(
 
     cat("Bootstrap in progress...")
 
-    W <- parallel::mclapply(seq_len(n_boot), function(x) {
+    W <- parallel::mclapply(seq(n_boot), function(x) {
 
         w <- bootstrap_k(
             blocks,
@@ -44,8 +44,8 @@ bootstrap <- function(
             bias)
 
         # Test on the sign of the correlation
-        for (k in seq_len(length(blocks))) {
-            for (j in seq_len(ncol(w[[k]]))) {
+        for (k in seq(length(blocks))) {
+            for (j in seq(ncol(w[[k]]))) {
                 if (cor(w1[[k]][, j], w[[k]][, j]) < 0)
                     w[[k]][, j] <- -1 * w[[k]][, j]
             }
@@ -53,7 +53,7 @@ bootstrap <- function(
 
         return(w)
 
-    }, mc.cores = nb_cores)
+    }, mc.cores = n_cores)
 
     cat("OK", append = TRUE)
 

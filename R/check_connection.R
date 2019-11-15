@@ -20,7 +20,7 @@ check_connection <- function(c, blocks) {
         stop("The connection file could not contain only 0.", exit_code = 107)
 
     n <- length(blocks)
-    if (NCOL(c) != n)
+    if (ncol(c) != n)
         stop(
             paste0(
                 "The number of rows/columns of the connection matrix file must be equal to ",

@@ -10,30 +10,33 @@
 #' blocks = list(agriculture = Russett[, seq(3)],
 #'     politic = Russett[, 6:11] )
 #' rgcca.res = rgcca.analyze(blocks, ncomp = rep(3, 2))
-#' df = get_comp(rgcca.res, comp_z = 3)
+#' df = get_comp(rgcca.res, compz = 3)
 #' plot3D(df, i_block = 2)
 #' plot3D(df, i_block = 2, text = FALSE)
 #' response = factor( apply(Russett[, 9:11], 1, which.max),
 #'                   labels = colnames(Russett)[9:11] )
 #' response = blocks[[2]][, 1]
 #' names(response) = row.names(blocks[[2]])
-#' df = get_comp(rgcca.res, response, comp_z = 3)
+#' df = get_comp(rgcca.res, response, compz = 3)
 #' plot3D(df, i_block = 2, text = FALSE)
 #' plot3D(df, i_block = 2)
-#' df = get_ctr2(rgcca.res, blocks, comp_z = 3, i_block = 1, collapse = TRUE)
+#' df = get_ctr2(rgcca.res, blocks, compz = 3, i_block = 1, collapse = TRUE)
 #' plot3D(df, i_block = 2, type = "var")
 #' @export
 plot3D <- function(
     df,
-    comp_x = 1,
-    comp_y = 2,
-    comp_z = 3,
+    compx = 1,
+    compy = 2,
+    compz = 3,
     i_block,
     i_block_y = i_block,
     i_block_z = i_block,
     text = TRUE,
     title = "Sample plot",
-    type = "ind") {
+    type = "ind",
+    cex = 1,
+    pch_text_cex = 3 * cex,
+    axis_title_cex = 19 * cex) {
     
     if (length(unique(df$resp)) == 1) {
         df$resp = as.factor(rep("a", length(df$resp)))
@@ -45,11 +48,11 @@ plot3D <- function(
         list(
                 title = paste0("<i>", print_comp(rgcca.res, x, i), "</i>"),
                 titlefont = list(
-                        size = AXIS_TITLE_CEX * 0.75
+                        size = axis_title_cex * 0.75
                     )
             )
     
-    colorNumeric <- function(x){
+    color_numeric <- function(x){
         n <- length(x)
          cut(
              x, 
@@ -84,13 +87,13 @@ plot3D <- function(
             func$text <- ~row.names(subdf(x))
             func$textfont <- list(
                 color = color,
-                size = PCH_TEXT_CEX * 4
+                size = pch_text_cex * 4
             )
         }else{
             func$mode <- "markers"
             func$marker <- list(
                 color = color,
-                size = PCH_TEXT_CEX * 1.5
+                size = pch_text_cex * 1.5
             )
         }
         
@@ -130,7 +133,7 @@ plot3D <- function(
                     type = "scatter3d",
                     text = ~ row.names(df),
                     textfont = list(
-                        color = colorNumeric(df$resp),
+                        color = color_numeric(df$resp),
                         size = PCH_TEXT_CEX * 4
                     ),
                     showlegend = FALSE,
@@ -156,9 +159,9 @@ plot3D <- function(
             ),
             scene = list(
                 aspectmode = 'cube',
-                xaxis = axis(comp_x, i_block),
-                yaxis = axis(comp_y, i_block_y),
-                zaxis = axis(comp_z, i_block_z)
+                xaxis = axis(compx, i_block),
+                yaxis = axis(compy, i_block_y),
+                zaxis = axis(compz, i_block_z)
             ),
             title = list(
                 text = paste0('<b>', title, '</b>'),

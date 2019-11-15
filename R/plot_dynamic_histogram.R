@@ -5,7 +5,7 @@ plot_dynamic_histogram <- function(p) {
     m <- unlist(lapply(p$x$data, function(x) !is.null(x$orientation)))
     j <- length(m[m])
     
-    for (i in seq_len(j)) {
+    for (i in seq(j)) {
         p$x$data[[i]]$text <- paste(
             round(p$x$data[[i]]$x, 3),
             "+/-",

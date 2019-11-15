@@ -281,7 +281,7 @@ checkArg <- function(opt) {
     
     if (is.null(opt$scheme))
         opt$scheme <- "factorial"
-    else if (!opt$scheme %in% seq_len(4)) {
+    else if (!opt$scheme %in% seq(4)) {
         stop(
             paste0(
                 "--scheme must be comprise between 1 and 4 [by default: 2], not be equal to ",
@@ -298,7 +298,7 @@ checkArg <- function(opt) {
             opt$scheme <- schemes[opt$scheme]
     }
     
-    if (!opt$separator %in% seq_len(3)) {
+    if (!opt$separator %in% seq(3)) {
         stop(
             paste0(
                 "--separator must be comprise between 1 and 3 (1: Tabulation, 2: Semicolon, 3: Comma) [by default: 2], not be equal to ",
@@ -396,7 +396,7 @@ postCheckArg <- function(opt, blocks) {
         }
     }
     
-    out <- lapply(seq_len(length(opt$ncomp)), function(x) {
+    out <- lapply(seq(length(opt$ncomp)), function(x) {
         checkInteger("ncomp", opt$ncomp[x])
         if ((opt$ncomp[x] < 2) ||
                 (opt$ncomp[x] > ncol(blocks[[x]]))) {
@@ -590,11 +590,7 @@ rgcca.out <- rgcca.analyze(
         tau = opt$tau,
         ncomp = opt$ncomp,
         scheme = opt$scheme,
-        scale = FAL
-for (f in list.files("R/")) {
-    if (f != "launcher.R")
-        source(paste0("R/", f))
-}SE,
+        scale = FALSE,
         type = opt$type
     )
 
@@ -652,7 +648,7 @@ if (opt$type != "pca") {
     save_plot(opt$o4, ave)
 
     # Creates design scheme
-    conNet <- function() plot_network2(rgcca.out, blocks, connection)
+    conNet <- function() plot_network(rgcca.out, blocks, connection)
     save_plot(opt$o5, conNet)
 }
 

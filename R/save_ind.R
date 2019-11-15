@@ -2,16 +2,16 @@
 save_ind <- function(
     rgcca,
     blocks,
-    comp_x = 1,
-    comp_y = 2,
+    compx = 1,
+    compy = 2,
     file = "individuals.tsv") {
     
     inds <- Reduce(cbind, lapply(
         rgcca$Y,
-        function(x) x[, c(comp_x, comp_y)]))
+        function(x) x[, c(compx, compy)]))
     colnames(inds) <- as.vector(sapply(
         names(blocks),
-        function(x) paste0(x, ".axis", c(comp_x, comp_y))))
+        function(x) paste0(x, ".axis", c(compx, compy))))
 
     write.table(inds, file, sep = "\t")
 

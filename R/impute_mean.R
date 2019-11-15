@@ -13,7 +13,7 @@ impute_mean <- function(df){
     if (any(is.na(df))) {
         df <- matrix(
             unlist(
-                lapply(seq_len(ncol(df)),
+                lapply(seq(ncol(df)),
                 function(x)
                     unlist(lapply(as.list(df[, x]),
                         function(y)

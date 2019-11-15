@@ -12,7 +12,7 @@
 #' @examples
 #' library(RGCCA)
 #' data("Russett")
-#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca.analyze(blocks)
 #' @export
@@ -28,28 +28,28 @@ rgcca.analyze <- function(
     type = "rgcca",
     verbose = TRUE) {
 
-    WARN <- FALSE
+    warn_on <- FALSE
 
-    for (i in seq_len(length(blocks))) {
+    for (i in seq(length(blocks))) {
         if (ncol(blocks[[i]]) > 1000) {
             # if( (type <-<- "sgcca" && tau > 0.3) || type !<- "sgcca" )
-            WARN <- TRUE
+            warn_on <- TRUE
         }
     }
 
-    if (WARN & verbose)
+    if (warn_on & verbose)
         message("RGCCA in progress ...")
 
     if (tolower(type) == "sgcca") {
-        func <- sgcca
+        gcca <- sgcca
         par <- "c1"
     } else{
-        func <- rgcca
+        gcca <- rgcca
         par <- "tau"
     }
 
-    func.complete <- quote(
-        func(
+    func <- quote(
+        gcca(
             A = blocks,
             C = connection,
             scheme = scheme,
@@ -60,10 +60,10 @@ rgcca.analyze <- function(
             bias = bias
         )
     )
-    func.complete[[par]] <- tau
+    func[[par]] <- tau
 
-    func.res <- eval(as.call(func.complete))
-    names(func.res$a) <- names(blocks)
+    func_out <- eval(as.call(func))
+    names(func_out$a) <- names(blocks)
 
-    return(func.res)
+    return(func_out)
 }

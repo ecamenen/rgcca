@@ -11,7 +11,7 @@ common_rows <- function(list_m) {
         common_row <- common_row[common_row %in% row.names(list_m[[i]])]
 
     list_m <- lapply(
-        seq_len(length(list_m)), 
+        seq(length(list_m)),
         function(x)
             list_m[[x]] <- list_m[[x]][common_row, ])
 

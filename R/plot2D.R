@@ -14,7 +14,7 @@
 #' @param colours A vectof of character to color quantitative dat
 #' @examples
 #' df = as.data.frame(matrix(runif(20*2, min = -1), 20, 2))
-#' AVE = lapply(seq_len(4), function(x) runif(2))
+#' AVE = lapply(seq(4), function(x) runif(2))
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
 #' plot2D(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
 plot2D <- function(
@@ -23,15 +23,15 @@ plot2D <- function(
     title = "Biplot",
     group,
     name_group = "Response",
-    comp_x = 1,
-    comp_y = 2,
+    compx = 1,
+    compy = 2,
     i_block = NULL,
     p = NULL,
     text = TRUE,
     i_block_y = i_block,
     colours = c("blue", "gray", "#cd5b45"),
     collapse = FALSE,
-    no_Overlap = FALSE,
+    no_overlap = FALSE,
     cex = 1,
     subtitle_cex = 16 * cex,
     pch_text_cex = 3 * cex,
@@ -49,7 +49,7 @@ plot2D <- function(
             size = pch_text_cex)
         )
         
-        if (no_Overlap && nrow(df) <= 200) {
+        if (no_overlap && nrow(df) <= 200) {
             f = paste0(f, '_repel')
             func$force = 0.2
             func$max.iter = 500
@@ -60,7 +60,7 @@ plot2D <- function(
         p <- ggplot(df, aes(df[, 1], df[, 2], colour = as.factor(group)))
 
     if (length(name_group) > 15)
-        name_group <- name_group[seq_len(15)]
+        name_group <- name_group[seq(15)]
 
     if (is.null(name_group))
         name_group <- 0
@@ -85,8 +85,8 @@ plot2D <- function(
             size = 1
         ) + labs(
                 title = paste(title, "space"),
-                x = print_comp(rgcca, comp_x, i_block),
-                y = print_comp(rgcca, comp_y, i_block_y),
+                x = print_comp(rgcca, compx, i_block),
+                y = print_comp(rgcca, compy, i_block_y),
             color = name_group,
             shape = name_group
         ) + 

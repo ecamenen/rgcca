@@ -4,12 +4,12 @@
 #' 
 #' @inheritParams plot_var_2D
 #' @param type A character giving the choice ot the index between cor or weight
-#' @param comp_z An integer giving the index of the analysis component used
+#' @param compz An integer giving the index of the analysis component used
 #' for the z-axis
 #' @examples
 #' library(RGCCA)
 #' data("Russett")
-#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca.res = rgcca.analyze(blocks, ncomp = c(3,2,4))
 #' get_ctr(rgcca.res, blocks)
@@ -19,16 +19,16 @@
 #' superblocks <- rep(list(Reduce(cbind, c(blocks[1], blocks[3]))), 2)
 #' names(superblocks) <- names(blocks)[c(1, 3)]
 #' rgcca.res = rgcca.analyze(blocks[c(1,3)], ncomp = c(3,4))
-#' get_ctr(rgcca.res, superblocks, comp_z = 3, i_block = 1, type = "cor", collapse = TRUE)
+#' get_ctr(rgcca.res, superblocks, compz = 3, i_block = 1, type = "cor", collapse = TRUE)
 #' get_ctr(rgcca.res, superblocks, 2, 1, 3, 1, "weights", TRUE)
 #' @return A dataframe containing the indexes for each selected components
 #' @export
 get_ctr <- function(
     rgcca,
     blocks = NULL,
-    comp_x = 1,
-    comp_y = 2,
-    comp_z = NULL,
+    compx = 1,
+    compy = 2,
+    compz = NULL,
     i_block = length(blocks),
     type = "cor",
     collapse = FALSE) {
@@ -63,7 +63,7 @@ get_ctr <- function(
 
     data.frame(
         sapply(
-            c(comp_x, comp_y, comp_z[comp_z >= rgcca$ncomp[i_block]]), 
+            c(compx, compy, compz[compz >= rgcca$ncomp[i_block]]),
             function(x) f(x)
         ),
         row.names = row.names

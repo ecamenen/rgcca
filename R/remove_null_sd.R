@@ -21,7 +21,7 @@ remove_null_sd <- function(list_m) {
                 function(x) length(x) > 0))]
 
     list_m <- lapply(
-        seq_len(length(list_m)), 
+        seq(length(list_m)),
         function(x) {
             if (x %in% blocks_index)
                 list_m[[x]][, -column_sd_null[[x]]]

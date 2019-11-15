@@ -49,7 +49,7 @@ server <- function(input, output, session) {
         setNamesInput("response", "Block used as a response")
     })
 
-    output$nb_comp_custom <- renderUI({
+    output$nb_compcustom <- renderUI({
         # Set dynamically the maximum number of component that should be used
         # in the analysis
 
@@ -75,12 +75,12 @@ server <- function(input, output, session) {
             input$supervised
         )
 
-    output$comp_x_custom <- renderUI({
+    output$compx_custom <- renderUI({
         refresh <- refreshAnalysis()
         isolate(uiComp("x", 1, input$navbar != "Fingerprint"))
     })
 
-    output$comp_y_custom <- renderUI({
+    output$compy_custom <- renderUI({
         refresh <- refreshAnalysis()
         uiComp("y", 2)
     })
@@ -173,7 +173,7 @@ server <- function(input, output, session) {
             label <- paste0("Component for the ", x, "-axis")
 
         sliderInput(
-            inputId = paste0("comp_", x),
+            inputId = paste0("comp", x),
             label = label,
             min = 1,
             max = input$nb_comp,
@@ -363,7 +363,7 @@ server <- function(input, output, session) {
         if (!is.null(input$blocks)) {
             blocks <- getInfile()
             if (!is.null(blocks)) {
-                min <- min(sapply(blocks, NCOL))
+                min <- min(sapply(blocks, ncol))
                 if (min > 5)
                     return(5)
                 else
@@ -504,8 +504,8 @@ server <- function(input, output, session) {
             input$nb_mark,
             input$scale,
             input$init,
-            input$comp_x,
-            input$comp_y,
+            input$compx,
+            input$compy,
             input$tau,
             input$tau_opt,
             input$analysis_type,
@@ -540,8 +540,8 @@ server <- function(input, output, session) {
             plot_ind(
                 rgcca = rgcca.res,
                 resp = response,
-                comp_x = comp_x,
-                comp_y = comp_y,
+                compx = compx,
+                compy = compy,
                 i_block = id_block,
                 text = if_text,
                 i_block_y = id_block_y,
@@ -554,8 +554,8 @@ server <- function(input, output, session) {
         plot_var_2D(
             rgcca = rgcca.res,
             blocks = blocks,
-            comp_x = comp_x,
-            comp_y = comp_y,
+            compx = compx,
+            compy = compy,
             superblock = (superblock & tolower(analysis_type) != "pca"),
             i_block = id_block,
             text = if_text
@@ -565,7 +565,7 @@ server <- function(input, output, session) {
         plot_var_1D(
             rgcca = rgcca.res,
             blocks = blocks,
-            comp = comp_x,
+            comp = compx,
             superblock = (superblock & tolower(analysis_type) != "pca"),
             n_mark = nb_mark,
             i_block = id_block
@@ -578,7 +578,7 @@ server <- function(input, output, session) {
         plot_network2(rgcca.res, blocks, connection)
 
     plotBoot <- function()
-        plot_bootstrap(boot, comp_x, nb_mark, id_block)
+        plot_bootstrap(boot, compx, nb_mark, id_block)
 
     ################################################ Analysis ################################################
 
@@ -855,7 +855,7 @@ server <- function(input, output, session) {
                id = "text")
         toggle(
             condition = (input$navbar != "Fingerprint"),
-               id = "comp_y_custom")
+               id = "compy_custom")
         toggle(
             condition = (input$navbar == "Samples"),
                id = "blocks_names_custom_y")
@@ -1138,12 +1138,12 @@ server <- function(input, output, session) {
     msgSave <- function()
             showWarn(message(paste("Save in", getwd())), show = FALSE)
 
-    observeEvent(c(input$text, input$comp_x, input$comp_y, input$nb_mark),
+    observeEvent(c(input$text, input$compx, input$compy, input$nb_mark),
                 {
                     if (!is.null(analysis)) {
                         assign("if_text", input$text, .GlobalEnv)
-                        assign("comp_x", input$comp_x, .GlobalEnv)
-                        assign("comp_y", input$comp_y, .GlobalEnv)
+                        assign("compx", input$compx, .GlobalEnv)
+                        assign("compy", input$compy, .GlobalEnv)
                         if (!is.null(input$nb_mark))
                             assign("nb_mark", input$nb_mark, .GlobalEnv)
                     }

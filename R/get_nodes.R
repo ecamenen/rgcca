@@ -6,34 +6,34 @@
 #' and tau or c1 in columns
 #' @examples
 #' data("Russett")
-#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca.res = rgcca.analyze(blocks)
 #' get_nodes(blocks, rgcca = rgcca.res)
 get_nodes <- function(blocks, rgcca = NULL, tau = NULL) {
 
     if (!is.null(rgcca) & is(rgcca, "sgcca")) {
-        par.rgcca <- "c1"
+        par_rgcca <- "c1"
         par.name <- "sparsity"
     } else
-        par.rgcca <- par.name <- "tau"
+        par_rgcca <- par.name <- "tau"
 
     if (any(tau == "optimal")) {
         if (!is.null(rgcca))
-            tau <- unlist(lapply(seq_len(ncol(rgcca[[par.rgcca]])), 
+            tau <- unlist(lapply(seq(ncol(rgcca[[par_rgcca]])),
                 function(x)
-                    Reduce(paste, round(rgcca[[par.rgcca]][, x], 2))))
+                    Reduce(paste, round(rgcca[[par_rgcca]][, x], 2))))
         else
             tau <- rep(NA, length(blocks))
     }
 
     if (is.null(tau)) {
-        if (is.matrix(rgcca[[par.rgcca]]))
-            tau <-  unlist(lapply(seq_len(ncol(rgcca[[par.rgcca]])), 
+        if (is.matrix(rgcca[[par_rgcca]]))
+            tau <-  unlist(lapply(seq(ncol(rgcca[[par_rgcca]])),
                 function(x)
-                    Reduce(paste, round(rgcca[[par.rgcca]][, x], 2))))
+                    Reduce(paste, round(rgcca[[par_rgcca]][, x], 2))))
         else
-            tau <- rgcca[[par.rgcca]]
+            tau <- rgcca[[par_rgcca]]
     }
 
     nrow <- unlist(lapply(blocks, function(x)
@@ -43,7 +43,7 @@ get_nodes <- function(blocks, rgcca = NULL, tau = NULL) {
                 attributes(x)$nrow
             )))
 
-    values <- list(names(blocks), unlist(lapply(blocks, NCOL)), nrow, tau)
+    values <- list(names(blocks), unlist(lapply(blocks, ncol)), nrow, tau)
     nodes <- as.data.frame(matrix(unlist(values), length(blocks), length(values)))
     colnames(nodes) <- c("id", "P", "nrow", par.name)
 

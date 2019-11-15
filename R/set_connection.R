@@ -11,7 +11,7 @@
 #' @return A matrix corresponding to the connection between the blocks
 #' @examples
 #' \dontrun{
-#' blocks = lapply(seq_len(4), function(x) matrix(runif(47 * 5), 47, 5))
+#' blocks = lapply(seq(4), function(x) matrix(runif(47 * 5), 47, 5))
 #' set_connection (blocks, 'data/connection.tsv')
 #' }
 #' @export
@@ -27,7 +27,7 @@ set_connection <- function(
 
     if (superblock) {
         connection <- matrix(0, J, J)
-        connection[seq_len(J - 1), J] <- connection[J, seq_len(J - 1)] <- 1
+        connection[seq(J - 1), J] <- connection[J, seq(J - 1)] <- 1
 
     } else if (is.null(file))
         connection <- 1 - diag(J)

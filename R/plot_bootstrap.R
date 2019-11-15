@@ -4,11 +4,11 @@
 #'
 #' @inheritParams plot_histogram
 #' @inheritParams plot_var_2D
-#' @param show.boot A boolean to show the bootstrap mean and sd on the graphic
+#' @param show_boot A boolean to show the bootstrap mean and sd on the graphic
 #' @examples
 #' library(RGCCA)
 #' data("Russett")
-#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca.res = rgcca.analyze(blocks)
 #' boot = bootstrap(blocks, rgcca.res, 2, FALSE)
@@ -19,7 +19,7 @@ plot_bootstrap <- function(
     df,
     rgcca,
     superblock = TRUE,
-    show.boot = TRUE,
+    show_boot = TRUE,
     n_mark = 30,
     cex = 1,
     subtitle_cex = 16 * cex,
@@ -29,7 +29,7 @@ plot_bootstrap <- function(
     J <- names(rgcca$a)
 
     if (nrow(df) > n_mark)
-        df <- df[seq_len(n_mark), ]
+        df <- df[seq(n_mark), ]
 
     if (superblock) {
         color2 <- factor(df$color)
@@ -49,7 +49,7 @@ plot_bootstrap <- function(
         subtitle_cex = subtitle_cex,
         axis_text_cex = axis_text_cex)
 
-    if (show.boot) {
+    if (show_boot) {
         p <- p +
             geom_line(aes(x = order, y = mean), inherit.aes = FALSE, lwd = 0.7) +
             geom_point(aes(x = order, y = mean), inherit.aes = FALSE, size = 1.5)

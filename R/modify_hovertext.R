@@ -14,9 +14,9 @@ modify_hovertext <- function(p, hovertext = TRUE) {
     n <- which(sapply(p$x$data, function(x)
         match("xintercept: 0", x$text) == 1)) - 1
 
-    for (i in seq_len(n)) {
+    for (i in seq(n)) {
         # For each lines of each group in the legend
-        for (j in seq_len(length(p$x$data[[i]][attr][[1]]))) {
+        for (j in seq(length(p$x$data[[i]][attr][[1]]))) {
             
             # Distinguish each duplicate by splitting with "<br>" and separe
             # them in key/value by splitting with ": " (like a dictionnary)

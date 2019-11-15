@@ -11,25 +11,25 @@
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' rgcca.res = list(a = rep(NA, 4))
-#' names(rgcca.res$a) = LETTERS[seq_len(4)]
+#' names(rgcca.res$a) = LETTERS[seq(4)]
 #' get_bloc_var(rgcca.res)
 #' # a, b, c
 get_bloc_var <- function(df, collapse = FALSE) {
     
     if (!collapse)
-        bl.names <- names(df)[-length(df)]
+        bl_names <- names(df)[-length(df)]
     else
-        bl.names <- names(df)
+        bl_names <- names(df)
 
     res <- rep(
-        bl.names,
+        bl_names,
         sapply(
-            df[seq_len(length(df) - as.integer(!collapse))],
+            df[seq(length(df) - as.integer(!collapse))],
             function(x) nrow(as.matrix(x))
         )
     )
     
-    names(res) <- unlist(lapply(df[bl.names], row.names))
+    names(res) <- unlist(lapply(df[bl_names], row.names))
 
     return(res)
 }

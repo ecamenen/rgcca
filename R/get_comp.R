@@ -20,25 +20,25 @@
 get_comp <- function(
     rgcca,
     resp = rep(1, nrow(rgcca$Y[[1]])),
-    comp_x = 1,
-    comp_y = 2,
-    comp_z = NULL,
+    compx = 1,
+    compy = 2,
+    compz = NULL,
     i_block = length(rgcca$Y),
     i_block_y = i_block,
     i_block_z = i_block,
     predicted = NULL){
     
     df <- data.frame(
-        rgcca$Y[[i_block]][, comp_x],
-        rgcca$Y[[i_block_y]][, comp_y],
-        rgcca$Y[[i_block_z]][, comp_z]
+        rgcca$Y[[i_block]][, compx],
+        rgcca$Y[[i_block_y]][, compy],
+        rgcca$Y[[i_block_z]][, compz]
     )
     
     resp <- as.matrix(resp)
 
     if (!is.null(predicted)) {
 
-            df <- rbind(df, predicted[[2]][[i_block]][, c(comp_x, comp_y, comp_z)])
+            df <- rbind(df, predicted[[2]][[i_block]][, c(compx, compy, compz)])
             resp <- rep(c("obs", "pred"), each = nrow(rgcca$Y[[1]]))
 
     } else if (length(unique(as.matrix(resp))) > 1) {

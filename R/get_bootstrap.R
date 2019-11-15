@@ -5,13 +5,13 @@
 #' @inheritParams bootstrap
 #' @inheritParams plot_histogram
 #' @inheritParams plot_var_2D
-#' @param W A list of list weights (one per bootstrap per blocks)
+#' @param w A list of list weights (one per bootstrap per blocks)
 #' @param comp An integer giving the index of the analysis components
 #' @return A matrix containing the means, 95% intervals, bootstrap ratio and p-values
 #' @examples
 #' library(RGCCA)
 #' data("Russett")
-#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca.res = rgcca.analyze(blocks)
 #' boot = bootstrap(blocks, rgcca.res, 2, FALSE)
@@ -19,17 +19,17 @@
 #' @export
 get_bootstrap <- function(
     rgcca,
-    W,
+    w,
     comp = 1,
     i_block = NULL,
     collapse = TRUE,
-    nb_cores = parallel::detectCores() - 1) {
+    n_cores = parallel::detectCores() - 1) {
 
-    if (nb_cores == 0)
-        nb_cores <- 1
+    if (n_cores == 0)
+        n_cores <- 1
 
     if (is.null(i_block))
-        i_block <- length(W[[1]])
+        i_block <- length(w[[1]])
 
     if (comp > min(rgcca$ncomp))
         stop("Selected dimension was not associated to every blocks",
@@ -46,47 +46,47 @@ get_bootstrap <- function(
 
     for (i in J) {
 
-        W_bind <- parallel::mclapply(W,
+        w_bind <- parallel::mclapply(w,
             function(x)
                 x[[i]][, comp],
-            mc.cores = nb_cores)
+            mc.cores = n_cores)
 
         weight[[i]] <- rgcca$a[[i]][, comp]
-        W_select <- matrix(
-            unlist(W_bind),
-            nrow = length(W_bind),
-            ncol = length(W_bind[[1]]),
+        w_select <- matrix(
+            unlist(w_bind),
+            nrow = length(w_bind),
+            ncol = length(w_bind[[1]]),
             byrow = TRUE
         )
-        colnames(W_select) <- names(weight[[i]])
-        rm(W_bind); gc()
+        colnames(w_select) <- names(weight[[i]])
+        rm(w_bind); gc()
 
-        n <- seq(ncol(W_select))
+        n <- seq(ncol(w_select))
 
         if (is(rgcca, "sgcca")) {
 
             occ[[i]] <- unlist(
                 parallel::mclapply(n,
                 function(x)
-                    sum(W_select[, x] != 0) / length(W_select[, x]),
-                mc.cores = nb_cores))
+                    sum(w_select[, x] != 0) / length(w_select[, x]),
+                mc.cores = n_cores))
 
         }
 
         mean[[i]] <- unlist(parallel::mclapply(n,
-            function(x) mean(W_select[,x]),
-            mc.cores = nb_cores
+            function(x) mean(w_select[,x]),
+            mc.cores = n_cores
         ))
         sd[[i]] <- unlist(
             parallel::mclapply(n,
-                function(x) sd(W_select[,x]),
-                mc.cores = nb_cores
+                function(x) sd(w_select[,x]),
+                mc.cores = n_cores
         ))
 
-        rm(W_select); gc()
+        rm(w_select); gc()
     }
 
-    rm(W); gc()
+    rm(w); gc()
 
     occ <- unlist(occ)
     mean <- unlist(mean)

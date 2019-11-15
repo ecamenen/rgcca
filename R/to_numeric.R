@@ -1,6 +1,6 @@
 to_numeric <- function(df) {
     matrix(
-        sapply(seq_len(nrow(df) * ncol(df)), 
+        sapply(seq(nrow(df) * ncol(df)),
             function(i)
                 tryCatch({
                     as.numeric(df[i])

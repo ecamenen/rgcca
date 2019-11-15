@@ -289,7 +289,7 @@ select_analysis <- function(
 
         else if (tolower(type) == "ridge-gca") {
             scheme <- setScheme("factorial")
-            tau <- setTau(c(tau[seq_len(J)], 0))
+            tau <- setTau(c(tau[seq(J)], 0))
         }
 
         else if (tolower(type) == "r-maxvar") {

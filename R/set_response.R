@@ -9,7 +9,7 @@
 #' @return A matrix corresponding to the response
 #' @examples
 #' \dontrun{
-#' blocks = lapply(seq_len(3), function(x) matrix(runif(47 * 5), 47, 5))
+#' blocks = lapply(seq(3), function(x) matrix(runif(47 * 5), 47, 5))
 #' set_response (blocks, 'data/response3.tsv')
 #' }
 #' @export
@@ -40,7 +40,7 @@ set_response <- function(
             response <- to_numeric(response)
 
 
-        if (NCOL(response) > 1) {
+        if (ncol(response) > 1) {
             disjunctive <- unique(apply(response, 1, sum))
 
 
@@ -64,6 +64,6 @@ set_response <- function(
 
         return(response)
     } else {
-        return(rep(1, NROW(blocks[[1]])))
+        return(rep(1, nrow(blocks[[1]])))
     }
 }

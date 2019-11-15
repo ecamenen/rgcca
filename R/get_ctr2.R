@@ -7,27 +7,27 @@
 #' @examples
 #' library(RGCCA)
 #' data("Russett")
-#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca.res = rgcca.analyze(blocks, ncomp = c(3, 2, 4))
 #' get_ctr2(rgcca.res, blocks, superblock = FALSE)
 #' blocks = blocks[c(1,3)]
 #' rgcca.res = rgcca.analyze(blocks, ncomp = c(3,4))
-#' get_ctr2(rgcca.res, blocks, comp_z = 3, i_block = 1, collapse = TRUE)
+#' get_ctr2(rgcca.res, blocks, compz = 3, i_block = 1, collapse = TRUE)
 #' get_ctr2(rgcca.res, blocks, 1, 2, 3, 1, "weights", collapse = TRUE, n_mark = 5)
 #' get_ctr2(rgcca.res, blocks, collapse = TRUE)
 get_ctr2 <- function(
     rgcca,
     blocks = NULL,
-    comp_x = 1,
-    comp_y = 2,
-    comp_z = NULL,
+    compx = 1,
+    compy = 2,
+    compz = NULL,
     i_block = length(blocks),
     type = "cor",
     superblock = TRUE,
     n_mark = 100,
     collapse = FALSE,
-    removeVariable = TRUE) {
+    remove_var = TRUE) {
 
     x <- y <- selectedVar <- NULL
 
@@ -38,7 +38,7 @@ get_ctr2 <- function(
         names(blocks) <- names(blocks.all)
     }
 
-    df <- get_ctr(rgcca, blocks, comp_x, comp_y, comp_z, i_block, type, collapse)
+    df <- get_ctr(rgcca, blocks, compx, compy, compz, i_block, type, collapse)
 
     if (is(rgcca, "sgcca")) {
 
@@ -52,7 +52,7 @@ get_ctr2 <- function(
                 function(x)
                     apply(
                         sapply(
-                            c(comp_x, comp_y, comp_z[comp_z >= rgcca$ncomp[x]]),
+                            c(compx, compy, compz[compz >= rgcca$ncomp[x]]),
                             function(y) rgcca$a[[x]][, y] != 0), 
                         1, 
                         function(z) Reduce("|", z)
@@ -67,9 +67,9 @@ get_ctr2 <- function(
         n_mark <- nrow(df)
 
     # TODO: function in other place
-    if (removeVariable) {
+    if (remove_var) {
         selectedVar <- unique(as.vector(
-            sapply(seq(length(c(comp_x, comp_y, comp_z))), function(x)
+            sapply(seq(length(c(compx, compy, compz))), function(x)
                 row.names(data.frame(df[order(abs(df[, x]), decreasing = TRUE), ])[seq(n_mark), ]))
         ))
         df <- df[selectedVar, ]
@@ -87,7 +87,7 @@ get_ctr2 <- function(
             resp <- resp[
                 unlist(
                     lapply(
-                        seq_len(length(selectedVar)),
+                        seq(length(selectedVar)),
                         function(x) which(row.names(rgcca$a[[length(rgcca$a)]]) == selectedVar[x])
                     )
                 )
@@ -96,7 +96,7 @@ get_ctr2 <- function(
        # df <- resp[row.names(df)]
 
     } else
-        resp <- rep(1, NROW(df))
+        resp <- rep(1, nrow(df))
 
     data.frame(df, resp)
 }

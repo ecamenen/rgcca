@@ -3,7 +3,7 @@ order_color <- function(df, p, matched = NULL, collapse = FALSE) {
 
     J <- names(df)
     if (is.null(matched)) {
-        matched <- seq_len(length(J))
+        matched <- seq(length(J))
         f <- "color"
     } else
         f <- "fill"

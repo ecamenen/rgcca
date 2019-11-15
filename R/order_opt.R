@@ -8,7 +8,7 @@ order_opt <- function(opt, blocks, i_resp) {
     if (all(opt$tau != "optimal"))
         par[length(par) + 1] <- "tau"
 
-    for (i in seq_len(length(par))) {
+    for (i in seq(length(par))) {
         temp <- opt[[par[i]]][[J]]
         opt[[par[i]]][[J]] <- opt[[par[i]]][[i_resp]]
         opt[[par[i]]][[i_resp]] <- temp

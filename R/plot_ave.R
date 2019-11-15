@@ -6,11 +6,11 @@
 #' @inheritParams plot_ind
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
-#' random_val = function(y=1) lapply(seq_len(4),
+#' random_val = function(y=1) lapply(seq(4),
 #' function(x) matrix(runif(4), y, 2))
 #' rgcca.res = list(AVE = list(AVE_X = random_val()),
 #'      a = random_val(2), ncomp = rep(2, 4))
-#' names(rgcca.res$a) <- LETTERS[seq_len(4)]
+#' names(rgcca.res$a) <- LETTERS[seq(4)]
 #' library("ggplot2")
 #' for(i in seq(1,4))
 #' names(rgcca.res$AVE$AVE_X[[i]]) <- c(1,2)
@@ -23,7 +23,7 @@ plot_ave <- function(
     axis_text_cex = 10 * cex) {
 
     ave <- 100 * unlist(rgcca$AVE$AVE_X)
-    blocks <- factor(unlist(lapply(seq_len(length(names(rgcca$a))), 
+    blocks <- factor(unlist(lapply(seq(length(names(rgcca$a))),
             function(x) rep(names(rgcca$a)[x], rgcca$ncomp[x]))),
         levels = names(rgcca$a))
     ncomp <- as.factor(names(ave))
@@ -33,7 +33,7 @@ plot_ave <- function(
             function(x) round(100 * cumsum(x), 1)), 
         function(x) c(0, x))
     y_ave_cum <- unlist(lapply(y_ave_cum, function(x)
-            unlist(lapply(seq_len(length(x)),
+            unlist(lapply(seq(length(x)),
                 function(i) (x[i - 1] + x[i]) / 2))))
 
     ave_label <- unlist(lapply(rgcca$AVE$AVE_X, function(x)

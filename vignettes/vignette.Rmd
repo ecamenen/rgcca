@@ -157,7 +157,7 @@ connection = set_connection(blocks = blocks,
 for (x in 1:length(files)) {
   
   tab = get(files[x])
-  if (x > 3) colnames(tab) = rep(NULL, NCOL(tab))
+  if (x > 3) colnames(tab) = rep(NULL, ncol(tab))
   
   pander::pandoc.table(head(tab),
                        caption = files[x])
@@ -186,7 +186,7 @@ names(sgcca.res$a) = names(blocks)
 
 Both the samples and the variables could be visualized by using biplots functions (respectively ```plot_ind``` and ```plot_var_2D```). Histograms are used to visualized in decreasing order the variables with the higher weights and the blocks with the higher Average Variance Explained (AVE).
 
-These functions take the results of a sgcca or a rgcca (```rgcca``` parameter) and the components to visualize : either ```comp_x``` and ```comp_y``` for biplots or  ```comp``` for histograms. By default, ```comp_x``` = ```comp``` = 1 and ```comp_y``` = 2. The presence or the absence of a superblock among the analysis could be specified for ```plot_var_2D``` and ```plot_var_1D``` to color the variables according to their blocks. By default, the last block is plotted, corresponding to the superblock if selected (```i_block``` parameter). ```plot_var_2D```, which is a corcircle plot, required the ```blocks``` for the correlation with the selected component. ```plot_var_2D``` could use the response variable to color the samples by groups. By default, the first 100th higher weights are used for the ```plot_var_1D``` and could be set by using the ```n_mark``` argument.
+These functions take the results of a sgcca or a rgcca (```rgcca``` parameter) and the components to visualize : either ```compx``` and ```compy``` for biplots or  ```comp``` for histograms. By default, ```compx``` = ```comp``` = 1 and ```compy``` = 2. The presence or the absence of a superblock among the analysis could be specified for ```plot_var_2D``` and ```plot_var_1D``` to color the variables according to their blocks. By default, the last block is plotted, corresponding to the superblock if selected (```i_block``` parameter). ```plot_var_2D```, which is a corcircle plot, required the ```blocks``` for the correlation with the selected component. ```plot_var_2D``` could use the response variable to color the samples by groups. By default, the first 100th higher weights are used for the ```plot_var_1D``` and could be set by using the ```n_mark``` argument.
 
 ```{r}
 COMP1 = 2
@@ -229,8 +229,8 @@ plot_ave(rgcca = sgcca.res)
 ```{r}
 plot_ind(rgcca = sgcca.res,
                  resp = response, 
-                 comp_x = COMP1, 
-                 comp_y = COMP2, 
+                 compx = COMP1,
+                 compy = COMP2,
                  i_block = 3)
 ```
 
@@ -238,8 +238,8 @@ plot_ind(rgcca = sgcca.res,
 ```{r}
 plot_var_2D(rgcca = sgcca.res,
                    block = blocks,
-                   comp_x = COMP1,
-                   comp_y = COMP2,
+                   compx = COMP1,
+                   compy = COMP2,
                    i_block = 3)
 ```
 

@@ -8,7 +8,7 @@
 #' df = matrix(runif(20), 10, 2)
 #' check_quantitative(df, 'data')
 #' \dontrun{
-#' df[,2] = LETTERS[seq_len(10)]
+#' df[,2] = LETTERS[seq(10)]
 #' check_quantitative(df, 'data', TRUE)
 #' # Error
 #' }

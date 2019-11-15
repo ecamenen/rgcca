@@ -47,8 +47,8 @@ id_block_y <<- id_block <<- id_block_resp <<- analysis <<-
 boot <<- analysis_type <<- NULL
 clickSep <<- FALSE
 if_text <<- TRUE
-comp_x <<- 1
-nb_comp <<- comp_y <<- 2
+compx <<- 1
+nb_comp <<- compy <<- 2
 nb_mark <<- 100
 BSPLUS <<- R.Version()$minor >= 3
 ax2 <<- list(linecolor = "white",
@@ -118,7 +118,7 @@ ui <- fluidPage(
             tabPanel(
                 "RGCCA",
                 uiOutput("analysis_type_custom"),
-                uiOutput("nb_comp_custom"),
+                uiOutput("nb_compcustom"),
                 uiOutput("scale_custom"),
 
                 radioButtons(
@@ -170,8 +170,8 @@ ui <- fluidPage(
                 ),
                 uiOutput("blocks_names_custom_x"),
                 uiOutput("blocks_names_custom_y"),
-                uiOutput("comp_x_custom"),
-                uiOutput("comp_y_custom"),
+                uiOutput("compx_custom"),
+                uiOutput("compy_custom"),
                 uiOutput("nb_mark_custom"),
                 uiOutput("response_custom"),
 

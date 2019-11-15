@@ -5,9 +5,9 @@
 #' @param rgcca A list giving the results of a R/SGCCA
 #' @param resp A vector of characters corresponding either to a qualitative
 #' variable with levels or a continuous variable
-#' @param comp_x An integer giving the index of the analysis component used
+#' @param compx An integer giving the index of the analysis component used
 #' for the x-axis
-#' @param comp_y An integer giving the index of the analysis component used
+#' @param compy An integer giving the index of the analysis component used
 #' for the y-axis
 #' @param i_block An integer giving the index of a list of blocks
 #' @param text A bolean to represent the points with their row names (TRUE)
@@ -15,17 +15,17 @@
 #' @param i_block_y An integer giving the index of a list of blocks (another
 #' one, different from the one used in i_block)
 #' @param reponse_name A character giving the legend title
-#' @param no_Overlap A boolean to avoid overlap in plotted text
+#' @param no_overlap A boolean to avoid overlap in plotted text
 #' @param predicted A list containing as  2nd element a matrix of predicted components 
 #' @examples
-#' coord = lapply(seq_len(3),
+#' coord = lapply(seq(3),
 #'    function(x) matrix(runif(15 * 2, min = -1), 15, 2))
-#' AVE_X = lapply(seq_len(3), function(x) runif(2))
+#' AVE_X = lapply(seq(3), function(x) runif(2))
 #' for (i in 1:length(coord))
 #' row.names(coord[[i]]) = seq(15)
 #' rgcca.res = list(Y = coord, AVE = list(AVE_X = AVE_X))
 #' # Using a superblock
-#' resp = as.matrix(rep(LETTERS[seq_len(3)], each = 5))
+#' resp = as.matrix(rep(LETTERS[seq(3)], each = 5))
 #' row.names(resp) = seq(15)
 #' plot_ind(rgcca.res, resp)
 #' # Using the first block
@@ -35,14 +35,14 @@
 #' @export
 plot_ind <- function(
     rgcca,
-    resp = rep(1, NROW(rgcca$Y[[1]])),
-    comp_x = 1,
-    comp_y = 2,
+    resp = rep(1, nrow(rgcca$Y[[1]])),
+    compx = 1,
+    compy = 2,
     i_block = length(rgcca$Y),
     text = TRUE,
     i_block_y = i_block,
     reponse_name = "Response",
-    no_Overlap = FALSE,
+    no_overlap = FALSE,
     predicted = NULL,
     cex = 1,
     subtitle_cex = 16 * cex,
@@ -56,8 +56,8 @@ plot_ind <- function(
     df <- get_comp(
         rgcca = rgcca,
         resp = resp,
-        comp_x = comp_x,
-        comp_y = comp_y,
+        compx = compx,
+        compy = compy,
         i_block = i_block,
         i_block_y = i_block_y,
         predicted = predicted
@@ -84,13 +84,13 @@ plot_ind <- function(
             "Sample",
             df$resp,
             reponse_name,
-            comp_x,
-            comp_y,
+            compx,
+            compy,
             i_block,
             p,
             text,
             i_block_y,
-            no_Overlap = no_Overlap,
+            no_overlap = no_overlap,
             cex = cex,
             subtitle_cex = subtitle_cex,
             pch_text_cex = pch_text_cex,

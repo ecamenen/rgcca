@@ -25,41 +25,41 @@ set_blocks <- function(file,
     # test if extension filename is xls
     if (!isXls)
     # if it is not, parse the name of file from the arg list
-        blocksFilename <- cut_list(file)
+        block_filenames <- cut_list(file)
     else {
         # # if xls, check file exists
         # check_file(file)
         # # load the xls
         # wb = loadWorkbook(file)
         # # load the blocks
-        # blocksFilename = names(getSheets(wb))
+        # block_filenames = names(getSheets(wb))
     }
 
     # Parse optional names of blocks
     if (!is.null(names))
         # default name is filename, otherwise, the user could name the blocs
-        blocksName <- cut_list(names)
+        block_names <- cut_list(names)
 
     # Load each dataset
     blocks <- list()
-    for (i in seq_len(length(blocksFilename))) {
+    for (i in seq(length(block_filenames))) {
         if (!isXls) {
             # if not an xls, file exist test is done here
-            fi <- blocksFilename[i]
+            fi <- block_filenames[i]
             check_file(fi)
         }
 
         #Get names of blocs
         if (!is.null(names))
             # names of blocks are those parsed from args
-            fo <- get_filename(blocksName[i])
+            fo <- get_filename(block_names[i])
         else {
             if (!isXls)
                 # if not xls, the name is the files without the extension .tsv
                 fo <- get_filename(fi)
             else
                 # for xls, the names are those of the sheets
-                fo <- blocksFilename[i]
+                fo <- block_filenames[i]
         }
 
         #load the data
@@ -69,11 +69,11 @@ set_blocks <- function(file,
         }
         # }else{
         #   check_size(file)
-        #   df = loadExcel(file, blocksFilename[i], rownames, header)
+        #   df = loadExcel(file, block_filenames[i], rownames, header)
         # }
 
         #if one-column file, it is a tabulation error
-        if (NCOL(df) == 0)
+        if (ncol(df) == 0)
             stop(paste(fo, "block file has an only-column. Check the separator."),
             exit_code = 102)
 
@@ -87,14 +87,14 @@ set_blocks <- function(file,
         blocks[[fo]] <- df
     }
 
-    nrow <- lapply(blocks, NROW)
+    nrow <- lapply(blocks, nrow)
 
     if (length(blocks) > 1)
         blocks <- common_rows(blocks)
 
     blocks <- remove_null_sd(blocks)
 
-    for (i in seq_len(length(blocks)))
+    for (i in seq(length(blocks)))
         attributes(blocks[[i]])$nrow <- nrow[[i]]
 
     if (nrow(blocks[[1]]) > 0)

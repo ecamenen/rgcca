@@ -11,20 +11,20 @@
 #' or "weight" for the weight of the RGCCA
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
-#' weights = lapply(seq_len(3), function(x) matrix(runif(7*2), 7, 2))
+#' weights = lapply(seq(3), function(x) matrix(runif(7*2), 7, 2))
 #' for(i in seq(3))
 #' row.names(weights[[i]]) <- paste0(letters[i],
-#'      letters[seq_len(nrow(weights[[i]]))])
+#'      letters[seq(nrow(weights[[i]]))])
 #' weights[[4]] = Reduce(rbind, weights)
 #' rgcca.res = list(a = weights)
-#' names(rgcca.res$a) = LETTERS[seq_len(4)]
+#' names(rgcca.res$a) = LETTERS[seq(4)]
 #' # With the 1rst component of the superblock
 #' plot_var_1D(rgcca.res, NULL, 1, TRUE, type = "weigth")
 #' # With the 2nd component of the 1rst block by selecting the ten higher weights
 #' plot_var_1D(rgcca.res, NULL, 2, FALSE, 10, 1, type = "weigth")
 #' library(RGCCA)
 #' data("Russett")
-#' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
+#' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca.res = rgcca.analyze(blocks)
 #' plot_var_1D(rgcca.res, blocks, collapse = TRUE)
@@ -45,14 +45,14 @@ plot_var_1D <- function(
     df <- get_ctr2(
         rgcca = rgcca,
         blocks = blocks,
-        comp_x = comp,
-        comp_y = comp,
+        compx = comp,
+        compy = comp,
         i_block = i_block,
         type = type,
         superblock = superblock,
         n_mark = n_mark,
         collapse = collapse,
-        removeVariable = FALSE
+        remove_var = FALSE
     )
     
     J <- names(rgcca$a)
