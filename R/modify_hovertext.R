@@ -1,7 +1,7 @@
 # p: a ggplot function
 # hovertext : a boolean for the use of hovertext (if TRUE) as the attribute 
 # to parse the onMouseOver text ("text" attribute, if FALSE)
-changeHovertext <- function(p, hovertext = TRUE) {
+modify_hovertext <- function(p, hovertext = TRUE) {
     
     attr <- ifelse(hovertext, "hovertext", "text")
     # identify the order / id of the traces which corresponds to x- and y-axis 

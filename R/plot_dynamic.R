@@ -8,7 +8,7 @@
 # (otherwhise samplesPlot which do not have traces could not be convereted
 # in ggplotly)
 # return a plotly object
-dynamicPlot <- function(f, 
+plot_dynamic <- function(f,
     ax = NULL,
     text = "name+x+y",
     legend = TRUE,

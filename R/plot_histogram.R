@@ -2,7 +2,7 @@
 #'
 #' Default font for a vertical barplot.
 #'
-#' @inheritParams plotSpace
+#' @inheritParams plot2D
 #' @param color A vector of character giving the colors for the rows
 #' @param low_col A character giving the color used for the lowest part of
 #' the gradient
@@ -14,13 +14,13 @@
 #' df = data.frame(x = runif(30), order = 30:1)
 #' library("ggplot2")
 #' p = ggplot(df, aes(order, x))
-#' plotHistogram(p, df, "This is my title")
+#' plot_histogram(p, df, "This is my title")
 #' # Add colors per levels of a variable
 #' df$color = rep(c(1,2,3), each=10)
 #' p = ggplot(df, aes(order, x, fill = color))
-#' plotHistogram(p, df, "Histogram", as.character(df$color))
+#' plot_histogram(p, df, "Histogram", as.character(df$color))
 #' @export
-plotHistogram <- function(
+plot_histogram <- function(
     p,
     df,
     title = "",

@@ -66,7 +66,7 @@ for (f in list.files(appDir)) {
 # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
 # rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
 
-loadLibraries(c(
+load_libraries(c(
     "RGCCA",
     "ggplot2",
     "scales",
@@ -78,7 +78,7 @@ loadLibraries(c(
 ))
 
 if (BSPLUS) {
-    loadLibraries("devtools")
+    load_libraries("devtools")
     if (!("bsplus" %in% installed.packages()[, "Package"]))
         devtools::install_github("ijlyttle/bsplus", upgrade = "never")
     library("bsplus", warn.conflicts = FALSE, quiet = TRUE)

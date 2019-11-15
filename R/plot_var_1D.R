@@ -3,7 +3,7 @@
 #' Histogram of the higher outer weight vectors for a component of a block 
 #' (by default, the superblock or the last one) analysed by R/SGCCA
 #'
-#' @inheritParams plotVariablesSpace
+#' @inheritParams plot_var_2D
 #' @param comp An integer giving the index of the analysis components
 #' of a superblock
 #' @param type A string giving the criterion to selects biomarkers : either 
@@ -19,17 +19,17 @@
 #' rgcca.res = list(a = weights)
 #' names(rgcca.res$a) = LETTERS[seq_len(4)]
 #' # With the 1rst component of the superblock
-#' plotFingerprint(rgcca.res, NULL, 1, TRUE, type = "weigth")
+#' plot_var_1D(rgcca.res, NULL, 1, TRUE, type = "weigth")
 #' # With the 2nd component of the 1rst block by selecting the ten higher weights
-#' plotFingerprint(rgcca.res, NULL, 2, FALSE, 10, 1, type = "weigth")
+#' plot_var_1D(rgcca.res, NULL, 2, FALSE, 10, 1, type = "weigth")
 #' library(RGCCA)
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca.res = rgcca.analyze(blocks)
-#' plotFingerprint(rgcca.res, blocks, collapse = TRUE)
+#' plot_var_1D(rgcca.res, blocks, collapse = TRUE)
 #' @export
-plotFingerprint <- function(
+plot_var_1D <- function(
     rgcca,
     blocks = NULL,
     comp = 1,
@@ -42,7 +42,7 @@ plotFingerprint <- function(
     subtitle_cex = 16 * cex,
     axis_text_cex = 10 * cex) {
 
-    df <- getVariablesIndexes(
+    df <- get_ctr2(
         rgcca = rgcca,
         blocks = blocks,
         comp_x = comp,
@@ -62,7 +62,7 @@ plotFingerprint <- function(
             "Variable weights on")
 
     # sort in decreasing order
-    df <- data.frame(getRankedValues(df, 1, TRUE), order = nrow(df):1)
+    df <- data.frame(order_df(df, 1, TRUE), order = nrow(df):1)
 
     # max threshold for n
     if (nrow(df) >= n_mark)
@@ -72,14 +72,14 @@ plotFingerprint <- function(
     # to their belonging to each blocks
     if (superblock & (collapse | (i_block == length(rgcca$a)))) {
         color <- factor(df$resp)
-        levels(color) <- colorGroup(color)
+        levels(color) <- color_group(color)
         p <- ggplot(df, aes(order, df[, 1], fill = df$resp))
     } else {
         color <- "black"
         p <- ggplot(df, aes(order, df[, 1], fill = abs(df[, 1])))
     }
 
-    p <- plotHistogram(p,
+    p <- plot_histogram(p,
             df,
             title,
             as.character(color),
@@ -87,7 +87,7 @@ plotFingerprint <- function(
             subtitle_cex = subtitle_cex,
             axis_text_cex = axis_text_cex
         ) +
-        labs(subtitle = printAxis(rgcca, comp, i_block))
+        labs(subtitle = print_comp(rgcca, comp, i_block))
 
     # If some blocks have any variables in the top hit, selects the ones
     # corresponding
@@ -100,7 +100,7 @@ plotFingerprint <- function(
 
     # Force all the block names to appear on the legend
     if (length(color) != 1)
-        p <- orderColorPerBlocs(rgcca$a, p, matched, collapse)
+        p <- order_color(rgcca$a, p, matched, collapse)
     if ( !superblock | (!collapse & i_block != length(rgcca$a)))
             p <- p + theme(legend.position = "none")
 

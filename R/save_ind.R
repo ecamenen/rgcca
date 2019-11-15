@@ -1,5 +1,5 @@
 # Print and save indidvidual analysis attributes
-saveInds <- function(
+save_ind <- function(
     rgcca,
     blocks,
     comp_x = 1,

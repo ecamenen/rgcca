@@ -3,7 +3,7 @@
 #' Computing boostrap of RGCCA
 #'
 #' @inheritParams rgcca.analyze
-#' @inheritParams plotVariablesSpace
+#' @inheritParams plot_var_2D
 #' @param n_boot A integer for the number of boostrap
 #' @param nb_cores An integer for the number of cores used in parallelization
 #' @return A list of RGCCA bootstrap weights

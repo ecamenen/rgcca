@@ -1,7 +1,8 @@
 #' Variable contribution
 #' 
 #' Extract the contibution of variables to the model by using correlation or weight
-#' @inheritParams plotVariablesSpace
+#' 
+#' @inheritParams plot_var_2D
 #' @param type A character giving the choice ot the index between cor or weight
 #' @param comp_z An integer giving the index of the analysis component used
 #' for the z-axis
@@ -11,18 +12,18 @@
 #' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca.res = rgcca.analyze(blocks, ncomp = c(3,2,4))
-#' getVar(rgcca.res, blocks)
+#' get_ctr(rgcca.res, blocks)
 #' # On the first block and with weights
-#' getVar(rgcca.res, blocks, 2, 1, i_block = 1, type = "weights")
+#' get_ctr(rgcca.res, blocks, 2, 1, i_block = 1, type = "weights")
 #' # With 3 components and on the variables of two blocks
 #' superblocks <- rep(list(Reduce(cbind, c(blocks[1], blocks[3]))), 2)
 #' names(superblocks) <- names(blocks)[c(1, 3)]
 #' rgcca.res = rgcca.analyze(blocks[c(1,3)], ncomp = c(3,4))
-#' getVar(rgcca.res, superblocks, comp_z = 3, i_block = 1, type = "cor", collapse = TRUE)
-#' getVar(rgcca.res, superblocks, 2, 1, 3, 1, "weights", TRUE)
+#' get_ctr(rgcca.res, superblocks, comp_z = 3, i_block = 1, type = "cor", collapse = TRUE)
+#' get_ctr(rgcca.res, superblocks, 2, 1, 3, 1, "weights", TRUE)
 #' @return A dataframe containing the indexes for each selected components
 #' @export
-getVar <- function(
+get_ctr <- function(
     rgcca,
     blocks = NULL,
     comp_x = 1,

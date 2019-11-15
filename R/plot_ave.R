@@ -3,7 +3,7 @@
 #' Histogram of the model quality (based on Average Variance Explained)
 #' for each blocks and sorted in decreasing order
 #'
-#' @inheritParams plotSamplesSpace
+#' @inheritParams plot_ind
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' random_val = function(y=1) lapply(seq_len(4),
@@ -14,9 +14,9 @@
 #' library("ggplot2")
 #' for(i in seq(1,4))
 #' names(rgcca.res$AVE$AVE_X[[i]]) <- c(1,2)
-#' plotAVE(rgcca.res)
+#' plot_ave(rgcca.res)
 #' @export
-plotAVE <- function(
+plot_ave <- function(
     rgcca,
     cex = 1,
     subtitle_cex = 16 * cex,
@@ -50,7 +50,7 @@ plotAVE <- function(
             label = ave_label
         ))
 
-    p <- plotHistogram(
+    p <- plot_histogram(
         p, 
         df, 
         "Average Variance Explained",
@@ -58,10 +58,10 @@ plotAVE <- function(
         subtitle_cex = subtitle_cex,
         axis_text_cex = axis_text_cex) +
     scale_fill_manual(
-        values = colorGroup(levels(df$ncomp)),
+        values = color_group(levels(df$ncomp)),
         labels = gsub("comp", " ", levels(df$ncomp))) + 
     geom_col(position = position_stack(reverse = TRUE)) +
-    labs(subtitle = printAxis(rgcca, outer = TRUE)) +
+    labs(subtitle = print_comp(rgcca, outer = TRUE)) +
     geom_text(aes(y = y_ave_cum),  cex = 3.5 * cex, color = "white") +
     labs(fill = "Components")
 

@@ -1,5 +1,5 @@
 # Print and save variables analysis attributes
-saveVars <- function(
+save_var <- function(
     rgcca,
     blocks,
     comp_x = 1,
@@ -12,7 +12,7 @@ saveVars <- function(
             data.frame(
                 Reduce(cbind,
                         lapply(indexes, function(x)
-                            getVar(rgcca, blocks, comp_x, comp_y, i_block = i, type = x))),
+                            get_ctr(rgcca, blocks, comp_x, comp_y, i_block = i, type = x))),
                 names(blocks)[i]
             )))
 

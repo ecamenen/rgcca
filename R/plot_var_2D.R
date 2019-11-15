@@ -2,7 +2,7 @@
 #'
 #' Correlation circle highlighting the contribution of each variables to the
 #' construction of the RGCCA components
-#' @inheritParams plotSamplesSpace
+#' @inheritParams plot_ind
 #' @param blocks A list of matrix
 #' @param superblock A boolean giving the presence (TRUE) / absence (FALSE)
 #' of a superblock
@@ -25,18 +25,18 @@
 #' rgcca.res = list(Y = coord, a = a, AVE = list(AVE_X = AVE_X))
 #' names(rgcca.res$a) = LETTERS[seq_len(4)]
 #' # Using a superblock
-#' plotVariablesSpace(rgcca.res, blocks, 1, 2, TRUE)
+#' plot_var_2D(rgcca.res, blocks, 1, 2, TRUE)
 #' # Using the first block
-#' plotVariablesSpace(rgcca.res, blocks, 1, 2, FALSE, 1)
+#' plot_var_2D(rgcca.res, blocks, 1, 2, FALSE, 1)
 #' library(RGCCA)
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq_len(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca.res = rgcca.analyze(blocks)
 #' # Without superblock but with the of all variables to the first block
-#' plotVariablesSpace(rgcca.res, blocks, collapse = TRUE)
+#' plot_var_2D(rgcca.res, blocks, collapse = TRUE)
 #' @export
-plotVariablesSpace <- function(
+plot_var_2D <- function(
     rgcca,
     blocks,
     comp_x = 1,
@@ -59,7 +59,7 @@ plotVariablesSpace <- function(
     if (identical(blocks[[1]], blocks[[2]]))
         superblock <- FALSE
 
-    df <- getVariablesIndexes(
+    df <- get_ctr2(
         rgcca = rgcca,
         blocks = blocks,
         comp_x = comp_x,
@@ -80,7 +80,7 @@ plotVariablesSpace <- function(
         return(data.frame(x = xx, y = yy))
     }
 
-    p <- plotSpace(
+    p <- plot2D(
         rgcca,
         df,
         "Variable",

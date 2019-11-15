@@ -3,7 +3,7 @@
 #' Internal function for computing boostrap of RGCCA
 #'
 #' @inheritParams rgcca.analyze
-#' @inheritParams plotVariablesSpace
+#' @inheritParams plot_var_2D
 #' @return A list of RGCCA bootstrap weights
 #' @examples
 #' library(RGCCA)
@@ -35,7 +35,7 @@ bootstrap_k <- function(
         boot_blocks <- lapply(blocks, function(x)
             scale2(x[id_boot, ], scale = FALSE))
 
-    boot_blocks <- removeColumnSdNull(boot_blocks)
+    boot_blocks <- remove_null_sd(boot_blocks)
 
     if (is(rgcca, "sgcca"))
         tau <- rgcca$c1

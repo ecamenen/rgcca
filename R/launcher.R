@@ -265,7 +265,7 @@ getArgs <- function() {
     return(OptionParser(option_list = option_list))
 }
 
-checkFile <- function(f) {
+check_file <- function(f) {
     # Check the existence of a path f: A character giving the path of a file
     
     if (!file.exists(f)) {
@@ -323,7 +323,7 @@ checkArg <- function(opt) {
     FILES <- c("connection", "group")
     for (o in FILES)
         if (!is.null(opt[[o]]))
-            checkFile(opt[[o]])
+            check_file(opt[[o]])
     
     checkInteger("nmark")
     if (opt$nmark < 2)
@@ -363,7 +363,7 @@ postCheckArg <- function(opt, blocks) {
             strsplit(gsub(" ", "", opt$names), ",")[[1]], "names"
         )
     
-    opt <- select_type(blocks, opt)
+    opt <- select_analysis(blocks, opt)
     
     if (opt$superblock | opt$type == "pca")
         blocks <- c(blocks, list(Reduce(cbind, blocks)))
@@ -455,7 +455,7 @@ postCheckArg <- function(opt, blocks) {
         opt$tau <- "optimal"
     }
     
-    checkC1(blocks, opt$tau, opt$type)
+    check_spars(blocks, opt$tau, opt$type)
     
     return(opt)
 }
@@ -485,7 +485,7 @@ checkInteger <- function(x, y = NULL) {
         stop(paste0("--", x, " is a float (", y, ") and must be an integer."))
 }
 
-loadLibraries <- function(librairies) {
+load_libraries <- function(librairies) {
     for (l in librairies) {
         if (!(l %in% installed.packages()[, "Package"]))
             utils::install.packages(l, repos = "http://cran.us.r-project.org")
@@ -529,7 +529,7 @@ opt <- list(
 )
 
 
-loadLibraries(c("RGCCA", "ggplot2", "optparse", "scales", "igraph", "ggrepel"))
+load_libraries(c("RGCCA", "ggplot2", "optparse", "scales", "igraph", "ggrepel"))
 
 tryCatch({
     opt <- checkArg(parse_args(getArgs()))
@@ -555,7 +555,7 @@ opt$superblock <- !("superblock" %in% names(opt))
 opt$scale <- !("scale" %in% names(opt))
 opt$text <- !("text" %in% names(opt))
 
-blocks <- setBlocks(opt$datasets, opt$names, opt$separator)
+blocks <- set_blocks(opt$datasets, opt$names, opt$separator)
 blocks <- scaling(blocks, opt$scale)
 
 # If single values for ncomp and tau, tansform it in a list
@@ -565,24 +565,24 @@ for (x in c("ncomp", "tau")) {
         opt[[x]] <- paste(rep(opt[[x]], length(blocks)), collapse = ",")
 }
 
-opt <- checkSuperblock(opt)
+opt <- check_superblock(opt)
 opt <- postCheckArg(opt, blocks)
 
 if (!is.null(opt$response)) {
-    opt <- setPosPar(opt, blocks, opt$response)
+    opt <- order_opt(opt, blocks, opt$response)
     blocks <- opt$blocks
 }
 
-blocks <- setSuperblock(blocks, opt$superblock, opt$type)
+blocks <- set_superblock(blocks, opt$superblock, opt$type)
 
 connection <- opt$connection
 if (!is.matrix(connection))
-    connection <- setConnection(blocks,
+    connection <- set_connection(blocks,
         (opt$superblock | !is.null(opt$response)),
         opt$connection,
         opt$separator)
 
-group <- setResponse(blocks, opt$group, opt$separator, opt$header)
+group <- set_response(blocks, opt$group, opt$separator, opt$header)
 
 rgcca.out <- rgcca.analyze(
         blocks = blocks,
@@ -602,7 +602,7 @@ if (opt$ncomp[opt$block] == 1 && is.null(opt$block_y)) {
     to perform a samples plot")
 } else {
     (
-        individual_plot <- plotSamplesSpace(
+        individual_plot <- plot_ind(
                 rgcca.out,
                 group,
                 opt$compx,
@@ -610,16 +610,16 @@ if (opt$ncomp[opt$block] == 1 && is.null(opt$block_y)) {
                 opt$block,
                 opt$text,
                 opt$block_y,
-                getFileName(opt$group)
+                get_filename(opt$group)
             )
     )
-    savePlot(opt$o1, individual_plot)
+    save_plot(opt$o1, individual_plot)
 }
 
 if (opt$ncomp[opt$block] > 1) {
     # Variables common space
     (
-        corcircle <- plotVariablesSpace(
+        corcircle <- plot_var_2D(
                 rgcca.out,
                 blocks,
                 opt$compx,
@@ -630,11 +630,11 @@ if (opt$ncomp[opt$block] > 1) {
                 n_mark = opt$nmark
             )
     )
-    savePlot(opt$o2, corcircle)
+    save_plot(opt$o2, corcircle)
 }
 
 # Fingerprint plot
-top_variables <- plotFingerprint(
+top_variables <- plot_var_1D(
         rgcca.out, 
         blocks, 
         opt$compx, 
@@ -642,21 +642,21 @@ top_variables <- plotFingerprint(
         opt$nmark,
         type = "cor"
     )
-savePlot(opt$o3, top_variables)
+save_plot(opt$o3, top_variables)
 
 
 if (opt$type != "pca") {
     # Average Variance Explained
-    (ave <- plotAVE(rgcca.out))
-    savePlot(opt$o4, ave)
+    (ave <- plot_ave(rgcca.out))
+    save_plot(opt$o4, ave)
 
     # Creates design scheme
-    nodes <- getNodes(blocks, rgcca = rgcca.out)
-    edges <- getEdges(connection, blocks)
-    conNet <- function() plotNetwork(nodes, edges, blocks)
-    savePlot(opt$o5, conNet)
+    nodes <- get_nodes(blocks, rgcca = rgcca.out)
+    edges <- get_edges(connection, blocks)
+    conNet <- function() plot_network(nodes, edges, blocks)
+    save_plot(opt$o5, conNet)
 }
 
-saveInds(rgcca.out, blocks, 1, 2, opt$o6)
-saveVars(rgcca.out, blocks, 1, 2, opt$o7)
+save_ind(rgcca.out, blocks, 1, 2, opt$o6)
+save_var(rgcca.out, blocks, 1, 2, opt$o7)
 save(rgcca.out, file = opt$o8)

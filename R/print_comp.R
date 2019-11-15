@@ -3,7 +3,7 @@
 #' Prints the percent of explained variance for a component of a block 
 #' (by default, the superblock or the last one) analysed by R/SGCCA
 #'
-#' @inheritParams plotSamplesSpace
+#' @inheritParams plot_ind
 #' @param n An integer giving the index of the analysis component
 #' @param i An integer giving the index of a list of blocks
 #' @param outer A boolean for ave plot case
@@ -13,12 +13,12 @@
 #' AVE = list(c(0.6, 0.5), c(0.7, 0.45))
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
 #' # For the superblock (or the last block)
-#' printAxis(rgcca.res, 1)
+#' print_comp(rgcca.res, 1)
 #' # "Axis 1 (70%)"
 #' # For the first block
-#' printAxis(rgcca.res, 2, 1)
+#' print_comp(rgcca.res, 2, 1)
 #' # "Axis 2 (50%)"
-printAxis <- function(rgcca, n = NULL, i = NULL, outer = FALSE) {
+print_comp <- function(rgcca, n = NULL, i = NULL, outer = FALSE) {
     
     # by default, take the last block
     if (is.null(i))

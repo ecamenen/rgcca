@@ -2,8 +2,8 @@
 #'
 #' Plots RGCCA components in a bi-dimensional space
 #'
-#' @inheritParams plotSamplesSpace
-#' @inheritParams plotVariablesSpace
+#' @inheritParams plot_ind
+#' @inheritParams plot_var_2D
 #' @param df A dataframe
 #' @param title A character with the name of the space (either "Variables" or
 #' "Samples")
@@ -16,8 +16,8 @@
 #' df = as.data.frame(matrix(runif(20*2, min = -1), 20, 2))
 #' AVE = lapply(seq_len(4), function(x) runif(2))
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
-#' plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
-plotSpace <- function(
+#' plot2D(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
+plot2D <- function(
     rgcca,
     df,
     title = "Biplot",
@@ -85,8 +85,8 @@ plotSpace <- function(
             size = 1
         ) + labs(
                 title = paste(title, "space"),
-                x = printAxis(rgcca, comp_x, i_block),
-                y = printAxis(rgcca, comp_y, i_block_y),
+                x = print_comp(rgcca, comp_x, i_block),
+                y = print_comp(rgcca, comp_y, i_block_y),
             color = name_group,
             shape = name_group
         ) + 
@@ -102,13 +102,13 @@ plotSpace <- function(
         )
 
     if (length(unique(group)) != 1 && title == "Variable") {
-        orderColorPerBlocs(rgcca$a, p, collapse = collapse)
+        order_color(rgcca$a, p, collapse = collapse)
         # For qualitative response OR no response
-    } else if ( isCharacter(group[!is.na(group)]) ||
+    } else if ( is.character2(group[!is.na(group)]) ||
                 length(unique(group)) <= 5 || 
             all( levels(as.factor(group)) %in% c("obs", "pred") )
         ) {
-        p + scale_color_manual(values = colorGroup(group))
+        p + scale_color_manual(values = color_group(group))
         # quantitative response
     } else
         p + scale_color_gradientn(colours = colours, na.value = "black")

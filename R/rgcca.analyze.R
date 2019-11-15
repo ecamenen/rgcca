@@ -1,7 +1,7 @@
 #' Performs a r/sgcca
 #'
 #' Performs a r/sgcca with predefined parameters
-#' @inheritParams select_type
+#' @inheritParams select_analysis
 #' @param scale A boolean scaling the blocks
 #' @param init A character among "svd" (Singular Value Decompostion) or "random"
 #' for alorithm initialization

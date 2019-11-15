@@ -27,13 +27,13 @@
 #' # Using a superblock
 #' resp = as.matrix(rep(LETTERS[seq_len(3)], each = 5))
 #' row.names(resp) = seq(15)
-#' plotSamplesSpace(rgcca.res, resp)
+#' plot_ind(rgcca.res, resp)
 #' # Using the first block
 #' resp = as.matrix(runif(15, min=-15, max = 15))
 #' row.names(resp) = seq(15)
-#' plotSamplesSpace(rgcca.res, resp, 1, 2, 1)
+#' plot_ind(rgcca.res, resp, 1, 2, 1)
 #' @export
-plotSamplesSpace <- function(
+plot_ind <- function(
     rgcca,
     resp = rep(1, NROW(rgcca$Y[[1]])),
     comp_x = 1,
@@ -53,7 +53,7 @@ plotSamplesSpace <- function(
     if (is.null(i_block_y))
         i_block_y <- i_block
 
-    df <- getComponents(
+    df <- get_comp(
         rgcca = rgcca,
         resp = resp,
         comp_x = comp_x,
@@ -70,7 +70,7 @@ plotSamplesSpace <- function(
             p <- ggplot(df, aes(df[, 1], df[, 2], color = df$resp))
 
     else if (length(unique(as.matrix(df$resp))) > 5 && 
-            !unique(isCharacter(as.vector(df$resp))) ) {
+            !unique(is.character2(as.vector(df$resp))) ) {
 
         p <- ggplot(df, aes(df[, 1], df[, 2], color = df$resp))
 
@@ -78,7 +78,7 @@ plotSamplesSpace <- function(
         p <- NULL
 
 
-    p <- plotSpace(
+    p <- plot2D(
             rgcca,
             df,
             "Sample",
