@@ -2,7 +2,6 @@
 #'
 #' @param c A symmetric matrix containing 1 and 0
 #' @param blocks A list of matrix
-#' @export
 checkConnection <- function(c, blocks) {
 
     if (!isSymmetric.matrix(unname(c)))

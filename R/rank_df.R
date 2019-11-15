@@ -7,7 +7,6 @@
 #' @examples 
 #' df = sapply(seq(2), function(x) runif(10))
 #' getRankedValues(df)
-#' @export
 getRankedValues <- function(df, comp = 1, allCol = TRUE) {
     
     ordered <- order(abs(df[, comp]), decreasing = TRUE)

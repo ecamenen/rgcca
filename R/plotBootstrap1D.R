@@ -51,6 +51,5 @@ plotBootstrap1D <- function(
         cex = cex,
         subtitle_cex = subtitle_cex,
         axis_text_cex = axis_text_cex) +
-    ) +
     labs(fill = "Mean weights")
 }

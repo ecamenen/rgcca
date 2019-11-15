@@ -18,7 +18,6 @@
 #' # For the first block
 #' printAxis(rgcca.res, 2, 1)
 #' # "Axis 2 (50%)"
-#' @export
 printAxis <- function(rgcca, n = NULL, i = NULL, outer = FALSE) {
     
     # by default, take the last block

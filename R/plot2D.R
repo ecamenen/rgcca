@@ -17,7 +17,6 @@
 #' AVE = lapply(seq_len(4), function(x) runif(2))
 #' rgcca.res = list(AVE = list(AVE_X = AVE))
 #' plotSpace(rgcca.res, df, "Samples", rep(c("a","b"), each=10), "Response")
-#' @export
 plotSpace <- function(
     rgcca,
     df,

@@ -2,7 +2,6 @@
 #'
 #' @param list_m A list of dataframe
 #' @return A list of dataframe
-#' @export
 keepCommonRow <- function(list_m) {
 
     names <- names(list_m)

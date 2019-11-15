@@ -10,7 +10,6 @@
 #' \dontrun{
 #' loadData('data/agriculture.tsv')
 #' }
-#' @export
 loadData <- function(f, sep = "\t", rownames = 1, h = TRUE) {
 
     if (!is.null(rownames) && rownames < 1)

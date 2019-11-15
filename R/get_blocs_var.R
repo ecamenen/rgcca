@@ -14,7 +14,6 @@
 #' names(rgcca.res$a) = LETTERS[seq_len(4)]
 #' getBlocsVariables(rgcca.res)
 #' # a, b, c
-#' @export
 getBlocsVariables <- function(df, collapse = FALSE) {
     
     if (!collapse)

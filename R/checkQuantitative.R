@@ -12,7 +12,6 @@
 #' checkQuantitative(df, 'data', TRUE)
 #' # Error
 #' }
-#' @export
 checkQuantitative <- function(df, fo, h = FALSE) {
     qualitative <- unique(unique(isCharacter(as.matrix(df))))
 

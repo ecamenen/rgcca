@@ -11,7 +11,6 @@
 #' # FALSE TRUE
 #' isCharacter(LETTERS[seq_len(10)])
 #' # TRUE
-#' @export
 isCharacter <- function(x) {
     # is. character() consider a string with '1.2' as a character, not this function.
     # NA are produced by converting a character into an integer as.vector, avoid

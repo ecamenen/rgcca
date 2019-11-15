@@ -47,7 +47,7 @@ plotVariablesSpace <- function(
     removeVariable = TRUE,
     n_mark = 100,
     collapse = FALSE,
-    no_Overlap = FALSE
+    no_Overlap = FALSE,
     cex = 1,
     subtitle_cex = 16 * cex,
     pch_text_cex = 3 * cex,
@@ -91,7 +91,7 @@ plotVariablesSpace <- function(
         i_block,
         text = text,
         collapse =  collapse,
-        no_Overlap = no_Overlap
+        no_Overlap = no_Overlap,
         cex = cex,
         subtitle_cex = subtitle_cex,
         pch_text_cex = pch_text_cex,

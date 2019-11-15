@@ -5,7 +5,6 @@
 #' @examples
 #' s = '1,2, 3'
 #' parseList(s)
-#' @export
 parseList <- function(s) {
     s <- gsub(" ", "", s)
     # split by comma
