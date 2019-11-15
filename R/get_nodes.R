@@ -10,7 +10,7 @@
 #'     politic = Russett[, 6:11] )
 #' rgcca.res = rgcca.analyze(blocks)
 #' get_nodes(blocks, rgcca = rgcca.res)
-get_nodes <- function(blocks, tau = NULL, rgcca = NULL) {
+get_nodes <- function(blocks, rgcca = NULL, tau = NULL) {
 
     if (!is.null(rgcca) & is(rgcca, "sgcca")) {
         par.rgcca <- "c1"

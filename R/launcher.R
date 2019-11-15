@@ -544,7 +544,7 @@ tryCatch({
 setwd(opt$directory)
 
 for (f in list.files("R/")) {
-    if ( f != "launcher.R")
+    if (f != "launcher.R")
         source(paste0("R/", f))
 }
 
@@ -590,13 +590,16 @@ rgcca.out <- rgcca.analyze(
         tau = opt$tau,
         ncomp = opt$ncomp,
         scheme = opt$scheme,
-        scale = FALSE,
+        scale = FAL
+for (f in list.files("R/")) {
+    if (f != "launcher.R")
+        source(paste0("R/", f))
+}SE,
         type = opt$type
     )
 
 ########## Plot ##########
 
-# Samples common space
 if (opt$ncomp[opt$block] == 1 && is.null(opt$block_y)) {
     warning("With a number of component of 1, a second block should be chosen
     to perform a samples plot")
@@ -617,7 +620,6 @@ if (opt$ncomp[opt$block] == 1 && is.null(opt$block_y)) {
 }
 
 if (opt$ncomp[opt$block] > 1) {
-    # Variables common space
     (
         corcircle <- plot_var_2D(
                 rgcca.out,
@@ -633,7 +635,6 @@ if (opt$ncomp[opt$block] > 1) {
     save_plot(opt$o2, corcircle)
 }
 
-# Fingerprint plot
 top_variables <- plot_var_1D(
         rgcca.out, 
         blocks, 
@@ -651,9 +652,7 @@ if (opt$type != "pca") {
     save_plot(opt$o4, ave)
 
     # Creates design scheme
-    nodes <- get_nodes(blocks, rgcca = rgcca.out)
-    edges <- get_edges(connection, blocks)
-    conNet <- function() plot_network(nodes, edges, blocks)
+    conNet <- function() plot_network2(rgcca.out, blocks, connection)
     save_plot(opt$o5, conNet)
 }
 

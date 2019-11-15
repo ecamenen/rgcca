@@ -15,10 +15,13 @@
 #' n <- get_nodes(blocks, rgcca = rgcca.res)
 #' plot_network(n, e, blocks)
 #' @export
-plot_network <- function(nodes, edges, blocks) {
+plot_network <- function(rgcca, blocks, connection) {
     # Avoid random
     set.seed(1)
     V <- E <- NULL
+
+    nodes <- get_nodes(blocks, rgcca)
+    edges <- get_edges(connection, blocks)
 
     par <- ifelse("sparsity" %in% names(nodes), "sparsity", "tau")
 

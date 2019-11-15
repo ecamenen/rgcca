@@ -575,7 +575,7 @@ server <- function(input, output, session) {
         plot_ave(rgcca = rgcca.res)
 
     conNet <- function()
-        plot_network2(nodes, edges, blocks)
+        plot_network2(rgcca.res, blocks, connection)
 
     plotBoot <- function()
         plot_bootstrap(boot, comp_x, nb_mark, id_block)
@@ -718,8 +718,6 @@ server <- function(input, output, session) {
                 ),
                 .GlobalEnv)
 
-        assign("nodes", get_nodes(blocks, rgcca = rgcca.res), .GlobalEnv)
-        assign("edges", get_edges(connection, blocks), .GlobalEnv)
         #getBoot()
     }
 

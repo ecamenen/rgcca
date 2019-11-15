@@ -14,7 +14,11 @@
 #' n <- get_nodes(blocks, rgcca = rgcca.res)
 #' plot_network2(n, e, blocks)
 #' @export
-plot_network2 <- function(nodes, edges, blocks) {
+plot_network2 <- function(rgcca, blocks, connection) {
+
+    nodes <- get_nodes(blocks, rgcca)
+    edges <- get_edges(connection, blocks)
+
     par <- ifelse("sparsity" %in% names(nodes), "sparsity", "tau")
 
     if (all(is.na(nodes[, par])))
