@@ -71,8 +71,8 @@ select_analysis <- function(
     }
 
     J <- length(blocks)
-    MSG_SUPER <- "a superbloc is used"
-    MSG_TYPE <- paste0("By using a ", toupper(type), ", ")
+    msg_superblock <- "a superbloc is used"
+    msg_type <- paste0("By using a ", toupper(type), ", ")
     warn.type.value <- warn.type.par <- warn.msg.super <- character(0)
 
     if (quiet)
@@ -341,14 +341,14 @@ select_analysis <- function(
                     warn.type.value)
 
         if (superblock & tolower(type) != "pca")
-            msg <- paste0(msg, " and ", MSG_SUPER)
+            msg <- paste0(msg, " and ", msg_superblock)
 
-        warning(paste0(MSG_TYPE, msg , "."))
+        warning(paste0(msg_type, msg , "."))
     }
 
     if (verbose & superblock) {
         if (n < 0)
-            paste0(MSG_SUPER, MSG_SUPER)
+            paste0(msg_superblock, msg_superblock)
     }
 
     if (!quiet & length(warn.msg.super) > 0) {

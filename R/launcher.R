@@ -273,7 +273,7 @@ check_file <- function(f) {
     }
 }
 
-checkArg <- function(opt) {
+check_arg <- function(opt) {
         # Check the validity of the arguments opt : an optionParser object
         
         if (is.null(opt$datasets))
@@ -320,12 +320,12 @@ checkArg <- function(opt) {
     # opt$init <- ifelse(opt$init == 1, 'svd', 'random')
     
     
-    FILES <- c("connection", "group")
-    for (o in FILES)
+    files <- c("connection", "group")
+    for (o in files)
         if (!is.null(opt[[o]]))
             check_file(opt[[o]])
     
-    checkInteger("nmark")
+    check_integer("nmark")
     if (opt$nmark < 2)
         stop(paste0("--nmark must be upper than 2, not be equal to ",
             opt$nmark,
@@ -335,7 +335,7 @@ checkArg <- function(opt) {
     return(opt)
 }
 
-checkArgSize <- function(blocks, x, y) {
+check_arg_size <- function(blocks, x, y) {
     if (length(x) != length(blocks))
         stop(
             paste0(
@@ -353,12 +353,12 @@ checkArgSize <- function(blocks, x, y) {
         return(TRUE)
 }
 
-postCheckArg <- function(opt, blocks) {
+post_check_arg <- function(opt, blocks) {
     # Check the validity of the arguments after loading the blocks opt : an
     # optionParser object blocks : a list of matrix
     
     if (!is.null(opt$names))
-        checkArgSize(
+        check_arg_size(
             blocks,
             strsplit(gsub(" ", "", opt$names), ",")[[1]], "names"
         )
@@ -392,12 +392,12 @@ postCheckArg <- function(opt, blocks) {
                     opt[[x]],
                     "."),
                     exit_code = 134)
-            checkInteger(x)
+            check_integer(x)
         }
     }
     
     out <- lapply(seq(length(opt$ncomp)), function(x) {
-        checkInteger("ncomp", opt$ncomp[x])
+        check_integer("ncomp", opt$ncomp[x])
         if ((opt$ncomp[x] < 2) ||
                 (opt$ncomp[x] > ncol(blocks[[x]]))) {
             stop(
@@ -413,7 +413,7 @@ postCheckArg <- function(opt, blocks) {
         }
     })
     
-    checkArgSize(blocks, opt$ncomp, "ncomp")
+    check_arg_size(blocks, opt$ncomp, "ncomp")
     
     out <- sapply(c("compx", "compy"), function(x) {
         if ((opt[[x]] < 1) || (opt[[x]] > opt$ncomp[opt$block])) {
@@ -432,24 +432,24 @@ postCheckArg <- function(opt, blocks) {
         }
     })
     
-    MSG <- "--tau must be comprise between 0 and 1 or must correspond to the character 'optimal' for automatic setting"
+    msg <- "--tau must be comprise between 0 and 1 or must correspond to the character 'optimal' for automatic setting"
     if (all(opt$tau != "optimal")) {
         tryCatch({
             list_tau <- as.list(opt$tau)
             # Check value of each tau
             out <- lapply(list_tau, function(x) {
                 if (((x < 0) || (x > 1)) && x != "optimal")
-                    stop(paste0(MSG, " (currently equals to ", x, ")."),
+                    stop(paste0(msg, " (currently equals to ", x, ")."),
                         exit_code = 129)
             })
             
             # If there is only one common tau
             if (length(list_tau) == 1)
                 opt$tau <- rep(list_tau[[1]], length(blocks))
-            else if (checkArgSize(blocks, list_tau, "tau"))
+            else if (check_arg_size(blocks, list_tau, "tau"))
                 opt$tau <- unlist(list_tau)
         }, warning = function(w) {
-            stop(MSG, exit_code = 131)
+            stop(msg, exit_code = 131)
         })
     } else {
         opt$tau <- "optimal"
@@ -460,7 +460,7 @@ postCheckArg <- function(opt, blocks) {
     return(opt)
 }
 
-checkInteger <- function(x, y = NULL) {
+check_integer <- function(x, y = NULL) {
     # Test either x is an integer x : a string corresponding to a name
     # in a list opt'
     
@@ -532,7 +532,7 @@ opt <- list(
 load_libraries(c("RGCCA", "ggplot2", "optparse", "scales", "igraph", "ggrepel"))
 
 tryCatch({
-    opt <- checkArg(parse_args(getArgs()))
+    opt <- check_arg(parse_args(getArgs()))
 }, error = function(e) {
     if (length(grep("nextArg", e[[1]])) != 1)
         stop(e[[1]], exit_code = 140)
@@ -566,7 +566,7 @@ for (x in c("ncomp", "tau")) {
 }
 
 opt <- check_superblock(opt)
-opt <- postCheckArg(opt, blocks)
+opt <- post_check_arg(opt, blocks)
 
 if (!is.null(opt$response)) {
     opt <- order_opt(opt, blocks, opt$response)
