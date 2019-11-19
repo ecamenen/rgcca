@@ -10,10 +10,10 @@
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
-#' rgcca.res = rgcca.analyze(blocks)
-#' boot = bootstrap(blocks, rgcca.res, 2, FALSE)
-#' selected.var = get_bootstrap(rgcca.res, boot)
-#' plot_bootstrap(selected.var, rgcca.res)
+#' rgcca_out = rgcca.analyze(blocks)
+#' boot = bootstrap(blocks, rgcca_out, 2, FALSE)
+#' selected.var = get_bootstrap(rgcca_out, boot)
+#' plot_bootstrap(selected.var, rgcca_out)
 #' @export
 plot_bootstrap <- function(
     df,

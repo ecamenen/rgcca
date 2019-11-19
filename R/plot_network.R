@@ -10,9 +10,9 @@
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
-#' rgcca.res = rgcca.analyze(blocks)
-#' e <- get_edges(rgcca.res$C, blocks)
-#' n <- get_nodes(blocks, rgcca = rgcca.res)
+#' rgcca_out = rgcca.analyze(blocks)
+#' e <- get_edges(rgcca_out$C, blocks)
+#' n <- get_nodes(blocks, rgcca = rgcca_out)
 #' plot_network(n, e, blocks)
 #' @export
 plot_network <- function(rgcca, blocks, connection) {

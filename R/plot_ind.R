@@ -23,15 +23,15 @@
 #' AVE_X = lapply(seq(3), function(x) runif(2))
 #' for (i in 1:length(coord))
 #' row.names(coord[[i]]) = seq(15)
-#' rgcca.res = list(Y = coord, AVE = list(AVE_X = AVE_X))
+#' rgcca_out = list(Y = coord, AVE = list(AVE_X = AVE_X))
 #' # Using a superblock
 #' resp = as.matrix(rep(LETTERS[seq(3)], each = 5))
 #' row.names(resp) = seq(15)
-#' plot_ind(rgcca.res, resp)
+#' plot_ind(rgcca_out, resp)
 #' # Using the first block
 #' resp = as.matrix(runif(15, min=-15, max = 15))
 #' row.names(resp) = seq(15)
-#' plot_ind(rgcca.res, resp, 1, 2, 1)
+#' plot_ind(rgcca_out, resp, 1, 2, 1)
 #' @export
 plot_ind <- function(
     rgcca,

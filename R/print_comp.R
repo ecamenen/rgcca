@@ -11,12 +11,12 @@
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' AVE = list(c(0.6, 0.5), c(0.7, 0.45))
-#' rgcca.res = list(AVE = list(AVE_X = AVE))
+#' rgcca_out = list(AVE = list(AVE_X = AVE))
 #' # For the superblock (or the last block)
-#' print_comp(rgcca.res, 1)
+#' print_comp(rgcca_out, 1)
 #' # "Axis 1 (70%)"
 #' # For the first block
-#' print_comp(rgcca.res, 2, 1)
+#' print_comp(rgcca_out, 2, 1)
 #' # "Axis 2 (50%)"
 print_comp <- function(rgcca, n = NULL, i = NULL, outer = FALSE) {
     

@@ -16,18 +16,18 @@
 #' row.names(weights[[i]]) <- paste0(letters[i],
 #'      letters[seq(nrow(weights[[i]]))])
 #' weights[[4]] = Reduce(rbind, weights)
-#' rgcca.res = list(a = weights)
-#' names(rgcca.res$a) = LETTERS[seq(4)]
+#' rgcca_out = list(a = weights)
+#' names(rgcca_out$a) = LETTERS[seq(4)]
 #' # With the 1rst component of the superblock
-#' plot_var_1D(rgcca.res, NULL, 1, TRUE, type = "weigth")
+#' plot_var_1D(rgcca_out, NULL, 1, TRUE, type = "weigth")
 #' # With the 2nd component of the 1rst block by selecting the ten higher weights
-#' plot_var_1D(rgcca.res, NULL, 2, FALSE, 10, 1, type = "weigth")
+#' plot_var_1D(rgcca_out, NULL, 2, FALSE, 10, 1, type = "weigth")
 #' library(RGCCA)
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
-#' rgcca.res = rgcca.analyze(blocks)
-#' plot_var_1D(rgcca.res, blocks, collapse = TRUE)
+#' rgcca_out = rgcca.analyze(blocks)
+#' plot_var_1D(rgcca_out, blocks, collapse = TRUE)
 #' @export
 plot_var_1D <- function(
     rgcca,

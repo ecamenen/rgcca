@@ -538,7 +538,7 @@ server <- function(input, output, session) {
     samples <- function() {
         isolate({
             plot_ind(
-                rgcca = rgcca.res,
+                rgcca = rgcca_out,
                 resp = response,
                 compx = compx,
                 compy = compy,
@@ -552,7 +552,7 @@ server <- function(input, output, session) {
 
     corcircle <- function()
         plot_var_2D(
-            rgcca = rgcca.res,
+            rgcca = rgcca_out,
             blocks = blocks,
             compx = compx,
             compy = compy,
@@ -563,7 +563,7 @@ server <- function(input, output, session) {
 
     fingerprint <- function()
         plot_var_1D(
-            rgcca = rgcca.res,
+            rgcca = rgcca_out,
             blocks = blocks,
             comp = compx,
             superblock = (superblock & tolower(analysis_type) != "pca"),
@@ -572,10 +572,10 @@ server <- function(input, output, session) {
         )
 
     ave <- function()
-        plot_ave(rgcca = rgcca.res)
+        plot_ave(rgcca = rgcca_out)
 
     conNet <- function()
-        plot_network2(rgcca.res, blocks, connection)
+        plot_network2(rgcca_out, blocks, connection)
 
     plotBoot <- function()
         plot_bootstrap(boot, compx, nb_mark, id_block)
@@ -701,7 +701,7 @@ server <- function(input, output, session) {
                 tau <- getTau()
         })
 
-        assign("rgcca.res",
+        assign("rgcca_out",
                showWarn(
                    rgcca.analyze(
                         blocks,
@@ -1128,9 +1128,9 @@ server <- function(input, output, session) {
             save_plot("corcircle.pdf", corcircle())
             save_plot("fingerprint.pdf", fingerprint())
             save_plot("AVE.pdf", ave())
-            save_var(rgcca.res, blocks, 1, 2)
-            save_ind(rgcca.res, blocks, 1, 2)
-            save(analysis, file = "rgcca.result.RData")
+            save_var(rgcca_out, blocks, 1, 2)
+            save_ind(rgcca_out, blocks, 1, 2)
+            save(analysis, file = "rgcca_result.RData")
             msgSave()
         }
     })

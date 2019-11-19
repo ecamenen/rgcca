@@ -22,19 +22,19 @@
 #' a = setMatrix(5, 2)
 #' a[[4]] = matrix(runif(15 * 2), 15, 2)
 #' AVE_X = lapply(seq(4), function(x) runif(2))
-#' rgcca.res = list(Y = coord, a = a, AVE = list(AVE_X = AVE_X))
-#' names(rgcca.res$a) = LETTERS[seq(4)]
+#' rgcca_out = list(Y = coord, a = a, AVE = list(AVE_X = AVE_X))
+#' names(rgcca_out$a) = LETTERS[seq(4)]
 #' # Using a superblock
-#' plot_var_2D(rgcca.res, blocks, 1, 2, TRUE)
+#' plot_var_2D(rgcca_out, blocks, 1, 2, TRUE)
 #' # Using the first block
-#' plot_var_2D(rgcca.res, blocks, 1, 2, FALSE, 1)
+#' plot_var_2D(rgcca_out, blocks, 1, 2, FALSE, 1)
 #' library(RGCCA)
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
-#' rgcca.res = rgcca.analyze(blocks)
+#' rgcca_out = rgcca.analyze(blocks)
 #' # Without superblock but with the of all variables to the first block
-#' plot_var_2D(rgcca.res, blocks, collapse = TRUE)
+#' plot_var_2D(rgcca_out, blocks, collapse = TRUE)
 #' @export
 plot_var_2D <- function(
     rgcca,

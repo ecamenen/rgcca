@@ -97,7 +97,7 @@ The quality and interpretability of the RGCCA block components yj = Xj . aj, j =
 | gnpr | 0.94       | 0.33       | 0.68          | 2.09          | industry |
 | …    | …          | …          | …             | …             | …        |
 
-- ```rgcca.result``` (.RData): a R file containing a RGCCA object from the RGCCA package
+- ```rgcca_result``` (.RData): a R file containing a RGCCA object from the RGCCA package
 
 
 ## Installation
@@ -180,7 +180,7 @@ By default, on tabulated files with a header. The names of the blocks are the fi
 - ```--o5``` (PATH) Path for the design plot [default: ```design.pdf```]
 - ```--o6``` (PATH) Path for the individual table [default: ```individuals.tsv```]
 - ```--o7``` (PATH) Path for the variable table [default: ```variables.tsv```]
-- ```--o8``` (PATH) Path for the analysis results in RData [default: ```rgcca.result.RData```]
+- ```--o8``` (PATH) Path for the analysis results in RData [default: ```rgcca_result.RData```]
 - ```--o9``` (PATH) Path for the response correlation plot [default: ```response_correlation.pdf```]
 
 #### Analyse parameters

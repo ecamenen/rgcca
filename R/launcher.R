@@ -521,7 +521,7 @@ opt <- list(
     o5 = "design.pdf",
     o6 = "individuals.tsv",
     o7 = "variables.tsv",
-    o8 = "rgcca.result.RData",
+    o8 = "rgcca_result.RData",
     datasets = paste0("inst/extdata/",
         c("agriculture","industry","politic"),
         ".tsv",
@@ -584,7 +584,7 @@ if (!is.matrix(connection))
 
 group <- set_response(blocks, opt$group, opt$separator, opt$header)
 
-rgcca.out <- rgcca.analyze(
+rgcca_out <- rgcca.analyze(
         blocks = blocks,
         connection = connection,
         tau = opt$tau,
@@ -602,7 +602,7 @@ if (opt$ncomp[opt$block] == 1 && is.null(opt$block_y)) {
 } else {
     (
         individual_plot <- plot_ind(
-                rgcca.out,
+                rgcca_out,
                 group,
                 opt$compx,
                 opt$compy,
@@ -618,7 +618,7 @@ if (opt$ncomp[opt$block] == 1 && is.null(opt$block_y)) {
 if (opt$ncomp[opt$block] > 1) {
     (
         corcircle <- plot_var_2D(
-                rgcca.out,
+                rgcca_out,
                 blocks,
                 opt$compx,
                 opt$compy,
@@ -632,7 +632,7 @@ if (opt$ncomp[opt$block] > 1) {
 }
 
 top_variables <- plot_var_1D(
-        rgcca.out, 
+        rgcca_out,
         blocks, 
         opt$compx, 
         opt$superblock, 
@@ -644,14 +644,14 @@ save_plot(opt$o3, top_variables)
 
 if (opt$type != "pca") {
     # Average Variance Explained
-    (ave <- plot_ave(rgcca.out))
+    (ave <- plot_ave(rgcca_out))
     save_plot(opt$o4, ave)
 
     # Creates design scheme
-    conNet <- function() plot_network(rgcca.out, blocks, connection)
+    conNet <- function() plot_network(rgcca_out, blocks, connection)
     save_plot(opt$o5, conNet)
 }
 
-save_ind(rgcca.out, blocks, 1, 2, opt$o6)
-save_var(rgcca.out, blocks, 1, 2, opt$o7)
-save(rgcca.out, file = opt$o8)
+save_ind(rgcca_out, blocks, 1, 2, opt$o6)
+save_var(rgcca_out, blocks, 1, 2, opt$o7)
+save(rgcca_out, file = opt$o8)

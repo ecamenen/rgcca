@@ -10,13 +10,13 @@
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
-#' rgcca.res = rgcca.analyze(blocks)
+#' rgcca_out = rgcca.analyze(blocks)
 #' response = factor( apply(Russett[, 9:11], 1, which.max),
 #'                   labels = colnames(Russett)[9:11] )
-#' get_comp(rgcca.res, as.matrix(response))
+#' get_comp(rgcca_out, as.matrix(response))
 #' response = as.matrix(runif(nrow(blocks[[1]])))
 #' row.names(response) = row.names(blocks[[1]])
-#' get_comp(rgcca.res, response)
+#' get_comp(rgcca_out, response)
 get_comp <- function(
     rgcca,
     resp = rep(1, nrow(rgcca$Y[[1]])),

@@ -21,20 +21,20 @@ rgcca.analyze <- function(
     connection = 1 - diag(length(blocks)),
     tau = rep(1, length(blocks)),
     ncomp = rep(2, length(blocks)),
-    scheme = "factorial",
-    scale = TRUE,
-    init = "svd",
-    bias = TRUE,
     type = "rgcca",
-    verbose = TRUE) {
+    verbose = TRUE,
+    ...) {
+    
+    stopifnot(!missing(blocks))
+
+    lapply(c(), 
+        function(x) check_integer(x, no_vector = FALSE))
 
     warn_on <- FALSE
 
-    for (i in seq(length(blocks))) {
-        if (ncol(blocks[[i]]) > 1000) {
+    if (any(sapply(blocks, ncol) > 1000)) {
             # if( (type <-<- "sgcca" && tau > 0.3) || type !<- "sgcca" )
             warn_on <- TRUE
-        }
     }
 
     if (warn_on & verbose)
@@ -52,12 +52,9 @@ rgcca.analyze <- function(
         gcca(
             A = blocks,
             C = connection,
-            scheme = scheme,
             ncomp = ncomp,
-            scale = scale,
             verbose = FALSE,
-            init = init,
-            bias = bias
+            ...
         )
     )
     func[[par]] <- tau
@@ -65,5 +62,5 @@ rgcca.analyze <- function(
     func_out <- eval(as.call(func))
     names(func_out$a) <- names(blocks)
 
-    return(func_out)
+    invisible(func_out)
 }

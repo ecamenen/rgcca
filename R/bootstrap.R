@@ -12,18 +12,28 @@
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
-#' rgcca.res = rgcca.analyze(blocks)
-#' bootstrap(blocks, rgcca.res, 2, FALSE)
+#' rgcca_out = rgcca.analyze(blocks)
+#' bootstrap(blocks, rgcca_out, 2, FALSE)
 #' @export
 bootstrap <- function(
     blocks,
     rgcca,
     n_boot = 5,
     scale = TRUE,
-    init = "svd",
-    bias = TRUE,
-    n_cores = parallel::detectCores() - 1) {
+    n_cores = parallel::detectCores() - 1,
+    ...) {
 
+    lapply(c("n_boot", "n_cores"), check_integer)
+    
+        stopifnot(!missing(blocks) || !missing(rgcca))
+    stopifnot(is(rgcca, "rgcca") || is(rgcca, "sgcca"))
+    stopifnot(is.list(blocks) && length(blocks) > 1)
+    match.arg(init, c("svd", "random"))
+    lapply(
+        c(scale, bias), 
+        function(x) match.arg(as.character(x), c(TRUE, FALSE))
+    )
+    
     if (n_cores == 0)
         n_cores <- 1
 
@@ -40,8 +50,7 @@ bootstrap <- function(
             blocks,
             rgcca,
             scale,
-            init,
-            bias)
+            ...)
 
         # Test on the sign of the correlation
         for (k in seq(length(blocks))) {

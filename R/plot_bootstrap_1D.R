@@ -14,9 +14,9 @@
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
-#' rgcca.res = rgcca.analyze(blocks)
-#' boot = bootstrap(blocks, rgcca.res, 2, FALSE)
-#' selected.var = get_bootstrap(rgcca.res, boot)
+#' rgcca_out = rgcca.analyze(blocks)
+#' boot = bootstrap(blocks, rgcca_out, 2, FALSE)
+#' selected.var = get_bootstrap(rgcca_out, boot)
 #' plot_bootstrap_1D(selected.var)
 #' @export
 plot_bootstrap_1D <- function(

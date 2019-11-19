@@ -10,14 +10,13 @@
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
-#' rgcca.res = rgcca.analyze(blocks)
-#' bootstrap_k(blocks, rgcca.res, FALSE)
+#' rgcca_out = rgcca.analyze(blocks)
+#' bootstrap_k(blocks, rgcca_out, FALSE)
 bootstrap_k <- function(
     blocks,
     rgcca,
     scale = TRUE,
-    init = "svd",
-    bias = TRUE) {
+    ...) {
 
     # Shuffle rows
     id_boot <- sample(nrow(blocks[[1]]), replace = TRUE)
@@ -50,10 +49,9 @@ bootstrap_k <- function(
             ncomp = rgcca$ncomp,
             scheme = rgcca$scheme,
             scale = FALSE,
-            init = init,
-            bias = bias,
             type = class(rgcca),
-            verbose = FALSE
+            verbose = FALSE,
+            ...
         )$a
 
     # Add removed variables
@@ -70,10 +68,8 @@ bootstrap_k <- function(
         ))
 
     # bug mapply with pca
-    w <- lapply(seq(length(w)), function(x)
-    rbind(w[[x]], missing_tab[[x]]))
-    w <- lapply(seq(length(w)), function(x)
-    w[[x]][colnames(blocks[[x]]), ])
+    w <- lapply(seq(length(w)), function(x) rbind(w[[x]], missing_tab[[x]]))
+    w <- lapply(seq(length(w)), function(x) w[[x]][colnames(blocks[[x]]), ])
 
     names(w) <- names(blocks)
     return(w)

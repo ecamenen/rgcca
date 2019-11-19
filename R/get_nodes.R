@@ -8,8 +8,8 @@
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
-#' rgcca.res = rgcca.analyze(blocks)
-#' get_nodes(blocks, rgcca = rgcca.res)
+#' rgcca_out = rgcca.analyze(blocks)
+#' get_nodes(blocks, rgcca = rgcca_out)
 get_nodes <- function(blocks, rgcca = NULL, tau = NULL) {
 
     if (!is.null(rgcca) & is(rgcca, "sgcca")) {
