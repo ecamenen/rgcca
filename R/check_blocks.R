@@ -7,16 +7,21 @@
 # row.names(A[[1]]) <- letters[1:3]
 # check_blocks(A)
 # for(i in 1:3)
-#   row.names(A[[i]]) <- letters[(2*i):(2*i+2)]
+#   row.names(A[[i]]) <- letters[(0+i*3):(2+i*3)]
 # check_blocks(A)
 # for(i in 1:3)
 #   row.names(A[[i]]) <- letters[1:3]
 # A[[1]][2, 3] <- NA
-# 
+# for(i in 1:3)
+#   colnames(A[[i]]) <- letters[(0+i*3):(2+i*3)]
+# check_blocks(A)
+# A[[1]][2, 3] <- "character"
+# check_blocks(A)
 # A[[1]][2, 3] <- runif(1)
 check_blocks <- function(blocks) {
-    
+
     msg <- "In blocks arg:"
+    blocks <- remove_null_sd(blocks)
 
     if (!is.list(blocks))
         stop(paste(msg, "is not a list."))
@@ -30,12 +35,33 @@ check_blocks <- function(blocks) {
     if (any(sapply(blocks, function(x) is.null(row.names(x)))))
         stop(paste(msg, "elements of the list should have rownames."))
 
-    if (length(Reduce(intersect, lapply(blocks, row.names))) == 0)
+    if (any(sapply(blocks, function(x) is.null(colnames(x)))))
+        stop(paste(msg, "elements of the list should have colnames."))
+
+    inters_rows <- Reduce(intersect, lapply(blocks, row.names))
+
+    if (length(inters_rows) == 0)
         stop(paste(msg, "elements of the list should have at least a common rowname."))
 
-   # check_quantitative()
+    if (!identical(inters_rows, row.names(blocks[[1]])))
+        blocks <- common_rows(blocks)
 
-    if(any(is.na(unlist(blocks))))
-        stop(paste(msg, "an element contains NA. Please use the impute_mean function.")) 
+    if (any(sapply(blocks, is.character2)))
+        stop(paste(msg, "an element contains non-numeric data."))
 
+    if (any(is.na(unlist(blocks)))) {
+        warning(paste(msg, "an element contains NA that will be imputed by mean."))
+        for (i in seq(length(blocks)))
+            blocks[[i]] <- impute_mean(blocks[[i]])
+    }
+
+    if (length(Reduce(intersect, lapply(blocks, colnames))))
+        stop(paste(msg, "elements of the list should have different colnames."))
+    # TODO: automatic conversation and warning
+
+    for (i in seq(length(blocks)))
+        if (is.character(blocks[[i]]))
+            blocks[[i]] <- to_numeric(blocks[[i]])
+
+    invisible(blocks)
 }

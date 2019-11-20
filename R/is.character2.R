@@ -8,7 +8,7 @@
 #' @examples
 #' x = matrix(c(runif(10), LETTERS[seq(10)]), 10, 2)
 #' is.character2(x)
-#' # FALSE TRUE
+#' # TRUE
 #' is.character2(LETTERS[seq(10)])
 #' # TRUE
 is.character2 <- function(x) {
@@ -18,19 +18,13 @@ is.character2 <- function(x) {
 
     # NA tolerance :
 
-    if (is.matrix(x)) {
-        test <- sapply(seq(ncol(x)), function(i)
-            unique(is.na(tryCatch(
-                as.integer(na.omit(as.vector(x[, i])[as.vector(x[, i]) != "NA"])),
-                warning = function(w)
-                    return(NA)
-            ))))
-    } else
-        test <- unique(is.na(tryCatch(
-            as.integer(na.omit(as.vector(x)[as.vector(x) != "NA"])),
-            warning = function(w)
-                return(NA)
-        )))
+    x <- as.vector(x)
 
-    return(test)
+    any(
+        is.na(
+            tryCatch(
+                as.integer(na.omit(x[x != "NA"])),
+                warning = function(w) NA
+    )))
 }
+

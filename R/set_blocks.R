@@ -77,13 +77,13 @@ set_blocks <- function(file,
             stop(paste(fo, "block file has an only-column. Check the separator."),
             exit_code = 102)
 
-        dimnames <- list(row.names(df), colnames(df))
+        #dimnames <- list(row.names(df), colnames(df))
         df <- to_numeric(df)
 
         df <- impute_mean(df)
 
         check_quantitative(df, fo, header)
-        df <- matrix(as.numeric(df), nrow(df), ncol(df), dimnames = dimnames)
+        #df <- matrix(as.numeric(df), nrow(df), ncol(df), dimnames = dimnames)
         blocks[[fo]] <- df
     }
 

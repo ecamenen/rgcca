@@ -10,12 +10,18 @@
 #' @return A matrix with imputed values
 #' @export
 impute_mean <- function(df){
+    
+    # catch quantitative
+
+    df <- to_numeric(df)
+
     if (any(is.na(df))) {
         df <- matrix(
             unlist(
                 lapply(seq(ncol(df)),
                 function(x)
-                    unlist(lapply(as.list(df[, x]),
+                    unlist(
+                        lapply(as.list(df[, x]),
                         function(y)
                             ifelse(is.na(y),
                                 mean(unlist(df[, x]), na.rm = TRUE), y))))),

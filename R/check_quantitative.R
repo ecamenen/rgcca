@@ -13,12 +13,12 @@
 #' # Error
 #' }
 check_quantitative <- function(df, fo, h = FALSE) {
-    qualitative <- unique(unique(is.character2(as.matrix(df))))
+    qualitative <- is.character2(df)
 
-    if (length(qualitative) > 1 || qualitative) {
+    if (qualitative) {
         msg <- paste(
             fo,
-            "file contains qualitative data. Please, transform them in a disjunctive table."
+            "contains qualitative data. Please, transform them in a disjunctive table."
         )
 
         if (!h)
@@ -28,3 +28,4 @@ check_quantitative <- function(df, fo, h = FALSE) {
     }
 
 }
+

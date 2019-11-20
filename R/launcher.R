@@ -325,7 +325,7 @@ check_arg <- function(opt) {
         if (!is.null(opt[[o]]))
             check_file(opt[[o]])
     
-    check_integer("nmark")
+    check_integer_opt("nmark")
     if (opt$nmark < 2)
         stop(paste0("--nmark must be upper than 2, not be equal to ",
             opt$nmark,
@@ -392,12 +392,12 @@ post_check_arg <- function(opt, blocks) {
                     opt[[x]],
                     "."),
                     exit_code = 134)
-            check_integer(x)
+            check_integer_opt(x)
         }
     }
     
     out <- lapply(seq(length(opt$ncomp)), function(x) {
-        check_integer("ncomp", opt$ncomp[x])
+        check_integer_opt("ncomp", opt$ncomp[x])
         if ((opt$ncomp[x] < 2) ||
                 (opt$ncomp[x] > ncol(blocks[[x]]))) {
             stop(
@@ -460,29 +460,56 @@ post_check_arg <- function(opt, blocks) {
     return(opt)
 }
 
-check_integer <- function(x, y = NULL) {
-    # Test either x is an integer x : a string corresponding to a name
-    # in a list opt'
+check_integer <- function(x, y = x, type = "scalar", float = FALSE, min = 1) {
+
+    if (is.null(y))
+        y <- x
+
+    if (type == "scalar")
+        x = ""
+
     
+    if (type %in% c("matrix", "data.frame"))
+        y_temp <- y
+
+    y <- as.vector(as.matrix(y))
+
+    if (any(is.na(y)))
+        stop(paste(x, "should not be NA."))
+
+    if (!is(y, "numeric"))
+        stop(paste(x, "should be numeric."))
+    
+    if (type == "scalar" && length(y) != 1)
+        stop(paste(x, "should be of length 1."))
+
+    if (!float)
+        y <- as.integer(y)
+    
+    if (all(y < min))
+        stop(paste(x, "should be greater or equal to ", min, "."))
+
+    if (type %in% c("matrix", "data.frame"))
+        y <- matrix(
+            y, 
+            dim(y_temp)[1], 
+            dim(y_temp)[2],
+            dimnames = dimnames(y_temp)
+        )
+
+    if (type == "data.frame")
+        as.data.frame(y)
+
+    return(y)
+}
+
+check_integer_opt <- function(x, y = NULL){
+
     if (is.null(y))
         y <- opt[[x]]
+
+    check_integer(x, y, min = 0)
     
-    # Test if not a character
-    tryCatch({
-        as.integer(y)
-        if (is.na(y)) {
-            y <- opt[[x]]
-            warning("")
-        }
-    }, warning = function(w) {
-        stop(paste0("--", x, " is a character (", y, ") and must be an integer."),
-            exit_code = 136)
-    })
-    
-    # Test if not a float
-    
-    if (length(strsplit(as.character(y), ".", fixed = TRUE)[[1]]) > 1)
-        stop(paste0("--", x, " is a float (", y, ") and must be an integer."))
 }
 
 load_libraries <- function(librairies) {

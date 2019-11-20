@@ -1182,7 +1182,7 @@ server <- function(input, output, session) {
                     if_text
                 ), warn = FALSE)
 
-            if (length(unique(na.omit(response))) < 2 || (length(unique(response)) > 5 && !unique(is.character2(na.omit(response)))))
+            if (length(unique(na.omit(response))) < 2 || (length(unique(response)) > 5 && !is.character2(na.omit(response))))
                 p <- p %>% layout(showlegend = FALSE)
             p
 

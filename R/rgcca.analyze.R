@@ -26,9 +26,11 @@ rgcca.analyze <- function(
     ...) {
     
     stopifnot(!missing(blocks))
-
-    lapply(c(), 
-        function(x) check_integer(x, no_vector = FALSE))
+    blocks <- check_blocks(blocks)
+    if ("optimal" %in% tau)
+        check_integer_func("tau", class(tau), T, 0)
+    check_integer_func("ncomp", "vector")
+    check_boolean(verbose)
 
     warn_on <- FALSE
 
