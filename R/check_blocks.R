@@ -18,15 +18,15 @@
 # A[[1]][2, 3] <- "character"
 # check_blocks(A)
 # A[[1]][2, 3] <- runif(1)
-check_blocks <- function(blocks) {
+# init : boolean (FALSE by default) for the first block checking
+check_blocks <- function(blocks, init = FALSE) {
 
     msg <- "In blocks arg:"
-    blocks <- remove_null_sd(blocks)
 
     if (!is.list(blocks))
         stop(paste(msg, "is not a list."))
 
-    if (length(blocks) < 2)
+    if (!init && length(blocks) < 2)
         stop(paste(msg, "should at least have two elements."))
 
     if (is.null(names(blocks)))
@@ -43,8 +43,16 @@ check_blocks <- function(blocks) {
     if (length(inters_rows) == 0)
         stop(paste(msg, "elements of the list should have at least a common rowname."))
 
-    if (!identical(inters_rows, row.names(blocks[[1]])))
+    if (length(blocks) < 1 && !identical(inters_rows, row.names(blocks[[1]]))) {
+        nrow <- lapply(blocks, nrow)
         blocks <- common_rows(blocks)
+    }
+
+    if (init) {
+        blocks <- remove_null_sd(blocks)
+        for (i in seq(length(blocks)))
+            attributes(blocks[[i]])$nrow <- nrow[[i]]
+    }
 
     if (any(sapply(blocks, is.character2)))
         stop(paste(msg, "an element contains non-numeric data."))
@@ -59,6 +67,7 @@ check_blocks <- function(blocks) {
         stop(paste(msg, "elements of the list should have different colnames."))
     # TODO: automatic conversation and warning
 
+    # if any(sapply(blocks, is.character)) # optimization ?
     for (i in seq(length(blocks)))
         if (is.character(blocks[[i]]))
             blocks[[i]] <- to_numeric(blocks[[i]])

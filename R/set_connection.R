@@ -1,13 +1,9 @@
 #' Create a matrix corresponding to a connection between the blocks
 #'
+#' @inheritParams set_blocks
 #' @param blocks A list of matrix
 #' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of
 #' a superblock
-#' @param file A character giving the path of a file used as a response
-#' @param sep A character giving the column separator
-#' @param rownames An integer corresponding to the column number of the row
-#' names (NULL otherwise)
-#' @param h A bolean giving the presence or the absence of the header
 #' @return A matrix corresponding to the connection between the blocks
 #' @examples
 #' \dontrun{
@@ -20,7 +16,7 @@ set_connection <- function(
     superblock = FALSE,
     file = NULL,
     sep = "\t",
-    h = FALSE,
+    header = FALSE,
     rownames = NULL) {
 
     J <- length(blocks)
@@ -31,19 +27,13 @@ set_connection <- function(
 
     } else if (is.null(file))
         connection <- 1 - diag(J)
-    else {
-        isXls <- (length(grep("xlsx?", file)) == 1)
-
-        if (!isXls)
-            connection <- load_data(
-                f = file,
-                sep = sep,
-                rownames = rownames,
-                h = h
-            )
-        # else
-        # connection = loadExcel(f = file, sheet = 1, rownames = rownames, h = h)
-    }
+    else 
+        connection <- load_file(
+            file = file,
+            sep = sep,
+            rownames = rownames,
+            header = header
+        )
 
     check_connection(connection, blocks)
 

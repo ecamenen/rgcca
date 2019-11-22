@@ -4,8 +4,10 @@
 #' @param blocks A list of matrix
 check_connection <- function(c, blocks) {
 
+    msg <- "The connection file must"
+
     if (!isSymmetric.matrix(unname(c)))
-        stop("The connection file must be a symmetric matrix.", exit_code = 103)
+        stop(paste0(msg, "be a symmetric matrix."), exit_code = 103)
 
     d <- unique(diag(c))
     if (length(d) != 1 || d != 0)
@@ -14,22 +16,12 @@ check_connection <- function(c, blocks) {
 
     x <- unique(c %in% c(0, 1))
     if (length(x) != 1 || x != TRUE)
-        stop("The connection file must contains only 0 or 1.", exit_code = 106)
+        stop(paste0(msg, "contain only 0 or 1."), exit_code = 106)
 
     if (all(c == 0))
-        stop("The connection file could not contain only 0.", exit_code = 107)
+        stop(paste0(msg, "not contain only 0."), exit_code = 107)
 
-    n <- length(blocks)
-    if (ncol(c) != n)
-        stop(
-            paste0(
-                "The number of rows/columns of the connection matrix file must be equal to ",
-                n,
-                " (the number of blocks in the dataset, +1 with a superblock by default)."
-            ),
-            exit_code = 104
-        )
+    check_size_blocks(blocks, "connection matrix", c)
 
     # TODO: warning if superblock = TRUE
-
 }

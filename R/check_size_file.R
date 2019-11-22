@@ -1,5 +1,5 @@
 # Print warning if file size over
-check_size <- function(filename) {
+check_size_file <- function(filename) {
     size <- file.size(filename)
     if (size > 5e+06)
         # warning(paste0('The size of ', filename, ' is over 5 Mo (',

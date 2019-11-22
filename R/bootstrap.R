@@ -24,21 +24,15 @@ bootstrap <- function(
     ...) {
 
     lapply(c("n_boot", "n_cores"), check_integer)
-    
-        stopifnot(!missing(blocks) || !missing(rgcca))
+    stopifnot(!missing(blocks) || !missing(rgcca))
     stopifnot(is(rgcca, "rgcca") || is(rgcca, "sgcca"))
     stopifnot(is.list(blocks) && length(blocks) > 1)
-    match.arg(init, c("svd", "random"))
-    lapply(
-        c(scale, bias), 
-        function(x) match.arg(as.character(x), c(TRUE, FALSE))
-    )
     
     if (n_cores == 0)
         n_cores <- 1
 
-    if (any(unlist(lapply(blocks, ncol) > 1000)))
-        verbose <- TRUE
+    # if (any(unlist(lapply(blocks, ncol) > 1000)))
+    #     verbose <- TRUE
 
     w1 <- rgcca$a
 

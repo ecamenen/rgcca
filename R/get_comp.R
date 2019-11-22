@@ -70,7 +70,7 @@ get_comp <- function(
         }
     }
 
-    if ((!unique(is.character2(resp)) &&
+    if ((!is.character2(resp) &&
         length(unique(resp)) > 5) || 
             unique(resp) == 1 ) {
         resp[resp == "NA"] <- NA

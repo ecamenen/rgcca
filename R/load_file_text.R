@@ -1,35 +1,36 @@
 #' Creates a matrix from loading a file
 #'
-#' @param f A character giving the file name
-#' @param sep A character giving the column separator
-#' @param rownames An integer corresponding to the column number of the
-#' row names (NULL otherwise)
-#' @param h A bolean giving the presence or the absence of the header
+#' @inheritParams set_blocks
 #' @return A matrix containing the loaded file
 #' @examples
 #' \dontrun{
-#' load_data('data/agriculture.tsv')
+#' load_file_text('data/agriculture.tsv')
 #' }
-load_data <- function(f, sep = "\t", rownames = 1, h = TRUE) {
+load_file_text <- function(file, sep = "\t", rownames = 1, header = TRUE, response = FALSE) {
 
     if (!is.null(rownames) && rownames < 1)
-    rownames <- NULL
+        rownames <- NULL
 
     func <- function(x = rownames)
         as.matrix(read.table(
-            f,
+            file,
             sep = sep,
-            header = h,
+            header = header,
             row.names = x,
             na.strings = "NA",
             dec = ","
         ))
 
     tryCatch({
-        func()
+        f <- func()
     }, error = function(e) {
         if (e$message == "duplicate 'row.names' are not allowed")
-        func(NULL)
+            f <- func(NULL)
     })
 
+    if (!one_column && ncol(f) == 0)
+        stop(paste0(file, "has an only-column. Check the separator."),
+        exit_code = 102)
+
+    return(f)
 }

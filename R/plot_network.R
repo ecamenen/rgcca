@@ -1,8 +1,6 @@
 #' Plot the connection between blocks
 #' 
 #' @inheritParams select_analysis
-#' @param nodes A dataframe containing metadata for each blocks
-#' @param edges A dataframe of connection between blocks
 #' @return A dataframe with tuples of connected blocks
 #' @examples
 #' library(igraph)
@@ -11,17 +9,15 @@
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca_out = rgcca.analyze(blocks)
-#' e <- get_edges(rgcca_out$C, blocks)
-#' n <- get_nodes(blocks, rgcca = rgcca_out)
-#' plot_network(n, e, blocks)
+#' plot_network(rgcca_out, blocks)
 #' @export
-plot_network <- function(rgcca, blocks, connection) {
+plot_network <- function(rgcca, blocks) {
     # Avoid random
     set.seed(1)
     V <- E <- NULL
 
     nodes <- get_nodes(blocks, rgcca)
-    edges <- get_edges(connection, blocks)
+    edges <- get_edges(rgcca$C, blocks)
 
     par <- ifelse("sparsity" %in% names(nodes), "sparsity", "tau")
 

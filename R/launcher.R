@@ -335,14 +335,25 @@ check_arg <- function(opt) {
     return(opt)
 }
 
-check_arg_size <- function(blocks, x, y) {
-    if (length(x) != length(blocks))
+check_size_blocks <- function(blocks, x, y = x) {
+    
+    if (identical(x, y))
+        x <- ""
+
+    if (class(y) %in% c("matrix", "data.frame")) {
+        dim_y <- ncol(y)
+        dim_type <- "number of columns"
+    }else{
+        dim_y <- length(y)
+        dim_type <- "size"
+    }
+
+    if (dim_y != length(blocks))
         stop(
             paste0(
-                "--",
-                y,
-                " list must have the same size (",
-                length(x),
+                x,
+                " must have the same ", dim_type , " (",
+                dim_y,
                 ") than the number of blocks (",
                 length(blocks),
                 ")."
@@ -358,9 +369,10 @@ post_check_arg <- function(opt, blocks) {
     # optionParser object blocks : a list of matrix
     
     if (!is.null(opt$names))
-        check_arg_size(
+        check_size_blocks(
             blocks,
-            strsplit(gsub(" ", "", opt$names), ",")[[1]], "names"
+            "names",
+            strsplit(gsub(" ", "", opt$names), ",")[[1]]
         )
     
     opt <- select_analysis(blocks, opt)
@@ -413,7 +425,7 @@ post_check_arg <- function(opt, blocks) {
         }
     })
     
-    check_arg_size(blocks, opt$ncomp, "ncomp")
+    check_size_blocks(blocks, "ncomp", opt$ncomp)
     
     out <- sapply(c("compx", "compy"), function(x) {
         if ((opt[[x]] < 1) || (opt[[x]] > opt$ncomp[opt$block])) {
@@ -446,7 +458,7 @@ post_check_arg <- function(opt, blocks) {
             # If there is only one common tau
             if (length(list_tau) == 1)
                 opt$tau <- rep(list_tau[[1]], length(blocks))
-            else if (check_arg_size(blocks, list_tau, "tau"))
+            else if (check_size_blocks(blocks, "tau", list_tau))
                 opt$tau <- unlist(list_tau)
         }, warning = function(w) {
             stop(msg, exit_code = 131)
@@ -675,7 +687,7 @@ if (opt$type != "pca") {
     save_plot(opt$o4, ave)
 
     # Creates design scheme
-    conNet <- function() plot_network(rgcca_out, blocks, connection)
+    conNet <- function() plot_network(rgcca_out, blocks)
     save_plot(opt$o5, conNet)
 }
 

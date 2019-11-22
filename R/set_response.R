@@ -1,16 +1,12 @@
 #' Create a matrix corresponding to the response
 #'
+#' @inheritParams set_blocks
 #' @param blocks A list of matrix
-#' @param file A character giving the path of a file used as a response
-#' @param sep A character giving the column separator
-#' @param header A bolean giving the presence or the absence of the header
-#' @param rownames An integer corresponding to the column number of the row
-#' names (NULL otherwise)
 #' @return A matrix corresponding to the response
 #' @examples
 #' \dontrun{
 #' blocks = lapply(seq(3), function(x) matrix(runif(47 * 5), 47, 5))
-#' set_response (blocks, 'data/response3.tsv')
+#' set_response (blocks, 'inst/extdata/response3.tsv')
 #' }
 #' @export
 set_response <- function(
@@ -20,15 +16,17 @@ set_response <- function(
     header = TRUE,
     rownames = 1) {
 
-
     if (!is.null(file)) {
-        isXls <- length(grep("xlsx?", file))
+        
+        response <- load_file(
+            file,
+            sep = sep,
+            rownames = rownames,
+            header = header,
+            reponse = TRUE
+        )
 
-        if (!isXls)
-            response <- load_data(file, sep, rownames, header)
-            # else response = loadExcel(file, 1, rownames, h = header, num = FALSE)
-
-        qualitative <- unique(is.character2(response))
+        qualitative <- is.character2(response)
 
         if (length(qualitative) > 1)
             stop(
@@ -39,10 +37,8 @@ set_response <- function(
         if (!qualitative)
             response <- to_numeric(response)
 
-
         if (ncol(response) > 1) {
             disjunctive <- unique(apply(response, 1, sum))
-
 
             if (length(disjunctive) &&
                 unique(disjunctive %in% c(0, 1)) && disjunctive) {

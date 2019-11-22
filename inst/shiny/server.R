@@ -575,7 +575,7 @@ server <- function(input, output, session) {
         plot_ave(rgcca = rgcca_out)
 
     conNet <- function()
-        plot_network2(rgcca_out, blocks, connection)
+        plot_network2(rgcca_out, blocks)
 
     plotBoot <- function()
         plot_bootstrap(boot, compx, nb_mark, id_block)

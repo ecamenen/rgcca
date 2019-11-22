@@ -70,7 +70,7 @@ plot_ind <- function(
             p <- ggplot(df, aes(df[, 1], df[, 2], color = df$resp))
 
     else if (length(unique(as.matrix(df$resp))) > 5 && 
-            !unique(is.character2(as.vector(df$resp))) ) {
+            !is.character2(as.vector(df$resp)) ) {
 
         p <- ggplot(df, aes(df[, 1], df[, 2], color = df$resp))
 
