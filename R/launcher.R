@@ -417,7 +417,7 @@ post_check_arg <- function(opt, blocks) {
                     "--ncomp must be comprise between 2 and ",
                     ncol(blocks[[x]]),
                     ", the number of variables of the block (currently equals to ",
-                    opt$ncomp[x],
+                    round(opt$ncomp[x]),
                     ")."
                 ),
                 exit_code = 126
@@ -687,8 +687,8 @@ if (opt$type != "pca") {
     save_plot(opt$o4, ave)
 
     # Creates design scheme
-    conNet <- function() plot_network(rgcca_out, blocks)
-    save_plot(opt$o5, conNet)
+    design <- function() plot_network(rgcca_out, blocks)
+    save_plot(opt$o5, design)
 }
 
 save_ind(rgcca_out, blocks, 1, 2, opt$o6)

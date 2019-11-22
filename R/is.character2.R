@@ -18,8 +18,6 @@ is.character2 <- function(x) {
 
     # NA tolerance :
 
-    x <- as.vector(x)
-
     any(
         is.na(
             tryCatch(

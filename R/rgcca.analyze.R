@@ -33,12 +33,11 @@ rgcca.analyze <- function(
     }
     check_integer_func("ncomp", "vector")
     check_size_blocks(blocks, "ncomp", ncomp)
-    lapply(
-        c(verbose, scale, bias),
-        function(x){
-            if (!missing(x))
-                check_boolean(x)
-        })
+    # lapply(
+    #     c(verbose, scale, bias),
+    #     function(x){
+    #             check_boolean(x)
+    #     })
     # match.arg(init, c("svd", "random"))
     # match.arg(scheme, c("horst", "factorial", "centroid")) || 
     # ( is.function(scheme) && tryCatch(scheme(1), error = function(e) FALSE) && check_integer_func(scheme(1)))

@@ -43,15 +43,15 @@ check_blocks <- function(blocks, init = FALSE) {
     if (length(inters_rows) == 0)
         stop(paste(msg, "elements of the list should have at least a common rowname."))
 
-    if (length(blocks) < 1 && !identical(inters_rows, row.names(blocks[[1]]))) {
-        nrow <- lapply(blocks, nrow)
+    equal_rows <- Reduce(identical, lapply(blocks, row.names))
+    
+    if (length(blocks) > 1 && !equal_rows)
         blocks <- common_rows(blocks)
-    }
 
     if (init) {
         blocks <- remove_null_sd(blocks)
         for (i in seq(length(blocks)))
-            attributes(blocks[[i]])$nrow <- nrow[[i]]
+            attributes(blocks[[i]])$nrow <- nrow(blocks[[i]])
     }
 
     if (any(sapply(blocks, is.character2)))
@@ -63,7 +63,7 @@ check_blocks <- function(blocks, init = FALSE) {
             blocks[[i]] <- impute_mean(blocks[[i]])
     }
 
-    if (length(Reduce(intersect, lapply(blocks, colnames))))
+    if (length(blocks) > 1 && length(Reduce(intersect, lapply(blocks, colnames))))
         stop(paste(msg, "elements of the list should have different colnames."))
     # TODO: automatic conversation and warning
 

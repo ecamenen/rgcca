@@ -95,17 +95,17 @@ connection = matrix(c(0, 0, 0, 1,
 files = c("agriculture", "industry", "politic", "response", "connection")
 
 # Creates the files (in .tsv format for example)
-if(!file.exists("data"))
+if (!file.exists("data"))
   dir.create("data")
 
 # Without row and column names for connection files
-sapply(1:length(files), function (x) {
+sapply(1:length(files), function(x) {
 
-  bool = ( files[x] != "connection")
+  bool = (files[x] != "connection")
 
   write.table(
     x = get(files[x]),
-    file = paste("data/", files[x], ".tsv", sep=""),
+    file = paste("data/", files[x], ".tsv", sep = ""),
     row.names = bool,
     col.names = bool,
     sep = "\t")
@@ -128,7 +128,7 @@ The blocks are loaded with the function ```set_blocks```. The first argument of 
 ```{r blocks}
 # A boolean giving the presence (TRUE) / absence (FALSE) of a superblock
 blocks = set_blocks(file = "data/agriculture.tsv,data/industry.tsv,data/politic.tsv")
-blocks[["Superblock"]] = Reduce(cbind, blocks)
+blocks[["superblock"]] = Reduce(cbind, blocks)
 ```
 
 ## Load the groups of response and the connection between blocks
@@ -137,16 +137,16 @@ The connection between the blocks will be used by the RGCCA and must be set by `
 
 ```{r connection,  echo = TRUE, inlcude = TRUE}
 # Optional parameters
-RESPONSE = "data/response.tsv"
-CONNECTION = "data/connection.tsv"
-SUPERBLOCK =  TRUE
+response = "data/response.tsv"
+connection = "data/connection.tsv"
+superblock =  TRUE
 # Uncomment the parameters below to try without default settings
-# RESPONSE <- CONNECTION <- NULL
+# response <- connection <- NULL
 
 response = set_response(blocks = blocks,
-                       file = RESPONSE)
+                       file = response)
 connection = set_connection(blocks = blocks,
-                           file = CONNECTION)
+                           file = connection)
 ```
 
 
@@ -171,14 +171,14 @@ SGCCA is run from the RGCCA package by using two components for a biplot visuali
 
 ```{r rgcca}
 # Use two components in RGCCA to plot in a bidimensionnal space
-NB_COMP = c(2, 2, 3, 3)
+ncomp = c(2, 2, 3, 3)
 
-sgcca.res = rgcca.analyze(blocks = blocks,
+sgcca_out = rgcca.analyze(blocks = blocks,
                   connection = connection,
-                  ncomp = NB_COMP)
+                  ncomp = ncomp)
 
 # Renames the elements of the list according to the block names
-names(sgcca.res$a) = names(blocks)
+names(sgcca_out$a) = names(blocks)
 ```
 
 
@@ -189,37 +189,37 @@ Both the samples and the variables could be visualized by using biplots function
 These functions take the results of a sgcca or a rgcca (```rgcca``` parameter) and the components to visualize : either ```compx``` and ```compy``` for biplots or  ```comp``` for histograms. By default, ```compx``` = ```comp``` = 1 and ```compy``` = 2. The presence or the absence of a superblock among the analysis could be specified for ```plot_var_2D``` and ```plot_var_1D``` to color the variables according to their blocks. By default, the last block is plotted, corresponding to the superblock if selected (```i_block``` parameter). ```plot_var_2D```, which is a corcircle plot, required the ```blocks``` for the correlation with the selected component. ```plot_var_2D``` could use the response variable to color the samples by groups. By default, the first 100th higher weights are used for the ```plot_var_1D``` and could be set by using the ```n_mark``` argument.
 
 ```{r}
-COMP1 = 2
-COMP2 = 3
-NB_MARK = 100
+comp1 = 2
+comp2 = 3
+nmark = 100
 ```
 
 ## With the superblock, by default on the first and the second components
 
 ### Samples plot
 ```{r}
-plot_ind(rgcca = sgcca.res,
+plot_ind(rgcca = sgcca_out,
                  resp = response)
 ```
 
 ### Corcircle plot
 ```{r}
-plot_var_2D(rgcca = sgcca.res,
+plot_var_2D(rgcca = sgcca_out,
                    block = blocks,
-                   superblock = SUPERBLOCK)
+                   superblock = superblock)
 ```
 
 ### Fingerprint plot
 ```{r}
-plot_var_1D(rgcca = sgcca.res,
-                superblock = SUPERBLOCK,
-                n_mark = NB_MARK,
+plot_var_1D(rgcca = sgcca_out,
+                superblock = superblock,
+                n_mark = nmark,
                 type = "weight")
 ```
 
 ### Best explained blocks
 ```{r}
-plot_ave(rgcca = sgcca.res)
+plot_ave(rgcca = sgcca_out)
 
 ```
 
@@ -227,27 +227,27 @@ plot_ave(rgcca = sgcca.res)
 
 ### Samples plot
 ```{r}
-plot_ind(rgcca = sgcca.res,
+plot_ind(rgcca = sgcca_out,
                  resp = response, 
-                 compx = COMP1,
-                 compy = COMP2,
+                 compx = comp1,
+                 compy = comp2,
                  i_block = 3)
 ```
 
 ### Corcircle plot
 ```{r}
-plot_var_2D(rgcca = sgcca.res,
+plot_var_2D(rgcca = sgcca_out,
                    block = blocks,
-                   compx = COMP1,
-                   compy = COMP2,
+                   compx = comp1,
+                   compy = comp2,
                    i_block = 3)
 ```
 
 ### Fingerprint plot
 ```{r}
-plot_var_1D(rgcca = sgcca.res,
-                comp = COMP1,
-                n_mark = NB_MARK, 
+plot_var_1D(rgcca = sgcca_out,
+                comp = comp1,
+                n_mark = nmark, 
                 i_block = 3,
                 type = "weight")
 ```

@@ -7,7 +7,7 @@ check_connection <- function(c, blocks) {
     msg <- "The connection file must"
 
     if (!isSymmetric.matrix(unname(c)))
-        stop(paste0(msg, "be a symmetric matrix."), exit_code = 103)
+        stop(paste(msg, "be a symmetric matrix."), exit_code = 103)
 
     d <- unique(diag(c))
     if (length(d) != 1 || d != 0)
@@ -16,10 +16,10 @@ check_connection <- function(c, blocks) {
 
     x <- unique(c %in% c(0, 1))
     if (length(x) != 1 || x != TRUE)
-        stop(paste0(msg, "contain only 0 or 1."), exit_code = 106)
+        stop(paste(msg, "contain only 0 or 1."), exit_code = 106)
 
     if (all(c == 0))
-        stop(paste0(msg, "not contain only 0."), exit_code = 107)
+        stop(paste(msg, "not contain only 0."), exit_code = 107)
 
     check_size_blocks(blocks, "connection matrix", c)
 

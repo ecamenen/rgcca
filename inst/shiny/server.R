@@ -574,7 +574,7 @@ server <- function(input, output, session) {
     ave <- function()
         plot_ave(rgcca = rgcca_out)
 
-    conNet <- function()
+    design <- function()
         plot_network2(rgcca_out, blocks)
 
     plotBoot <- function()
@@ -1256,7 +1256,7 @@ server <- function(input, output, session) {
     output$connectionPlot <- renderVisNetwork({
         getDynamicVariables()
         if (!is.null(analysis)) {
-            conNet()
+            design()
         }
     })
 

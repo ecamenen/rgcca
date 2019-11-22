@@ -23,16 +23,16 @@ set_response <- function(
             sep = sep,
             rownames = rownames,
             header = header,
-            reponse = TRUE
+            response = TRUE
         )
 
         qualitative <- is.character2(response)
 
-        if (length(qualitative) > 1)
-            stop(
-            "Please, select a response file with either qualitative data only or quantitative data only.",
-            108
-            )
+        # if (length(qualitative) > 1)
+        #     stop(
+        #     "Please, select a response file with either qualitative data only or quantitative data only.",
+        #     108
+        #     )
 
         if (!qualitative)
             response <- to_numeric(response)

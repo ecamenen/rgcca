@@ -25,11 +25,11 @@ load_file_text <- function(file, sep = "\t", rownames = 1, header = TRUE, respon
         f <- func()
     }, error = function(e) {
         if (e$message == "duplicate 'row.names' are not allowed")
-            f <- func(NULL)
+            f <<- func(NULL)
     })
 
-    if (!one_column && ncol(f) == 0)
-        stop(paste0(file, "has an only-column. Check the separator."),
+    if (!response && ncol(f) == 0)
+        stop(paste(basename(file), "has an only-column. Check the separator."),
         exit_code = 102)
 
     return(f)

@@ -1,4 +1,4 @@
-check_size <- function(blocks, x, y = x) {
+check_size_blocks <- function(blocks, x, y = x) {
     
     if (identical(x, y))
         x <- ""
@@ -15,7 +15,7 @@ check_size <- function(blocks, x, y = x) {
         stop(
             paste0(
                 x,
-                " must have the same ", dim_type , " (",
+                " must have the same ", dim_type , " (actually ",
                 dim_y,
                 ") than the number of blocks (",
                 length(blocks),
