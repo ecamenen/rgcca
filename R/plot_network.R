@@ -54,7 +54,7 @@ plot_network <- function(rgcca, blocks) {
         vertex.label.dist = 6,
         vertex.label.degree = 1.5,
         vertex.size = 23,
-        main = paste0("Common rows between blocks : ", nrow(blocks[[1]]))
+        main = paste0("Common rows between blocks : ", NROW(blocks[[1]]))
     )
 
 }

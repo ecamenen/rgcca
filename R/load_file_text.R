@@ -28,7 +28,7 @@ load_file_text <- function(file, sep = "\t", rownames = 1, header = TRUE, respon
             f <<- func(NULL)
     })
 
-    if (!response && ncol(f) == 0)
+    if (!response && NCOL(f) == 0)
         stop(paste(basename(file), "has an only-column. Check the separator."),
         exit_code = 102)
 

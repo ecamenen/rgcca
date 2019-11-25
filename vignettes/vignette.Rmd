@@ -157,7 +157,7 @@ connection = set_connection(blocks = blocks,
 for (x in 1:length(files)) {
   
   tab = get(files[x])
-  if (x > 3) colnames(tab) = rep(NULL, ncol(tab))
+  if (x > 3) colnames(tab) = rep(NULL, NCOL(tab))
   
   pander::pandoc.table(head(tab),
                        caption = files[x])

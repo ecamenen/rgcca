@@ -25,7 +25,7 @@ get_bloc_var <- function(df, collapse = FALSE) {
         bl_names,
         sapply(
             df[seq(length(df) - as.integer(!collapse))],
-            function(x) nrow(as.matrix(x))
+            function(x) NROW(as.matrix(x))
         )
     )
     

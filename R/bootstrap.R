@@ -31,7 +31,7 @@ bootstrap <- function(
     if (n_cores == 0)
         n_cores <- 1
 
-    # if (any(unlist(lapply(blocks, ncol) > 1000)))
+    # if (any(unlist(lapply(blocks, NCOL) > 1000)))
     #     verbose <- TRUE
 
     w1 <- rgcca$a
@@ -48,7 +48,7 @@ bootstrap <- function(
 
         # Test on the sign of the correlation
         for (k in seq(length(blocks))) {
-            for (j in seq(ncol(w[[k]]))) {
+            for (j in seq(NCOL(w[[k]]))) {
                 if (cor(w1[[k]][, j], w[[k]][, j]) < 0)
                     w[[k]][, j] <- -1 * w[[k]][, j]
             }

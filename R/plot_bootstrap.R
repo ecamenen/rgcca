@@ -28,7 +28,7 @@ plot_bootstrap <- function(
     color <- intneg <- intpos <- NULL
     J <- names(rgcca$a)
 
-    if (nrow(df) > n_mark)
+    if (NROW(df) > n_mark)
         df <- df[seq(n_mark), ]
 
     if (superblock) {

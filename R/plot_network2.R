@@ -39,7 +39,7 @@ plot_network2 <- function(rgcca, blocks) {
         edges,
         main = list(
             text = paste0("Common rows between blocks : ",
-                        nrow(blocks[[1]])),
+                        NROW(blocks[[1]])),
             style = "font-family:sans;font-weight:bold;font-size:28px;text-align:center;"
         )
     ) %>%

@@ -35,7 +35,7 @@
 #' @export
 plot_ind <- function(
     rgcca,
-    resp = rep(1, nrow(rgcca$Y[[1]])),
+    resp = NULL,
     compx = 1,
     compy = 2,
     i_block = length(rgcca$Y),
@@ -52,6 +52,8 @@ plot_ind <- function(
 
     if (is.null(i_block_y))
         i_block_y <- i_block
+    
+    resp <- check_response(resp, rgcca$Y)
 
     df <- get_comp(
         rgcca = rgcca,
@@ -63,7 +65,7 @@ plot_ind <- function(
         predicted = predicted
     )
 
-    if (nrow(df) > 100)
+    if (NROW(df) > 100)
         pch_text_cex <- 2
 
     if (!is.null(predicted))

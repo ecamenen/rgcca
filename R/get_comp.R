@@ -14,12 +14,12 @@
 #' response = factor( apply(Russett[, 9:11], 1, which.max),
 #'                   labels = colnames(Russett)[9:11] )
 #' get_comp(rgcca_out, as.matrix(response))
-#' response = as.matrix(runif(nrow(blocks[[1]])))
+#' response = as.matrix(runif(NROW(blocks[[1]])))
 #' row.names(response) = row.names(blocks[[1]])
 #' get_comp(rgcca_out, response)
 get_comp <- function(
     rgcca,
-    resp = rep(1, nrow(rgcca$Y[[1]])),
+    resp = rep(1, NROW(rgcca$Y[[1]])),
     compx = 1,
     compy = 2,
     compz = NULL,
@@ -39,7 +39,7 @@ get_comp <- function(
     if (!is.null(predicted)) {
 
             df <- rbind(df, predicted[[2]][[i_block]][, c(compx, compy, compz)])
-            resp <- rep(c("obs", "pred"), each = nrow(rgcca$Y[[1]]))
+            resp <- rep(c("obs", "pred"), each = NROW(rgcca$Y[[1]]))
 
     } else if (length(unique(as.matrix(resp))) > 1) {
         names <- row.names(resp)
@@ -53,7 +53,7 @@ get_comp <- function(
 
             if (identical(diff_column, name_blocks)) {
                 warning("No match has been found with the row names of the group file.")
-                resp <- rep("NA", nrow(df))
+                resp <- rep("NA", NROW(df))
 
             } else {
                 if (length(diff_column) > 0) {
@@ -66,7 +66,7 @@ get_comp <- function(
             }
         } else {
             warning("No row names have been found in the group file.")
-            resp <- rep("NA", nrow(df))
+            resp <- rep("NA", NROW(df))
         }
     }
 

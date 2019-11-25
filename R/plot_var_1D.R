@@ -14,7 +14,7 @@
 #' weights = lapply(seq(3), function(x) matrix(runif(7*2), 7, 2))
 #' for(i in seq(3))
 #' row.names(weights[[i]]) <- paste0(letters[i],
-#'      letters[seq(nrow(weights[[i]]))])
+#'      letters[seq(NROW(weights[[i]]))])
 #' weights[[4]] = Reduce(rbind, weights)
 #' rgcca_out = list(a = weights)
 #' names(rgcca_out$a) = LETTERS[seq(4)]
@@ -62,10 +62,10 @@ plot_var_1D <- function(
             "Variable weights on")
 
     # sort in decreasing order
-    df <- data.frame(order_df(df, 1, TRUE), order = nrow(df):1)
+    df <- data.frame(order_df(df, 1, TRUE), order = NROW(df):1)
 
     # max threshold for n
-    if (nrow(df) >= n_mark)
+    if (NROW(df) >= n_mark)
         df <- df[seq(n_mark), ]
 
     # if the superblock is selected, color the text of the y-axis according

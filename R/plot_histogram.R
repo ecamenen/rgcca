@@ -33,16 +33,16 @@ plot_histogram <- function(
     axis_text_cex = 10 * cex) {
     
 
-    if (nrow(df) <= 10 || title == "Average Variance Explained") {
+    if (NROW(df) <= 10 || title == "Average Variance Explained") {
         width <- NULL
         if (title == "Average Variance Explained")
             axis_text_cex <- 12
     } else
         width <- 1
 
-    if (nrow(df) < 3)
+    if (NROW(df) < 3)
         mar <- 60
-    else if (nrow(df) < 5)
+    else if (NROW(df) < 5)
         mar <- 30
     else
         mar <- 0

@@ -9,7 +9,7 @@
 #' rgcca_out = rgcca.analyze(blocks)
 #' get_edges(rgcca_out$C, blocks)
 get_edges <- function(connection, blocks) {
-    J <- ncol(connection)
+    J <- NCOL(connection)
 
     edges <- list()
 

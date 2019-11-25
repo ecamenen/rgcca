@@ -4,7 +4,7 @@ check_spars <- function(blocks, tau, type) {
 
     if (tolower(type) == "sgcca") {
         #the minimum value avalaible
-        min_c1 <- lapply(blocks, function(x) 1 / sqrt(ncol(x)))
+        min_c1 <- lapply(blocks, function(x) 1 / sqrt(NCOL(x)))
 
         # Check c1 varying between 1/sqrt(pj) and 1
         mapply(function(x, y) {

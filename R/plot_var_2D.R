@@ -17,7 +17,7 @@
 #' blocks[[4]] = Reduce(cbind, blocks)
 #' for (i in seq(4))
 #'     colnames(blocks[[i]]) = paste0( LETTERS[i],
-#'     as.character(seq(ncol(blocks[[i]]))))
+#'     as.character(seq(NCOL(blocks[[i]]))))
 #' coord = setMatrix(10, 2, 4)
 #' a = setMatrix(5, 2)
 #' a[[4]] = matrix(runif(15 * 2), 15, 2)

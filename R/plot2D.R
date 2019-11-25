@@ -49,7 +49,7 @@ plot2D <- function(
             size = pch_text_cex)
         )
         
-        if (no_overlap && nrow(df) <= 200) {
+        if (no_overlap && NROW(df) <= 200) {
             f = paste0(f, '_repel')
             func$force = 0.2
             func$max.iter = 500

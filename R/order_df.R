@@ -12,7 +12,7 @@ order_df <- function(df, comp = 1, allCol = TRUE) {
     ordered <- order(abs(df[, comp]), decreasing = TRUE)
 
     if (allCol)
-        comp <- seq(ncol(df))
+        comp <- seq(NCOL(df))
 
     res <- df[ordered, comp]
 

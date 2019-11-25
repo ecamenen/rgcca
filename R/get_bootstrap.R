@@ -61,7 +61,7 @@ get_bootstrap <- function(
         colnames(w_select) <- names(weight[[i]])
         rm(w_bind); gc()
 
-        n <- seq(ncol(w_select))
+        n <- seq(NCOL(w_select))
 
         if (is(rgcca, "sgcca")) {
 
@@ -113,9 +113,9 @@ get_bootstrap <- function(
         df$occ <- occ
     }else{
         index <- 5
-        df$sign <- rep("", nrow(df))
+        df$sign <- rep("", NROW(df))
 
-        for (i in seq(nrow(df)))
+        for (i in seq(NROW(df)))
             if (df$intneg[i]/df$intpos[i] > 0)
                 df$sign[i] <- "*"
     }
@@ -127,5 +127,5 @@ get_bootstrap <- function(
     if (length(zero_var) != 0)
         df <- df[-zero_var, ]
 
-    data.frame(order_df(df, index, allCol = TRUE), order = nrow(df):1)
+    data.frame(order_df(df, index, allCol = TRUE), order = NROW(df):1)
 }

@@ -341,7 +341,7 @@ check_size_blocks <- function(blocks, x, y = x) {
         x <- ""
 
     if (class(y) %in% c("matrix", "data.frame")) {
-        dim_y <- ncol(y)
+        dim_y <- NCOL(y)
         dim_type <- "number of columns"
     }else{
         dim_y <- length(y)
@@ -411,11 +411,11 @@ post_check_arg <- function(opt, blocks) {
     out <- lapply(seq(length(opt$ncomp)), function(x) {
         check_integer_opt("ncomp", opt$ncomp[x])
         if ((opt$ncomp[x] < 2) ||
-                (opt$ncomp[x] > ncol(blocks[[x]]))) {
+                (opt$ncomp[x] > NCOL(blocks[[x]]))) {
             stop(
                 paste0(
                     "--ncomp must be comprise between 2 and ",
-                    ncol(blocks[[x]]),
+                    NCOL(blocks[[x]]),
                     ", the number of variables of the block (currently equals to ",
                     round(opt$ncomp[x]),
                     ")."
@@ -479,7 +479,6 @@ check_integer <- function(x, y = x, type = "scalar", float = FALSE, min = 1) {
 
     if (type == "scalar")
         x = ""
-
     
     if (type %in% c("matrix", "data.frame"))
         y_temp <- y

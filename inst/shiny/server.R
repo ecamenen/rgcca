@@ -122,7 +122,7 @@ server <- function(input, output, session) {
                                 min = ifelse(
                                     par_name == "Tau",
                                     0,
-                                    ceiling(1 / sqrt(ncol(blocks[[i]])) * 100) / 100),
+                                    ceiling(1 / sqrt(NCOL(blocks[[i]])) * 100) / 100),
                                 max = 1,
                                 value = ifelse(
                                     is.null(input[[paste0("tau", i)]]),
@@ -363,7 +363,7 @@ server <- function(input, output, session) {
         if (!is.null(input$blocks)) {
             blocks <- getInfile()
             if (!is.null(blocks)) {
-                min <- min(sapply(blocks, ncol))
+                min <- min(sapply(blocks, NCOL))
                 if (min > 5)
                     return(5)
                 else
@@ -393,7 +393,7 @@ server <- function(input, output, session) {
         # Get the maximum number of columns among the blocks
 
         if (!is.null(input$blocks)) {
-            return(ncol(blocks[[id_block]]))
+            return(NCOL(blocks[[id_block]]))
         } else
             return(100)
 

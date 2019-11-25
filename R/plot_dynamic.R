@@ -71,7 +71,7 @@ plot_dynamic <- function(f,
         }
     }
     
-    if (ncol(f$data) == 3)
+    if (NCOL(f$data) == 3)
         p$sample_names <- lapply(
             levels(as.factor(f$data[, 3])), 
             function(x) row.names(subset(f$data, f$data[, 3] == x)))

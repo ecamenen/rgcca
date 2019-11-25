@@ -63,8 +63,8 @@ get_ctr2 <- function(
 
     }
 
-    if (n_mark > nrow(df))
-        n_mark <- nrow(df)
+    if (n_mark > NROW(df))
+        n_mark <- NROW(df)
 
     # TODO: function in other place
     if (remove_var) {
@@ -96,7 +96,7 @@ get_ctr2 <- function(
        # df <- resp[row.names(df)]
 
     } else
-        resp <- rep(1, nrow(df))
+        resp <- rep(1, NROW(df))
 
     data.frame(df, resp)
 }

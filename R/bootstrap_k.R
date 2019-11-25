@@ -19,7 +19,7 @@ bootstrap_k <- function(
     ...) {
 
     # Shuffle rows
-    id_boot <- sample(nrow(blocks[[1]]), replace = TRUE)
+    id_boot <- sample(NROW(blocks[[1]]), replace = TRUE)
 
     if (isTRUE(scale))
         boot_blocks <- lapply(
@@ -29,7 +29,7 @@ bootstrap_k <- function(
                     x[id_boot,],
                     center = attr(blocks, "scaled:center"),
                     scale = attr(blocks, "scaled:scale")
-                ) / sqrt(ncol(x)))
+                ) / sqrt(NCOL(x)))
     else
         boot_blocks <- lapply(blocks, function(x)
             scale2(x[id_boot, ], scale = FALSE))

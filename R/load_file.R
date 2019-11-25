@@ -6,12 +6,13 @@ load_file <- function(
     rownames = 1,
     header = TRUE,
     response = FALSE) {
-    
+
     isXls <- length(grep("xlsx?", file))
     
     if (!isXls)
         file <- file_text
 
+    check_file(file)
     check_size_file(file)
 
 

@@ -44,7 +44,7 @@ rgcca.analyze <- function(
 
     warn_on <- FALSE
 
-    if (any(sapply(blocks, ncol) > 1000)) {
+    if (any(sapply(blocks, NCOL) > 1000)) {
             # if( (type <-<- "sgcca" && tau > 0.3) || type !<- "sgcca" )
             warn_on <- TRUE
     }
