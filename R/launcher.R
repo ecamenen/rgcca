@@ -276,8 +276,8 @@ check_file <- function(f) {
 check_arg <- function(opt) {
         # Check the validity of the arguments opt : an optionParser object
         
-        if (is.null(opt$datasets))
-            stop(paste0("--datasets is required."), exit_code = 121)
+    if (is.null(opt$datasets))
+        stop(paste0("--datasets is required."), exit_code = 121)
     
     if (is.null(opt$scheme))
         opt$scheme <- "factorial"
@@ -375,6 +375,13 @@ post_check_arg <- function(opt, blocks) {
             strsplit(gsub(" ", "", opt$names), ",")[[1]]
         )
     
+    # If single values for ncomp and tau, tansform it in a list
+    for (x in c("ncomp", "tau")) {
+        if (length(grep(",", opt[[x]])) == 0 &&
+                !(x == "tau" && opt[[x]] == "optimal"))
+            opt[[x]] <- paste(rep(opt[[x]], length(blocks)), collapse = ",")
+    }
+        
     opt <- select_analysis(blocks, opt)
     
     if (opt$superblock | opt$type == "pca")
@@ -566,7 +573,6 @@ opt <- list(
         collapse = ",")
 )
 
-
 load_libraries(c("RGCCA", "ggplot2", "optparse", "scales", "igraph", "ggrepel"))
 
 tryCatch({
@@ -596,14 +602,9 @@ opt$text <- !("text" %in% names(opt))
 blocks <- set_blocks(opt$datasets, opt$names, opt$separator)
 blocks <- scaling(blocks, opt$scale)
 
-# If single values for ncomp and tau, tansform it in a list
-for (x in c("ncomp", "tau")) {
-    if (length(grep(",", opt[[x]])) == 0 &&
-            !(x == "tau" && opt[[x]] == "optimal"))
-        opt[[x]] <- paste(rep(opt[[x]], length(blocks)), collapse = ",")
-}
+group <- set_response(blocks, opt$group, opt$separator, opt$header)
 
-opt <- check_superblock(opt)
+opt$superblock <- check_superblock(opt$response, opt$superblock)
 opt <- post_check_arg(opt, blocks)
 
 if (!is.null(opt$response)) {
@@ -620,8 +621,6 @@ if (!is.matrix(connection))
         opt$connection,
         opt$separator)
 
-group <- set_response(blocks, opt$group, opt$separator, opt$header)
-
 rgcca_out <- rgcca.analyze(
         blocks = blocks,
         connection = connection,
@@ -636,7 +635,7 @@ rgcca_out <- rgcca.analyze(
 
 if (opt$ncomp[opt$block] == 1 && is.null(opt$block_y)) {
     warning("With a number of component of 1, a second block should be chosen
-    to perform a samples plot")
+    to perform an individual plot")
 } else {
     (
         individual_plot <- plot_ind(

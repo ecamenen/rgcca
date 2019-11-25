@@ -53,7 +53,7 @@ plot_var_2D <- function(
     pch_text_cex = 3 * cex,
     axis_title_cex = 19 * cex) {
 
-    y <- NULL
+    x <- y <- NULL
     
     # PCA case: remove the superblock in legend
     if (identical(blocks[[1]], blocks[[2]]))

@@ -637,14 +637,18 @@ server <- function(input, output, session) {
             response <- input$supervised
         else
             response <- NULL
-        pars <- showWarn(check_superblock(list(
-            response = response,
-            superblock = (
-                !is.null(input$supervised) &&
-                    !is.null(input$superblock) && input$superblock
-            )
-        )),
-        show = FALSE)
+
+        pars <- list(
+            superblock = showWarn(
+                check_superblock(
+                    is_supervised = response,
+                    is_superblock = (
+                        !is.null(input$supervised) &&
+                            !is.null(input$superblock) && input$superblock
+                    )
+                ),
+            show = FALSE)
+        )
 
 
         if (!is.null(input$supervised) &&

@@ -63,8 +63,9 @@ check_blocks <- function(blocks, init = FALSE) {
             blocks[[i]] <- impute_mean(blocks[[i]])
     }
 
-    if (length(blocks) > 1 && length(Reduce(intersect, lapply(blocks, colnames))))
-        stop(paste(msg, "elements of the list should have different colnames."))
+    # if (type != "pca")
+    # if (length(blocks) > 1 && length(Reduce(intersect, lapply(blocks, colnames))))
+    #     stop(paste(msg, "elements of the list should have different colnames."))
     # TODO: automatic conversation and warning
 
     # if any(sapply(blocks, is.character)) # optimization ?
