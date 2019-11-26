@@ -3,7 +3,6 @@
 #' Define the correct parameters according to the type of the analysis
 #'
 #' @inheritParams plot_var_2D
-#' @param opt An OptionParser object
 #' @param connection A matrix giving the connection between the blocks
 #' @param tau A vector of float (or character for 'optimal' setting) giving the
 #' shrinkage parameter for covariance maximization
@@ -26,7 +25,6 @@
 #' @export
 select_analysis <- function(
     blocks = blocks,
-    opt = NULL,
     connection = 1 - diag(length(blocks)),
     tau = rep(1, length(blocks)),
     ncomp = rep(1, length(blocks)),
@@ -35,40 +33,6 @@ select_analysis <- function(
     type  = "rgcca",
     verbose = TRUE,
     quiet = FALSE) {
-    
-    if (!is.null(opt)) {
-        scheme <- opt$scheme
-        connection <- opt$connection
-        superblock <- opt$superblock
-        type <- opt$type
-        tau <- opt$tau
-        ncomp <- opt$ncomp
-        ncomp <- unlist(
-            lapply(
-                strsplit(gsub(" ", "", as.character(ncomp)), ","),
-                    function(x)
-                        tryCatch({
-                            as.double(x)
-                        }, warning = function(w) {
-                            stop(unique(
-                                paste0(
-                                    "--ncomp is a character (",
-                                    x,
-                                    ") and must be an integer."
-                                )
-                            ), exit_code = 136)
-                        }))[[1]])
-
-        l_tau <- as.list(strsplit(gsub(" ", "", as.character(tau)), ",")[[1]])
-
-        tau <- unlist(lapply(l_tau, function(x) {
-            tryCatch({
-                as.double(x)
-            }, warning = function(w) {
-                "optimal"
-            })
-        }))
-    }
 
     J <- length(blocks)
     msg_superblock <- "a superbloc is used"
@@ -81,7 +45,7 @@ select_analysis <- function(
     ### SETTINGS ###
 
     warnParam <- function(param, x) {
-        warn.type.par <<-c(warn.type.par, paste(deparse(substitute(param))))
+        warn.type.par <<- c(warn.type.par, paste(deparse(substitute(param))))
         warn.type.value <<- c(warn.type.value, toString(x))
     }
 
@@ -362,12 +326,11 @@ select_analysis <- function(
         #    " of the superblock ", grammar," of the first block."))
     }
 
-    opt$blocks <- blocks
-    opt$scheme <- scheme
-    opt$tau <- tau
-    opt$ncomp <- ncomp
-    opt$connection <- connection
-    opt$superblock <- superblock
-
-    return(opt)
+    return(list(
+        scheme = scheme,
+        tau = tau,
+        ncomp = ncomp,
+        connection = connection,
+        superblock = superblock
+    ))
 }

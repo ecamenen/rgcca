@@ -8,6 +8,7 @@ check_spars <- function(blocks, tau, type) {
 
         # Check c1 varying between 1/sqrt(pj) and 1
         mapply(function(x, y) {
+            invisible(check_integer("sparsity", x, float = TRUE, min = 0))
             if (x < y | x > 1)
                 stop(
                     paste0(

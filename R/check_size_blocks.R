@@ -15,7 +15,9 @@ check_size_blocks <- function(blocks, x, y = x) {
         stop(
             paste0(
                 x,
-                " must have the same ", dim_type , " (actually ",
+                " must have the same ", 
+                dim_type , 
+                " (actually ",
                 dim_y,
                 ") than the number of blocks (",
                 length(blocks),

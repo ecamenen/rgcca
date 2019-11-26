@@ -1,4 +1,4 @@
-checkNbBlocks <- function(blocks, type) {
+check_nblocks <- function(blocks, type) {
     if (tolower(type) == "pca") {
         msg <- "Only one block is"
         exit_code <- 110

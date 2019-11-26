@@ -11,15 +11,11 @@ check_integer <- function(x, y = x, type = "scalar", float = FALSE, min = 1) {
 
     if (is.null(y))
         y <- x
-
-    if (type == "scalar")
-        x = ""
-
     
     if (type %in% c("matrix", "data.frame"))
         y_temp <- y
 
-    y <- as.vector(as.matrix(y))
+    y <- suppressWarnings(as.double(as.matrix(y)))
 
     if (any(is.na(y)))
         stop(paste(x, "should not be NA."))

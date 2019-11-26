@@ -8,6 +8,7 @@ top_variables.pdf
 \.RData$
 individuals.tsv
 variables.tsv
+design.tsv
 ^\.git$
 ^\.idea$
 ^data/

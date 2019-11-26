@@ -1,4 +1,4 @@
-' Get the indexes of the analysis
+#' Get the indexes of the analysis
 #' 
 #' @inheritParams plot_var_2D
 #' @inheritParams get_ctr
