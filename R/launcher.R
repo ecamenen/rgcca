@@ -107,7 +107,7 @@ getArgs <- function() {
             metavar = "integer list",
             default = opt[4],
             help = "Number of components in the analysis for each block
-            [default: %default]. The number should be greater than 1 and lower
+            [default: %default]. The number should be higher than 1 and lower
             than the minimum number of variables among the blocks. It can be a
             single values or a comma-separated list (e.g 2,2,3,2)."
         ),
@@ -185,7 +185,7 @@ getArgs <- function() {
             default = opt[9],
             help = "Component used in the X-axis for biplots and the only
             component used for histograms [default: %default] (should not be
-            greater than the number of components of the analysis)"
+            higher than the number of components of the analysis)"
         ),
         make_option(
             opt_str = "--compy",
@@ -193,7 +193,7 @@ getArgs <- function() {
             metavar = "integer",
             default = opt[10],
             help = "Component used in the Y-axis for biplots
-            [default: %default] (should not be greater than the number of
+            [default: %default] (should not be higher than the number of
             components of the analysis)"
         ),
         make_option(
@@ -276,7 +276,7 @@ check_arg <- function(opt) {
     else if (!opt$scheme %in% seq(4)) {
         stop(
             paste0(
-                "scheme must be comprise between 1 and 4 [by default: 2], not be equal to ",
+                "scheme should be comprise between 1 and 4 [by default: 2], not be equal to ",
                 opt$scheme,
                 "."
             ),
@@ -293,7 +293,7 @@ check_arg <- function(opt) {
     if (!opt$separator %in% seq(3)) {
         stop(
             paste0(
-                "separator must be comprise between 1 and 3 (1: Tabulation, 2: Semicolon, 3: Comma) [by default: 2], not be equal to ",
+                "separator should be comprise between 1 and 3 (1: Tabulation, 2: Semicolon, 3: Comma) [by default: 2], not be equal to ",
                 opt$separator,
                 "."
             ),
@@ -316,14 +316,9 @@ check_arg <- function(opt) {
     # for (o in files)
     #     if (!is.null(opt[[o]]))
     #         check_file(opt[[o]])
-    
+
     check_integer("nmark", opt$nmark, min = 2)
-    if (opt$nmark < 2)
-        stop(paste0("nmark must be upper than 2, not be equal to ",
-            opt$nmark,
-            "."),
-            exit_code = 135)
-    
+
     return(opt)
 }
 
@@ -374,7 +369,7 @@ post_check_arg <- function(opt, blocks) {
         if (!is.null(opt[[x]])) {
             if (opt[[x]] == 0)
                 opt[[x]] <- length(blocks)
-            opt[[x]] <- check_min_integer(x, opt[[x]], blocks)
+            opt[[x]] <- check_blockx(x, opt[[x]], blocks)
         }
     }
 
@@ -412,7 +407,7 @@ check_integer <- function(x, y = x, type = "scalar", float = FALSE, min = 1) {
         y <- as.integer(y)
     
     if (all(y < min))
-        stop(paste(x, "should be greater or equal to ", min, "."))
+        stop(paste0(x, " should be higher than or equal to ", min, "."))
 
     if (type %in% c("matrix", "data.frame"))
         y <- matrix(
@@ -427,6 +422,7 @@ check_integer <- function(x, y = x, type = "scalar", float = FALSE, min = 1) {
 
     return(y)
 }
+
 
 load_libraries <- function(librairies) {
     for (l in librairies) {

@@ -15,7 +15,11 @@ check_integer <- function(x, y = x, type = "scalar", float = FALSE, min = 1) {
     if (type %in% c("matrix", "data.frame"))
         y_temp <- y
 
-    y <- suppressWarnings(as.double(as.matrix(y)))
+    y <- tryCatch(
+        as.double(as.matrix(y)),
+        warning = function(w)
+            stop(paste(x, "should be numeric."))
+        )
 
     if (any(is.na(y)))
         stop(paste(x, "should not be NA."))
@@ -30,7 +34,7 @@ check_integer <- function(x, y = x, type = "scalar", float = FALSE, min = 1) {
         y <- as.integer(y)
     
     if (all(y < min))
-        stop(paste(x, "should be greater or equal to ", min, "."))
+        stop(paste0(x, " should be higher than or equal to ", min, "."))
 
     if (type %in% c("matrix", "data.frame"))
         y <- matrix(

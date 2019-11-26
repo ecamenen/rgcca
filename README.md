@@ -189,15 +189,15 @@ By default, the analysis: is a Regularised Generalised Canonical Correlation Ana
 - ```--type``` (STRING) Type of analysis [default: rgcca] (among: rgcca, pca, cca, gcca, cpca-w, hpca, maxbet-b, maxbet, maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar, rcon-pca, ridge-gca, sabscor, ssqcor, ssqcor, ssqcov-1, ssqcov-2, ssqcov, sum-pca, sumcor, sumcov-1, sumcov-2, sumcov)
 - ```--scale``` DO NOT scale the blocks (i.e., a data centering step is always performed). Otherwhise, each block is normalised and divided by the square root of its number of variables.
 - ```--superblock``` DO NOT use a superblock (i.e. a concatenation of all the blocks to visualize them all together in a consensus space). In this case, all blocks are assumed to be connected or a connection file could be used.
-- ```--ncomp``` (INTEGER) Number of components in the analysis for each block [default: 2]. The number should be greater than 1 and lower than the minimum number of variables among the blocks. It can be a single values or a comma-separated list (e.g 2,2,3,2).
+- ```--ncomp``` (INTEGER) Number of components in the analysis for each block [default: 2]. The number should be higher than 1 and lower than the minimum number of variables among the blocks. It can be a single values or a comma-separated list (e.g 2,2,3,2).
 - ```--tau``` (INTEGER/FLOAT) A regularization parameter for each block (i.e., tau) [default: optimal value by an ad hoc algorithm]. Tau varies from 0 (maximizing the correlation) to 1 (maximizing the covariance). For SGCCA, tau is automatically set to 1. A shrinkage parameter can be defined instead for automatic variable selection, varying from the square root of the variable number (the fewest selected variables) to 1 (all the variables are included). It can be a single values or a comma-separated list (e.g. 0,1,0.75,1).
 - ```-g (--scheme)``` (INTEGER) Link (i.e. scheme) function for covariance maximization (1: x, 2: x^2, 3: |x|, 4: x^4) [default: factorial]. Only, the x function penalizes structural negative correlation. The x^4 function discriminates more strongly the blocks than the x^2 one.
 
 #### Graphical parameters
 By default, the x-axis and y-axis are respectively the first and the second components, the number of top variables is 100 and  superblock is used.
 - ```--text``` Display the name of the points instead of shapes when plotting.
-- ```--compx``` (INTEGER) Component used in the X-axis for biplots and the only component used for histograms [default: 1] (should not be greater than the ```--ncomp``` parameter). 
-- ```--compy``` (INTEGER) Component used in the Y-axis for biplots [default: 2] should not be greater than the ```--ncomp``` parameter).
+- ```--compx``` (INTEGER) Component used in the X-axis for biplots and the only component used for histograms [default: 1] (should not be higher than the ```--ncomp``` parameter). 
+- ```--compy``` (INTEGER) Component used in the Y-axis for biplots [default: 2] should not be higher than the ```--ncomp``` parameter).
 - ```--nmark``` (INTEGER) Number maximum of top variables in ad hoc plot [default: 100] (for ```top_variable``` file).
 - ```--block``` (INTEGER) Position in the path list of the plotted block (0: the superblock or, if not activated, the last one, 1: the fist one, 2: the 2nd, etc.) [default: the last one].
 - ```--block_y``` (INTEGER) Position in the path list of the plotted block for the Y-axis in the individual plot (0: the superblock or, if not activated, the last one, 1: the fist one, 2: the 2nd, etc.) [default: the last one].

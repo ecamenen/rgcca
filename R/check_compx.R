@@ -5,7 +5,7 @@ check_compx <- function(x, y, ncomp, blockx) {
                 x,
                 " is currently equals to ",
                 y,
-                " and must be comprise between 1 and ",
+                " and should be comprise between 1 and ",
                 ncomp[blockx],
                 " (the number of component for the selected block)."
             ),
