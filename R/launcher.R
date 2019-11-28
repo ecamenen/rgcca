@@ -265,6 +265,10 @@ getArgs <- function() {
     return(OptionParser(option_list = option_list))
 }
 
+char_to_list <- function(x){
+    strsplit(gsub(" ", "", as.character(x)), ",")[[1]]
+}
+
 check_arg <- function(opt) {
     # Check the validity of the arguments opt : an optionParser object
 
@@ -318,85 +322,38 @@ check_arg <- function(opt) {
     #         check_file(opt[[o]])
 
     check_integer("nmark", opt$nmark, min = 2)
+    
+    for (x in c("ncomp", "tau"))
+        opt[[x]] <- char_to_list(opt[[x]])
 
     return(opt)
 }
 
-post_check_arg <- function(opt, blocks) {
+post_check_arg <- function(opt, rgcca) {
 # Check the validity of the arguments after loading the blocks opt : an
 # optionParser object blocks : a list of matrix
 
-    char_to_list <- function(x) strsplit(gsub(" ", "", as.character(x)), ",")[[1]]
-
-    if (!is.null(opt$names))
-        check_size_blocks(
-            blocks,
-            "names",
-            char_to_list(opt$names)
-        )
-
-    for (x in c("ncomp", "tau")) {
-        opt[[x]] <- elongate_arg(char_to_list(opt[[x]]), blocks)
-        if (x == "tau")
-            opt[[x]] <- sapply(
-                opt[[x]],
-                function(x) 
-                    tryCatch(
-                        as.double(x),
-                        warning = function(w) "optimal"
-                    )
-            )
-    }
-
-    # TODO: elongate_arg avant select_analysis
-    opt2 <- select_analysis(
-        blocks = blocks,
-        connection = opt$connection,
-        tau = opt$tau,
-        ncomp = opt$ncomp,
-        scheme = opt$scheme,
-        superblock = opt$superblock,
-        type  = opt$type
-    )
-
-    #TODO: set supervised here ? but only if elongate elsewhere
-
-    opt <- c(opt[setdiff(names(opt), names(opt2))], opt2)
-
-    blocks <- scaling(blocks, opt$scale)
-    opt$superblock <- check_superblock(opt$response, opt$superblock)
-    blocks <- set_superblock(blocks, opt$superblock, opt$type)
-
-    for (x in c("block", "block_y", "response")) {
+    #TODO: comment
+    # opt$tau <- sapply(
+    #     elongate_arg(char_to_list(opt$tau), blocks),
+    #     function(x) 
+    #         tryCatch(
+    #             as.double(x),
+    #             warning = function(w) "optimal"
+    #         )
+    # )
+ 
+    for (x in c("block", "block_y")) {
         if (!is.null(opt[[x]])) {
             if (opt[[x]] == 0)
-                opt[[x]] <- length(blocks)
-            opt[[x]] <- check_blockx(x, opt[[x]], blocks)
+                opt[[x]] <- length(rgcca$blocks)
+            opt[[x]] <- check_blockx(x, opt[[x]], rgcca$blocks)
         }
     }
 
-    if (!is.null(opt$response)) {
-        par <- c("blocks", "ncomp", "tau")
-        for (i in seq(length(par)))
-            opt[[par[i]]] <- c(opt[[par[i]]][-opt$response], opt[[par[i]]][opt$response])
-    }
-
-    if (!is.matrix(opt$connection))
-        opt$connection <- set_connection(
-            blocks,
-            (opt$superblock | !is.null(opt$response))
-        )
-    
-    check_connection(opt$connection, blocks)
-    
-    opt$tau <- check_tau(opt$tau, blocks)
-    opt$tau <- check_spars(blocks, opt$tau, opt$type)
-    opt$ncomp <- check_ncomp(opt$ncomp, blocks)
-
     for (x in c("compx", "compy"))
-        opt[[x]] <- check_compx(x, opt[[x]], opt$ncomp, opt$block)
+        opt[[x]] <- check_compx(x, opt[[x]], rgcca$ncomp, opt$block)
 
-    opt$blocks <- blocks
     return(opt)
 }
 
@@ -511,32 +468,35 @@ opt$text <- !("text" %in% names(opt))
 
 blocks <- set_blocks(opt$datasets, opt$names, opt$separator)
 group <- set_response(blocks, opt$group, opt$separator, opt$header)
+
 #TODO: make a function
-if(!is.null(opt$connection))
-    opt$connection <- load_file(
+if (!is.null(opt$connection)){
+    connection <- load_file(
         file = opt$connection,
         sep = opt$separator,
         rownames = NULL,
         header = FALSE
     )
-
-opt <- post_check_arg(opt, blocks)
-blocks = opt$blocks
-connection = opt$connection
+} else
+    connection <- NULL
 
 rgcca_out <- rgcca.analyze(
     blocks = blocks,
     connection = connection,
+    response = opt$response,
+    superblock = opt$superblock,
     tau = opt$tau,
     ncomp = opt$ncomp,
     scheme = opt$scheme,
-    scale = FALSE,
+    scale = opt$scale,
     type = opt$type
 )
 
+opt <- post_check_arg(opt, rgcca_out)
+
 ########## Plot ##########
 
-if (opt$ncomp[opt$block] == 1 && is.null(opt$block_y)) {
+if (rgcca_out$ncomp[opt$block] == 1 && is.null(opt$block_y)) {
     warning("With a number of component of 1, a second block should be chosen to perform an individual plot")
 } else {
     (
@@ -554,13 +514,13 @@ if (opt$ncomp[opt$block] == 1 && is.null(opt$block_y)) {
     save_plot(opt$o1, individual_plot)
 }
 
-if (opt$ncomp[opt$block] > 1) {
+if (rgcca_out$ncomp[opt$block] > 1) {
     (
         corcircle <- plot_var_2D(
             rgcca_out,
             opt$compx,
             opt$compy,
-            opt$superblock,
+            rgcca_out$superblock,
             opt$block,
             opt$text,
             n_mark = opt$nmark
@@ -572,7 +532,7 @@ if (opt$ncomp[opt$block] > 1) {
 top_variables <- plot_var_1D(
         rgcca_out,
         opt$compx, 
-        opt$superblock, 
+        rgcca_out$superblock, 
         opt$nmark,
         type = "cor"
     )

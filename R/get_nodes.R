@@ -2,13 +2,13 @@
 #' 
 #' @inheritParams plot_var_2D
 #' @inheritParams select_analysis
-#' @return A dataframe with blocks in rows and the number of variables, of rows 
+#' @return A dataframe with rgcca$blocks in rows and the number of variables, of rows 
 #' and tau or c1 in columns
 #' @examples
 #' data("Russett")
-#' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
+#' rgcca$blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
-#' rgcca_out = rgcca.analyze(blocks)
+#' rgcca_out = rgcca.analyze(rgcca$blocks)
 #' get_nodes(rgcca = rgcca_out)
 get_nodes <- function(rgcca, tau = NULL) {
 
@@ -33,15 +33,15 @@ get_nodes <- function(rgcca, tau = NULL) {
             tau <- rgcca[[par_rgcca]]
     }
 
-    nrow <- unlist(lapply(blocks, function(x)
+    nrow <- unlist(lapply(rgcca$blocks, function(x)
             ifelse(
                 is.null(attributes(x)$nrow),
-                NROW(blocks[[1]]),
+                NROW(rgcca$blocks[[1]]),
                 attributes(x)$nrow
             )))
 
-    values <- list(names(blocks), unlist(lapply(blocks, NCOL)), nrow, tau)
-    nodes <- as.data.frame(matrix(unlist(values), length(blocks), length(values)))
+    values <- list(names(rgcca$blocks), unlist(lapply(rgcca$blocks, NCOL)), nrow, tau)
+    nodes <- as.data.frame(matrix(unlist(values), length(rgcca$blocks), length(values)))
     colnames(nodes) <- c("id", "P", "nrow", par.name)
 
     return(nodes)

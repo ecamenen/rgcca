@@ -19,13 +19,15 @@ set_blocks <- function(file,
     sep = "\t",
     header = TRUE,
     rownames = 1) {
+    
+    char_to_list
 
     # Parse args containing files path
     isXls <- (length(grep("xlsx?", file)) == 1)
     # test if extension filename is xls
     if (!isXls)
     # if it is not, parse the name of file from the arg list
-        block_filenames <- cut_list(file)
+        block_filenames <- char_to_list(file)
     else {
         # # if xls, check file exists
         # check_file(file)
@@ -36,9 +38,15 @@ set_blocks <- function(file,
     }
 
     # Parse optional names of blocks
-    if (!is.null(names))
+    if (!is.null(names)) {
         # default name is filename, otherwise, the user could name the blocs
-        block_names <- cut_list(names)
+        block_names <- char_to_list(names)
+        invisible(check_size_blocks(
+            block_filenames,
+            "names",
+            block_names
+        ))
+    }
 
     # Load each dataset
     blocks <- list()
