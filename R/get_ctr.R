@@ -19,17 +19,17 @@
 #' superblocks <- rep(list(Reduce(cbind, c(blocks[1], blocks[3]))), 2)
 #' names(superblocks) <- names(blocks)[c(1, 3)]
 #' rgcca_out = rgcca.analyze(blocks[c(1,3)], ncomp = c(3,4))
-#' get_ctr(rgcca_out, superblocks, compz = 3, i_block = 1, type = "cor", collapse = TRUE)
-#' get_ctr(rgcca_out, superblocks, 2, 1, 3, 1, "weights", TRUE)
+#' rgcca_out$blocks = superblocks
+#' get_ctr(rgcca_out, compz = 3, i_block = 1, type = "cor", collapse = TRUE)
+#' get_ctr(rgcca_out, 2, 1, 3, 1, "weights", TRUE)
 #' @return A dataframe containing the indexes for each selected components
 #' @export
 get_ctr <- function(
     rgcca,
-    blocks = NULL,
     compx = 1,
     compy = 2,
     compz = NULL,
-    i_block = length(blocks),
+    i_block = length(rgcca$blocks),
     type = "cor",
     collapse = FALSE) {
     
@@ -41,24 +41,23 @@ get_ctr <- function(
     else
         i_block_2 <- 1
 
-    if (is.null(blocks))
-        row.names = row.names(rgcca$a[[i_block]])
-    else
-        row.names = colnames(blocks[[i_block]])
+    row.names = colnames(rgcca$blocks[[i_block]])
 
     if (type == "cor")
-        f <- function(x) cor(
-                blocks[[i_block_2]],
+        f <- function(x){
+            cor(
+                rgcca$blocks[[i_block_2]],
                 rgcca$Y[[i_block]][, x],
                 use = "pairwise.complete.obs"
             )
+        }
     else{
         if (!collapse)
             f <- function(x) rgcca$a[[i_block]][, x]
         else
             f <- function(x) unlist(
                 sapply(
-                    1:length(blocks),
+                    1:length(rgcca$blocks),
                     function(y) rgcca$a[[y]][, x]
                 )
             )

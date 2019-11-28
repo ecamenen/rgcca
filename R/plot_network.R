@@ -9,15 +9,15 @@
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca_out = rgcca.analyze(blocks)
-#' plot_network(rgcca_out, blocks)
+#' plot_network(rgcca_out)
 #' @export
-plot_network <- function(rgcca, blocks) {
+plot_network <- function(rgcca) {
     # Avoid random
     set.seed(1)
     V <- E <- NULL
-
-    nodes <- get_nodes(blocks, rgcca)
-    edges <- get_edges(rgcca$C, blocks)
+        
+    nodes <- get_nodes(rgcca)
+    edges <- get_edges(rgcca)
 
     par <- ifelse("sparsity" %in% names(nodes), "sparsity", "tau")
 
@@ -27,8 +27,8 @@ plot_network <- function(rgcca, blocks) {
         directed = FALSE)
 
     if (all(is.na(nodes[, par]))) {
-        nodes[, par] <- rep("optimal", length(blocks))
-        V(net)$tau <- rep(1, length(blocks))
+        nodes[, par] <- rep("optimal", length(rgcca$blocks))
+        V(net)$tau <- rep(1, length(rgcca$blocks))
     }
 
     V(net)$color <- "khaki2"
@@ -54,7 +54,7 @@ plot_network <- function(rgcca, blocks) {
         vertex.label.dist = 6,
         vertex.label.degree = 1.5,
         vertex.size = 23,
-        main = paste0("Common rows between blocks : ", NROW(blocks[[1]]))
+        main = paste0("Common rows between blocks : ", NROW(rgcca$blocks[[1]]))
     )
 
 }

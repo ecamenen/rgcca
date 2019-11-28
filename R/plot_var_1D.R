@@ -27,11 +27,10 @@
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca_out = rgcca.analyze(blocks)
-#' plot_var_1D(rgcca_out, blocks, collapse = TRUE)
+#' plot_var_1D(rgcca_out, collapse = TRUE)
 #' @export
 plot_var_1D <- function(
     rgcca,
-    blocks = NULL,
     comp = 1,
     superblock = TRUE,
     n_mark = 100,
@@ -44,7 +43,6 @@ plot_var_1D <- function(
 
     df <- get_ctr2(
         rgcca = rgcca,
-        blocks = blocks,
         compx = comp,
         compy = comp,
         i_block = i_block,

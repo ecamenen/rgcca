@@ -28,7 +28,7 @@ set_response <- function(
             response = TRUE
         )
     }
-    
+
     check_response(response, blocks)
 
 }

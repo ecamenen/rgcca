@@ -13,16 +13,15 @@
 #' get_ctr2(rgcca.res, blocks, superblock = FALSE)
 #' blocks = blocks[c(1,3)]
 #' rgcca.res = rgcca.analyze(blocks, ncomp = c(3,4))
-#' get_ctr2(rgcca.res, blocks, compz = 3, i_block = 1, collapse = TRUE)
-#' get_ctr2(rgcca.res, blocks, 1, 2, 3, 1, "weights", collapse = TRUE, n_mark = 5)
-#' get_ctr2(rgcca.res, blocks, collapse = TRUE)
+#' get_ctr2(rgcca.res, compz = 3, i_block = 1, collapse = TRUE)
+#' get_ctr2(rgcca.res, 1, 2, 3, 1, "weights", collapse = TRUE, n_mark = 5)
+#' get_ctr2(rgcca.res, collapse = TRUE)
 get_ctr2 <- function(
     rgcca,
-    blocks = NULL,
     compx = 1,
     compy = 2,
     compz = NULL,
-    i_block = length(blocks),
+    i_block = length(rgcca$Y),
     type = "cor",
     superblock = TRUE,
     n_mark = 100,
@@ -33,12 +32,12 @@ get_ctr2 <- function(
 
     if (collapse) {
         superblock <- TRUE
-        blocks.all <- blocks
-        blocks <- rep(list(Reduce(cbind, blocks)), length(blocks))
-        names(blocks) <- names(blocks.all)
+        blocks.all <- rgcca$blocks
+        rgcca$blocks <- rep(list(Reduce(cbind, rgcca$blocks)), length(rgcca$blocks))
+        names(rgcca$blocks) <- names(blocks.all)
     }
 
-    df <- get_ctr(rgcca, blocks, compx, compy, compz, i_block, type, collapse)
+    df <- get_ctr(rgcca, compx, compy, compz, i_block, type, collapse)
 
     if (is(rgcca, "sgcca")) {
 

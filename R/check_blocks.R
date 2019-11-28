@@ -57,6 +57,11 @@ check_blocks <- function(blocks, init = FALSE) {
     if (any(sapply(blocks, is.character2)))
         stop(paste(msg, "an element contains non-numeric data."))
 
+    for (i in seq(length(blocks)))
+        if (is.character(blocks[[i]]))
+            blocks[[i]] <- to_numeric(blocks[[i]])
+
+    # if any(sapply(blocks, is.character)) # optimization ?
     if (any(is.na(unlist(blocks)))) {
         warning(paste(msg, "an element contains NA that will be imputed by mean."))
         for (i in seq(length(blocks)))
@@ -67,11 +72,6 @@ check_blocks <- function(blocks, init = FALSE) {
     # if (length(blocks) > 1 && length(Reduce(intersect, lapply(blocks, colnames))))
     #     stop(paste(msg, "elements of the list should have different colnames."))
     # TODO: automatic conversation and warning
-
-    # if any(sapply(blocks, is.character)) # optimization ?
-    for (i in seq(length(blocks)))
-        if (is.character(blocks[[i]]))
-            blocks[[i]] <- to_numeric(blocks[[i]])
 
     invisible(blocks)
 }

@@ -21,7 +21,7 @@ check_connection <- function(c, blocks) {
     if (all(c == 0))
         stop(paste(msg, "not contain only 0."), exit_code = 107)
 
-    check_size_blocks(blocks, "connection matrix", c)
+    invisible(check_size_blocks(blocks, "connection matrix", c))
 
     # TODO: warning if superblock = TRUE
 }

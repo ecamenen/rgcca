@@ -762,6 +762,7 @@ server <- function(input, output, session) {
 
     }
 
+    # TODO : MAJ function in R-core 
     set_connectionShiny <- function() {
         supervised <- (!is.null(input$supervised) && input$supervised)
 

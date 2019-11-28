@@ -1,24 +1,24 @@
 #' Creates the edges for a design matrix
 #' 
 #' @inheritParams select_analysis
-#' @return A dataframe with tuples of connected blocks
+#' @return A dataframe with tuples of connected rgcca$A
 #' @examples
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca_out = rgcca.analyze(blocks)
-#' get_edges(rgcca_out$C, blocks)
-get_edges <- function(connection, blocks) {
-    J <- NCOL(connection)
+#' get_edges(rgcca_out)
+get_edges <- function(rgcca) {
 
+    J <- NCOL(rgcca$C)
     edges <- list()
 
     k <- 0
     for (j in seq(J)) {
         for (i in seq(J)) {
-            if (i > k && connection[i, j] > 0)
+            if (i > k && rgcca$C[i, j] > 0)
                 edges[[length(edges) + 1]] <-
-                    c(names(blocks)[j], names(blocks)[i], connection[i, j])
+                    c(names(rgcca$blocks)[j], names(rgcca$blocks)[i], rgcca$C[i, j])
         }
         k <- k + 1
     }
@@ -29,3 +29,4 @@ get_edges <- function(connection, blocks) {
 
     return(edges)
 }
+

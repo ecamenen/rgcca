@@ -6,6 +6,7 @@
 #' \dontrun{
 #' load_file_text('data/agriculture.tsv')
 #' }
+# TODO: rename response parameter in univariate
 load_file_text <- function(file, sep = "\t", rownames = 1, header = TRUE, response = FALSE) {
 
     if (!is.null(rownames) && rownames < 1)

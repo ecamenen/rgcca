@@ -1,19 +1,18 @@
 # Print and save variables analysis attributes
 save_var <- function(
     rgcca,
-    blocks,
     compx = 1,
     compy = 2,
     file = "variables.tsv") {
 
     indexes <- c("cor", "weight")
 
-    vars <- Reduce(rbind, lapply(seq(length(blocks)), function(i)
+    vars <- Reduce(rbind, lapply(seq(length(rgcca$blocks)), function(i)
             data.frame(
                 Reduce(cbind,
                         lapply(indexes, function(x)
-                            get_ctr(rgcca, blocks, compx, compy, i_block = i, type = x))),
-                names(blocks)[i]
+                            get_ctr(rgcca, compx, compy, i_block = i, type = x))),
+                names(rgcca$blocks)[i]
             )))
 
     colnames(vars) <- c(as.vector(sapply(indexes, function(x)

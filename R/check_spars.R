@@ -7,23 +7,26 @@ check_spars <- function(blocks, tau, type) {
         min_c1 <- lapply(blocks, function(x) 1 / sqrt(NCOL(x)))
 
         # Check c1 varying between 1/sqrt(pj) and 1
-        mapply(function(x, y) {
+        tau <- mapply(
+            function(x, y) {
             invisible(check_integer("sparsity", x, float = TRUE, min = 0))
-            if (x < y | x > 1)
-                stop(
-                    paste0(
-                        "Sparsity parameter is equals to ",
-                        x,
-                        ". For SGCCA, it must be comprise between 1/sqrt(number_column) (i.e., ",
-                        toString(unlist(
-                            lapply(min_c1, function(x)
-                                ceiling(x * 100) / 100)
-                        ))
-                        ,
-                        ") and 1."
-                    ),
-                    exit_code = 132
-                )
-        }, tau, min_c1)
+                if (x < y | x > 1)
+                    stop(
+                        paste0(
+                            "Sparsity parameter is equals to ",
+                            x,
+                            ". For SGCCA, it must be comprise between 1/sqrt(number_column) (i.e., ",
+                            toString(unlist(
+                                lapply(min_c1, function(x)
+                                    ceiling(x * 100) / 100)
+                            ))
+                            ,
+                            ") and 1."
+                        ),
+                        exit_code = 132
+                    )
+            }, tau, min_c1)
     }
+    
+    return(tau)
 }

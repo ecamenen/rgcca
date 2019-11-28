@@ -9,22 +9,19 @@
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca_out = rgcca.analyze(blocks)
-#' get_nodes(blocks, rgcca = rgcca_out)
-get_nodes <- function(blocks, rgcca = NULL, tau = NULL) {
+#' get_nodes(rgcca = rgcca_out)
+get_nodes <- function(rgcca, tau = NULL) {
 
-    if (!is.null(rgcca) & is(rgcca, "sgcca")) {
+    if (is(rgcca, "sgcca")) {
         par_rgcca <- "c1"
         par.name <- "sparsity"
     } else
         par_rgcca <- par.name <- "tau"
 
     if (any(tau == "optimal")) {
-        if (!is.null(rgcca))
             tau <- unlist(lapply(seq(NCOL(rgcca[[par_rgcca]])),
                 function(x)
                     Reduce(paste, round(rgcca[[par_rgcca]][, x], 2))))
-        else
-            tau <- rep(NA, length(blocks))
     }
 
     if (is.null(tau)) {

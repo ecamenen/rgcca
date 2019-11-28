@@ -3,13 +3,15 @@ check_tau <- function(tau, blocks) {
     tryCatch({
         # Check value of each tau
         tau <- sapply(
-            seq(length(tau)), 
+            seq(length(tau)),
             function(x) {
                 if (tau[x] != "optimal") {
                     y <- check_integer("tau", tau[x], float = TRUE, min = 0)
                     if (y > 1)
                         stop(paste0(msg, " (currently equals to ", tau[x], ")."),
                             exit_code = 129)
+                    else
+                        y
                 }else
                     tau[x]
         })
@@ -17,7 +19,7 @@ check_tau <- function(tau, blocks) {
         tau <- elongate_arg(tau, blocks)
         check_size_blocks(blocks, "tau", tau)
 
-        # return(tau)
+        return(tau)
 
         # If there is only one common tau
         # if (length(tau) == 1)

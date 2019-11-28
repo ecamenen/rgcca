@@ -25,20 +25,19 @@
 #' rgcca_out = list(Y = coord, a = a, AVE = list(AVE_X = AVE_X))
 #' names(rgcca_out$a) = LETTERS[seq(4)]
 #' # Using a superblock
-#' plot_var_2D(rgcca_out, blocks, 1, 2, TRUE)
+#' plot_var_2D(rgcca_out, 1, 2, TRUE)
 #' # Using the first block
-#' plot_var_2D(rgcca_out, blocks, 1, 2, FALSE, 1)
+#' plot_var_2D(rgcca_out, 1, 2, FALSE, 1)
 #' library(RGCCA)
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca_out = rgcca.analyze(blocks)
 #' # Without superblock but with the of all variables to the first block
-#' plot_var_2D(rgcca_out, blocks, collapse = TRUE)
+#' plot_var_2D(rgcca_out, collapse = TRUE)
 #' @export
 plot_var_2D <- function(
     rgcca,
-    blocks,
     compx = 1,
     compy = 2,
     superblock = TRUE,
@@ -56,12 +55,11 @@ plot_var_2D <- function(
     x <- y <- NULL
     
     # PCA case: remove the superblock in legend
-    if (identical(blocks[[1]], blocks[[2]]))
+    if (identical(rgcca$blocks[[1]], rgcca$blocks[[2]]))
         superblock <- FALSE
 
     df <- get_ctr2(
         rgcca = rgcca,
-        blocks = blocks,
         compx = compx,
         compy = compy,
         i_block = i_block,

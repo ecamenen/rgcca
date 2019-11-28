@@ -1,6 +1,5 @@
 check_ncomp <- function(ncomp, blocks, min = 2) {
     ncomp <- elongate_arg(ncomp, blocks)
-    print(ncomp)
     ncomp <- sapply(
         seq(length(ncomp)),
         function(x){

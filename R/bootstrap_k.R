@@ -55,8 +55,10 @@ bootstrap_k <- function(
         )$a
 
     # Add removed variables
-    missing_var <- lapply(seq(length(blocks)), function(x)
-    setdiff(colnames(blocks[[x]]), rownames(w[[x]])))
+    missing_var <- lapply(
+        seq(length(blocks)),
+        function(x) setdiff(colnames(blocks[[x]]), rownames(w[[x]]))
+    )
     missing_tab <- lapply(
         seq(length(missing_var)),
         function(x)

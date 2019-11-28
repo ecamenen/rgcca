@@ -24,7 +24,7 @@ rgcca.analyze <- function(
     type = "rgcca",
     verbose = TRUE,
     ...) {
-    
+
     stopifnot(!missing(blocks))
     blocks <- check_blocks(blocks)
     if (!"optimal" %in% tau) {
@@ -73,6 +73,7 @@ rgcca.analyze <- function(
 
     func_out <- eval(as.call(func))
     names(func_out$a) <- names(blocks)
+    func_out$blocks <- blocks
 
     invisible(func_out)
 }

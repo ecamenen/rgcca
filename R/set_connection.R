@@ -13,29 +13,17 @@
 #' @export
 set_connection <- function(
     blocks,
-    superblock = FALSE,
-    file = NULL,
-    sep = "\t",
-    header = FALSE,
-    rownames = NULL) {
+    superblock = FALSE
+) {
+    # TODO: rename file in connection
 
     J <- length(blocks)
 
     if (superblock) {
         connection <- matrix(0, J, J)
         connection[seq(J - 1), J] <- connection[J, seq(J - 1)] <- 1
-
-    } else if (is.null(file))
+    } else
         connection <- 1 - diag(J)
-    else 
-        connection <- load_file(
-            file = file,
-            sep = sep,
-            rownames = rownames,
-            header = header
-        )
-
-    check_connection(connection, blocks)
 
     return(connection)
 }
