@@ -5,7 +5,6 @@
 #'
 #' @inheritParams plot_var_2D
 #' @param comp An integer giving the index of the analysis components
-#' of a superblock
 #' @param type A string giving the criterion to selects biomarkers : either 
 #' "cor" for correlation between the component and the block
 #' or "weight" for the weight of the RGCCA
@@ -18,10 +17,11 @@
 #' weights[[4]] = Reduce(rbind, weights)
 #' rgcca_out = list(a = weights)
 #' names(rgcca_out$a) = LETTERS[seq(4)]
+#' rgcca_out$superblock = TRUE
 #' # With the 1rst component of the superblock
-#' plot_var_1D(rgcca_out, NULL, 1, TRUE, type = "weigth")
+#' plot_var_1D(rgcca_out, NULL, 1, type = "weigth")
 #' # With the 2nd component of the 1rst block by selecting the ten higher weights
-#' plot_var_1D(rgcca_out, NULL, 2, FALSE, 10, 1, type = "weigth")
+#' plot_var_1D(rgcca_out, NULL, 2, 10, 1, type = "weigth")
 #' library(RGCCA)
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
@@ -32,7 +32,6 @@
 plot_var_1D <- function(
     rgcca,
     comp = 1,
-    superblock = TRUE,
     n_mark = 100,
     i_block = length(rgcca$a),
     type = "cor",
@@ -40,6 +39,9 @@ plot_var_1D <- function(
     cex = 1,
     subtitle_cex = 16 * cex,
     axis_text_cex = 10 * cex) {
+    
+    if (i_block < length(rgcca$a))
+        rgcca$superblock <- FALSE
 
     df <- get_ctr2(
         rgcca = rgcca,
@@ -47,7 +49,7 @@ plot_var_1D <- function(
         compy = comp,
         i_block = i_block,
         type = type,
-        superblock = superblock,
+        superblock = rgcca$superblock,
         n_mark = n_mark,
         collapse = collapse,
         remove_var = FALSE
@@ -68,7 +70,7 @@ plot_var_1D <- function(
 
     # if the superblock is selected, color the text of the y-axis according
     # to their belonging to each blocks
-    if (superblock & (collapse | (i_block == length(rgcca$a)))) {
+    if (rgcca$superblock & (collapse | (i_block == length(rgcca$a)))) {
         color <- factor(df$resp)
         levels(color) <- color_group(color)
         p <- ggplot(df, aes(order, df[, 1], fill = df$resp))
@@ -99,7 +101,7 @@ plot_var_1D <- function(
     # Force all the block names to appear on the legend
     if (length(color) != 1)
         p <- order_color(rgcca$a, p, matched, collapse)
-    if ( !superblock | (!collapse & i_block != length(rgcca$a)))
+    if ( !rgcca$superblock | (!collapse & i_block != length(rgcca$a)))
             p <- p + theme(legend.position = "none")
 
     return(p)

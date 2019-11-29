@@ -9,12 +9,12 @@
 #' @return A list matrix corresponding to the blocks
 #' @examples
 #' \dontrun{
-#' set_blocks (TRUE,
+#' load_blocks (TRUE,
 #'     "inst/extdata/agriculture.tsv,inst/extdata/industry.tsv,inst/extdata/politic.tsv",
 #'     "agric,ind,polit")
 #' }
 #' @export
-set_blocks <- function(file,
+load_blocks <- function(file,
     names = NULL,
     sep = "\t",
     header = TRUE,

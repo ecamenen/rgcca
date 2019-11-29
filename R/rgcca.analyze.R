@@ -25,14 +25,13 @@ rgcca.analyze <- function(
     ncomp = rep(2, length(blocks)),
     type = "rgcca",
     verbose = TRUE,
-    scheme = scheme,
+    scheme = "factorial",
     scale = TRUE,
     ...) {
 
     tau <- elongate_arg(tau, blocks)
     ncomp <- elongate_arg(ncomp, blocks)
 
-    # TODO: elongate_arg avant select_analysis
     opt <- select_analysis(
         blocks = blocks,
         connection = connection,
@@ -43,32 +42,27 @@ rgcca.analyze <- function(
         type  = type
     )
 
-    blocks <- scaling(blocks, scale)
+    opt$blocks <- scaling(blocks, scale)
     superblock <- check_superblock(response, opt$superblock)
-    blocks <- set_superblock(blocks, opt$superblock, type)
+    opt$blocks <- set_superblock(opt$blocks, opt$superblock, type)
 
-    
-    opt$blocks <- blocks # TODO
-    
     if (!is.null(response)) {
-        response <- check_blockx("response", response, blocks)
+        response <- check_blockx("response", response, opt$blocks)
         par <- c("blocks", "ncomp", "tau")
         for (i in seq(length(par)))
             opt[[par[i]]] <- c(opt[[par[i]]][-response], opt[[par[i]]][response])
     }
 
-    blocks <- opt$blocks
-
     if (!is.matrix(opt$connection))
         opt$connection <- set_connection(
-            blocks,
+            opt$blocks,
             (opt$superblock | !is.null(response))
         )
-    
-    check_connection(opt$connection, blocks)
-    opt$tau <- check_tau(opt$tau, blocks)
-    opt$tau <- check_spars(blocks, opt$tau, type)
-    opt$ncomp <- check_ncomp(opt$ncomp, blocks)
+
+    check_connection(opt$connection, opt$blocks)
+    opt$tau <- check_tau(opt$tau, opt$blocks)
+    opt$tau <- check_spars(opt$blocks, opt$tau, type)
+    opt$ncomp <- check_ncomp(opt$ncomp, opt$blocks)
 
     warn_on <- FALSE
 

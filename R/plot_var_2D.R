@@ -4,8 +4,6 @@
 #' construction of the RGCCA components
 #' @inheritParams plot_ind
 #' @param blocks A list of matrix
-#' @param superblock A boolean giving the presence (TRUE) / absence (FALSE)
-#' of a superblock
 #' @param remove_var A bolean to keep only the 100 variables of each
 #' component with the biggest correlation#'
 #' @param n_mark An integer giving the number of top variables to select
@@ -25,9 +23,10 @@
 #' rgcca_out = list(Y = coord, a = a, AVE = list(AVE_X = AVE_X))
 #' names(rgcca_out$a) = LETTERS[seq(4)]
 #' # Using a superblock
-#' plot_var_2D(rgcca_out, 1, 2, TRUE)
+#' rgcca_out$superblock = TRUE
+#' plot_var_2D(rgcca_out, 1, 2)
 #' # Using the first block
-#' plot_var_2D(rgcca_out, 1, 2, FALSE, 1)
+#' plot_var_2D(rgcca_out, 1, 2, 1)
 #' library(RGCCA)
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
@@ -40,8 +39,7 @@ plot_var_2D <- function(
     rgcca,
     compx = 1,
     compy = 2,
-    superblock = TRUE,
-    i_block = length(blocks),
+    i_block = length(rgcca$a),
     text = TRUE,
     remove_var = TRUE,
     n_mark = 100,
@@ -54,9 +52,12 @@ plot_var_2D <- function(
 
     x <- y <- NULL
     
+    if (i_block < length(rgcca$a))
+        rgcca$superblock <- FALSE
+    
     # PCA case: remove the superblock in legend
     if (identical(rgcca$blocks[[1]], rgcca$blocks[[2]]))
-        superblock <- FALSE
+        rgcca$superblock <- FALSE
 
     df <- get_ctr2(
         rgcca = rgcca,
@@ -64,7 +65,7 @@ plot_var_2D <- function(
         compy = compy,
         i_block = i_block,
         type = "cor",
-        superblock = superblock,
+        superblock = rgcca$superblock,
         n_mark = n_mark,
         collapse = collapse,
         remove_var = remove_var
@@ -110,7 +111,7 @@ plot_var_2D <- function(
         )
     
     # remove legend if not on superblock
-    if (!superblock || i_block != length(rgcca$a))
+    if (!rgcca$superblock || i_block != length(rgcca$a))
         p + theme(legend.position = "none")
     else
         p

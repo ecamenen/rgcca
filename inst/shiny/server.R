@@ -744,9 +744,9 @@ server <- function(input, output, session) {
         )
 
 
-    set_responseShiny = function() {
+    load_responseShiny = function() {
         response <- showWarn(
-            set_response (
+            load_response (
                 blocks = blocks_without_superb,
                 file = response_file,
                 sep = input$sep,
@@ -924,7 +924,7 @@ server <- function(input, output, session) {
 
         assign("blocks_unscaled",
                showWarn(
-                    set_blocks(
+                    load_blocks(
                         file = paths,
                         names = names,
                         sep = input$sep,
@@ -958,7 +958,7 @@ server <- function(input, output, session) {
         assign("response", NULL, .GlobalEnv)
         assign("connection", NULL, .GlobalEnv)
         assign("response_file", NULL, .GlobalEnv)
-        assign("response", set_responseShiny(), .GlobalEnv)
+        assign("response", load_responseShiny(), .GlobalEnv)
 
         assign("id_block_resp",
                 length(blocks_without_superb),
@@ -1159,7 +1159,7 @@ server <- function(input, output, session) {
             assign("response_file",
                     input$response$datapath,
                     .GlobalEnv)
-            assign("response", set_responseShiny(), .GlobalEnv)
+            assign("response", load_responseShiny(), .GlobalEnv)
             setUiResponse()
             showWarn(samples(), warn = TRUE)
             showWarn(message(

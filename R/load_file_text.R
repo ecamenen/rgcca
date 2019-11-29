@@ -1,13 +1,12 @@
 #' Creates a matrix from loading a file
 #'
-#' @inheritParams set_blocks
+#' @inheritParams load_blocks
 #' @return A matrix containing the loaded file
 #' @examples
 #' \dontrun{
 #' load_file_text('data/agriculture.tsv')
 #' }
-# TODO: rename response parameter in univariate
-load_file_text <- function(file, sep = "\t", rownames = 1, header = TRUE, response = FALSE) {
+load_file_text <- function(file, sep = "\t", rownames = 1, header = TRUE, univariate = FALSE) {
 
     if (!is.null(rownames) && rownames < 1)
         rownames <- NULL
@@ -29,7 +28,7 @@ load_file_text <- function(file, sep = "\t", rownames = 1, header = TRUE, respon
             f <<- func(NULL)
     })
 
-    if (!response && NCOL(f) == 0)
+    if (!univariate && NCOL(f) == 0)
         stop(paste(basename(file), "has an only-column. Check the separator."),
         exit_code = 102)
 

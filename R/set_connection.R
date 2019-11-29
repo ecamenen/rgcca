@@ -1,6 +1,6 @@
 #' Create a matrix corresponding to a connection between the blocks
 #'
-#' @inheritParams set_blocks
+#' @inheritParams load_blocks
 #' @param blocks A list of matrix
 #' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of
 #' a superblock
@@ -15,7 +15,6 @@ set_connection <- function(
     blocks,
     superblock = FALSE
 ) {
-    # TODO: rename file in connection
 
     J <- length(blocks)
 

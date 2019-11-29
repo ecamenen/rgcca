@@ -332,16 +332,6 @@ check_arg <- function(opt) {
 post_check_arg <- function(opt, rgcca) {
 # Check the validity of the arguments after loading the blocks opt : an
 # optionParser object blocks : a list of matrix
-
-    #TODO: comment
-    # opt$tau <- sapply(
-    #     elongate_arg(char_to_list(opt$tau), blocks),
-    #     function(x) 
-    #         tryCatch(
-    #             as.double(x),
-    #             warning = function(w) "optimal"
-    #         )
-    # )
  
     for (x in c("block", "block_y")) {
         if (!is.null(opt[[x]])) {
@@ -466,19 +456,9 @@ opt$superblock <- !("superblock" %in% names(opt))
 opt$scale <- !("scale" %in% names(opt))
 opt$text <- !("text" %in% names(opt))
 
-blocks <- set_blocks(opt$datasets, opt$names, opt$separator)
-group <- set_response(blocks, opt$group, opt$separator, opt$header)
-
-#TODO: make a function
-if (!is.null(opt$connection)){
-    connection <- load_file(
-        file = opt$connection,
-        sep = opt$separator,
-        rownames = NULL,
-        header = FALSE
-    )
-} else
-    connection <- NULL
+blocks <- load_blocks(opt$datasets, opt$names, opt$separator)
+group <- load_response(blocks, opt$group, opt$separator, opt$header)
+connection <- load_connection(file = opt$connection, sep = opt$separator)
 
 rgcca_out <- rgcca.analyze(
     blocks = blocks,
@@ -520,7 +500,6 @@ if (rgcca_out$ncomp[opt$block] > 1) {
             rgcca_out,
             opt$compx,
             opt$compy,
-            rgcca_out$superblock,
             opt$block,
             opt$text,
             n_mark = opt$nmark
@@ -531,9 +510,9 @@ if (rgcca_out$ncomp[opt$block] > 1) {
 
 top_variables <- plot_var_1D(
         rgcca_out,
-        opt$compx, 
-        rgcca_out$superblock, 
+        opt$compx,
         opt$nmark,
+        opt$block,
         type = "cor"
     )
 save_plot(opt$o3, top_variables)
