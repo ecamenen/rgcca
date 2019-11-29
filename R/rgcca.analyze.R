@@ -47,6 +47,7 @@ rgcca.analyze <- function(
     opt$blocks <- set_superblock(opt$blocks, opt$superblock, type)
 
     if (!is.null(response)) {
+        # || tolower(type) == "ra"
         response <- check_blockx("response", response, opt$blocks)
         par <- c("blocks", "ncomp", "tau")
         for (i in seq(length(par)))
@@ -100,6 +101,6 @@ rgcca.analyze <- function(
     func_out$blocks <- opt$blocks
     func_out$superblock <- opt$superblock
 
-    #TODO: superclass = inherit type
+    class(func_out) <- type
     invisible(func_out)
 }

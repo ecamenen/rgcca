@@ -40,7 +40,7 @@ plot_var_1D <- function(
     subtitle_cex = 16 * cex,
     axis_text_cex = 10 * cex) {
     
-    if (i_block < length(rgcca$a))
+    if (i_block < length(rgcca$a) || is(rgcca, "pca"))
         rgcca$superblock <- FALSE
 
     df <- get_ctr2(

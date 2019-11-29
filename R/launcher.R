@@ -513,7 +513,8 @@ top_variables <- plot_var_1D(
         opt$compx,
         opt$nmark,
         opt$block,
-        type = "cor"
+        type = "cor",
+        n_mark = opt$nmark
     )
 save_plot(opt$o3, top_variables)
 

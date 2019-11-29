@@ -19,8 +19,6 @@ load_blocks <- function(file,
     sep = "\t",
     header = TRUE,
     rownames = 1) {
-    
-    char_to_list
 
     # Parse args containing files path
     isXls <- (length(grep("xlsx?", file)) == 1)
@@ -41,10 +39,11 @@ load_blocks <- function(file,
     if (!is.null(names)) {
         # default name is filename, otherwise, the user could name the blocs
         block_names <- char_to_list(names)
-        invisible(check_size_blocks(
-            block_filenames,
-            "names",
-            block_names
+        invisible(
+            check_size_blocks(
+                block_filenames,
+                "names",
+                block_names
         ))
     }
 
@@ -52,7 +51,6 @@ load_blocks <- function(file,
     blocks <- list()
     for (i in seq(length(block_filenames))) {
         if (!isXls) {
-            # if not an xls, file exist test is done here
             fi <- block_filenames[i]
             check_file(fi)
         }

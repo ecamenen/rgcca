@@ -52,7 +52,7 @@ plot_var_2D <- function(
 
     x <- y <- NULL
     
-    if (i_block < length(rgcca$a))
+    if (i_block < length(rgcca$a) || is(rgcca, "pca"))
         rgcca$superblock <- FALSE
     
     # PCA case: remove the superblock in legend

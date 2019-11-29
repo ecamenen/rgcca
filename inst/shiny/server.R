@@ -553,29 +553,27 @@ server <- function(input, output, session) {
     corcircle <- function()
         plot_var_2D(
             rgcca = rgcca_out,
-            blocks = blocks,
             compx = compx,
             compy = compy,
-            superblock = (superblock & tolower(analysis_type) != "pca"),
             i_block = id_block,
-            text = if_text
+            text = if_text,
+            n_mark = nb_mark
         )
 
     fingerprint <- function()
         plot_var_1D(
             rgcca = rgcca_out,
-            blocks = blocks,
             comp = compx,
-            superblock = (superblock & tolower(analysis_type) != "pca"),
             n_mark = nb_mark,
-            i_block = id_block
+            i_block = id_block,
+            type = "cor"
         )
 
     ave <- function()
         plot_ave(rgcca = rgcca_out)
 
     design <- function()
-        plot_network2(rgcca_out, blocks)
+        plot_network2(rgcca_out)
 
     plotBoot <- function()
         plot_bootstrap(boot, compx, nb_mark, id_block)
@@ -592,7 +590,6 @@ server <- function(input, output, session) {
 
     setParRGCCA <- function(verbose = TRUE) {
         blocks <- blocks_without_superb
-        ncomp <- rep(nb_comp, length(blocks))
 
         if (is.null(analysis_type) | is.null(input$analysis_type))
             analysis_type <- "RGCCA"
@@ -633,68 +630,10 @@ server <- function(input, output, session) {
 
         getNames()
 
-        if (!is.null(input$supervised) && input$supervised)
-            response <- input$supervised
-        else
-            response <- NULL
-
-        pars <- list(
-            superblock = showWarn(
-                check_superblock(
-                    is_supervised = response,
-                    is_superblock = (
-                        !is.null(input$supervised) &&
-                            !is.null(input$superblock) && input$superblock
-                    )
-                ),
-            show = FALSE)
-        )
-
-
-        if (!is.null(input$supervised) &&
-            (input$supervised || tolower(analysis_type) == "ra")) {
-            pars <- order_opt(
-                list(
-                    tau = tau,
-                    ncomp = ncomp,
-                    superblock = pars$superblock
-                ),
-                blocks,
-                id_block_resp
-            )
-            blocks <- pars$blocks
-            tau <- pars$tau
-            ncomp <- pars$ncomp
-        }
-
-
-        pars <- showWarn(
-            select_analysis(
-                blocks = blocks,
-                connection = NULL,
-                tau = tau,
-                ncomp = ncomp,
-                scheme = input$scheme,
-                superblock = pars$superblock,
-                type  = analysis_type,
-                quiet = TRUE
-            )
-        )
-
-
-        if (length(pars) == 1) {
-            assign("analysis", NULL, .GlobalEnv)
-            return(NULL)
-        }
-
-        assign("connection", pars$connection, .GlobalEnv)
-        assign("tau", pars$tau, .GlobalEnv)
-        assign("ncomp", pars$ncomp, .GlobalEnv)
-        assign("scheme", pars$scheme, .GlobalEnv)
-        assign("superblock", pars$superblock, .GlobalEnv)
+        assign("tau", tau, .GlobalEnv)
         assign("analysis_type", analysis_type, .GlobalEnv)
 
-        return(pars$blocks)
+        return(blocks)
     }
 
     setRGCCA <- function() {
@@ -705,14 +644,22 @@ server <- function(input, output, session) {
                 tau <- getTau()
         })
 
+        if (!is.null(input$supervised) && input$supervised)
+            response <- input$supervised
+        else
+            response <- NULL
+
         assign("rgcca_out",
                showWarn(
                    rgcca.analyze(
                         blocks,
                         connection = connection,
+                        response = response,
+                        superblock = (!is.null(input$supervised) &&
+                            !is.null(input$superblock) && input$superblock),
                         tau = tau,
-                        ncomp = ncomp,
-                        scheme = scheme,
+                        ncomp = input$nb_comp,
+                        scheme = input$scheme,
                         scale = FALSE,
                         init = input$init,
                         bias = TRUE,
@@ -721,6 +668,13 @@ server <- function(input, output, session) {
                     duration = NULL
                 ),
                 .GlobalEnv)
+        
+        # print(length(rgcca_out))
+        # 
+        # if (length(rgcca_out) == 1) {
+        #     assign("analysis", NULL, .GlobalEnv)
+        #     return(NULL)
+        # }
 
         #getBoot()
     }
@@ -746,7 +700,7 @@ server <- function(input, output, session) {
 
     load_responseShiny = function() {
         response <- showWarn(
-            load_response (
+            load_response(
                 blocks = blocks_without_superb,
                 file = response_file,
                 sep = input$sep,
@@ -762,29 +716,17 @@ server <- function(input, output, session) {
 
     }
 
-    # TODO : MAJ function in R-core 
     set_connectionShiny <- function() {
         supervised <- (!is.null(input$supervised) && input$supervised)
 
-        if (is.null(connection) | !is.null(connection_file)) {
-            try(
-                withCallingHandlers(
-                    connection <- showWarn(
-                        set_connection (blocks = blocks,
-                            superblock = (is.null(connection_file) && (superblock  | supervised)),
-                            file = connection_file,
-                            sep = input$sep
-                            )
-                        )))
+        if (!is.null(connection_file)) {
+            connection <- load_connection(file = connection_file, sep = input$sep)
+
+            showWarn(check <- check_connection(connection, blocks))
 
             # Error due to the superblock disabling and the connection have not the same size than the number of blocks
-            if (identical(connection, "104"))
-                connection <- showWarn(set_connection(
-                    blocks = blocks,
-                    superblock = (superblock  | supervised),
-                    file = NULL,
-                    sep = input$sep
-                ))
+            if (identical(check, "130"))
+                connection <- NULL
 
         }
 
@@ -1003,7 +945,7 @@ server <- function(input, output, session) {
 
 
     observeEvent(input$run_analysis, {
-        if (!is.null(getInfile()) & is.matrix(connection)) {
+        if (!is.null(getInfile())) {
             assign("analysis", setRGCCA(), .GlobalEnv)
 
             show(id = "navbar")
@@ -1090,7 +1032,7 @@ server <- function(input, output, session) {
             }
         })
     }, priority = 30)
-
+    
     observeEvent(c(input$superblock, input$supervised), {
         reac_var(length(blocks))
         assign("id_block", reac_var(), .GlobalEnv)
@@ -1133,8 +1075,8 @@ server <- function(input, output, session) {
             save_plot("corcircle.pdf", corcircle())
             save_plot("fingerprint.pdf", fingerprint())
             save_plot("AVE.pdf", ave())
-            save_var(rgcca_out, blocks, 1, 2)
-            save_ind(rgcca_out, blocks, 1, 2)
+            save_var(rgcca_out, 1, 2)
+            save_ind(rgcca_out, 1, 2)
             save(analysis, file = "rgcca_result.RData")
             msgSave()
         }

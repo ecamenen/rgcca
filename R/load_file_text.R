@@ -21,9 +21,9 @@ load_file_text <- function(file, sep = "\t", rownames = 1, header = TRUE, univar
             dec = ","
         ))
 
-    tryCatch({
-        f <- func()
-    }, error = function(e) {
+    tryCatch(
+        f <- func(),
+    error = function(e) {
         if (e$message == "duplicate 'row.names' are not allowed")
             f <<- func(NULL)
     })

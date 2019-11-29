@@ -1,4 +1,4 @@
-load_connection <- function(file, separator){
+load_connection <- function(file = NULL, separator = "\t"){
     if (!is.null(file))
         load_file(
             file = file,
@@ -6,6 +6,4 @@ load_connection <- function(file, separator){
             rownames = NULL,
             header = FALSE
         )
-    else
-        NULL
 }
