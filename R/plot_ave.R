@@ -22,6 +22,12 @@ plot_ave <- function(
     subtitle_cex = 16 * cex,
     axis_text_cex = 10 * cex) {
 
+    if (is(rgcca, "pca")) {
+        rgcca$AVE$AVE_X = rgcca$AVE$AVE_X[1]
+        rgcca$ncomp = rgcca$ncomp[1]
+        rgcca$a = rgcca$a[1]
+    }
+
     ave <- 100 * unlist(rgcca$AVE$AVE_X)
     blocks <- factor(unlist(lapply(seq(length(names(rgcca$a))),
             function(x) rep(names(rgcca$a)[x], rgcca$ncomp[x]))),

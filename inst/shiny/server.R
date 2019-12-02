@@ -628,7 +628,10 @@ server <- function(input, output, session) {
             assign("two_blocks", NULL, .GlobalEnv)
         }
 
-        getNames()
+        if ( (!is.null(input$superblock) && input$superblock) && 
+                ( analysis_type %in% c("PCA", "RGCCA", "SGCCA")) ||
+                analysis_type %in% multiple_blocks_super )
+            blocks <- c(blocks, Superblock = list(Reduce(cbind, blocks)))
 
         assign("tau", tau, .GlobalEnv)
         assign("analysis_type", analysis_type, .GlobalEnv)
@@ -652,9 +655,9 @@ server <- function(input, output, session) {
         assign("rgcca_out",
                showWarn(
                    rgcca.analyze(
-                        blocks,
+                        blocks_without_superb,
                         connection = connection,
-                        response = response,
+                        response = input$names_block_response,
                         superblock = (!is.null(input$supervised) &&
                             !is.null(input$superblock) && input$superblock),
                         tau = tau,
@@ -664,11 +667,10 @@ server <- function(input, output, session) {
                         init = input$init,
                         bias = TRUE,
                         type = analysis_type
-                    ),
-                    duration = NULL
+                    )
                 ),
                 .GlobalEnv)
-        
+
         # print(length(rgcca_out))
         # 
         # if (length(rgcca_out) == 1) {
@@ -705,8 +707,7 @@ server <- function(input, output, session) {
                 file = response_file,
                 sep = input$sep,
                 header = input$header
-            ),
-            warn = FALSE
+            )
         )
 
         if (length(response) < 1)
@@ -722,10 +723,10 @@ server <- function(input, output, session) {
         if (!is.null(connection_file)) {
             connection <- load_connection(file = connection_file, sep = input$sep)
 
-            showWarn(check <- check_connection(connection, blocks))
+            check <- showWarn(check_connection(connection, blocks))
 
             # Error due to the superblock disabling and the connection have not the same size than the number of blocks
-            if (identical(check, "130"))
+            if (identical(check, "130")) 
                 connection <- NULL
 
         }
@@ -804,7 +805,7 @@ server <- function(input, output, session) {
             condition = (input$navbar != "Fingerprint"),
                id = "compy_custom")
         toggle(
-            condition = (input$navbar == "Samples"),
+            condition = (input$navbar == "Samples" && length(input$blocks$datapath) > 1),
                id = "blocks_names_custom_y")
         toggle(
             condition = (input$navbar == "Samples"),
@@ -871,8 +872,7 @@ server <- function(input, output, session) {
                         names = names,
                         sep = input$sep,
                         header = TRUE
-                    ),
-                    duration = 2
+                    )
                 ),
                 .GlobalEnv)
 
@@ -994,8 +994,7 @@ server <- function(input, output, session) {
         priority = 10
     )
 
-    updateSuperblock <-
-        function(id, value)
+    updateSuperblock <- function(id, value)
             updateSelectizeInput(
                 session,
                 inputId = id,
@@ -1168,7 +1167,7 @@ server <- function(input, output, session) {
                 msgSave()
             })
 
-            p <- modify_text(plot_dynamic(fingerprint(), ax2, "text"))
+            p <- modify_mousehover(plot_dynamic(fingerprint(), ax2, "text"))
             n <- sapply(p$x$data, function(x) !is.null(x$orientation))
 
             for (i in 1:length(n[n]))

@@ -407,7 +407,7 @@ load_libraries <- function(librairies) {
 opt <- list(
     directory = ".",
     separator = "\t",
-    type = "rgcca",
+    type = "cca",
     ncomp = 2,
     tau = "optimal",
     scheme = "factorial",
@@ -425,7 +425,7 @@ opt <- list(
     o7 = "variables.tsv",
     o8 = "rgcca_result.RData",
     datasets = paste0("inst/extdata/",
-        c("agriculture","industry","politic"),
+        c("agriculture","industry"),
         ".tsv",
         collapse = ",")
 )
@@ -513,8 +513,7 @@ top_variables <- plot_var_1D(
         opt$compx,
         opt$nmark,
         opt$block,
-        type = "cor",
-        n_mark = opt$nmark
+        type = "cor"
     )
 save_plot(opt$o3, top_variables)
 

@@ -97,10 +97,12 @@ rgcca.analyze <- function(
     func[[par]] <- opt$tau
 
     func_out <- eval(as.call(func))
-    names(func_out$a) <- names(opt$blocks)
+    for (i in c("a", "astar", "Y"))
+        names(func_out[[i]]) <- names(opt$blocks)
+    # names(func_out$AVE$AVE_X) <- names(opt$blocks)
     func_out$blocks <- opt$blocks
     func_out$superblock <- opt$superblock
 
-    class(func_out) <- type
+    class(func_out) <- tolower(type)
     invisible(func_out)
 }

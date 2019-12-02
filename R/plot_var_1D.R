@@ -40,8 +40,9 @@ plot_var_1D <- function(
     subtitle_cex = 16 * cex,
     axis_text_cex = 10 * cex) {
     
-    if (i_block < length(rgcca$a) || is(rgcca, "pca"))
+    if (i_block < length(rgcca$a) || is(rgcca, "pca")){
         rgcca$superblock <- FALSE
+    }
 
     df <- get_ctr2(
         rgcca = rgcca,
@@ -101,6 +102,7 @@ plot_var_1D <- function(
     # Force all the block names to appear on the legend
     if (length(color) != 1)
         p <- order_color(rgcca$a, p, matched, collapse)
+
     if ( !rgcca$superblock | (!collapse & i_block != length(rgcca$a)))
             p <- p + theme(legend.position = "none")
 

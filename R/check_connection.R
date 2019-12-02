@@ -9,10 +9,10 @@ check_connection <- function(c, blocks) {
     if (!isSymmetric.matrix(unname(c)))
         stop(paste(msg, "be a symmetric matrix."), exit_code = 103)
 
-    d <- unique(diag(c))
-    if (length(d) != 1 || d != 0)
-        stop("The diagonal of the connection matrix file should be 0.",
-            exit_code = 105)
+    # d <- unique(diag(c))
+    # if (length(d) != 1 || d != 0)
+    #     stop("The diagonal of the connection matrix file should be 0.",
+    #         exit_code = 105)
 
     x <- unique(c %in% c(0, 1))
     if (length(x) != 1 || x != TRUE)
