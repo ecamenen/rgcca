@@ -503,7 +503,7 @@ top_variables <- plot_var_1D(
 save_plot(opt$o3, top_variables)
 
 # Average Variance Explained
-(ave <- plot_ave(rgcca_out))
+ave <- plot_ave(rgcca_out)
 save_plot(opt$o4, ave)
 
 # Creates design scheme
