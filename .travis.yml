@@ -2,13 +2,27 @@
 
 language: r
 r:
-- oldrel
+  - oldrel
+
+r_packages:
+  - RGCCA
+  - ggplot2
+  - optparse
+  - scales
+  - plotly
+  - visNetwork
+  - igraph
+  - ggrepel
+  - devtools
+  - shiny
+  - shinyjs
+  - bsplus
 
 install:
-- Rscript -e 'install.packages("devtools",repos = "http://cran.us.r-project.org")'
-- R -e 'devtools::install_deps(dep = T)'
+  - Rscript -e 'install.packages("devtools",repos = "http://cran.us.r-project.org")'
+  - R -e 'devtools::install_deps(dep = T)'
 
 script:
-- R -e 'devtools::document()'
-- R CMD build .
-- R CMD check *tar.gz
+  - R -e 'devtools::document()'
+  - R CMD build .
+  - R CMD check *tar.gz
