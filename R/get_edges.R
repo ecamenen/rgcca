@@ -1,6 +1,6 @@
 #' Creates the edges for a design matrix
 #' 
-#' @inheritParams select_analysis
+#' @inheritParams plot_ind
 #' @return A dataframe with tuples of connected rgcca$A
 #' @examples
 #' data("Russett")
@@ -8,6 +8,7 @@
 #'     politic = Russett[, 6:11] )
 #' rgcca_out = rgcca.analyze(blocks)
 #' get_edges(rgcca_out)
+#' @export
 get_edges <- function(rgcca) {
 
     J <- NCOL(rgcca$C)

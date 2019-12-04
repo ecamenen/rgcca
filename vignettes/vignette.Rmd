@@ -67,10 +67,8 @@ We consider J data matrices X1 ,..., XJ. Each n × pj data matrix Xj = [ xj1, ..
 getwd()
 # Load functions
 wd <- "../R/"
-for (f in list.files(wd)) {
-    if ( f != "launcher.R")
+for (f in list.files(wd))
         source(paste0(wd, f))
-}
 
 load_libraries(c("RGCCA", "ggplot2", "optparse", "scales", "igraph", "ggrepel"))
 

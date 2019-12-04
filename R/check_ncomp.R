@@ -1,9 +1,10 @@
 check_ncomp <- function(ncomp, blocks, min = 2) {
+    
     ncomp <- elongate_arg(ncomp, blocks)
     ncomp <- sapply(
         seq(length(ncomp)),
         function(x){
-            y <- check_min_integer("ncomp", ncomp[x], blocks, min)
+            y <- check_integer("ncomp", ncomp[x], min = min)
             if (y > NCOL(blocks[[x]])) {
                 stop(
                     paste0(

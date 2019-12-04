@@ -8,19 +8,6 @@
 # and produces textual and graphical outputs (e.g. variables and individuals
 # plots).
 
-#' @import RGCCA
-#' @import ggplot2
-#' @importFrom grDevices dev.off rgb colorRamp pdf colorRampPalette
-#' @importFrom graphics plot
-#' @importFrom stats cor quantile runif sd na.omit p.adjust pnorm qnorm weights
-#' @importFrom utils read.table write.table packageVersion installed.packages head
-#' @importFrom scales hue_pal
-#' @importFrom optparse OptionParser make_option parse_args
-#' @importFrom plotly layout ggplotly style plotly_build %>% plot_ly add_trace
-#' @importFrom visNetwork visNetwork visNodes visEdges
-#' @importFrom igraph graph_from_data_frame V<- E<-
-#' @importFrom methods is
-
 rm(list = ls())
 graphics.off()
 
@@ -407,7 +394,7 @@ load_libraries <- function(librairies) {
 opt <- list(
     directory = ".",
     separator = "\t",
-    type = "cca",
+    type = "rgcca",
     ncomp = 2,
     tau = "optimal",
     scheme = "factorial",
@@ -425,7 +412,7 @@ opt <- list(
     o7 = "variables.tsv",
     o8 = "rgcca_result.RData",
     datasets = paste0("inst/extdata/",
-        c("agriculture","industry"),
+        c("agriculture","industry", "politic"),
         ".tsv",
         collapse = ",")
 )
@@ -444,10 +431,8 @@ tryCatch(
 # Load functions
 setwd(opt$directory)
 
-for (f in list.files("R/")) {
-    if (f != "launcher.R")
+for (f in list.files("R/"))
         source(paste0("R/", f))
-}
 
 # Set missing parameters by default
 opt$header <- !("header" %in% names(opt))
@@ -517,16 +502,13 @@ top_variables <- plot_var_1D(
     )
 save_plot(opt$o3, top_variables)
 
+# Average Variance Explained
+(ave <- plot_ave(rgcca_out))
+save_plot(opt$o4, ave)
 
-if (opt$type != "pca") {
-    # Average Variance Explained
-    (ave <- plot_ave(rgcca_out))
-    save_plot(opt$o4, ave)
-
-    # Creates design scheme
-    design <- function() plot_network(rgcca_out)
-    save_plot(opt$o5, design)
-}
+# Creates design scheme
+design <- function() plot_network(rgcca_out)
+save_plot(opt$o5, design)
 
 save_ind(rgcca_out, 1, 2, opt$o6)
 save_var(rgcca_out, 1, 2, opt$o7)

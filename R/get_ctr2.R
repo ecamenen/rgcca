@@ -10,20 +10,20 @@
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca.res = rgcca.analyze(blocks, ncomp = c(3, 2, 4))
-#' get_ctr2(rgcca.res, blocks, superblock = FALSE)
+#' get_ctr2(rgcca.res, i_block = 2)
 #' blocks = blocks[c(1,3)]
 #' rgcca.res = rgcca.analyze(blocks, ncomp = c(3,4))
 #' get_ctr2(rgcca.res, compz = 3, i_block = 1, collapse = TRUE)
-#' get_ctr2(rgcca.res, 1, 2, 3, 1, "weights", collapse = TRUE, n_mark = 5)
+#' get_ctr2(rgcca.res, 1, 2, 3, 1, "weight", collapse = TRUE, n_mark = 5)
 #' get_ctr2(rgcca.res, collapse = TRUE)
+#' @export
 get_ctr2 <- function(
     rgcca,
     compx = 1,
     compy = 2,
     compz = NULL,
-    i_block = length(rgcca$Y),
+    i_block = length(rgcca$blocks),
     type = "cor",
-    superblock = TRUE,
     n_mark = 100,
     collapse = FALSE,
     remove_var = TRUE) {
@@ -31,7 +31,12 @@ get_ctr2 <- function(
     x <- y <- selectedVar <- NULL
 
     if (collapse) {
-        superblock <- TRUE
+        if (rgcca$superblock) {
+            rgcca$blocks <- rgcca$blocks[-length(rgcca$blocks)]
+            if (i_block > length(rgcca$blocks))
+                i_block <- length(rgcca$blocks)
+        }
+        rgcca$superblock <- TRUE
         blocks.all <- rgcca$blocks
         rgcca$blocks <- rep(list(Reduce(cbind, rgcca$blocks)), length(rgcca$blocks))
         names(rgcca$blocks) <- names(blocks.all)
@@ -76,18 +81,18 @@ get_ctr2 <- function(
         selectedVar <- row.names(df)
 
     # group by blocks
-    if (superblock & (collapse | (i_block == length(rgcca$a)))) {
+    if (rgcca$superblock & (collapse | (i_block == length(rgcca$a)))) {
 
         if (collapse)
             resp <- get_bloc_var(lapply(blocks.all, t), TRUE)
         else{
-            resp <- get_bloc_var(rgcca$a)
+            resp <- get_bloc_var(rgcca$blocks)
 
             resp <- resp[
                 unlist(
                     lapply(
                         seq(length(selectedVar)),
-                        function(x) which(row.names(rgcca$a[[length(rgcca$a)]]) == selectedVar[x])
+                        function(x) which(colnames(rgcca$blocks[[length(rgcca$blocks)]]) == selectedVar[x])
                     )
                 )
             ]

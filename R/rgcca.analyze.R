@@ -6,8 +6,10 @@
 #' @param init A character among "svd" (Singular Value Decompostion) or "random"
 #' for alorithm initialization
 #' @param bias A boolean for a biased variance estimator
-#' @param type A character giving the type of analysis
 #' @param verbose A boolean to display the progress of the analysis
+#' @param response An integer giving the index of a block considered as a 
+#' response among a list of blocks
+#' @param tol An integer for the stopping value for convergence
 #' @return A RGCCA object
 #' @examples
 #' library(RGCCA)
@@ -16,6 +18,18 @@
 #'     politic = Russett[, 6:11] )
 #' rgcca.analyze(blocks)
 #' @export
+#' @import RGCCA
+#' @import ggplot2
+#' @importFrom grDevices dev.off rgb colorRamp pdf colorRampPalette
+#' @importFrom graphics plot
+#' @importFrom stats cor quantile runif sd na.omit p.adjust pnorm qnorm weights
+#' @importFrom utils read.table write.table packageVersion installed.packages head
+#' @importFrom scales hue_pal
+#' @importFrom optparse OptionParser make_option parse_args
+#' @importFrom plotly layout ggplotly style plotly_build %>% plot_ly add_trace
+#' @importFrom visNetwork visNetwork visNodes visEdges
+#' @importFrom igraph graph_from_data_frame V<- E<-
+#' @importFrom methods is
 rgcca.analyze <- function(
     blocks,
     connection = 1 - diag(length(blocks)),
@@ -27,7 +41,9 @@ rgcca.analyze <- function(
     verbose = TRUE,
     scheme = "factorial",
     scale = TRUE,
-    ...) {
+    init = "svd",
+    bias = TRUE, 
+    tol = 1e-08) {
 
     tau <- elongate_arg(tau, blocks)
     ncomp <- elongate_arg(ncomp, blocks)
@@ -91,7 +107,9 @@ rgcca.analyze <- function(
             verbose = FALSE,
             scheme = opt$scheme,
             scale = FALSE,
-            ...
+            init = init,
+            bias = bias,
+            tol = tol
         )
     )
     func[[par]] <- opt$tau
@@ -99,9 +117,11 @@ rgcca.analyze <- function(
     func_out <- eval(as.call(func))
     for (i in c("a", "astar", "Y"))
         names(func_out[[i]]) <- names(opt$blocks)
-    # names(func_out$AVE$AVE_X) <- names(opt$blocks)
+    names(func_out$AVE$AVE_X) <- names(opt$blocks)
     func_out$blocks <- opt$blocks
     func_out$superblock <- opt$superblock
+    for (i in c("scale", "init", "bias", "tol", "verbose"))
+        func_out[[i]] <- as.list(environment())[[i]]
 
     class(func_out) <- tolower(type)
     invisible(func_out)

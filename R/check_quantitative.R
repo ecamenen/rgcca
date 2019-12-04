@@ -12,6 +12,7 @@
 #' check_quantitative(df, 'data', TRUE)
 #' # Error
 #' }
+#' @export
 check_quantitative <- function(df, fo, h = FALSE) {
     qualitative <- is.character2(df)
 

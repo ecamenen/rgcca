@@ -16,7 +16,11 @@
 #' one, different from the one used in i_block)
 #' @param reponse_name A character giving the legend title
 #' @param no_overlap A boolean to avoid overlap in plotted text
-#' @param predicted A list containing as  2nd element a matrix of predicted components 
+#' @param predicted A list containing as  2nd element a matrix of predicted components
+#' @param cex An integer for the size of the plot parameters
+#' @param subtitle_cex An integer for the size of the subtitle
+#' @param pch_text_cex An integer for the size of the points or the text in the plot
+#' @param axis_title_cex An integer for the size of the axis titles
 #' @examples
 #' coord = lapply(seq(3),
 #'    function(x) matrix(runif(15 * 2, min = -1), 15, 2))

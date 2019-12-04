@@ -5,7 +5,7 @@ load_file <- function(
     sheet = 1,
     rownames = 1,
     header = TRUE,
-    univariate = FALSE) {
+    one_column = FALSE) {
 
     isXls <- length(grep("xlsx?", file))
     
@@ -19,7 +19,7 @@ load_file <- function(
     # TODO: add automatic separator setting
 
     if (!isXls)
-        load_file_text(file, sep, rownames, header, univariate)
+        load_file_text(file, sep, rownames, header, one_column)
     # else load_file_excel(file, 1, rownames, header = header, univariate = univariate)
 
 }

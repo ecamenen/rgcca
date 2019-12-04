@@ -14,6 +14,7 @@
 #' names(rgcca_out$a) = LETTERS[seq(4)]
 #' get_bloc_var(rgcca_out)
 #' # a, b, c
+#' @export
 get_bloc_var <- function(df, collapse = FALSE) {
     
     if (!collapse)

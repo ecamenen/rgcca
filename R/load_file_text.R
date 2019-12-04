@@ -1,12 +1,13 @@
 #' Creates a matrix from loading a file
 #'
 #' @inheritParams load_blocks
+#' @param one_column A boolean for a file with  an only-one column
 #' @return A matrix containing the loaded file
 #' @examples
 #' \dontrun{
 #' load_file_text('data/agriculture.tsv')
 #' }
-load_file_text <- function(file, sep = "\t", rownames = 1, header = TRUE, univariate = FALSE) {
+load_file_text <- function(file, sep = "\t", rownames = 1, header = TRUE, one_column = FALSE) {
 
     if (!is.null(rownames) && rownames < 1)
         rownames <- NULL
@@ -28,7 +29,7 @@ load_file_text <- function(file, sep = "\t", rownames = 1, header = TRUE, univar
             f <<- func(NULL)
     })
 
-    if (!univariate && NCOL(f) == 0)
+    if (!one_column && NCOL(f) == 0)
         stop(paste(basename(file), "has an only-column. Check the separator."),
         exit_code = 102)
 

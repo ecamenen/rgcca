@@ -1,6 +1,6 @@
 #' Plot the connection between blocks (dynamic plot)
 #' 
-#' @inheritParams select_analysis
+#' @inheritParams plot_ind
 #' @return A dataframe with tuples of connected blocks
 #' @examples
 #' library(visNetwork)

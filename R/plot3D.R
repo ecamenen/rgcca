@@ -4,6 +4,7 @@
 #' @inheritParams plot_ind
 #' @inheritParams plot2D
 #' @inheritParams get_comp
+#' @param type A character for the type of plot : either "ind" for individual plot or "var" for corcircle
 #' @examples
 #' library(RGCCA)
 #' data("Russett")
@@ -20,7 +21,7 @@
 #' df = get_comp(rgcca_out, response, compz = 3)
 #' plot3D(df, i_block = 2, text = FALSE)
 #' plot3D(df, i_block = 2)
-#' df = get_ctr2(rgcca_out, blocks, compz = 3, i_block = 1, collapse = TRUE)
+#' df = get_ctr2(rgcca_out, compz = 3, i_block = 1, collapse = TRUE)
 #' plot3D(df, i_block = 2, type = "var")
 #' @export
 plot3D <- function(
@@ -28,7 +29,7 @@ plot3D <- function(
     compx = 1,
     compy = 2,
     compz = 3,
-    i_block,
+    i_block = 1,
     i_block_y = i_block,
     i_block_z = i_block,
     text = TRUE,
@@ -37,7 +38,7 @@ plot3D <- function(
     cex = 1,
     pch_text_cex = 3 * cex,
     axis_title_cex = 19 * cex) {
-    
+
     if (length(unique(df$resp)) == 1) {
         df$resp = as.factor(rep("a", length(df$resp)))
         midcol = "#cd5b45"
@@ -51,16 +52,19 @@ plot3D <- function(
                         size = axis_title_cex * 0.75
                     )
             )
-    
-    color_numeric <- function(x){
+
+    color <- function(x){
         n <- length(x)
+        if (!is.character2(df$resp))
          cut(
-             x, 
-             breaks = n,
-             labels = colorRampPalette(c("#A50026", midcol,  "#313695"))(n), 
-             include.lowest = TRUE)
+            x,
+            breaks = n,
+            labels = colorRampPalette(c("#A50026", midcol,  "#313695"))(n), 
+            include.lowest = TRUE)
+        else
+            color_group(1:length(unique(df$resp)))
     }
-    
+
     subdf <- function(x) 
         df[which(df$resp == levels(df$resp)[x]), ]
 
@@ -79,9 +83,9 @@ plot3D <- function(
                 showlegend = TRUE
             )
         )
-        
+
         color <- color_group(1:length(l))[x]
-        
+
         if (text) {
             func$mode <- "text"
             func$text <- ~row.names(subdf(x))
@@ -96,11 +100,11 @@ plot3D <- function(
                 size = pch_text_cex * 1.5
             )
         }
-        
+
         eval(func)
     }
-    
-    
+
+
     if (!is.character2(df$resp)) {
 
         if (text)
@@ -133,8 +137,8 @@ plot3D <- function(
                     type = "scatter3d",
                     text = ~ row.names(df),
                     textfont = list(
-                        color = color_numeric(df$resp),
-                        size = PCH_TEXT_CEX * 4
+                        color = color(df$resp),
+                        size = pch_text_cex * 4
                     ),
                     showlegend = FALSE,
                     visible = TRUE
@@ -166,14 +170,14 @@ plot3D <- function(
             title = list(
                 text = paste0('<b>', title, '</b>'),
                 font = list(
-                    size = 25 * CEX,
+                    size = 25 * cex,
                     face = "bold"
                 )
             )
         )
 
-    plot_circle <- function(p, x, y, z){
-        df <- cbind(circleFun(), 0)
+    plot_circle3D <- function(p, x, y, z){
+        df <- cbind(plot_circle(), 0)
         add_trace(
             p = p,
             x = df[, x],
@@ -186,9 +190,9 @@ plot3D <- function(
             line = list(color = "grey", width = 4)
         )
     }
-        
+
     if (type == "var")
-        p <- p %>% plot_circle(1, 2, 3) %>% plot_circle(1, 3, 2) # %>% plot_circle(3, 2, 1)
-    
+        p <- p %>% plot_circle3D(1, 2, 3) %>% plot_circle3D(1, 3, 2) # %>% plot_circle3D(3, 2, 1)
+
     return(p)
 }

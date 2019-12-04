@@ -6,10 +6,11 @@
 #' and tau or c1 in columns
 #' @examples
 #' data("Russett")
-#' rgcca$blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
+#' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
-#' rgcca_out = rgcca.analyze(rgcca$blocks)
+#' rgcca_out = rgcca.analyze(blocks)
 #' get_nodes(rgcca = rgcca_out)
+#' @export
 get_nodes <- function(rgcca, tau = NULL) {
 
     if (is(rgcca, "sgcca")) {

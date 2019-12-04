@@ -4,6 +4,7 @@
 #' for each blocks and sorted in decreasing order
 #'
 #' @inheritParams plot_ind
+#' @inheritParams plot_histogram
 #' @seealso \code{\link[RGCCA]{rgcca}}, \code{\link[RGCCA]{sgcca}}
 #' @examples
 #' random_val = function(y=1) lapply(seq(4),

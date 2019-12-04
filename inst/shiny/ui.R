@@ -58,10 +58,8 @@ ax2 <<- list(linecolor = "white",
 appDir <- ifelse("packrat" %in% list.files(), "", "../../R/")
 # Load functions
 
-for (f in list.files(appDir)) {
-    if ( f != "launcher.R")
+for (f in list.files(appDir))
         source(paste0(appDir, f))
-}
 
 # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
 # rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2

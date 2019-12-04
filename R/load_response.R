@@ -1,7 +1,7 @@
 #' Create a matrix corresponding to the response
 #'
 #' @inheritParams load_blocks
-#' @param blocks A list of matrix
+#' @inheritParams set_connection
 #' @return A matrix corresponding to the response
 #' @examples
 #' \dontrun{
@@ -25,7 +25,7 @@ load_response <- function(
             sep = sep,
             rownames = rownames,
             header = header,
-            univariate = TRUE
+            one_column = TRUE
         )
     }
 

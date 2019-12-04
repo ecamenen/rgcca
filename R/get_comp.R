@@ -17,6 +17,7 @@
 #' response = as.matrix(runif(NROW(blocks[[1]])))
 #' row.names(response) = row.names(blocks[[1]])
 #' get_comp(rgcca_out, response)
+#' @export
 get_comp <- function(
     rgcca,
     resp = rep(1, NROW(rgcca$Y[[1]])),

@@ -8,6 +8,7 @@
 #' fi = '/name.lastname/dirPath/fileName.tsv'
 #' get_filename(fi)
 #' # fileName
+#' @export
 get_filename <- function(fi) {
     if (!is.null(fi)) {
         fo <- unlist(strsplit(fi, "/"))

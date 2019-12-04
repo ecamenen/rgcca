@@ -1,6 +1,6 @@
 #' Plot the connection between blocks
 #' 
-#' @inheritParams select_analysis
+#' @inheritParams plot_ind
 #' @return A dataframe with tuples of connected blocks
 #' @examples
 #' library(igraph)

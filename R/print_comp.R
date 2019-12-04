@@ -18,6 +18,7 @@
 #' # For the first block
 #' print_comp(rgcca_out, 2, 1)
 #' # "Axis 2 (50%)"
+#' @export
 print_comp <- function(rgcca, n = NULL, i = NULL, outer = FALSE) {
     
     # by default, take the last block

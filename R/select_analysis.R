@@ -3,6 +3,7 @@
 #' Define the correct parameters according to the type of the analysis
 #'
 #' @inheritParams plot_var_2D
+#' @inheritParams set_connection
 #' @param connection A matrix giving the connection between the blocks
 #' @param tau A vector of float (or character for 'optimal' setting) giving the
 #' shrinkage parameter for covariance maximization

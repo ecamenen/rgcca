@@ -12,16 +12,16 @@
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca_out = rgcca.analyze(blocks, ncomp = c(3,2,4))
-#' get_ctr(rgcca_out, blocks)
+#' get_ctr(rgcca_out)
 #' # On the first block and with weights
-#' get_ctr(rgcca_out, blocks, 2, 1, i_block = 1, type = "weights")
+#' get_ctr(rgcca_out, 2, 1, i_block = 1, type = "weight")
 #' # With 3 components and on the variables of two blocks
 #' superblocks <- rep(list(Reduce(cbind, c(blocks[1], blocks[3]))), 2)
 #' names(superblocks) <- names(blocks)[c(1, 3)]
 #' rgcca_out = rgcca.analyze(blocks[c(1,3)], ncomp = c(3,4))
 #' rgcca_out$blocks = superblocks
 #' get_ctr(rgcca_out, compz = 3, i_block = 1, type = "cor", collapse = TRUE)
-#' get_ctr(rgcca_out, 2, 1, 3, 1, "weights", TRUE)
+#' get_ctr(rgcca_out, 2, 1, 3, 1, "weight", TRUE)
 #' @return A dataframe containing the indexes for each selected components
 #' @export
 get_ctr <- function(
