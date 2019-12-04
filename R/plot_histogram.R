@@ -10,7 +10,7 @@
 #' the gradient
 #' @param mid_col A character giving the color used for the middle part of
 #' the gradient
-#' @param axis_text_cex An integer for the size of the axis text
+#' @param cex_axis An integer for the size of the axis text
 #' @examples
 #' df = data.frame(x = runif(30), order = 30:1)
 #' library("ggplot2")
@@ -30,14 +30,14 @@ plot_histogram <- function(
     high_col = "coral3",
     mid_col = NULL,    
     cex = 1,
-    subtitle_cex = 16 * cex,
-    axis_text_cex = 10 * cex) {
+    cex_sub = 16 * cex,
+    cex_axis = 10 * cex) {
     
 
     if (NROW(df) <= 10 || title == "Average Variance Explained") {
         width <- NULL
         if (title == "Average Variance Explained")
-            axis_text_cex <- 12
+            cex_axis <- 12
     } else
         width <- 1
 
@@ -50,7 +50,7 @@ plot_histogram <- function(
 
     axis <- function(margin){
         element_text(
-            size = axis_text_cex,
+            size = cex_axis,
             face = "italic",
             color = "gray40"
         )
@@ -59,7 +59,7 @@ plot_histogram <- function(
     p <- p + geom_bar(stat = "identity", width = width) +
         coord_flip() + labs(title = title,  x = "", y = "") +
         theme_classic() +
-        theme_perso(cex, subtitle_cex) +
+        theme_perso(cex, cex_sub) +
         theme(
             axis.text.y = axis(),
             axis.text.x = axis(),
@@ -67,7 +67,7 @@ plot_histogram <- function(
             axis.ticks = element_blank(),
             plot.subtitle = element_text(
                 hjust = 0.5,
-                size = subtitle_cex,
+                size = cex_sub,
                 face = "italic"
             ),
             plot.margin = margin(0, 0, mar, 0, "mm")

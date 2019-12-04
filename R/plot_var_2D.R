@@ -46,9 +46,9 @@ plot_var_2D <- function(
     collapse = FALSE,
     no_overlap = FALSE,
     cex = 1,
-    subtitle_cex = 16 * cex,
-    pch_text_cex = 3 * cex,
-    axis_title_cex = 19 * cex) {
+    cex_sub = 16 * cex,
+    cex_point = 3 * cex,
+    cex_lab = 19 * cex) {
 
     x <- y <- NULL
 
@@ -83,9 +83,9 @@ plot_var_2D <- function(
         collapse =  collapse,
         no_overlap = no_overlap,
         cex = cex,
-        subtitle_cex = subtitle_cex,
-        pch_text_cex = pch_text_cex,
-        axis_title_cex = axis_title_cex
+        cex_sub = cex_sub,
+        cex_point = cex_point,
+        cex_lab = cex_lab
         ) +
         geom_path(
             aes(x, y),

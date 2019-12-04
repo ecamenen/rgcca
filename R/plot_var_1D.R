@@ -39,8 +39,8 @@ plot_var_1D <- function(
     type = "cor",
     collapse = FALSE,
     cex = 1,
-    subtitle_cex = 16 * cex,
-    axis_text_cex = 10 * cex) {
+    cex_sub = 16 * cex,
+    cex_axis = 10 * cex) {
     
     if (i_block < length(rgcca$a) || is(rgcca, "pca")) {
         rgcca$superblock <- FALSE
@@ -86,8 +86,8 @@ plot_var_1D <- function(
             title,
             as.character(color),
             cex = cex,
-            subtitle_cex = subtitle_cex,
-            axis_text_cex = axis_text_cex
+            cex_sub = cex_sub,
+            cex_axis = cex_axis
         ) +
         labs(subtitle = print_comp(rgcca, comp, i_block))
 

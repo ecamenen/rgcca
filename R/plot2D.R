@@ -34,12 +34,12 @@ plot2D <- function(
     collapse = FALSE,
     no_overlap = FALSE,
     cex = 1,
-    subtitle_cex = 16 * cex,
-    pch_text_cex = 3 * cex,
-    axis_title_cex = 19 * cex) {
+    cex_sub = 16 * cex,
+    cex_point = 3 * cex,
+    cex_lab = 19 * cex) {
 
     if (!isTRUE(text)) {
-        func <- quote(geom_point(size = pch_text_cex))
+        func <- quote(geom_point(size = cex_point))
         if (!is.numeric(na.omit(group)))
             func$mapping <- aes(shape = as.factor(group))
     } else {
@@ -47,7 +47,7 @@ plot2D <- function(
         f <- "geom_text"
         func <- quote(
             get(f)(aes(label = rownames(df)),
-            size = pch_text_cex)
+            size = cex_point)
         )
         
         if (no_overlap && NROW(df) <= 200) {
@@ -69,7 +69,7 @@ plot2D <- function(
     axis <- function(margin){
         element_text(
             face = "italic",
-            size = axis_title_cex * 0.75,
+            size = cex_lab * 0.75,
             margin = margin
         )
     }
@@ -93,7 +93,7 @@ plot2D <- function(
         ) + 
         scale_y_continuous(breaks = NULL) +
         scale_x_continuous(breaks = NULL) +
-        theme_perso(cex, subtitle_cex) +
+        theme_perso(cex, cex_sub) +
         theme(
             legend.key.width = unit(nchar(name_group), "mm"),
             axis.text = element_blank(),

@@ -36,8 +36,8 @@ plot3D <- function(
     title = "Sample plot",
     type = "ind",
     cex = 1,
-    pch_text_cex = 3 * cex,
-    axis_title_cex = 19 * cex) {
+    cex_point = 3 * cex,
+    cex_lab = 19 * cex) {
 
     if (length(unique(df$resp)) == 1) {
         df$resp = as.factor(rep("a", length(df$resp)))
@@ -49,7 +49,7 @@ plot3D <- function(
         list(
                 title = paste0("<i>", print_comp(rgcca_out, x, i), "</i>"),
                 titlefont = list(
-                        size = axis_title_cex * 0.75
+                        size = cex_lab * 0.75
                     )
             )
 
@@ -91,13 +91,13 @@ plot3D <- function(
             func$text <- ~row.names(subdf(x))
             func$textfont <- list(
                 color = color,
-                size = pch_text_cex * 4
+                size = cex_point * 4
             )
         }else{
             func$mode <- "markers"
             func$marker <- list(
                 color = color,
-                size = pch_text_cex * 1.5
+                size = cex_point * 1.5
             )
         }
 
@@ -138,7 +138,7 @@ plot3D <- function(
                     text = ~ row.names(df),
                     textfont = list(
                         color = color(df$resp),
-                        size = pch_text_cex * 4
+                        size = cex_point * 4
                     ),
                     showlegend = FALSE,
                     visible = TRUE

@@ -20,8 +20,8 @@
 plot_ave <- function(
     rgcca,
     cex = 1,
-    subtitle_cex = 16 * cex,
-    axis_text_cex = 10 * cex) {
+    cex_sub = 16 * cex,
+    cex_axis = 10 * cex) {
 
     if (is(rgcca, "pca")) {
         rgcca$AVE$AVE_X = rgcca$AVE$AVE_X[1]
@@ -62,8 +62,8 @@ plot_ave <- function(
         df, 
         "Average Variance Explained",
         cex = cex,
-        subtitle_cex = subtitle_cex,
-        axis_text_cex = axis_text_cex) +
+        cex_sub = cex_sub,
+        cex_axis = cex_axis) +
     scale_fill_manual(
         values = color_group(levels(df$ncomp)),
         labels = gsub("comp", " ", levels(df$ncomp))) + 
