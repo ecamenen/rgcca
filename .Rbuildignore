@@ -8,7 +8,8 @@ top_variables.pdf
 \.RData$
 individuals.tsv
 variables.tsv
-design.tsv
+design.pdf
 ^\.git$
 ^\.idea$
 ^data/
+^\.travis\.yml$
