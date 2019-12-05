@@ -26,9 +26,6 @@ r_packages:
   - shinyjs
   - bsplus
 
-before_install:
-  - tlmgr install index
-
 install:
   - Rscript -e 'install.packages("devtools",repos = "http://cran.us.r-project.org")'
   - R -e 'devtools::install_deps(dep = T)'
@@ -42,3 +39,6 @@ after_script:
   - Rscript inst/launcher.R -h
   - Rscript inst/launcher.R -d inst/extdata/agriculture.tsv
   - ls -larth
+  - head variables.tsv
+  - head individuals.tsv
+  - R CMD BiocCheck *tar.gz
