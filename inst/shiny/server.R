@@ -1,5 +1,5 @@
 # Author: Etienne CAMENEN
-# Date: 20198
+# Date: 2019
 # Contact: arthur.tenenhaus@l2s.centralesupelec.fr
 # Key-words: omics, RGCCA, multi-block
 # EDAM operation: analysis, correlation, visualisation
@@ -49,7 +49,7 @@ server <- function(input, output, session) {
         setNamesInput("response", "Block used as a response")
     })
 
-    output$nb_comp_custom <- renderUI({
+    output$nb_compcustom <- renderUI({
         # Set dynamically the maximum number of component that should be used
         # in the analysis
 
@@ -75,12 +75,12 @@ server <- function(input, output, session) {
             input$supervised
         )
 
-    output$comp_x_custom <- renderUI({
+    output$compx_custom <- renderUI({
         refresh <- refreshAnalysis()
         isolate(uiComp("x", 1, input$navbar != "Fingerprint"))
     })
 
-    output$comp_y_custom <- renderUI({
+    output$compy_custom <- renderUI({
         refresh <- refreshAnalysis()
         uiComp("y", 2)
     })
@@ -122,7 +122,7 @@ server <- function(input, output, session) {
                                 min = ifelse(
                                     par_name == "Tau",
                                     0,
-                                    ceiling(1 / sqrt(ncol(blocks[[i]])) * 100) / 100),
+                                    ceiling(1 / sqrt(NCOL(blocks[[i]])) * 100) / 100),
                                 max = 1,
                                 value = ifelse(
                                     is.null(input[[paste0("tau", i)]]),
@@ -173,7 +173,7 @@ server <- function(input, output, session) {
             label <- paste0("Component for the ", x, "-axis")
 
         sliderInput(
-            inputId = paste0("comp_", x),
+            inputId = paste0("comp", x),
             label = label,
             min = 1,
             max = input$nb_comp,
@@ -393,7 +393,7 @@ server <- function(input, output, session) {
         # Get the maximum number of columns among the blocks
 
         if (!is.null(input$blocks)) {
-            return(ncol(blocks[[id_block]]))
+            return(NCOL(blocks[[id_block]]))
         } else
             return(100)
 
@@ -504,8 +504,8 @@ server <- function(input, output, session) {
             input$nb_mark,
             input$scale,
             input$init,
-            input$comp_x,
-            input$comp_y,
+            input$compx,
+            input$compy,
             input$tau,
             input$tau_opt,
             input$analysis_type,
@@ -537,11 +537,11 @@ server <- function(input, output, session) {
 
     samples <- function() {
         isolate({
-            plotSamplesSpace(
-                rgcca = rgcca.res,
+            plot_ind(
+                rgcca = rgcca_out,
                 resp = response,
-                comp_x = comp_x,
-                comp_y = comp_y,
+                compx = compx,
+                compy = compy,
                 i_block = id_block,
                 text = if_text,
                 i_block_y = id_block_y,
@@ -551,34 +551,32 @@ server <- function(input, output, session) {
     }
 
     corcircle <- function()
-        plotVariablesSpace(
-            rgcca = rgcca.res,
-            blocks = blocks,
-            comp_x = comp_x,
-            comp_y = comp_y,
-            superblock = (superblock & tolower(analysis_type) != "pca"),
+        plot_var_2D(
+            rgcca = rgcca_out,
+            compx = compx,
+            compy = compy,
             i_block = id_block,
-            text = if_text
+            text = if_text,
+            n_mark = nb_mark
         )
 
     fingerprint <- function()
-        plotFingerprint(
-            rgcca = rgcca.res,
-            blocks = blocks,
-            comp = comp_x,
-            superblock = (superblock & tolower(analysis_type) != "pca"),
+        plot_var_1D(
+            rgcca = rgcca_out,
+            comp = compx,
             n_mark = nb_mark,
-            i_block = id_block
+            i_block = id_block,
+            type = "cor"
         )
 
     ave <- function()
-        plotAVE(rgcca = rgcca.res)
+        plot_ave(rgcca = rgcca_out)
 
-    conNet <- function()
-        plotNetwork2(nodes, edges, blocks)
+    design <- function()
+        plot_network2(rgcca_out)
 
     plotBoot <- function()
-        plotBootstrap(boot, comp_x, nb_mark, id_block)
+        plot_bootstrap(boot, compx, nb_mark, id_block)
 
     ################################################ Analysis ################################################
 
@@ -592,7 +590,6 @@ server <- function(input, output, session) {
 
     setParRGCCA <- function(verbose = TRUE) {
         blocks <- blocks_without_superb
-        ncomp <- rep(nb_comp, length(blocks))
 
         if (is.null(analysis_type) | is.null(input$analysis_type))
             analysis_type <- "RGCCA"
@@ -631,66 +628,15 @@ server <- function(input, output, session) {
             assign("two_blocks", NULL, .GlobalEnv)
         }
 
-        getNames()
+        if ( (!is.null(input$superblock) && input$superblock) && 
+                ( analysis_type %in% c("PCA", "RGCCA", "SGCCA")) ||
+                analysis_type %in% multiple_blocks_super )
+            blocks <- c(blocks, Superblock = list(Reduce(cbind, blocks)))
 
-        if (!is.null(input$supervised) && input$supervised)
-            response <- input$supervised
-        else
-            response <- NULL
-        pars <- showWarn(checkSuperblock(list(
-            response = response,
-            superblock = (
-                !is.null(input$supervised) &&
-                    !is.null(input$superblock) && input$superblock
-            )
-        )),
-        show = FALSE)
-
-
-        if (!is.null(input$supervised) &&
-            (input$supervised || tolower(analysis_type) == "ra")) {
-            pars <- setPosPar(
-                list(
-                    tau = tau,
-                    ncomp = ncomp,
-                    superblock = pars$superblock
-                ),
-                blocks,
-                id_block_resp
-            )
-            blocks <- pars$blocks
-            tau <- pars$tau
-            ncomp <- pars$ncomp
-        }
-
-
-        pars <- showWarn(
-            select.type(
-                blocks = blocks,
-                connection = NULL,
-                tau = tau,
-                ncomp = ncomp,
-                scheme = input$scheme,
-                superblock = pars$superblock,
-                type  = analysis_type,
-                quiet = TRUE
-            )
-        )
-
-
-        if (length(pars) == 1) {
-            assign("analysis", NULL, .GlobalEnv)
-            return(NULL)
-        }
-
-        assign("connection", pars$connection, .GlobalEnv)
-        assign("tau", pars$tau, .GlobalEnv)
-        assign("ncomp", pars$ncomp, .GlobalEnv)
-        assign("scheme", pars$scheme, .GlobalEnv)
-        assign("superblock", pars$superblock, .GlobalEnv)
+        assign("tau", tau, .GlobalEnv)
         assign("analysis_type", analysis_type, .GlobalEnv)
 
-        return(pars$blocks)
+        return(blocks)
     }
 
     setRGCCA <- function() {
@@ -701,25 +647,37 @@ server <- function(input, output, session) {
                 tau <- getTau()
         })
 
-        assign("rgcca.res",
+        if (!is.null(input$supervised) && input$supervised)
+            response <- input$supervised
+        else
+            response <- NULL
+
+        assign("rgcca_out",
                showWarn(
                    rgcca.analyze(
-                        blocks,
+                        blocks_without_superb,
                         connection = connection,
+                        response = input$names_block_response,
+                        superblock = (!is.null(input$supervised) &&
+                            !is.null(input$superblock) && input$superblock),
                         tau = tau,
-                        ncomp = ncomp,
-                        scheme = scheme,
+                        ncomp = input$nb_comp,
+                        scheme = input$scheme,
                         scale = FALSE,
                         init = input$init,
                         bias = TRUE,
                         type = analysis_type
-                    ),
-                    duration = NULL
+                    )
                 ),
                 .GlobalEnv)
 
-        assign("nodes", getNodes(blocks, rgcca = rgcca.res), .GlobalEnv)
-        assign("edges", getEdges(connection, blocks), .GlobalEnv)
+        # print(length(rgcca_out))
+        # 
+        # if (length(rgcca_out) == 1) {
+        #     assign("analysis", NULL, .GlobalEnv)
+        #     return(NULL)
+        # }
+
         #getBoot()
     }
 
@@ -742,15 +700,14 @@ server <- function(input, output, session) {
         )
 
 
-    setResponseShiny = function() {
+    load_responseShiny = function() {
         response <- showWarn(
-            setResponse (
+            load_response(
                 blocks = blocks_without_superb,
                 file = response_file,
                 sep = input$sep,
                 header = input$header
-            ),
-            warn = FALSE
+            )
         )
 
         if (length(response) < 1)
@@ -760,28 +717,17 @@ server <- function(input, output, session) {
 
     }
 
-    setConnectionShiny <- function() {
+    set_connectionShiny <- function() {
         supervised <- (!is.null(input$supervised) && input$supervised)
 
-        if (is.null(connection) | !is.null(connection_file)) {
-            try(
-                withCallingHandlers(
-                    connection <- showWarn(
-                        setConnection (blocks = blocks,
-                            superblock = (is.null(connection_file) && (superblock  | supervised)),
-                            file = connection_file,
-                            sep = input$sep
-                            )
-                        )))
+        if (!is.null(connection_file)) {
+            connection <- load_connection(file = connection_file, sep = input$sep)
+
+            check <- showWarn(check_connection(connection, blocks))
 
             # Error due to the superblock disabling and the connection have not the same size than the number of blocks
-            if (identical(connection, "104"))
-                connection <- showWarn(setConnection(
-                    blocks = blocks,
-                    superblock = (superblock  | supervised),
-                    file = NULL,
-                    sep = input$sep
-                ))
+            if (identical(check, "130")) 
+                connection <- NULL
 
         }
 
@@ -799,7 +745,7 @@ server <- function(input, output, session) {
         if (!is.null(blocks)) {
             assign("analysis", NULL, .GlobalEnv)
             assign("blocks", blocks, .GlobalEnv)
-            setConnectionShiny()
+            set_connectionShiny()
             setIdBlock()
         }
 
@@ -857,9 +803,9 @@ server <- function(input, output, session) {
                id = "text")
         toggle(
             condition = (input$navbar != "Fingerprint"),
-               id = "comp_y_custom")
+               id = "compy_custom")
         toggle(
-            condition = (input$navbar == "Samples"),
+            condition = (input$navbar == "Samples" && length(input$blocks$datapath) > 1),
                id = "blocks_names_custom_y")
         toggle(
             condition = (input$navbar == "Samples"),
@@ -921,13 +867,12 @@ server <- function(input, output, session) {
 
         assign("blocks_unscaled",
                showWarn(
-                    setBlocks(
+                    load_blocks(
                         file = paths,
                         names = names,
                         sep = input$sep,
                         header = TRUE
-                    ),
-                    duration = 2
+                    )
                 ),
                 .GlobalEnv)
 
@@ -955,7 +900,7 @@ server <- function(input, output, session) {
         assign("response", NULL, .GlobalEnv)
         assign("connection", NULL, .GlobalEnv)
         assign("response_file", NULL, .GlobalEnv)
-        assign("response", setResponseShiny(), .GlobalEnv)
+        assign("response", load_responseShiny(), .GlobalEnv)
 
         assign("id_block_resp",
                 length(blocks_without_superb),
@@ -963,7 +908,7 @@ server <- function(input, output, session) {
         blocks <- setParRGCCA(FALSE)
         assign("blocks", blocks, .GlobalEnv)
         assign("connection_file", NULL, .GlobalEnv)
-        setConnectionShiny()
+        set_connectionShiny()
         setIdBlock()
         updateTabsetPanel(session, "navbar", selected = "Connection")
 
@@ -990,7 +935,7 @@ server <- function(input, output, session) {
             assign("connection_file",
                     input$connection$datapath,
                     .GlobalEnv)
-            setConnectionShiny()
+            set_connectionShiny()
             setUiConnection()
             showWarn(message("Connection file loaded."), show = FALSE)
             assign("connection_file", NULL, .GlobalEnv)
@@ -1000,7 +945,7 @@ server <- function(input, output, session) {
 
 
     observeEvent(input$run_analysis, {
-        if (!is.null(getInfile()) & is.matrix(connection)) {
+        if (!is.null(getInfile())) {
             assign("analysis", setRGCCA(), .GlobalEnv)
 
             show(id = "navbar")
@@ -1049,8 +994,7 @@ server <- function(input, output, session) {
         priority = 10
     )
 
-    updateSuperblock <-
-        function(id, value)
+    updateSuperblock <- function(id, value)
             updateSelectizeInput(
                 session,
                 inputId = id,
@@ -1087,7 +1031,7 @@ server <- function(input, output, session) {
             }
         })
     }, priority = 30)
-
+    
     observeEvent(c(input$superblock, input$supervised), {
         reac_var(length(blocks))
         assign("id_block", reac_var(), .GlobalEnv)
@@ -1126,13 +1070,13 @@ server <- function(input, output, session) {
 
     observeEvent(input$save_all, {
         if (blocksExists()) {
-            savePlot("samples_plot.pdf", samples())
-            savePlot("corcircle.pdf", corcircle())
-            savePlot("fingerprint.pdf", fingerprint())
-            savePlot("AVE.pdf", ave())
-            saveVars(rgcca.res, blocks, 1, 2)
-            saveInds(rgcca.res, blocks, 1, 2)
-            save(analysis, file = "rgcca.result.RData")
+            save_plot("samples_plot.pdf", samples())
+            save_plot("corcircle.pdf", corcircle())
+            save_plot("fingerprint.pdf", fingerprint())
+            save_plot("AVE.pdf", ave())
+            save_var(rgcca_out, 1, 2)
+            save_ind(rgcca_out, 1, 2)
+            save(analysis, file = "rgcca_result.RData")
             msgSave()
         }
     })
@@ -1140,12 +1084,12 @@ server <- function(input, output, session) {
     msgSave <- function()
             showWarn(message(paste("Save in", getwd())), show = FALSE)
 
-    observeEvent(c(input$text, input$comp_x, input$comp_y, input$nb_mark),
+    observeEvent(c(input$text, input$compx, input$compy, input$nb_mark),
                 {
                     if (!is.null(analysis)) {
                         assign("if_text", input$text, .GlobalEnv)
-                        assign("comp_x", input$comp_x, .GlobalEnv)
-                        assign("comp_y", input$comp_y, .GlobalEnv)
+                        assign("compx", input$compx, .GlobalEnv)
+                        assign("compy", input$compy, .GlobalEnv)
                         if (!is.null(input$nb_mark))
                             assign("nb_mark", input$nb_mark, .GlobalEnv)
                     }
@@ -1156,7 +1100,7 @@ server <- function(input, output, session) {
             assign("response_file",
                     input$response$datapath,
                     .GlobalEnv)
-            assign("response", setResponseShiny(), .GlobalEnv)
+            assign("response", load_responseShiny(), .GlobalEnv)
             setUiResponse()
             showWarn(samples(), warn = TRUE)
             showWarn(message(
@@ -1174,17 +1118,17 @@ server <- function(input, output, session) {
 
         if (!is.null(analysis)) {
             observeEvent(input$samples_save, {
-                savePlot("samples_plot.pdf", samples())
+                save_plot("samples_plot.pdf", samples())
                 msgSave()
             })
 
             p <- showWarn(
-                changeHovertext(
-                    dynamicPlot(samples(), ax, "text", TRUE, TRUE),
+                modify_hovertext(
+                    plot_dynamic(samples(), NULL, "text", TRUE, TRUE),
                     if_text
                 ), warn = FALSE)
 
-            if (length(unique(na.omit(response))) < 2 || (length(unique(response)) > 5 && !unique(isCharacter(na.omit(response)))))
+            if (length(unique(na.omit(response))) < 2 || (length(unique(response)) > 5 && !is.character2(na.omit(response))))
                 p <- p %>% layout(showlegend = FALSE)
             p
 
@@ -1197,11 +1141,11 @@ server <- function(input, output, session) {
 
         if (!is.null(analysis)) {
             observeEvent(input$corcircle_save, {
-                savePlot("corcircle.pdf", corcircle())
+                save_plot("corcircle.pdf", corcircle())
                 msgSave()
             })
 
-            p <- changeHovertext(dynamicPlot(corcircle(), ax, "text"), if_text)
+            p <- modify_hovertext(plot_dynamic(corcircle(), NULL, "text"), if_text)
             n <- length(p$x$data)
             (style(
                 p,
@@ -1219,11 +1163,11 @@ server <- function(input, output, session) {
         if (!is.null(analysis)) {
 
             observeEvent(input$fingerprint_save, {
-                savePlot("fingerprint.pdf", fingerprint())
+                save_plot("fingerprint.pdf", fingerprint())
                 msgSave()
             })
 
-            p <- changeText(dynamicPlot(fingerprint(), ax2, "text"))
+            p <- modify_mousehover(plot_dynamic(fingerprint(), ax2, "text"))
             n <- sapply(p$x$data, function(x) !is.null(x$orientation))
 
             for (i in 1:length(n[n]))
@@ -1247,7 +1191,7 @@ server <- function(input, output, session) {
 
         if (!is.null(analysis)) {
             observeEvent(input$ave_save, {
-                savePlot("AVE.pdf", ave())
+                save_plot("AVE.pdf", ave())
                 msgSave()
             })
             ave()
@@ -1258,7 +1202,7 @@ server <- function(input, output, session) {
     output$connectionPlot <- renderVisNetwork({
         getDynamicVariables()
         if (!is.null(analysis)) {
-            conNet()
+            design()
         }
     })
 
@@ -1268,10 +1212,10 @@ server <- function(input, output, session) {
 
         if (!is.null(analysis) & !is.null(boot)) {
             observeEvent(input$bootstrap_save, {
-                savePlot("bootstrap.pdf", plotBoot())
+                save_plot("bootstrap.pdf", plotBoot())
                 msgSave()
             })
-            dynamicPlotBoot(plotBoot())
+            plot_dynamic_histogram(plotBoot())
         }
 
     })

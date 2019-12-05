@@ -1,5 +1,5 @@
 # Author: Etienne CAMENEN
-# Date: 20198
+# Date: 2019
 # Contact: arthur.tenenhaus@l2s.centralesupelec.fr
 # Key-words: omics, RGCCA, multi-block
 # EDAM operation: analysis, correlation, visualisation
@@ -47,23 +47,24 @@ id_block_y <<- id_block <<- id_block_resp <<- analysis <<-
 boot <<- analysis_type <<- NULL
 clickSep <<- FALSE
 if_text <<- TRUE
-comp_x <<- 1
-nb_comp <<- comp_y <<- 2
+compx <<- 1
+nb_comp <<- compy <<- 2
 nb_mark <<- 100
 BSPLUS <<- R.Version()$minor >= 3
+ax2 <<- list(linecolor = "white",
+        tickfont = list(size = 10, color = "grey"))
 
 # config for shinyapps.io
 appDir <- ifelse("packrat" %in% list.files(), "", "../../R/")
 # Load functions
-source(paste0(appDir, "parsing.R"))
-source(paste0(appDir, "plot.R"))
-source(paste0(appDir, "select.type.R"))
-source(paste0(appDir, "network.R"))
+
+for (f in list.files(appDir))
+        source(paste0(appDir, f))
 
 # maxdiff-b, maxdiff, maxvar-a, maxvar-b, maxvar, niles, r-maxvar,
 # rcon-pca, ridge-gca, , ssqcov-1, ssqcov-2, , sum-pca, sumcov-1, sumcov-2
 
-loadLibraries(c(
+load_libraries(c(
     "RGCCA",
     "ggplot2",
     "scales",
@@ -75,7 +76,7 @@ loadLibraries(c(
 ))
 
 if (BSPLUS) {
-    loadLibraries("devtools")
+    load_libraries("devtools")
     if (!("bsplus" %in% installed.packages()[, "Package"]))
         devtools::install_github("ijlyttle/bsplus", upgrade = "never")
     library("bsplus", warn.conflicts = FALSE, quiet = TRUE)
@@ -115,7 +116,7 @@ ui <- fluidPage(
             tabPanel(
                 "RGCCA",
                 uiOutput("analysis_type_custom"),
-                uiOutput("nb_comp_custom"),
+                uiOutput("nb_compcustom"),
                 uiOutput("scale_custom"),
 
                 radioButtons(
@@ -167,8 +168,8 @@ ui <- fluidPage(
                 ),
                 uiOutput("blocks_names_custom_x"),
                 uiOutput("blocks_names_custom_y"),
-                uiOutput("comp_x_custom"),
-                uiOutput("comp_y_custom"),
+                uiOutput("compx_custom"),
+                uiOutput("compy_custom"),
                 uiOutput("nb_mark_custom"),
                 uiOutput("response_custom"),
 
