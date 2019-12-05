@@ -33,7 +33,7 @@ r_packages:
   - shinyjs
   - bsplus
 
-  before_install:
+before_install:
   - tlmgr install index
 
 install:
