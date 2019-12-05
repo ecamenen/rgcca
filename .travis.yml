@@ -19,7 +19,7 @@ r_packages:
   - bsplus
 
 install:
-  - Rscript -e 'install.packages("devtools",repos = "http://cran.us.r-project.org")'
+  - R -e 'devtools::install_deps(dep = T)'
 
 script:
   - R -e 'devtools::document()'
