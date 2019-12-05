@@ -6,6 +6,7 @@ r:
   - oldrel
   - 3.5
   - 3.4
+  - 3.3
 
 git:
   depth: 1
@@ -42,4 +43,4 @@ script:
 
 after_script:
   - Rscript inst/launcher.R -h
-  - Rscript inst/launcher.R -d agriculture.tsv
+  - Rscript inst/launcher.R -d inst/extdata/agriculture.tsv
