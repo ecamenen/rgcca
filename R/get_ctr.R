@@ -57,7 +57,7 @@ get_ctr <- function(
         else
             f <- function(x) unlist(
                 sapply(
-                    1:length(rgcca$blocks),
+                    seq(length(rgcca$blocks)),
                     function(y) rgcca$a[[y]][, x]
                 )
             )

@@ -57,13 +57,13 @@ plot3D <- function(
     color <- function(x){
         n <- length(x)
         if (!is.character2(df$resp))
-         cut(
-            x,
-            breaks = n,
-            labels = colorRampPalette(c("#A50026", midcol,  "#313695"))(n), 
-            include.lowest = TRUE)
+            cut(
+                x,
+                breaks = n,
+                labels = colorRampPalette(c("#A50026", midcol,  "#313695"))(n),
+                include.lowest = TRUE)
         else
-            color_group(1:length(unique(df$resp)))
+            color_group(seq(length(unique(df$resp))))
     }
 
     subdf <- function(x) 
@@ -85,7 +85,7 @@ plot3D <- function(
             )
         )
 
-        color <- color_group(1:length(l))[x]
+        color <- color_group(seq(length(l)))[x]
 
         if (text) {
             func$mode <- "text"
@@ -155,7 +155,7 @@ plot3D <- function(
 
     p <- p %>%
         layout(
-            autosize = T,
+            autosize = TRUE,
             margin = list(
                 l = 50,
                 r = 50,

@@ -5,6 +5,8 @@
 *.html
 *.tex
 *.RData
+*.tar.gz
+*.Rcheck
 
 .Rhistory
 .Rproj.user
