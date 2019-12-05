@@ -15,7 +15,7 @@
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca_out = rgcca.analyze(blocks)
-#' boot = bootstrap(blocks, rgcca_out, 2, FALSE)
+#' boot = bootstrap(rgcca_out, 2, FALSE)
 #' selected.var = get_bootstrap(rgcca_out, boot)
 #' plot_bootstrap_1D(selected.var)
 #' @export
@@ -25,8 +25,8 @@ plot_bootstrap_1D <- function(
     y = "mean", 
     n = 50,    
     cex = 1,
-    subtitle_cex = 16 * cex,
-    axis_text_cex = 10 * cex) {
+    cex_sub = 16 * cex,
+    cex_axis = 10 * cex) {
 
     if (!("occ" %in% colnames(b))) {
         title <- "Bootstrap ratio"
@@ -49,7 +49,7 @@ plot_bootstrap_1D <- function(
         mid_col = "white",
         high_col = color_group(seq(3))[3],
         cex = cex,
-        subtitle_cex = subtitle_cex,
-        axis_text_cex = axis_text_cex) +
+        cex_sub = cex_sub,
+        cex_axis = cex_axis) +
     labs(fill = "Mean weights")
 }

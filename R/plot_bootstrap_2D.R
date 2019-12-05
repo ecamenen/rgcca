@@ -14,7 +14,7 @@
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca_out = rgcca.analyze(blocks, type = "sgcca")
-#' boot = bootstrap(blocks, rgcca_out, 2, FALSE)
+#' boot = bootstrap(rgcca_out, 2, FALSE)
 #' selected.var = get_bootstrap(rgcca_out, boot)
 #' plot_bootstrap_2D(selected.var)
 #' @export
@@ -23,14 +23,14 @@ plot_bootstrap_2D <- function(
     x = "br",
     y = "occ",
     cex = 1,
-    subtitle_cex = 16 * cex,
-    pch_text_cex = 3 * cex,
-    axis_title_cex = 19 * cex){
+    cex_sub = 16 * cex,
+    cex_point = 3 * cex,
+    cex_lab = 19 * cex){
 
     axis <- function(margin){
         element_text(
         face = "italic",
-        size = axis_title_cex * 0.75,
+        size = cex_lab * 0.75,
         margin = margin
         )
     }
@@ -43,7 +43,7 @@ plot_bootstrap_2D <- function(
             color = as.factor(mean > 0)
     )) +
     geom_text(
-        size = pch_text_cex * 0.75
+        size = cex_point * 0.75
     ) +
     labs(
         y = "Non-zero occurences",
@@ -51,7 +51,7 @@ plot_bootstrap_2D <- function(
         title = "Occurences selection\nby bootstrap"
     ) +
     theme_classic() +
-    theme_perso(cex, subtitle_cex) +
+    theme_perso(cex, cex_sub) +
     theme(
         legend.position = "none",
         axis.title.y = axis(margin(0, 20, 0, 0)),

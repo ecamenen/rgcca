@@ -92,10 +92,10 @@ rgcca.analyze <- function(
         message("RGCCA in progress ...")
 
     if (tolower(type) == "sgcca") {
-        gcca <- sgcca
+        gcca <- RGCCA::sgcca
         par <- "c1"
     } else{
-        gcca <- rgcca
+        gcca <- RGCCA::rgcca
         par <- "tau"
     }
 
