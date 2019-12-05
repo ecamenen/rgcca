@@ -7,6 +7,10 @@ r:
   - 3.5
   - 3.4
 
+os:
+  - linux
+  - osx
+
 git:
   depth: 1
 
