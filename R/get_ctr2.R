@@ -97,7 +97,7 @@ get_ctr2 <- function(
                 )
             ]
         }
-       # df <- resp[row.names(df)]
+        # df <- resp[row.names(df)]
 
     } else
         resp <- rep(1, NROW(df))
