@@ -44,3 +44,4 @@ script:
 after_script:
   - Rscript inst/launcher.R -h
   - Rscript inst/launcher.R -d inst/extdata/agriculture.tsv
+  - ls -larth
