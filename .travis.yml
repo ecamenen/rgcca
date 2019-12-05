@@ -4,6 +4,12 @@ language: r
 
 r:
   - oldrel
+  - 3.5
+  - 3.4
+
+branches:
+  only:
+    - travis
 
 r_packages:
   - RGCCA
