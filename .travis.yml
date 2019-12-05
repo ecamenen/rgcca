@@ -18,9 +18,8 @@ r_packages:
   - shinyjs
   - bsplus
 
-before_install:
-  - Rscript -e 'install.packages("devtools")
 install:
+  - Rscript -e 'install.packages("devtools")
   - R -e 'devtools::install_deps(dep = T)'
 
 script:
