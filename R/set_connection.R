@@ -1,6 +1,5 @@
 #' Create a matrix corresponding to a connection between the blocks
 #'
-#' @inheritParams load_blocks
 #' @param blocks A list of matrix
 #' @param superblock A boolean giving the presence (TRUE) / absence (FALSE) of
 #' a superblock

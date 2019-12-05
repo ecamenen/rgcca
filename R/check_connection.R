@@ -1,7 +1,7 @@
 #' Check the format of the connection matrix
 #'
 #' @param c A symmetric matrix containing 1 and 0
-#' @param blocks A list of matrix
+#' @inheritParams set_connection
 check_connection <- function(c, blocks) {
 
     msg <- "The connection file should"
