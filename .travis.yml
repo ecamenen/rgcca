@@ -3,10 +3,7 @@
 language: r
 
 r:
-  - oldrel
-  - 3.5
-  - 3.4
-  - 3.3
+  - bioc-devel
 
 git:
   depth: 1
