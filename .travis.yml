@@ -7,9 +7,12 @@ r:
   - 3.5
   - 3.4
 
+git:
+  depth: 1
+
 branches:
   only:
-    - travis
+    - feature/travis2
 
 r_packages:
   - RGCCA
