@@ -8,6 +8,7 @@ r:
   - 3.4
 
 os:
+  - windows
   - linux
   - osx
 
@@ -31,6 +32,9 @@ r_packages:
   - shiny
   - shinyjs
   - bsplus
+
+  before_install:
+  - tlmgr install index
 
 install:
   - Rscript -e 'install.packages("devtools",repos = "http://cran.us.r-project.org")'
