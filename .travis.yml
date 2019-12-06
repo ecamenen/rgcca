@@ -25,8 +25,11 @@ r_packages:
   - shiny
   - shinyjs
   - bsplus
+  - BiocManager
+  - BiocCheck
 
 bioc_check: true
+bioc_required: true
 
 install:
   - Rscript -e 'install.packages("devtools",repos = "http://cran.us.r-project.org")'
@@ -36,6 +39,9 @@ script:
   - R -e 'devtools::document()'
   - R CMD build .
   - R CMD check *tar.gz
+  - BiocManager::install()
+  - BiocManager::valid()
+  - R CMD BiocCheck *tar.gz
 
 after_script:
   - Rscript inst/launcher.R -h
