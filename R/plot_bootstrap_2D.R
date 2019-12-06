@@ -13,8 +13,12 @@
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
-#' rgcca_out = rgcca.analyze(blocks, type = "sgcca")
-#' boot = bootstrap(rgcca_out, 2, FALSE)
+#' rgcca_out = rgcca.analyze(blocks, tau = 0.75, type = "sgcca")
+#' boot = bootstrap(rgcca_out, 2)
+#' selected.var = get_bootstrap(rgcca_out, boot)
+#' plot_bootstrap_2D(selected.var)
+#' rgcca_out = rgcca.analyze(blocks)
+#' boot = bootstrap(rgcca_out, 2)
 #' selected.var = get_bootstrap(rgcca_out, boot)
 #' plot_bootstrap_2D(selected.var)
 #' @export
@@ -27,6 +31,17 @@ plot_bootstrap_2D <- function(
     cex_point = 3 * cex,
     cex_lab = 19 * cex){
 
+    set_occ <- function(x) {
+        match.arg(x, names(attributes(b)$indexes))
+        if (x == "occ" && !x %in% colnames(b))
+            return("sign")
+        else
+            return(x)
+    }
+
+    x <- set_occ(x)
+    y <- set_occ(y)
+
     axis <- function(margin){
         element_text(
         face = "italic",
@@ -35,10 +50,19 @@ plot_bootstrap_2D <- function(
         )
     }
 
-    ggplot(b,
+    transform_x <- function(x){
+        if ("*" %in% x) {
+            x[x == ""] <- 0
+            x[x == "*"] <- 1
+        }
+        return(abs(as.double(x)))
+    }
+
+    ggplot(
+        b,
         aes(
-            x = abs(b[, x]),
-            y = b[, y],
+            x = transform_x(b[, x]),
+            y = transform_x(b[, y]),
             label = row.names(b),
             color = as.factor(mean > 0)
     )) +
@@ -46,9 +70,9 @@ plot_bootstrap_2D <- function(
         size = cex_point * 0.75
     ) +
     labs(
-        y = "Non-zero occurences",
-        x = "Bootstrap-ratio",
-        title = "Occurences selection\nby bootstrap"
+        y =  attributes(b)$indexes[[y]],
+        x =  attributes(b)$indexes[[x]],
+        title = "Variable selection\nby bootstrap"
     ) +
     theme_classic() +
     theme_perso(cex, cex_sub) +

@@ -21,15 +21,12 @@ get_bootstrap <- function(
     rgcca,
     w,
     comp = 1,
-    i_block = NULL,
+    i_block = length(w[[1]]),
     collapse = TRUE,
     n_cores = parallel::detectCores() - 1) {
 
     if (n_cores == 0)
         n_cores <- 1
-
-    if (is.null(i_block))
-        i_block <- length(w[[1]])
 
     if (comp > min(rgcca$ncomp))
         stop("Selected dimension was not associated to every blocks",
@@ -118,6 +115,7 @@ get_bootstrap <- function(
         for (i in seq(NROW(df)))
             if (df$intneg[i]/df$intpos[i] > 0)
                 df$sign[i] <- "*"
+
     }
 
     if (collapse)
@@ -127,5 +125,16 @@ get_bootstrap <- function(
     if (length(zero_var) != 0)
         df <- df[-zero_var, ]
 
-    data.frame(order_df(df, index, allCol = TRUE), order = NROW(df):1)
+    b <- data.frame(order_df(df, index, allCol = TRUE), order = NROW(df):1)
+    attributes(b)$indexes <-
+        list(
+            mean = "Mean bootstrap weights",
+            br = "Bootstrap-ratio",
+            sign = "Significant 95% interval",
+            occ = "Non-zero occurences"
+        )
+    attributes(b)$type <- class(rgcca)
+    class(b) <- c(class(b), "bootstrap")
+
+    return(b)
 }

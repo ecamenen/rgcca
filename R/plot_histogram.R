@@ -74,19 +74,20 @@ plot_histogram <- function(
     )
 
     if (title != "Average Variance Explained") {
-        p <- p +
-            scale_x_continuous(breaks = df$order, labels = rownames(df)) +
-            labs(fill = "Blocks")
-        if (length(color) == 1) {
-            if (is.null(mid_col))
-                p <- p +
-                    scale_fill_gradient(low = low_col, high = high_col) +
-                    theme(legend.position = "none")
-            else
-                p <- p +
-                    scale_fill_gradient2(low = low_col, high = high_col, mid = mid_col)
-        }
+            p <- p +
+                scale_x_continuous(breaks = df$order, labels = rownames(df)) +
+                labs(fill = "Blocks")
+            if (length(color) == 1) {
+                if (is.null(mid_col))
+                        p +
+                        scale_fill_gradient(low = low_col, high = high_col) +
+                        theme(legend.position = "none")
+                else
+                    p <- p +
+                        scale_fill_gradient2(low = low_col, high = high_col, mid = mid_col)
+            }
     }
+
 
     return(p)
 }

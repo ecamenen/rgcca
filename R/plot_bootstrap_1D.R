@@ -14,28 +14,43 @@
 #' data("Russett")
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
+#' rgcca_out = rgcca.analyze(blocks, tau = 0.75, type = "sgcca")
+#' boot = bootstrap(rgcca_out, 2)
+#' selected.var = get_bootstrap(rgcca_out, boot)
+#' plot_bootstrap_1D(selected.var)
 #' rgcca_out = rgcca.analyze(blocks)
-#' boot = bootstrap(rgcca_out, 2, FALSE)
+#' boot = bootstrap(rgcca_out, 2)
 #' selected.var = get_bootstrap(rgcca_out, boot)
 #' plot_bootstrap_1D(selected.var)
 #' @export
 plot_bootstrap_1D <- function(
-    b, 
-    x = "occ", 
-    y = "mean", 
-    n = 50,    
+    b,
+    x = "br",
+    y = "occ",
+    n = 50,
     cex = 1,
     cex_sub = 16 * cex,
     cex_axis = 10 * cex) {
 
-    if (!("occ" %in% colnames(b))) {
-        title <- "Bootstrap ratio"
-        x <- "br"
-    }else
-        title <- "Occurences selection\nby bootstrap"
+    set_occ <- function(x) {
+        match.arg(x, names(attributes(b)$indexes))
+        if (x == "occ" && !x %in% colnames(b))
+            return("sign")
+        else
+            return(x)
+    }
+
+    x <- set_occ(x)
+    y <- set_occ(y)
+
+    if (y == "sign") 
+        color = seq(2)
+    else
+        color = 1
 
     b <- head(b, n)
-    p <- ggplot(b,
+    p <- ggplot(
+        b,
         aes(x = order,
             y = b[, x],
             fill = b[, y]))
@@ -43,13 +58,13 @@ plot_bootstrap_1D <- function(
     plot_histogram(
         p,
         b,
-        title,
-        "black",
+        attributes(b)$indexes[[x]],
+        color,
         low_col = color_group(seq(3))[1],
         mid_col = "white",
         high_col = color_group(seq(3))[3],
         cex = cex,
         cex_sub = cex_sub,
         cex_axis = cex_axis) +
-    labs(fill = "Mean weights")
+    labs(fill = attributes(b)$indexes[[y]])
 }

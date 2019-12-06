@@ -18,7 +18,7 @@
 bootstrap <- function(
     rgcca,
     n_boot = 5,
-    scale = TRUE,
+    scale = FALSE,
     n_cores = parallel::detectCores() - 1) {
 
     stopifnot(!missing(rgcca))
