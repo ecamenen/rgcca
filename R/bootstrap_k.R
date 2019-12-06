@@ -52,6 +52,7 @@ bootstrap_k <- function(
     w <- rgcca.analyze(
         boot_blocks,
         rgcca$C,
+        superblock = rgcca$superblock,
         tau = tau,
         ncomp = rgcca$ncomp,
         scheme = rgcca$scheme,

@@ -1,48 +1,52 @@
-# object : A list of object giving the rgcca output
-# newA : A list of either a dataframe/matrix or a vector giving the blocks to be predicted
-# fit : A character giving the function used to compare the trained and the tested models
-# block_to_pred : A character giving the block to predicted (must be the same name among train and test set)
+#' Predict RGCCA
+#' 
+#' Predict a new block from a RGCCA
+#' 
+#' @param object A list of object giving the rgcca output
+#' @param A A list of matrices
+#' @param newA A list of either a dataframe/matrix or a vector giving the blocks to be predicted
+#' @param fit A character giving the function used to compare the trained and the tested models
+#' @param block_to_pred A character giving the block to predicted (must be the same name among train and test set)
 #TODO: either an integer for block_to_pred
-# y.train : A dataframe or a matrix giving the block used as a response in the training
-# y.test : A dataframe or a matrix giving the block to be predicted
-# scale_size_bloc : A boolean giving the possibility to scale the blocks by the square root of their column number
-# bigA : to permeform data reduction for cross-validation, the dataset where A and newA were extracted
-# Examples
-# library(RGCCA)
-# data("Russett")
-# blocks = list(
-# agriculture = Russett[, 1:3],
-# industry = Russett[, 4:5],
-# politic = Russett[, 6:11]
-# )
-# C = connection = matrix(c(0, 0, 1,
-# 0, 0, 1,
-# 1, 1, 0),
-# 3, 3)
-# A = lapply(blocks, function(x) x[1:32,])
-# A = lapply(A, function(x) scale2 (x, bias = TRUE) / sqrt(NCOL(x)) )
-# object = sgcca(A, C = C, c1 = c(0.7,0.8,0.7), ncomp = c(3,2,4), verbose = F)
-# newA = lapply(blocks, function(x) x[-c(1:32),])
-# newA = lapply( newA, function(x) x[, sample(1:NCOL(x))] )
-# newA = sample(newA, length(newA))
-# bloc_to_pred = "industry"
-# y.train = kmeans(A[[bloc_to_pred]], 3)$cluster
-# y.test = kmeans(newA[[bloc_to_pred]], 3)$cluster
-# ( res  = predict.gcca(object, A, newA, "regression", "lm", "industry", bigA = blocks) )
-# ( res  = predict.gcca(object, A, newA, "regression", "cor", "industry") )
-# ( res  = predict.gcca(object, A ) )
-# ( res  = predict.gcca(object, A, newA = newA, type = "regression", fit = "lm", y.train = A[[bloc_to_pred]], y.test = newA[[bloc_to_pred]] ) )
-# ( res  = predict.gcca(object, A, newA = newA, type = "classification", fit = "lda", y.train = y.train, y.test = y.test ) )
+#' @param type A character corresponding to the type of prediction among : regression or classification
+#' @param y.train A dataframe or a matrix giving the block used as a response in the training
+#' @param y.test A dataframe or a matrix giving the block to be predicted
+#' @param scale_size_bloc A boolean giving the possibility to scale the blocks by the square root of their column number
+#' @param bigA to permeform data reduction for cross-validation, the dataset where A and newA were extracted
+#' @examples 
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(
+#' agriculture = Russett[, 1:3],
+#' industry = Russett[, 4:5],
+#' politic = Russett[, 6:11]
+#' )
+#' C = connection = matrix(c(0, 0, 1,
+#' 0, 0, 1,
+#' 1, 1, 0),
+#' 3, 3)
+#' A = lapply(blocks, function(x) x[1:32,])
+#' A = lapply(A, function(x) scale2 (x, bias = TRUE) / sqrt(NCOL(x)) )
+#' object = rgcca.analyze(A, connection = C, tau = c(0.7,0.8,0.7), ncomp = c(3,2,4), verbose = F)
+#' newA = lapply(blocks, function(x) x[-c(1:32),])
+#' newA = lapply( newA, function(x) x[, sample(1:NCOL(x))] )
+#' newA = sample(newA, length(newA))
+#' bloc_to_pred = "industry"
+#' y.train = kmeans(A[[bloc_to_pred]], 3)$cluster
+#' y.test = kmeans(newA[[bloc_to_pred]], 3)$cluster
+#' ( res  = predict.gcca(object, A, newA, "regression", "lm", "industry", bigA = blocks) )
+#' ( res  = predict.gcca(object, A, newA, "regression", "cor", "industry") )
+#' ( res  = predict.gcca(object, A ) )
+#' ( res  = predict.gcca(object, A, newA = newA, type = "regression", fit = "lm", y.train = A[[bloc_to_pred]], y.test = newA[[bloc_to_pred]] ) )
+#' ( res  = predict.gcca(object, A, newA = newA, type = "classification", fit = "lda", y.train = y.train, y.test = y.test ) )
 #' @importFrom MASS lda
 #' @importFrom nnet multinom
-
-
 predict.gcca = function(
-    object,
+    rgcca,
     A,
     newA,
-    type = c("regression", "classification"),
-    fit = c("lm", "cor", "lda", "logistic"),
+    type = "regression",
+    fit = "lm",
     bloc_to_pred = NULL,
     y.train = NULL,
     y.test = NULL,
@@ -51,14 +55,11 @@ predict.gcca = function(
     scale_size_bloc = TRUE,
     cutoff = 0.5) {
 
-  type = match.arg(type)
-  astar = object$astar
-  p = sapply(A, ncol)
-  B = length(A)
-
-      # Arguments checking
-      if (missing(fit) || missing(type) )
-        stop("Please, define type, fit and bloc_to_pred or y.train/y.test")
+    match.arg(type, c("regression", "classification"))
+    match.arg(fit, c("lm", "cor", "lda", "logistic"))
+    astar = rgcca$astar
+    p = sapply(A, ncol)
+    B = length(A)
 
       if (type == "classification" && (fit == "cor" || fit == "lm"))
         stop("Please, classification prediction only works with LDA and LOGISTIC")
@@ -197,8 +198,8 @@ predict.gcca = function(
 
       # Dimension Reduction
       for (i in 1:length(A))
-        colnames(object$astar[[i]]) = colnames(object$Y[[i]])
-      astar = reorderList(object$astar, g = TRUE)
+        colnames(rgcca$astar[[i]]) = colnames(rgcca$Y[[i]])
+      astar = reorderList(rgcca$astar, g = TRUE)
 
         if (is.null(dim(newA[[1]])))
         pred = lapply(1:length(newA), function(x) t(as.matrix(newA[[x]])) %*% astar[[x]])
@@ -210,7 +211,7 @@ predict.gcca = function(
 
       getComp = function(type = c("train", "test")){
 
-          comps <- object$Y[MATCH]
+          comps <- rgcca$Y[MATCH]
           names <- unlist(lapply(comps[-newbloc_y], colnames))
           
         if (type ==  "train")
@@ -223,7 +224,7 @@ predict.gcca = function(
         # vector of character giving the name of the block and the number of the component
         col_names = paste( unlist(mapply(function(name, times) rep(name, times),
                                          names(newA)[-newbloc_y],
-                                         object$ncomp)),
+                                         rgcca$ncomp)),
                            names,
                            sep = "_")
         colnames(res) = col_names
@@ -231,7 +232,7 @@ predict.gcca = function(
         return(res)
       }
 
-    object$ncomp = object$ncomp[MATCH][-newbloc_y]
+    rgcca$ncomp = rgcca$ncomp[MATCH][-newbloc_y]
     comp.train = getComp("train")
     comp.test = getComp("test")
 
@@ -274,10 +275,10 @@ predict.gcca = function(
             if (is.null(newA[[1]])) { # TODO ??? check case for vector
               comp.test
             }else{
-              object$C = object$C[MATCH, MATCH]
+              rgcca$C = rgcca$C[MATCH, MATCH]
               comp = list()
               
-              for (i in 1:max(object$ncomp)) {
+              for (i in 1:max(rgcca$ncomp)) {
 
                 comp[[i]] =  matrix(NA,
                                     NROW(comp.test),
@@ -289,10 +290,10 @@ predict.gcca = function(
                   if (length(pos) > 0)
                     comp[[i]][, n] = comp.test[, pos]
                 }
-                comp[[i]] = sum(abs(cor(comp[[i]], use = "pairwise.complete.obs")*object$C)[upper.tri(object$C)], na.rm = TRUE)
+                comp[[i]] = sum(abs(cor(comp[[i]], use = "pairwise.complete.obs")*rgcca$C)[upper.tri(rgcca$C)], na.rm = TRUE)
                 if (comp[[i]] == 0)
                     comp[[i]] =  NA
-                # (cor(comp[[i]], use = "pairwise.complete.obs")*object$C)[upper.tri(object$C)]**2
+                # (cor(comp[[i]], use = "pairwise.complete.obs")*rgcca$C)[upper.tri(rgcca$C)]**2
               }
               score <- mean(unlist(comp), na.rm = TRUE)
             }
