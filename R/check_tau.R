@@ -1,5 +1,7 @@
 check_tau <- function(tau, blocks) {
     msg <- "tau should be comprise between 0 and 1 or should correspond to the character 'optimal' for automatic setting"
+    tau1 <- tau
+
     tryCatch({
         # Check value of each tau
         tau <- sapply(
@@ -15,6 +17,9 @@ check_tau <- function(tau, blocks) {
                 }else
                     tau[x]
         })
+
+        if (is(tau1, "matrix"))
+            tau <- matrix(tau, NROW(tau1), NCOL(tau1))
 
         tau <- elongate_arg(tau, blocks)
         check_size_blocks(blocks, "tau", tau)

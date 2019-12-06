@@ -513,3 +513,9 @@ save_plot(opt$o5, design)
 save_ind(rgcca_out, 1, 2, opt$o6)
 save_var(rgcca_out, 1, 2, opt$o7)
 save(rgcca_out, file = opt$o8)
+
+# Bootrstap
+boot <- bootstrap(rgcca_out)
+selected.var <- get_bootstrap(rgcca_out, boot)
+plot_bootstrap_2D(selected.var)
+plot_bootstrap_1D(selected.var)

@@ -26,8 +26,6 @@ bootstrap_k <- function(
     ncomp <- rgcca$ncomp
 
     if (rgcca$superblock) {
-        tau <- tau[-length(tau)]
-        rgcca$ncomp <- rgcca$ncomp[-length(rgcca$ncomp)]
         rgcca$blocks <- rgcca$blocks[-length(rgcca$blocks)]
         rgcca$C <- NULL
     }
