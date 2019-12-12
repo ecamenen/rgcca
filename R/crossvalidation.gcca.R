@@ -1,7 +1,6 @@
 crossvalidation.gcca <- function(
     rgcca,
-    A,
-    bloc_to_pred = names(A)[1],
+    bloc_to_pred = names(rgcca$blocks)[1],
     validation = "loo",
     type = "regression",
     fit = "lm",
@@ -21,14 +20,14 @@ crossvalidation.gcca <- function(
                 tau <- rgcca$c1
             else
                 tau <- rgcca$tau
-            
+ 
             if (rgcca$superblock) {
-                Atrain2 <- Atrain[-length(Atrain)]
+                Atrain <- Atrain[-length(Atrain)]
                 rgcca$C <- NULL
             }
 
             rgcca_k <- rgcca.analyze(
-                Atrain2,
+                Atrain,
                 rgcca$C,
                 superblock = rgcca$superblock,
                 tau = tau,
@@ -42,16 +41,10 @@ crossvalidation.gcca <- function(
                 tol = rgcca$tol
             )
 
-            for (k in seq_len(length(bigA))) {
-                for (j in seq_len(ncol(rgcca$a[[k]]))) {
-                    if (cor(rgcca$a[[k]][, j], rgcca_k$a[[k]][, j]) < 0) 
-                        rgcca_k$a[[k]][, j] <- -rgcca_k$a[[k]][, j]
-                }
-            }
-            
+            rgcca_k$a <- check_sign_comp(rgcca, rgcca_k$a)
+
             predict.gcca(
                 rgcca_k,
-                A = Atrain,
                 newA = lapply(bigA, function(x) x[inds, ]),
                 type = type,
                 fit = fit,
@@ -62,21 +55,21 @@ crossvalidation.gcca <- function(
         }
     )
 
-    bigA <- A
+    bigA <- rgcca$blocks
     
     if (validation == "loo")
-        v_inds <- 1:nrow(A[[1]])
+        v_inds <- 1:nrow(rgcca$blocks[[1]])
     if (validation == "kfold") {
         v_inds <- list()
         for (i in 1:rep) {
-            inds <- sample(nrow(A[[1]]))
+            inds <- sample(nrow(rgcca$blocks[[1]]))
             inds <- split(inds, sort(inds %% k))
             v_inds <- c(v_inds, inds)
         }
     }
 
     if (validation == "test") {
-        inds <- sample(nrow(A[[1]]), size = nrow(A[[1]]) * 0.3)
+        inds <- sample(nrow(rgcca$blocks[[1]]), size = nrow(rgcca$blocks[[1]]) * 0.3)
         scores <- list(eval(f)())
         preds <- scores$res
     }else{
@@ -93,7 +86,7 @@ crossvalidation.gcca <- function(
     if (validation %in% c("loo", "kfold")) {
 
         preds <- lapply(
-            1:length(A),
+            1:length(rgcca$blocks),
             function(x) Reduce(
                 rbind, 
                 lapply(
@@ -105,24 +98,26 @@ crossvalidation.gcca <- function(
 
         if (validation == "kfold") {
             preds <- lapply(
-                1:length(A),
+                1:length(rgcca$blocks),
                function(x) Reduce(
                     rbind,
                     lapply(
-                        1:nrow(A[[1]]),
-                        function(y) apply( preds[[x]][ row.names(preds[[x]]) == rownames(A[[1]])[y], ], 2, mean)
+                        1:nrow(rgcca$blocks[[1]]),
+                        function(y) apply( preds[[x]][ row.names(preds[[x]]) == rownames(rgcca$blocks[[1]])[y], ], 2, mean)
                     )
                 )
              )
         }
+        
+        names(preds) <- names(rgcca$blocks)
 
     for (x in 1:length(preds))
-        row.names(preds[[x]]) <- row.names(A[[1]])
+        row.names(preds[[x]]) <- row.names(rgcca$blocks[[1]])
 
 
     }
     
     scores <- mean(unlist(lapply(scores, function(x) x$score)))
 
-    return(list(scores, preds))
+    return(list(scores = scores, preds = preds))
 }

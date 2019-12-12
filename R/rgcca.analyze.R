@@ -70,15 +70,14 @@ rgcca.analyze <- function(
             opt[[par[i]]] <- c(opt[[par[i]]][-response], opt[[par[i]]][response])
     }
 
-    if (!is.matrix(opt$connection))
+    if (!is.matrix(opt$connection) || !is.null(response))
         opt$connection <- set_connection(
             opt$blocks,
             (opt$superblock | !is.null(response))
         )
 
     check_connection(opt$connection, opt$blocks)
-    opt$tau <- check_tau(opt$tau, opt$blocks)
-    opt$tau <- check_spars(opt$blocks, opt$tau, type)
+    opt$tau <- check_tau(opt$tau, opt$blocks, type)
     opt$ncomp <- check_ncomp(opt$ncomp, opt$blocks)
 
     warn_on <- FALSE

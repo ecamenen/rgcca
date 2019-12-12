@@ -39,7 +39,7 @@
 #' @export
 plot_ind <- function(
     rgcca,
-    resp = NULL,
+    resp = rep(1, NROW(rgcca$Y[[1]])),
     compx = 1,
     compy = 2,
     i_block = length(rgcca$Y),

@@ -2,8 +2,7 @@
 #' 
 #' Predict a new block from a RGCCA
 #' 
-#' @param object A list of object giving the rgcca output
-#' @param A A list of matrices
+#' @inheritParams plot_ind
 #' @param newA A list of either a dataframe/matrix or a vector giving the blocks to be predicted
 #' @param fit A character giving the function used to compare the trained and the tested models
 #' @param block_to_pred A character giving the block to predicted (must be the same name among train and test set)
@@ -34,16 +33,15 @@
 #' bloc_to_pred = "industry"
 #' y.train = kmeans(A[[bloc_to_pred]], 3)$cluster
 #' y.test = kmeans(newA[[bloc_to_pred]], 3)$cluster
-#' ( res  = predict.gcca(object, A, newA, "regression", "lm", "industry", bigA = blocks) )
-#' ( res  = predict.gcca(object, A, newA, "regression", "cor", "industry") )
-#' ( res  = predict.gcca(object, A ) )
-#' ( res  = predict.gcca(object, A, newA = newA, type = "regression", fit = "lm", y.train = A[[bloc_to_pred]], y.test = newA[[bloc_to_pred]] ) )
-#' ( res  = predict.gcca(object, A, newA = newA, type = "classification", fit = "lda", y.train = y.train, y.test = y.test ) )
+#' ( res  = predict.gcca(object, newA, "regression", "lm", "industry", bigA = blocks) )
+#' ( res  = predict.gcca(object, newA, "regression", "cor", "industry") )
+#' ( res  = predict.gcca(object) )
+#' ( res  = predict.gcca(object, newA = newA, type = "regression", fit = "lm", y.train = A[[bloc_to_pred]], y.test = newA[[bloc_to_pred]] ) )
+#' ( res  = predict.gcca(object, newA = newA, type = "classification", fit = "lda", y.train = y.train, y.test = y.test ) )
 #' @importFrom MASS lda
 #' @importFrom nnet multinom
 predict.gcca = function(
     rgcca,
-    A,
     newA,
     type = "regression",
     fit = "lm",
@@ -58,8 +56,8 @@ predict.gcca = function(
     match.arg(type, c("regression", "classification"))
     match.arg(fit, c("lm", "cor", "lda", "logistic"))
     astar = rgcca$astar
-    p = sapply(A, ncol)
-    B = length(A)
+    p = sapply(rgcca$blocks, ncol)
+    B = length(rgcca$blocks)
 
       if (type == "classification" && (fit == "cor" || fit == "lm"))
         stop("Please, classification prediction only works with LDA and LOGISTIC")
@@ -80,13 +78,13 @@ predict.gcca = function(
       newB  = length(newA)
 
       # Check similarity between TRAIN and TEST set
-      if (is.null(names(A)) ||  is.null(names(newA)))
+      if (is.null(names(rgcca$blocks)) ||  is.null(names(newA)))
         stop("Please, blocs do not have names")
 
-      if (length(A) != B && length(newA) != newB)
+      if (length(rgcca$blocks) != B && length(newA) != newB)
         stop("Please, number of blocs is not the same")
 
-      MATCH = match(names(newA), names(A))
+      MATCH = match(names(newA), names(rgcca$blocks))
 
       if (sum(is.na(MATCH)) != 0)
         stop("Please, blocs in new data did not exist in old data")
@@ -94,29 +92,29 @@ predict.gcca = function(
       if (!identical(newp, p[MATCH]))
         stop("Please, number of column is not the same")
       
-      if (!bloc_to_pred %in% names(A))
+      if (!bloc_to_pred %in% names(rgcca$blocks))
          stop("Please, block to predict do not exist")
 
 
       # Y definition
       if (missing(bloc_to_pred)) {
-          bloc_to_pred = names (which (unlist (lapply(A, function(i) {
+          bloc_to_pred = names(which (unlist (lapply(rgcca$blocks, function(i) {
               all(unlist(lapply(colnames(y.train),
                   function(j)
                       j %in% colnames(i))))
           }))))
       }
 
-      bloc_y = match(bloc_to_pred, names(A))
+      bloc_y = match(bloc_to_pred, names(rgcca$blocks))
       newbloc_y = match(bloc_to_pred, names(newA))
       
       f1 <- f2 <- names
       if (!is.null(dim(newA[[1]])))
           f1 <- colnames
-      if (!is.null(dim(A[[1]])))
+      if (!is.null(dim(rgcca$blocks[[1]])))
           f2 <- colnames
       
-      MATCH_col = mapply(function(x, y) match(f1(x), f2(y)), newA, A[MATCH])
+      MATCH_col = mapply(function(x, y) match(f1(x), f2(y)), newA, rgcca$blocks[MATCH])
       
       if (sum(unique(is.na(MATCH_col))) != 0)
         stop("Please, some columns names are not the same between the two blocks")
@@ -167,8 +165,8 @@ predict.gcca = function(
 
         newA = mapply(scl_fun,
                       newA,
-                      reorderList(A, t_attr = "scaled:center"),
-                      reorderList(A, t_attr = "scaled:scale"),
+                      reorderList(rgcca$blocks, t_attr = "scaled:center"),
+                      reorderList(rgcca$blocks, t_attr = "scaled:scale"),
                       SIMPLIFY = FALSE)
 
       }
@@ -176,7 +174,7 @@ predict.gcca = function(
       # Y definition
 
       if (missing(y.train))
-        y.train = A[[bloc_y]][, MATCH_col[[newbloc_y]] ]
+        y.train = rgcca$blocks[[bloc_y]][, MATCH_col[[newbloc_y]] ]
 
       # TODO : sampled columns for y.test
 
@@ -197,7 +195,7 @@ predict.gcca = function(
       }
 
       # Dimension Reduction
-      for (i in 1:length(A))
+      for (i in 1:length(rgcca$blocks))
         colnames(rgcca$astar[[i]]) = colnames(rgcca$Y[[i]])
       astar = reorderList(rgcca$astar, g = TRUE)
 
@@ -215,7 +213,7 @@ predict.gcca = function(
           names <- unlist(lapply(comps[-newbloc_y], colnames))
           
         if (type ==  "train")
-          y = lapply(1:length(A), function(x) comps[[x]][row.names(A[[x]]),])
+          y = lapply(1:length(rgcca$blocks), function(x) comps[[x]][row.names(rgcca$blocks[[x]]),])
         else
           y = pred
 
@@ -251,17 +249,17 @@ predict.gcca = function(
             # mean(diag(abs(cor(y.test, ychapo))))
             # apply(y.test - ychapo, 2, function(x) mean(abs(x)))
             if (is.null(bigA))
-                bigA <- A
+                bigA <- rgcca$blocks
             m <- function(x) apply(bigA[[bloc_to_pred]], 2, x)
             
-            if (is.null(dim(newA[[1]]))){
+            if (is.null(dim(newA[[1]]))) {
                 f <- quote(y[x])
             }else
                 f <- quote(y[, x])
             
             r <- function(y) sapply(1:ncol(bigA[[bloc_to_pred]]), function(x) (eval(f) - m(min)[x]) / (m(max)[x] - m(min)[x]))
             
-            if (is.null(dim(newA[[1]]))){
+            if (is.null(dim(newA[[1]]))) {
                 res <- abs(r(y.test) - r(ychapo))
                  score <- mean(res)
             }else{

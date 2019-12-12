@@ -11,57 +11,72 @@
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca_out = rgcca.analyze(blocks)
-#' bootstrap_k(rgcca_out, FALSE)
+#' bootstrap_k(rgcca_out)
+#' bootstrap_k(rgcca_out, lapply(blocks, scale), superblock = FALSE)
 #' @export
 bootstrap_k <- function(
     rgcca,
-    scale = TRUE) {
+    A = NULL,
+    C = 1 - diag(length(A)),
+    tau = rep(1, length(A)),
+    ncomp = rep(2, length(A)),
+    scheme = "factorial",
+    init = "svd",
+    bias = TRUE,
+    tol = 1e-08,
+    type = "rgcca",
+    superblock = TRUE) {
 
-    if (is(rgcca, "sgcca"))
-        tau <- rgcca$c1
+    if (is.null(A))
+        blocks.all <- rgcca$blocks
     else
-        tau <- rgcca$tau
+        blocks.all <- A
 
-    blocks.all <- rgcca$blocks
-    ncomp <- rgcca$ncomp
+    if (is.null(A)) {
+        A <- rgcca$blocks
+        C <- rgcca$blocks
+        ncomp <- rgcca$ncomp
+        scheme <- rgcca$scheme
+        bias <- rgcca$bias
+        tol <- rgcca$tol
+        superblock <- rgcca$superblock
+        type <- class(rgcca)
 
-    if (rgcca$superblock) {
-        rgcca$blocks <- rgcca$blocks[-length(rgcca$blocks)]
-        rgcca$C <- NULL
+        if (is(rgcca, "sgcca"))
+            tau <- rgcca$c1
+        else
+            tau <- rgcca$tau
+
+        if (superblock) {
+            A <- A[-length(A)]
+            C <- NULL
+        }
     }
 
     # Shuffle rows
-    id_boot <- sample(NROW(rgcca$blocks[[1]]), replace = TRUE)
+    id_boot <- sample(NROW(A[[1]]), replace = TRUE)
 
-    if (isTRUE(scale))
-        boot_blocks <- lapply(
-            rgcca$blocks, 
-            function(x)
-                scale(
-                    x[id_boot,],
-                    center = attr(x, "scaled:center"),
-                    scale = attr(x, "scaled:scale")
-                ) / sqrt(NCOL(x)))
+    if (any(sapply(A, function(x) is.null(attr(x, 'scaled:center')))))
+            stop("Blocks should be scaled before performing bootstraps.")
     else
-        boot_blocks <- lapply(rgcca$blocks, function(x)
-            scale2(x[id_boot, ], scale = FALSE))
+        boot_blocks <- lapply(A, function(x) scale2(x[id_boot, ], scale = FALSE))
 
     boot_blocks <- remove_null_sd(boot_blocks)
 
     # Get boostraped weights
     w <- rgcca.analyze(
         boot_blocks,
-        rgcca$C,
-        superblock = rgcca$superblock,
+        C,
+        superblock = superblock,
         tau = tau,
-        ncomp = rgcca$ncomp,
-        scheme = rgcca$scheme,
+        ncomp = ncomp,
+        scheme = scheme,
         scale = FALSE,
-        type = class(rgcca),
+        type = type,
         verbose = FALSE,
-        init = rgcca$init,
-        bias = rgcca$bias,
-        tol = rgcca$tol
+        init = init,
+        bias = bias,
+        tol = tol
     )$a
 
     # Add removed variables
@@ -91,5 +106,8 @@ bootstrap_k <- function(
     w <- lapply(seq(length(w)), function(x) w[[x]][colnames(blocks.all[[x]]), ])
 
     names(w) <- names(blocks.all)
+
+    w <- check_sign_comp(rgcca, w)
+
     return(w)
 }

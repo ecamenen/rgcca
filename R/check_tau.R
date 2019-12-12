@@ -1,4 +1,4 @@
-check_tau <- function(tau, blocks) {
+check_tau <- function(tau, blocks, type = "rgcca") {
     msg <- "tau should be comprise between 0 and 1 or should correspond to the character 'optimal' for automatic setting"
     tau1 <- tau
 
@@ -23,6 +23,7 @@ check_tau <- function(tau, blocks) {
 
         tau <- elongate_arg(tau, blocks)
         check_size_blocks(blocks, "tau", tau)
+        tau <- check_spars(blocks, tau, type)
 
         return(tau)
 

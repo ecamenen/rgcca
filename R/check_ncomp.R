@@ -1,4 +1,4 @@
-check_ncomp <- function(ncomp, blocks, min = 2) {
+check_ncomp <- function(ncomp, blocks, min = 1) {
     
     ncomp <- elongate_arg(ncomp, blocks)
     ncomp <- sapply(

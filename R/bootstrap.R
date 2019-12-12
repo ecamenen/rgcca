@@ -13,13 +13,15 @@
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca_out = rgcca.analyze(blocks)
-#' bootstrap(rgcca_out, 2, FALSE, 2)
+#' bootstrap(rgcca_out, n_boot = 2, n_cores = 1)
+#' bootstrap(rgcca_out, n_boot = 2, n_cores = 1, A = lapply(blocks, scale), superblock = FALSE)
 #' @export
 bootstrap <- function(
     rgcca,
     n_boot = 5,
     scale = FALSE,
-    n_cores = parallel::detectCores() - 1) {
+    n_cores = parallel::detectCores() - 1,
+    ...) {
 
     stopifnot(!missing(rgcca))
 
@@ -29,27 +31,14 @@ bootstrap <- function(
     # if (any(unlist(lapply(rgcca$blocks, NCOL) > 1000)))
     #     verbose <- TRUE
 
-    w1 <- rgcca$a
-
     cat("Bootstrap in progress...")
 
-    W <- parallel::mclapply(seq(n_boot), function(x) {
+    W <- parallel::mclapply(
+        seq(n_boot), 
+        function(x) bootstrap_k(rgcca, ...), 
+        mc.cores = n_cores)
 
-        w <- bootstrap_k(rgcca, scale)
-
-        # Test on the sign of the correlation
-        for (k in seq(length(rgcca$blocks))) {
-            for (j in seq(NCOL(w[[k]]))) {
-                if (cor(w1[[k]][, j], w[[k]][, j]) < 0)
-                    w[[k]][, j] <- -1 * w[[k]][, j]
-            }
-        }
-
-        return(w)
-
-    }, mc.cores = n_cores)
-
-    cat("OK", append = TRUE)
+    cat("OK.\n", append = TRUE)
 
     return(W)
 }

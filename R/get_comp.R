@@ -38,9 +38,10 @@ get_comp <- function(
     resp <- as.matrix(resp)
 
     if (!is.null(predicted)) {
-
-            df <- rbind(df, predicted[[2]][[i_block]][, c(compx, compy, compz)])
-            resp <- rep(c("obs", "pred"), each = NROW(rgcca$Y[[1]]))
+        df2 <- predicted[[2]][[i_block]][, c(compx, compy, compz)]
+        colnames(df2) <- colnames(df)
+        df <- rbind(df, df2)
+        resp <- rep(c("obs", "pred"), each = NROW(rgcca$Y[[1]]))
 
     } else if (length(unique(as.matrix(resp))) > 1) {
         names <- row.names(resp)
