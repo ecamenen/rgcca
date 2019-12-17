@@ -514,7 +514,7 @@ save_ind(rgcca_out, 1, 2, opt$o6)
 save_var(rgcca_out, 1, 2, opt$o7)
 save(rgcca_out, file = opt$o8)
 
-crossvalidation.gcca(rgcca_out)$scores
+rgcca_crossvalidation(rgcca_out)$scores
 
 # Bootstrap
 boot <- bootstrap(rgcca_out)

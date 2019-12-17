@@ -59,18 +59,18 @@ rgcca_permutation <- function(
                 p_ncomp <- ncols
             }else
                 p_ncomp <- check_ncomp(p_ncomp, blocks)
-            p_ncomp <- lapply(p_ncomp, function(x) 1:x)
+            p_ncomp <- lapply(p_ncomp, function(x) seq(x))
             p_ncomp <- expand.grid(p_ncomp)
         }else
             p_ncomp <- t(sapply(seq(NROW(p_ncomp)), function(x) check_ncomp(p_ncomp[x, ], blocks, 1)))
         par <- list("ncomp", p_ncomp)
     }
 
-   if (!any(p_c1 == FALSE)) {
+    if (!any(p_c1 == FALSE)) {
         if (identical(p_c1, TRUE))
             p_c1 <- set_c1s()
         else if (class(p_c1) %in% c("data.frame", "matrix"))
-            p_c1 <- t(sapply(1:NROW(p_c1), function(x) check_tau(p_c1[x, ], blocks, type = "sgcca")))
+            p_c1 <- t(sapply(seq(NROW(p_c1)), function(x) check_tau(p_c1[x, ], blocks, type = "sgcca")))
         else{
             if (any(p_c1 < min_c1s))
                 stop(paste0("p_c1 should be upper than 1 / sqrt(NCOL(blocks)) : ", paste0(round(min_c1s, 2), collapse = ",")))
@@ -114,10 +114,10 @@ rgcca_permutation <- function(
             envir = e
         )
 
-# /!\ To be uncomment (packaging)
-       # parallel::clusterEvalQ(cl, library(devtools))
+        # /!\ To be uncomment (packaging)
+        # parallel::clusterEvalQ(cl, library(devtools))
 
-       # tryCatch({
+        # tryCatch({
         #     parallel::clusterEvalQ(cl, load_all("RGCCA/R/."))
         # }, error = function(e) {
         #     warning("error : probably an issue with the localisation of RGCCA functions")
@@ -125,7 +125,7 @@ rgcca_permutation <- function(
 # /!\ End to be uncomment (packaging)
         # Close cluster even if there is an error or a warning with rgcca_permutation_k
         permcrit <- tryCatch({
-            parallel::parSapply(cl, 1:nperm, function(x)
+            parallel::parSapply(cl, seq(nperm), function(x)
                 rgcca_permutation_k(
                     blocks = blocks,
                     par = par,
@@ -143,7 +143,8 @@ rgcca_permutation <- function(
             return(NULL)
 
     } else {
-        permcrit <- simplify2array(parallel::mclapply(1:nperm,
+        permcrit <- simplify2array(parallel::mclapply(
+            seq(nperm),
             function(x){
                 res <- rgcca_permutation_k(
                     blocks = blocks,

@@ -2,7 +2,7 @@
 # rgcca_permutation_k(A = blocks, scale = FALSE)
 rgcca_permutation_k <- function(
     blocks,
-    par = list("ncomps", expand.grid(rep(list(1:2), length(blocks)))),
+    par = list("ncomps", expand.grid(rep(list(seq(2)), length(blocks)))),
     connection = 1 - diag(length(blocks)),
     response = NULL,
     tau = rep(1, length(blocks)),
@@ -18,8 +18,8 @@ rgcca_permutation_k <- function(
     n_cores = parallel::detectCores() - 1) {
 
     if (perm) {
-        for (k in 1:length(blocks))
-            blocks[[k]] <- blocks[[k]][sample(1:nrow(blocks[[k]])),]
+        for (k in seq(length(blocks)))
+            blocks[[k]] <- blocks[[k]][sample(seq(nrow(blocks[[k]]))),]
     }
 
     simplify2array(

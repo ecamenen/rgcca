@@ -162,8 +162,8 @@ for (x in 1:length(files)) {
 SGCCA is run from the RGCCA package by using two components for a biplot visualization. The S/RGCCA function doesn't names the blocks in their outputs. This step is required to generate biplots.
 
 ```{r rgcca}
-sgcca_out = rgcca.analyze(blocks = blocks)
-plot_network(sgcca_out)
+rgcca_out = rgcca.analyze(blocks = blocks)
+plot_network(rgcca_out)
 ```
 
 
@@ -183,22 +183,41 @@ nmark = 100
 
 ### Samples plot
 ```{r}
-plot_ind(sgcca_out)
+plot_ind(rgcca_out)
 ```
 
 ### Corcircle plot
 ```{r}
-plot_var_2D(sgcca_out)
+plot_var_2D(rgcca_out)
 ```
 
 ### Fingerprint plot
 ```{r}
-plot_var_1D(sgcca_out)
+plot_var_1D(rgcca_out)
 ```
 
 ### Best explained blocks
 ```{r}
-plot_ave(sgcca_out)
+plot_ave(rgcca_out)
+```
+
+### Cross-validation score
+```{r}
+loo <- rgcca_crossvalidation(rgcca_out)
+plot_ind(rgcca_out, predicted = loo)
+```
+
+### Bootstrap
+```{r}
+boot <- bootstrap(rgcca_out)
+selected.var <- get_bootstrap(rgcca_out, boot) # Get the bootrstap on the clinic block
+plot_bootstrap_2D(selected.var)
+plot_bootstrap_1D(selected.var)
+```
+
+### Permutation
+```{r}
+perm <- rgcca_permutation(blocks, nperm = 5)
 ```
 
 ## With the politic block, on the 2nd and the 3rd components
@@ -206,7 +225,7 @@ plot_ave(sgcca_out)
 ### Samples plot
 ```{r}
 plot_ind(
-    rgcca = sgcca_out,
+    rgcca = rgcca_out,
     resp = response,
     compx = comp1,
     compy = comp2,
@@ -216,7 +235,7 @@ plot_ind(
 ### Corcircle plot
 ```{r}
 plot_var_2D(
-    rgcca = sgcca_out,
+    rgcca = rgcca_out,
     compx = comp1,
     compy = comp2,
     i_block = 3)
@@ -225,7 +244,7 @@ plot_var_2D(
 ### Fingerprint plot
 ```{r}
 plot_var_1D(
-    rgcca = sgcca_out,
+    rgcca = rgcca_out,
     comp = comp1,
     n_mark = nmark, 
     i_block = 3,

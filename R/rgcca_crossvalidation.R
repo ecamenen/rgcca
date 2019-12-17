@@ -1,4 +1,24 @@
-crossvalidation.gcca <- function(
+#' Cross-validation
+#' 
+#' Cross-validation for RGCCA
+#' 
+#' @inheritParams rgcca_predict
+#' @inheritParams bootstrap
+#' @param validation A character given the method for validation aong test 
+#' (for test-train sets), kfold (for k-fold with k=5 by default) and loo 
+#' (for leave-one-out)
+#' @param k An integer given the parameter for k-fold method (5, by default)
+#' @examples
+#' library(RGCCA)
+#' data("Russett")
+#' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
+#'     politic = Russett[, 6:11] )
+#' rgcca_out = rgcca.analyze(blocks)
+#' rgcca_crossvalidation(rgcca_out, validation = "kfold", k = 5, n_cores = 1)
+#' rgcca_crossvalidation(rgcca_out,  validation = "test", n_cores = 1)$scores
+#' rgcca_crossvalidation(rgcca_out, n_cores = 1)
+#' @export
+rgcca_crossvalidation <- function(
     rgcca,
     bloc_to_pred = names(rgcca$blocks)[1],
     validation = "loo",
@@ -6,8 +26,7 @@ crossvalidation.gcca <- function(
     fit = "lm",
     new_scaled = TRUE,
     k = 5,
-    rep = 10,
-    nb_cores = parallel::detectCores() - 1) {
+    n_cores = parallel::detectCores() - 1) {
 
     match.arg(validation, c("test", "kfold", "loo"))
 
@@ -16,11 +35,11 @@ crossvalidation.gcca <- function(
 
             Atrain <- lapply(bigA, function(x) x[-inds, ])
 
-            if (class(rgcca) == "sgcca")
+            if (is(rgcca, "sgcca"))
                 tau <- rgcca$c1
             else
                 tau <- rgcca$tau
- 
+
             if (rgcca$superblock) {
                 Atrain <- Atrain[-length(Atrain)]
                 rgcca$C <- NULL
@@ -56,37 +75,34 @@ crossvalidation.gcca <- function(
     )
 
     bigA <- rgcca$blocks
-    
+
     if (validation == "loo")
-        v_inds <- 1:nrow(rgcca$blocks[[1]])
+        v_inds <- seq(nrow(rgcca$blocks[[1]]))
     if (validation == "kfold") {
-        v_inds <- list()
-        for (i in 1:rep) {
-            inds <- sample(nrow(rgcca$blocks[[1]]))
-            inds <- split(inds, sort(inds %% k))
-            v_inds <- c(v_inds, inds)
-        }
+        v_inds <- sample(nrow(rgcca$blocks[[1]]))
+        v_inds <- split(v_inds, sort(v_inds %% k))
     }
 
     if (validation == "test") {
-        inds <- sample(nrow(rgcca$blocks[[1]]), size = nrow(rgcca$blocks[[1]]) * 0.3)
+        inds <- sample(
+            nrow(rgcca$blocks[[1]]),
+            size = nrow(rgcca$blocks[[1]]) * 0.3)
         scores <- list(eval(f)())
         preds <- scores$res
     }else{
         scores <- parallel::mclapply(
-            v_inds, 
+            seq(length(v_inds)), 
             function(i){
-                inds <- i
+                inds <- unlist(v_inds[i])
                 eval(f)()
-            }, mc.cores = nb_cores
+            }, mc.cores = n_cores
         )
     }
-    
 
     if (validation %in% c("loo", "kfold")) {
-
+        # concatenation of each test set to provide predictions for each block
         preds <- lapply(
-            1:length(rgcca$blocks),
+            seq(length(rgcca$blocks)),
             function(x) Reduce(
                 rbind, 
                 lapply(
@@ -96,27 +112,13 @@ crossvalidation.gcca <- function(
                 )
             )
 
-        if (validation == "kfold") {
-            preds <- lapply(
-                1:length(rgcca$blocks),
-               function(x) Reduce(
-                    rbind,
-                    lapply(
-                        1:nrow(rgcca$blocks[[1]]),
-                        function(y) apply( preds[[x]][ row.names(preds[[x]]) == rownames(rgcca$blocks[[1]])[y], ], 2, mean)
-                    )
-                )
-             )
-        }
-        
         names(preds) <- names(rgcca$blocks)
 
-    for (x in 1:length(preds))
+    for (x in seq(length(preds)))
         row.names(preds[[x]]) <- row.names(rgcca$blocks[[1]])
 
-
     }
-    
+
     scores <- mean(unlist(lapply(scores, function(x) x$score)))
 
     return(list(scores = scores, preds = preds))

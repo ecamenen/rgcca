@@ -13,3 +13,4 @@ design.pdf
 ^\.idea$
 ^data/
 ^\.travis\.yml$
+img$

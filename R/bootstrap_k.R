@@ -59,7 +59,9 @@ bootstrap_k <- function(
     if (any(sapply(blocks, function(x) is.null(attr(x, 'scaled:center')))))
             stop("Blocks should be scaled before performing bootstraps.")
     else
-        boot_blocks <- lapply(blocks, function(x) scale2(x[id_boot, ], scale = FALSE))
+        boot_blocks <- lapply(
+            blocks, 
+            function(x) scale2(x[id_boot,], scale = FALSE))
 
     boot_blocks <- remove_null_sd(boot_blocks)
 

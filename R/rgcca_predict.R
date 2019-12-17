@@ -172,15 +172,15 @@ rgcca_predict = function(
 
 
     # Dimension Reduction
-    for (i in 1:length(rgcca$blocks))
+    for (i in seq(length(rgcca$blocks)))
         colnames(rgcca$astar[[i]]) <- colnames(rgcca$Y[[i]])
     astar <- reorderList(rgcca$astar, g = TRUE)
 
     if (is.null(dim(newA[[1]])))
-        pred <- lapply(1:length(newA), function(x)
+        pred <- lapply(seq(length(newA)), function(x)
             t(as.matrix(newA[[x]])) %*% astar[[x]])
     else
-        pred <- lapply(1:length(newA), function(x)
+        pred <- lapply(seq(length(newA)), function(x)
             as.matrix(newA[[x]]) %*% astar[[x]])
 
     if (missing(bloc_to_pred))
@@ -223,7 +223,7 @@ rgcca_predict = function(
         names <- unlist(lapply(comps[-newbloc_y], colnames))
 
         if (type ==  "train")
-            y <- lapply(1:length(rgcca$blocks), function(x)
+            y <- lapply(seq(length(rgcca$blocks)), function(x)
                 comps[[x]][row.names(rgcca$blocks[[x]]), ])
         else
             y <- pred
@@ -270,7 +270,7 @@ rgcca_predict = function(
                     f <- quote(y[, x])
 
                 r <- function(y)
-                        sapply(1:ncol(bigA[[bloc_to_pred]]), function(x)
+                        sapply(seq(ncol(bigA[[bloc_to_pred]])), function(x)
                             (eval(f) - m(min)[x]) / (m(max)[x] - m(min)[x]))
 
                 if (is.null(dim(newA[[1]]))) {
@@ -281,7 +281,7 @@ rgcca_predict = function(
                         abs(x))
                     score <- mean(apply(res, 2, mean))
                 }
-  
+
 
             },
             "cor" = {
@@ -292,7 +292,7 @@ rgcca_predict = function(
                     rgcca$C <- rgcca$C[MATCH, MATCH]
                     comp <- list()
                     
-                    for (i in 1:max(rgcca$ncomp)) {
+                    for (i in seq(max(rgcca$ncomp))) {
                         comp[[i]] <-  matrix(
                             NA,
                             NROW(comp.test),
