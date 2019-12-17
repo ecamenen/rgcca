@@ -14,8 +14,8 @@
 #' blocks = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
 #' rgcca_out = rgcca.analyze(blocks)
-#' boot = bootstrap(rgcca_out, 2, FALSE)
-#' get_bootstrap(rgcca_out, boot)
+#' boot = bootstrap(rgcca_out, 2, FALSE, n_cores = 1)
+#' get_bootstrap(rgcca_out, boot, n_cores = 1)
 #' @export
 get_bootstrap <- function(
     rgcca,

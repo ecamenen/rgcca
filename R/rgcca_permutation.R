@@ -3,7 +3,13 @@
 #' 
 #' @inheritParams set_connection
 #' @inheritParams bootstrap
-#' @param p_c1 A matrix containing sets of constraint variables, one row by set. If null, sgcca.permute takes 10 sets between min values ($1/sqrt(ncol)$) and 1
+#' @inheritParams rgcca.analyze
+#' @param p_c1 A matrix, a vector or an integer containing sets of constraint 
+#' variables, one row by set. By default, sgcca.permute takes 10 sets between 
+#' min values ($1/sqrt(ncol)$) and 1
+#' @param p_ncomp A matrix, a vector or an integer containing sets of number of 
+#' components, one row by set. By default, sgcca.permute takes as many 
+#' combinations as the maximum number of columns in each block
 #' @param nperm Number of permutation tested for each set of constraint
 #' @return A list containing :
 #' @return \item{pval}{Pvalue}
@@ -11,20 +17,19 @@
 #' @return \item{bestpenalties}{Penalties corresponding to the best Z-statistic}
 #' @return \item{permcrit}{RGCCA criteria obtained with permutation set}
 #' @return \item{crit}{ RGCCA criterion for the original dataset}
-#'@export sgcca.permute.crit
 #' data("Russett")
 #' A = list(agriculture = Russett[, seq(3)], industry = Russett[, 4:5],
 #'     politic = Russett[, 6:11] )
-#' sgcca.permute.crit(A, nperm = 5)
-#' #' sgcca.permute.crit(A, p_c1 = TRUE, nperm = 5)
-#' sgcca.permute.crit(A, p_c1 = 0.8, nperm = 5)
-#' sgcca.permute.crit(A, p_c1 = c(0.6, 0.75, 0.5), nperm = 5)
-#' sgcca.permute.crit(A, p_c1 = matrix(c(0.6, 0.75, 0.5), 3, 3, byrow = T), nperm = 5)
-#' sgcca.permute.crit(A, p_ncomp = 2)
-#' sgcca.permute.crit(A, p_ncomp = c(2,2,3))
-#' sgcca.permute.crit(A, p_ncomp = matrix(c(2,2,3), 3, 3, byrow = T), nperm = 5)
+#' rgcca_permutation(A, nperm = 2, n_cores = 1)
+#' rgcca_permutation(A, p_c1 = TRUE, nperm = 2, n_cores = 1)
+#' rgcca_permutation(A, p_c1 = 0.8, nperm = 2, n_cores = 1)
+#' rgcca_permutation(A, p_c1 = c(0.6, 0.75, 0.5), nperm = 2, n_cores = 1)
+#' rgcca_permutation(A, p_c1 = matrix(c(0.6, 0.75, 0.5), 3, 3, byrow = T), nperm = 2, n_cores = 1)
+#' rgcca_permutation(A, p_ncomp = 2, nperm = 2, n_cores = 1)
+#' rgcca_permutation(A, p_ncomp = c(2,2,3), nperm = 2, n_cores = 1)
+#' rgcca_permutation(A, p_ncomp = matrix(c(2,2,3), 3, 3, byrow = T), nperm = 2, n_cores = 1)
 #' @export
-sgcca.permute.crit <- function(
+rgcca_permutation <- function(
     blocks,
     type = "rgcca",
     p_c1 = FALSE,
@@ -77,7 +82,7 @@ sgcca.permute.crit <- function(
         type <- "sgcca"
     }
 
-    crits <- sgcca.crit(
+    crits <- rgcca_permutation_k(
         blocks,
         par = par,
         perm = FALSE,
@@ -118,17 +123,17 @@ sgcca.permute.crit <- function(
         #     warning("error : probably an issue with the localisation of RGCCA functions")
         # })
 # /!\ End to be uncomment (packaging)
-        # Close cluster even if there is an error or a warning with sgcca.crit
+        # Close cluster even if there is an error or a warning with rgcca_permutation_k
         permcrit <- tryCatch({
             parallel::parSapply(cl, 1:nperm, function(x)
-                sgcca.crit(
+                rgcca_permutation_k(
                     blocks = blocks,
                     par = par,
                     type = type,
                     ...
                 ))
         }, error = function(e) {
-            warning("an error occured with sgcca.crit")
+            warning("an error occured with rgcca_permutation_k")
             return(NULL)
         })
 
@@ -140,7 +145,7 @@ sgcca.permute.crit <- function(
     } else {
         permcrit <- simplify2array(parallel::mclapply(1:nperm,
             function(x){
-                res <- sgcca.crit(
+                res <- rgcca_permutation_k(
                     blocks = blocks,
                     par = par,
                     type = type,

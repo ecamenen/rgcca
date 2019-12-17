@@ -43,7 +43,7 @@ crossvalidation.gcca <- function(
 
             rgcca_k$a <- check_sign_comp(rgcca, rgcca_k$a)
 
-            predict.gcca(
+            rgcca_predict(
                 rgcca_k,
                 newA = lapply(bigA, function(x) x[inds, ]),
                 type = type,

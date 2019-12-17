@@ -52,13 +52,6 @@ plot_var_2D <- function(
 
     x <- y <- NULL
 
-    if (i_block < length(rgcca$a) || is(rgcca, "pca"))
-        rgcca$superblock <- FALSE
-
-    # PCA case: remove the superblock in legend
-    if (identical(rgcca$blocks[[1]], rgcca$blocks[[2]]))
-        rgcca$superblock <- FALSE
-
     df <- get_ctr2(
         rgcca = rgcca,
         compx = compx,
@@ -69,6 +62,19 @@ plot_var_2D <- function(
         collapse = collapse,
         remove_var = remove_var
     )
+
+    if (collapse && rgcca$superblock) {
+        if (i_block == length(rgcca$a))
+            i_block <- length(rgcca$a) - 1
+        rgcca$a <- rgcca$a[-length(rgcca$a)]
+    }
+
+    if (i_block < length(rgcca$a) || is(rgcca, "pca"))
+        rgcca$superblock <- FALSE
+
+    # PCA case: remove the superblock in legend
+    if (identical(rgcca$blocks[[1]], rgcca$blocks[[2]]))
+        rgcca$superblock <- FALSE
 
     p <- plot2D(
         rgcca,
@@ -102,7 +108,7 @@ plot_var_2D <- function(
         )
 
     # remove legend if not on superblock
-    if (!rgcca$superblock || i_block != length(rgcca$a))
+    if ((!rgcca$superblock || i_block != length(rgcca$a)) && !collapse)
         p + theme(legend.position = "none")
     else
         p

@@ -14,7 +14,7 @@
 #'     politic = Russett[, 6:11] )
 #' rgcca_out = rgcca.analyze(blocks)
 #' bootstrap(rgcca_out, n_boot = 2, n_cores = 1)
-#' bootstrap(rgcca_out, n_boot = 2, n_cores = 1, A = lapply(blocks, scale), superblock = FALSE)
+#' bootstrap(rgcca_out, n_boot = 2, n_cores = 1, blocks = lapply(blocks, scale), superblock = FALSE)
 #' @export
 bootstrap <- function(
     rgcca,

@@ -523,7 +523,7 @@ plot_bootstrap_2D(selected.var)
 plot_bootstrap_1D(selected.var)
 
 # Permutation
-sgcca.permute.crit(
+rgcca_permutation(
     blocks,
     connection = connection,
     response = opt$response,

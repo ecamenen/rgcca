@@ -41,10 +41,6 @@ plot_var_1D <- function(
     cex = 1,
     cex_sub = 16 * cex,
     cex_axis = 10 * cex) {
-    
-    if (i_block < length(rgcca$a) || is(rgcca, "pca")) {
-        rgcca$superblock <- FALSE
-    }
 
     df <- get_ctr2(
         rgcca = rgcca,
@@ -56,6 +52,9 @@ plot_var_1D <- function(
         collapse = collapse,
         remove_var = FALSE
     )
+
+    if (i_block < length(rgcca$a) || is(rgcca, "pca"))
+        rgcca$superblock <- FALSE
     
     J <- names(rgcca$a)
 
@@ -72,7 +71,7 @@ plot_var_1D <- function(
 
     # if the superblock is selected, color the text of the y-axis according
     # to their belonging to each blocks
-    if (rgcca$superblock & (collapse | (i_block == length(rgcca$a)))) {
+    if ((rgcca$superblock && i_block == length(rgcca$a)) || collapse) {
         color <- factor(df$resp)
         levels(color) <- color_group(color)
         p <- ggplot(df, aes(order, df[, 1], fill = df$resp))
@@ -81,15 +80,16 @@ plot_var_1D <- function(
         p <- ggplot(df, aes(order, df[, 1], fill = abs(df[, 1])))
     }
 
-    p <- plot_histogram(p,
-            df,
-            title,
-            as.character(color),
-            cex = cex,
-            cex_sub = cex_sub,
-            cex_axis = cex_axis
-        ) +
-        labs(subtitle = print_comp(rgcca, comp, i_block))
+    p <- plot_histogram(
+        p,
+        df,
+        title,
+        as.character(color),
+        cex = cex,
+        cex_sub = cex_sub,
+        cex_axis = cex_axis
+    ) +
+    labs(subtitle = print_comp(rgcca, comp, i_block))
 
     # If some blocks have any variables in the top hit, selects the ones
     # corresponding
@@ -104,7 +104,7 @@ plot_var_1D <- function(
     if (length(color) != 1)
         p <- order_color(rgcca$a, p, matched, collapse)
 
-    if ( !rgcca$superblock | (!collapse & i_block != length(rgcca$a)))
+    if ((!rgcca$superblock || i_block != length(rgcca$a)) && !collapse)
             p <- p + theme(legend.position = "none")
 
     return(p)

@@ -1,6 +1,6 @@
 # An intern function used by sgcca.permute to perform multiple sgcca with permuted rows
-# sgcca.crit(A = blocks, scale = FALSE)
-sgcca.crit <- function(
+# rgcca_permutation_k(A = blocks, scale = FALSE)
+rgcca_permutation_k <- function(
     blocks,
     par = list("ncomps", expand.grid(rep(list(1:2), length(blocks)))),
     connection = 1 - diag(length(blocks)),

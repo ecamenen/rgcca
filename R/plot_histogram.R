@@ -78,11 +78,11 @@ plot_histogram <- function(
                 scale_x_continuous(breaks = df$order, labels = rownames(df)) +
                 labs(fill = "Blocks")
             if (length(color) == 1) {
-                if (is.null(mid_col))
-                        p +
+                if (is.null(mid_col)) {
+                    p <- p +
                         scale_fill_gradient(low = low_col, high = high_col) +
                         theme(legend.position = "none")
-                else
+                }else
                     p <- p +
                         scale_fill_gradient2(low = low_col, high = high_col, mid = mid_col)
             }

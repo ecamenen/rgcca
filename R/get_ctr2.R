@@ -86,7 +86,7 @@ get_ctr2 <- function(
         if (collapse)
             resp <- get_bloc_var(lapply(blocks.all, t), TRUE)
         else{
-            resp <- get_bloc_var(rgcca$blocks)
+            resp <- get_bloc_var(rgcca$a)
 
             resp <- resp[
                 unlist(
