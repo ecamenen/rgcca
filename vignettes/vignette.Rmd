@@ -205,7 +205,7 @@ plot_ave(rgcca_out)
 
 ### Cross-validation score
 ```{r}
-loo <- rgcca_crossvalidation(rgcca_out)
+loo <- rgcca_crossvalidation(rgcca_out, n_cores = 2)
 # Cross-validation score (leave-one-out)
 round(loo$scores, 3)
 plot_ind(rgcca_out, predicted = loo)
@@ -213,15 +213,15 @@ plot_ind(rgcca_out, predicted = loo)
 
 ### Bootstrap
 ```{r}
-boot <- bootstrap(rgcca_out)
-selected.var <- get_bootstrap(rgcca_out, boot) # Get the bootrstap on the clinic block
+boot <- bootstrap(rgcca_out, n_boot = 5, n_cores = 2)
+selected.var <- get_bootstrap(rgcca_out, boot, n_cores = 2) # Get the bootrstap on the clinic block
 plot_bootstrap_2D(selected.var)
 plot_bootstrap_1D(selected.var)
 ```
 
 ### Permutation
 ```{r}
-perm <- rgcca_permutation(blocks, nperm = 5)
+perm <- rgcca_permutation(blocks, nperm = 5, n_cores = 2)
 head(order_df(cbind(perm$penalties, perm$zstat), ncol(perm$penalties) + 1))
 plot_permut_2D(perm)
 ```
