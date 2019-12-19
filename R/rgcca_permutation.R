@@ -78,6 +78,7 @@ rgcca_permutation <- function(
             p_c1 <- set_c1s(max = p_c1)
         }
 
+        colnames(p_c1) <- names(blocks)
         par <- list("c1", p_c1)
         type <- "sgcca"
     }

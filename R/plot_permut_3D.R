@@ -46,11 +46,8 @@ plot_permut_3D <- function(
         z = unlist(perm[type])))
     best <- which.max(zstat$z)
     
-    axis <- function(i)
-    list(
-            title = paste0("<i>", colnames(zstat)[i], "</i>"),
-            titlefont = list(size = cex_lab * 0.75)
-        )
+    axis3D_perm <- function(i)
+        axis3D(colnames(zstat)[i], cex_lab)
 
     if (type == "zstat" && sign)
         zstat[, 4] <- as.double(zstat$z > qnorm(1 - 0.05 / 2))
@@ -79,18 +76,18 @@ plot_permut_3D <- function(
     ) %>% 
     add_trace(type = "scatter3d", mode = "markers") %>% 
     layout(
-        title = list(
-            text = paste0(
-                "<b>Permutation scores \n(best value : ",
+        title = title3D(
+            paste0(
+                "Permutation scores \n(best value : ",
                 paste(round(perm$penalties[best,], 2), collapse = ", "),
-                ")</b>"
+                ")"
             ),
-            font = list(size = 25 * cex)
+            cex
         ),
         scene = list(
-            xaxis = axis(1),
-            yaxis = axis(2),
-            zaxis = axis(3)
+            xaxis = axis3D_perm(1),
+            yaxis = axis3D_perm(2),
+            zaxis = axis3D_perm(3)
         ))
 
 }

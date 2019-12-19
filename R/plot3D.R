@@ -46,13 +46,8 @@ plot3D <- function(
     } else
         midcol = "gray"
 
-    axis <- function(x, i)
-        list(
-                title = paste0("<i>", print_comp(rgcca, x, i), "</i>"),
-                titlefont = list(
-                        size = cex_lab * 0.75
-                    )
-            )
+    axis3D_comp <- function(x, i)
+        axis3D(print_comp(rgcca, x, i), cex_lab)
 
     color <- function(x){
         n <- length(x)
@@ -164,17 +159,11 @@ plot3D <- function(
             ),
             scene = list(
                 aspectmode = 'cube',
-                xaxis = axis(compx, i_block),
-                yaxis = axis(compy, i_block_y),
-                zaxis = axis(compz, i_block_z)
+                xaxis = axis3D_comp(compx, i_block),
+                yaxis = axis3D_comp(compy, i_block_y),
+                zaxis = axis3D_comp(compz, i_block_z)
             ),
-            title = list(
-                text = paste0('<b>', title, '</b>'),
-                font = list(
-                    size = 25 * cex,
-                    face = "bold"
-                )
-            )
+            title = title3D(title, cex)
         )
 
     plot_circle3D <- function(p, x, y, z){
