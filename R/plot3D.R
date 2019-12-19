@@ -149,21 +149,15 @@ plot3D <- function(
     }
 
     p <- p %>%
-        layout(
-            autosize = TRUE,
-            margin = list(
-                l = 50,
-                r = 50,
-                b = 50,
-                t = 100
-            ),
+        layout3D(
+            title, 
+            cex,
             scene = list(
                 aspectmode = 'cube',
                 xaxis = axis3D_comp(compx, i_block),
                 yaxis = axis3D_comp(compy, i_block_y),
                 zaxis = axis3D_comp(compz, i_block_z)
-            ),
-            title = title3D(title, cex)
+            )
         )
 
     plot_circle3D <- function(p, x, y, z){

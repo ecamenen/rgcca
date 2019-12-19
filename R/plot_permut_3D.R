@@ -45,7 +45,7 @@ plot_permut_3D <- function(
         cbind(perm$penalties[,c(i_block, i_block_y, i_block_z)], 
         z = unlist(perm[type])))
     best <- which.max(zstat$z)
-    
+
     axis3D_perm <- function(i)
         axis3D(colnames(zstat)[i], cex_lab)
 
@@ -75,15 +75,13 @@ plot_permut_3D <- function(
         )
     ) %>% 
     add_trace(type = "scatter3d", mode = "markers") %>% 
-    layout(
-        title = title3D(
-            paste0(
-                "Permutation scores \n(best value : ",
-                paste(round(perm$penalties[best,], 2), collapse = ", "),
-                ")"
-            ),
-            cex
+    layout3D(
+        title = paste0(
+            "Permutation scores \n(best value : ",
+            paste(round(perm$penalties[best,], 2), collapse = ", "),
+            ")"
         ),
+        cex,
         scene = list(
             xaxis = axis3D_perm(1),
             yaxis = axis3D_perm(2),
