@@ -20,13 +20,15 @@
 #' @export
 rgcca_crossvalidation <- function(
     rgcca,
-    bloc_to_pred = names(rgcca$blocks)[1],
+    i_block = length(rgcca$blocks),
     validation = "loo",
     type = "regression",
     fit = "lm",
     new_scaled = TRUE,
     k = 5,
     n_cores = parallel::detectCores() - 1) {
+    
+    bloc_to_pred = names(rgcca$blocks)[i_block]
 
     match.arg(validation, c("test", "kfold", "loo"))
 

@@ -514,13 +514,15 @@ save_ind(rgcca_out, 1, 2, opt$o6)
 save_var(rgcca_out, 1, 2, opt$o7)
 save(rgcca_out, file = opt$o8)
 
-loo <- rgcca_crossvalidation(rgcca_out)
-cat(paste("Cross-validation score (leave-one-out) :", loo$scores))
-plot_ind(rgcca_out, predicted = loo)
+if (!is.null(opt$response)) {
+    loo <- rgcca_crossvalidation(rgcca_out)
+    cat(paste("Cross-validation score (leave-one-out) :", loo$scores))
+    plot_ind(rgcca_out, predicted = loo)
+}
 
 # Bootstrap
-boot <- bootstrap(rgcca_out)
-selected.var <- get_bootstrap(rgcca_out, boot)
+boot <- bootstrap(rgcca_out, n_boot = 5)
+selected.var <- get_bootstrap(rgcca_out, boot, opt$compx, opt$block)
 plot_bootstrap_2D(selected.var)
 plot_bootstrap_1D(selected.var)
 

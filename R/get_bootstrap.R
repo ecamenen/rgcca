@@ -90,7 +90,7 @@ get_bootstrap <- function(
     weight <- unlist(weight)
     sd <- unlist(sd)
 
-    cat("OK", append = TRUE)
+    cat("OK.\n", append = TRUE)
 
     p.vals <- pnorm(0, mean = abs(mean), sd = sd)
     tail <- qnorm(1 - .05 / 2)
