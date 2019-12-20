@@ -142,15 +142,6 @@ ui <- fluidPage(
                 uiOutput("tau_opt_custom"),
                 uiOutput("tau_custom"),
                 uiOutput("scheme_custom"),
-
-                sliderInput(
-                    inputId = "boot",
-                    label = "Number of boostraps",
-                    min = 5,
-                    max = 100,
-                    value = 10,
-                    step = 5
-                ),
                 actionButton(inputId = "run_boot",
                             label = "Run bootstrap"),
                 actionButton(inputId = "run_analysis",
@@ -171,6 +162,14 @@ ui <- fluidPage(
                 uiOutput("compx_custom"),
                 uiOutput("compy_custom"),
                 uiOutput("nb_mark_custom"),
+                sliderInput(
+                    inputId = "boot",
+                    label = "Number of boostraps",
+                    min = 5,
+                    max = 100,
+                    value = 10,
+                    step = 5
+                ),
                 uiOutput("response_custom"),
 
                 actionButton(inputId = "save_all",

@@ -519,6 +519,7 @@ server <- function(input, output, session) {
             input$names_block_response,
             input$supervised,
             input$run_analysis,
+            input$run_boot,
             input$nb_mark_custom,
             input$blocks_names_custom_x
         )
@@ -576,7 +577,7 @@ server <- function(input, output, session) {
         plot_network2(rgcca_out)
 
     plotBoot <- function()
-        plot_bootstrap(boot, compx, nb_mark, id_block)
+        plot_bootstrap_2D(selected.var)
 
     ################################################ Analysis ################################################
 
@@ -678,27 +679,21 @@ server <- function(input, output, session) {
         #     return(NULL)
         # }
 
-        #getBoot()
     }
 
-    getBoot <- function()
+    getBoot <-  function(){
         assign(
             "boot",
-            bootstrap(
-                blocks,
-                input$boot,
-                connection,
-                tau,
-                ncomp,
-                input$scheme,
-                input$scale,
-                input$init,
-                TRUE,
-                analysis_type
-            ),
+            bootstrap(rgcca_out, n_boot = input$boot),
             .GlobalEnv
         )
-
+        assign(
+            "selected.var", 
+            get_bootstrap(rgcca_out, boot, compx, id_block),
+            .GlobalEnv
+        )
+        show(selector = "#navbar li a[data-value=Bootstrap]")
+    }
 
     load_responseShiny = function() {
         response <- showWarn(
@@ -796,13 +791,19 @@ server <- function(input, output, session) {
 
     observeEvent(c(input$navbar, input$tabset), {
         toggle(
+            condition = (input$navbar == "Bootstrap"),
+               id = "boot")
+        toggle(
+            condition = (input$navbar != "Bootstrap"),
+               id = "compx_custom")
+        toggle(
             condition = (input$navbar == "Fingerprint"),
                id = "nb_mark_custom")
         toggle(
-            condition = (input$navbar != "Fingerprint"),
+            condition = ( ! input$navbar %in% c("Fingerprint", "Bootstrap")),
                id = "text")
         toggle(
-            condition = (input$navbar != "Fingerprint"),
+            condition = ( ! input$navbar %in% c("Fingerprint", "Bootstrap")),
                id = "compy_custom")
         toggle(
             condition = (input$navbar == "Samples" && length(input$blocks$datapath) > 1),
@@ -862,8 +863,7 @@ server <- function(input, output, session) {
         paths <- paste(input$blocks$datapath, collapse = ",")
         names <- paste(input$blocks$name, collapse = ",")
 
-        assign("analysis", NULL, .GlobalEnv)
-        hide(id = "navbar")
+        cleanup_analysis_par()
 
         assign("blocks_unscaled",
                showWarn(
@@ -939,16 +939,23 @@ server <- function(input, output, session) {
             setUiConnection()
             showWarn(message("Connection file loaded."), show = FALSE)
             assign("connection_file", NULL, .GlobalEnv)
-            assign("analysis", NULL, .GlobalEnv)
+            cleanup_analysis_par()
         }
     })
-
+    
+    cleanup_analysis_par <- function(){
+        assign("analysis", NULL, .GlobalEnv)
+        assign("boot", NULL, .GlobalEnv)
+        hide(id = "run_boot")
+        hide(selector = "#navbar li a[data-value=Bootstrap]")
+    }
 
     observeEvent(input$run_analysis, {
         if (!is.null(getInfile())) {
             assign("analysis", setRGCCA(), .GlobalEnv)
 
             show(id = "navbar")
+            show(id = "run_boot")
 
             # for (i in c('bootstrap_save', 'fingerprint_save', 'corcircle_save',
             # 'samples_save', 'ave_save')) setToggleSaveButton(i)
@@ -1215,7 +1222,7 @@ server <- function(input, output, session) {
                 save_plot("bootstrap.pdf", plotBoot())
                 msgSave()
             })
-            plot_dynamic_histogram(plotBoot())
+            ggplotly(plotBoot())
         }
 
     })
