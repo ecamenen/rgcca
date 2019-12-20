@@ -749,7 +749,7 @@ server <- function(input, output, session) {
         blocks <- setParRGCCA()
 
         if (!is.null(blocks)) {
-            assign("analysis", NULL, .GlobalEnv)
+           cleanup_analysis_par()
             assign("blocks", blocks, .GlobalEnv)
             set_connectionShiny()
             setIdBlock()
@@ -964,6 +964,7 @@ server <- function(input, output, session) {
         assign("crossval", NULL, .GlobalEnv)
         hide(id = "run_crossval")
         hide(id = "crossval")
+        hide(id = "boot")
         hide(selector = "#navbar li a[data-value=Cross-validation]")
     }
 
@@ -972,10 +973,10 @@ server <- function(input, output, session) {
             assign("analysis", setRGCCA(), .GlobalEnv)
 
             show(id = "navbar")
-            show(id = "run_boot")
-            show(id = "run_crossval")
-            show(id = "crossval")
             show(id = "boot")
+            show(id = "run_boot")
+            toggle(id = "run_crossval", condition = input$supervised)
+            toggle(id = "crossval", condition = input$supervised)
 
             # for (i in c('bootstrap_save', 'fingerprint_save', 'corcircle_save',
             # 'samples_save', 'ave_save')) setToggleSaveButton(i)
@@ -1046,7 +1047,7 @@ server <- function(input, output, session) {
     })
 
     observeEvent(input$run_crossval, {
-        if (blocksExists())
+        if (blocksExists() && input$supervised)
             getCrossVal()
     })
 
@@ -1114,24 +1115,23 @@ server <- function(input, output, session) {
     })
 
     msgSave <- function()
-            showWarn(message(paste("Save in", getwd())), show = FALSE)
+        showWarn(message(paste("Save in", getwd())), show = FALSE)
 
-    observeEvent(c(input$text, input$compx, input$compy, input$nb_mark),
-                {
-                    if (!is.null(analysis)) {
-                        assign("if_text", input$text, .GlobalEnv)
-                        assign("compx", input$compx, .GlobalEnv)
-                        assign("compy", input$compy, .GlobalEnv)
-                        if (!is.null(input$nb_mark))
-                            assign("nb_mark", input$nb_mark, .GlobalEnv)
-                    }
-                })
+    observeEvent(c(input$text, input$compx, input$compy, input$nb_mark), {
+            if (!is.null(analysis)) {
+                assign("if_text", input$text, .GlobalEnv)
+                assign("compx", input$compx, .GlobalEnv)
+                assign("compy", input$compy, .GlobalEnv)
+                if (!is.null(input$nb_mark))
+                    assign("nb_mark", input$nb_mark, .GlobalEnv)
+            }
+        })
 
     observeEvent(input$response, {
         if (!is.null(input$response)) {
             assign("response_file",
-                    input$response$datapath,
-                    .GlobalEnv)
+                input$response$datapath,
+                .GlobalEnv)
             assign("response", load_responseShiny(), .GlobalEnv)
             setUiResponse()
             showWarn(samples(), warn = TRUE)

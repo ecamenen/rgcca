@@ -101,7 +101,6 @@ rgcca_crossvalidation <- function(
         )
     }
 
-    print(scores)
     if (validation %in% c("loo", "kfold")) {
         # concatenation of each test set to provide predictions for each block
         preds <- lapply(

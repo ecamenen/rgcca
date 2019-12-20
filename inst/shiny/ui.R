@@ -12,8 +12,9 @@ rm(list = ls())
 options(shiny.maxRequestSize = 30 * 1024 ^ 2)
 
 setInfo <- function(., text) {
-    shinyInput_label_embed(icon("question") %>%
-                                bs_embed_tooltip(title = text))
+    shinyInput_label_embed(
+        icon("question") %>%
+            bs_embed_tooltip(title = text))
 }
 
 # Global variables
