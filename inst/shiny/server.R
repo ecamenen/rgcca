@@ -517,6 +517,7 @@ server <- function(input, output, session) {
             input$boot,
             input$run_crossval,
             input$crossval,
+            input$show_crossval,
             input$text,
             input$names_block_response,
             input$supervised,
@@ -538,7 +539,14 @@ server <- function(input, output, session) {
             return(f)
     }
 
-    samples <- function(predicted = NULL, reponse_name = getExtension(input$response$name)) {
+    samples <- function(reponse_name = "") {
+
+        if (!input$show_crossval)
+            crossval <- NULL
+
+        if (!is.null(input$response))
+            reponse_name <- getExtension(input$response$name)
+
         isolate({
             plot_ind(
                 rgcca = rgcca_out,
@@ -549,7 +557,7 @@ server <- function(input, output, session) {
                 text = if_text,
                 i_block_y = id_block_y,
                 reponse_name = reponse_name,
-                predicted = predicted
+                predicted = crossval
             )
         })
     }
@@ -690,7 +698,7 @@ server <- function(input, output, session) {
             rgcca_crossvalidation(rgcca_out, validation = input$crossval),
             .GlobalEnv
         )
-        show(selector = "#navbar li a[data-value=Cross-validation]")
+        show("show_crossval")
     }
 
     getBoot <-  function(){
@@ -817,7 +825,7 @@ server <- function(input, output, session) {
             condition = ( ! input$navbar %in% c("Fingerprint", "Bootstrap")),
                id = "compy_custom")
         toggle(
-            condition = (input$navbar %in% c("Samples", "Cross-validation") && 
+            condition = (input$navbar == "Samples" && 
                     length(input$blocks$datapath) > 1),
                id = "blocks_names_custom_y")
         toggle(
@@ -847,6 +855,7 @@ server <- function(input, output, session) {
         hide(selector = "#navbar li a[data-value=Bootstrap]")
         hide(id = "run_boot")
         hide(id = "boot")
+        hide("show_crossval")
         hide(id = "crossval")
         hide(id = "header")
         hide(id = "init")
@@ -965,7 +974,6 @@ server <- function(input, output, session) {
         hide(id = "run_crossval")
         hide(id = "crossval")
         hide(id = "boot")
-        hide(selector = "#navbar li a[data-value=Cross-validation]")
     }
 
     observeEvent(input$run_analysis, {
@@ -1250,25 +1258,6 @@ server <- function(input, output, session) {
             ggplotly(plotBoot())
         }
 
-    })
-
-    output$crossvalPlot <- renderPlotly({
-
-        getDynamicVariables()
-
-        if (!is.null(analysis) & !is.null(crossval)) {
-            observeEvent(input$crossval_save, {
-                save_plot("crossval.pdf", samples(crossval, ""))
-                msgSave()
-            })
-
-            showWarn(
-                modify_hovertext(
-                    plot_dynamic(samples(crossval, ""), NULL, "text", TRUE, TRUE),
-                    if_text
-                ), warn = FALSE)
-
-        }
     })
 
 }

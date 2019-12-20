@@ -45,7 +45,7 @@ multiple_blocks_super  <<- c(
 analyse_methods  <<- list(one_block, two_blocks, multiple_blocks, multiple_blocks_super)
 reac_var  <<- reactiveVal()
 id_block_y <<- id_block <<- id_block_resp <<- analysis <<- 
-boot <<- analysis_type <<- NULL
+boot <<- analysis_type <<- crossval <<- NULL
 clickSep <<- FALSE
 if_text <<- TRUE
 compx <<- 1
@@ -181,8 +181,12 @@ ui <- fluidPage(
                 uiOutput("compy_custom"),
                 uiOutput("nb_mark_custom"),
                 uiOutput("response_custom"),
-                actionButton(inputId = "save_all",
-                            label = "Save all")
+                checkboxInput(
+                    inputId = "show_crossval",
+                    label = "Display cross-validation",
+                    value = TRUE
+                ),
+                actionButton(inputId = "save_all", label = "Save all")
             )
 
         )
@@ -221,11 +225,6 @@ ui <- fluidPage(
                 "Bootstrap",
                 plotlyOutput("bootstrapPlot", height = 700),
                 actionButton("bootstrap_save", "Save")
-            ),
-            tabPanel(
-                "Cross-validation",
-                plotlyOutput("crossvalPlot", height = 700),
-                actionButton("crossval_save", "Save")
             )
         )
 
