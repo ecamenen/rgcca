@@ -118,7 +118,6 @@ ui <- fluidPage(
                 uiOutput("analysis_type_custom"),
                 uiOutput("nb_compcustom"),
                 uiOutput("scale_custom"),
-
                 radioButtons(
                     "init",
                     label = "Mode of initialization",
@@ -127,7 +126,6 @@ ui <- fluidPage(
                     selected = "svd"
                 ),
 
-
                 uiOutput("superblock_custom"),
                 checkboxInput(
                     inputId = "supervised",
@@ -135,17 +133,36 @@ ui <- fluidPage(
                     value = FALSE
                 ),
 
-                conditionalPanel(condition = "input.supervised || input.analysis_type == 'RA'",
-                                uiOutput("blocks_names_response")),
+                conditionalPanel(
+                    condition = "input.supervised || input.analysis_type == 'RA'",
+                    uiOutput("blocks_names_response")),
 
                 uiOutput("connection_custom"),
                 uiOutput("tau_opt_custom"),
                 uiOutput("tau_custom"),
                 uiOutput("scheme_custom"),
-                actionButton(inputId = "run_boot",
-                            label = "Run bootstrap"),
                 actionButton(inputId = "run_analysis",
-                            label = "Run Analysis")
+                    label = "Run analysis"),
+                sliderInput(
+                    inputId = "boot",
+                    label = "Number of boostraps",
+                    min = 5,
+                    max = 100,
+                    value = 10,
+                    step = 5
+                ),
+                actionButton(inputId = "run_boot",
+                    label = "Run bootstrap"),
+                radioButtons(
+                    "crossval",
+                    label = "Type of validation",
+                    choices = c(`Train-test` = "test",
+                                `K-fold` = "kfold",
+                                `Leave-one-out` = "loo"),
+                    selected = "loo"
+                ),
+                actionButton(inputId = "run_crossval",
+                    label = "Run cross-validation")
             ),
 
             # Graphical parameters
@@ -162,16 +179,7 @@ ui <- fluidPage(
                 uiOutput("compx_custom"),
                 uiOutput("compy_custom"),
                 uiOutput("nb_mark_custom"),
-                sliderInput(
-                    inputId = "boot",
-                    label = "Number of boostraps",
-                    min = 5,
-                    max = 100,
-                    value = 10,
-                    step = 5
-                ),
                 uiOutput("response_custom"),
-
                 actionButton(inputId = "save_all",
                             label = "Save all")
             )
@@ -212,6 +220,11 @@ ui <- fluidPage(
                 "Bootstrap",
                 plotlyOutput("bootstrapPlot", height = 700),
                 actionButton("bootstrap_save", "Save")
+            ),
+            tabPanel(
+                "Cross-validation",
+                plotlyOutput("crossvalPlot", height = 700),
+                actionButton("crossval_save", "Save")
             )
         )
 

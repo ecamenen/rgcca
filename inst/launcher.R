@@ -512,12 +512,11 @@ save_plot(opt$o5, design)
 
 save_ind(rgcca_out, 1, 2, opt$o6)
 save_var(rgcca_out, 1, 2, opt$o7)
-save(rgcca_out, file = opt$o8)
 
 if (!is.null(opt$response)) {
-    loo <- rgcca_crossvalidation(rgcca_out)
-    cat(paste("Cross-validation score (leave-one-out) :", loo$scores))
-    plot_ind(rgcca_out, predicted = loo)
+    crossval <- rgcca_crossvalidation(rgcca_out)
+    cat(paste("Cross-validation score (leave-one-out) :", crossval$scores))
+    plot_ind(rgcca_out, predicted = crossval)
 }
 
 # Bootstrap
@@ -530,7 +529,7 @@ plot_bootstrap_1D(selected.var)
 perm <- rgcca_permutation(
     blocks,
     connection = connection,
-    response = opt$response,
+    response = opt$response, 
     superblock = opt$superblock,
     tau = opt$tau,
     ncomp = opt$ncomp,
@@ -539,3 +538,5 @@ perm <- rgcca_permutation(
     type = opt$type, 
     nperm = 5)
 plot_permut_2D(perm)
+
+save(rgcca_out, file = opt$o8)

@@ -515,6 +515,8 @@ server <- function(input, output, session) {
             input$names_block_x,
             input$names_block_y,
             input$boot,
+            input$run_crossval,
+            input$crossval,
             input$text,
             input$names_block_response,
             input$supervised,
@@ -536,7 +538,7 @@ server <- function(input, output, session) {
             return(f)
     }
 
-    samples <- function() {
+    samples <- function(predicted = NULL, reponse_name = getExtension(input$response$name)) {
         isolate({
             plot_ind(
                 rgcca = rgcca_out,
@@ -546,7 +548,8 @@ server <- function(input, output, session) {
                 i_block = id_block,
                 text = if_text,
                 i_block_y = id_block_y,
-                reponse_name = getExtension(input$response$name)
+                reponse_name = reponse_name,
+                predicted = predicted
             )
         })
     }
@@ -681,6 +684,15 @@ server <- function(input, output, session) {
 
     }
 
+    getCrossVal <-  function(){
+        assign(
+            "crossval",
+            rgcca_crossvalidation(rgcca_out, validation = input$crossval),
+            .GlobalEnv
+        )
+        show(selector = "#navbar li a[data-value=Cross-validation]")
+    }
+
     getBoot <-  function(){
         assign(
             "boot",
@@ -728,8 +740,7 @@ server <- function(input, output, session) {
 
         if (is.matrix(connection)) {
             assign("connection", connection, .GlobalEnv)
-            assign("analysis", NULL, .GlobalEnv)
-            assign("boot", NULL, .GlobalEnv)
+            cleanup_analysis_par()
         }
 
     }
@@ -806,7 +817,8 @@ server <- function(input, output, session) {
             condition = ( ! input$navbar %in% c("Fingerprint", "Bootstrap")),
                id = "compy_custom")
         toggle(
-            condition = (input$navbar == "Samples" && length(input$blocks$datapath) > 1),
+            condition = (input$navbar %in% c("Samples", "Cross-validation") && 
+                    length(input$blocks$datapath) > 1),
                id = "blocks_names_custom_y")
         toggle(
             condition = (input$navbar == "Samples"),
@@ -835,6 +847,7 @@ server <- function(input, output, session) {
         hide(selector = "#navbar li a[data-value=Bootstrap]")
         hide(id = "run_boot")
         hide(id = "boot")
+        hide(id = "crossval")
         hide(id = "header")
         hide(id = "init")
         hide(id = "navbar")
@@ -948,6 +961,10 @@ server <- function(input, output, session) {
         assign("boot", NULL, .GlobalEnv)
         hide(id = "run_boot")
         hide(selector = "#navbar li a[data-value=Bootstrap]")
+        assign("crossval", NULL, .GlobalEnv)
+        hide(id = "run_crossval")
+        hide(id = "crossval")
+        hide(selector = "#navbar li a[data-value=Cross-validation]")
     }
 
     observeEvent(input$run_analysis, {
@@ -956,6 +973,9 @@ server <- function(input, output, session) {
 
             show(id = "navbar")
             show(id = "run_boot")
+            show(id = "run_crossval")
+            show(id = "crossval")
+            show(id = "boot")
 
             # for (i in c('bootstrap_save', 'fingerprint_save', 'corcircle_save',
             # 'samples_save', 'ave_save')) setToggleSaveButton(i)
@@ -1025,6 +1045,11 @@ server <- function(input, output, session) {
             getBoot()
     })
 
+    observeEvent(input$run_crossval, {
+        if (blocksExists())
+            getCrossVal()
+    })
+
     observeEvent(input$names_block_x, {
         isolate({
             if (blocksExists() && !is.null(input$names_block_x)) {
@@ -1038,7 +1063,7 @@ server <- function(input, output, session) {
             }
         })
     }, priority = 30)
-    
+
     observeEvent(c(input$superblock, input$supervised), {
         reac_var(length(blocks))
         assign("id_block", reac_var(), .GlobalEnv)
@@ -1225,6 +1250,25 @@ server <- function(input, output, session) {
             ggplotly(plotBoot())
         }
 
+    })
+
+    output$crossvalPlot <- renderPlotly({
+
+        getDynamicVariables()
+
+        if (!is.null(analysis) & !is.null(crossval)) {
+            observeEvent(input$crossval_save, {
+                save_plot("crossval.pdf", samples(crossval, ""))
+                msgSave()
+            })
+
+            showWarn(
+                modify_hovertext(
+                    plot_dynamic(samples(crossval, ""), NULL, "text", TRUE, TRUE),
+                    if_text
+                ), warn = FALSE)
+
+        }
     })
 
 }

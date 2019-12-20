@@ -27,7 +27,7 @@ rgcca_crossvalidation <- function(
     new_scaled = TRUE,
     k = 5,
     n_cores = parallel::detectCores() - 1) {
-    
+
     bloc_to_pred = names(rgcca$blocks)[i_block]
 
     match.arg(validation, c("test", "kfold", "loo"))
@@ -101,6 +101,7 @@ rgcca_crossvalidation <- function(
         )
     }
 
+    print(scores)
     if (validation %in% c("loo", "kfold")) {
         # concatenation of each test set to provide predictions for each block
         preds <- lapply(
