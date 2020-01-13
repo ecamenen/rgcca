@@ -163,7 +163,23 @@ ui <- fluidPage(
                     selected = "loo"
                 ),
                 actionButton(inputId = "run_crossval",
-                    label = "Run cross-validation")
+                    label = "Run cross-validation"),
+                sliderInput(
+                    inputId = "nperm",
+                    label = "Number of permutations",
+                    min = 5,
+                    max = 100,
+                    value = 10,
+                    step = 5
+                ),
+                radioButtons(
+                    "perm",
+                    label = "Type of permutation",
+                    choices = c(`Number of components` = 1,
+                                `Sparsity` = 2),
+                ),
+                actionButton(inputId = "run_perm",
+                    label = "Run permutation")
             ),
 
             # Graphical parameters
@@ -225,6 +241,11 @@ ui <- fluidPage(
                 "Bootstrap",
                 plotlyOutput("bootstrapPlot", height = 700),
                 actionButton("bootstrap_save", "Save")
+            ),
+            tabPanel(
+                "Permutation",
+                dataTableOutput("permutationPlot"),
+                # actionButton("permutation_save", "Save")
             )
         )
 
