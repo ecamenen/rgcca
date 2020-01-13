@@ -22,11 +22,17 @@ get_bootstrap <- function(
     w,
     comp = 1,
     i_block = length(w[[1]]),
-    collapse = TRUE,
+    collapse = FALSE,
     n_cores = parallel::detectCores() - 1) {
 
     if (n_cores == 0)
         n_cores <- 1
+    
+    if (collapse && rgcca$superblock) {
+        rgcca$a <- rgcca$a[-length(rgcca$a)]
+        if (i_block > length(rgcca$a))
+            i_block <- length(rgcca$a)
+    }
 
     if (comp > min(rgcca$ncomp))
         stop("Selected dimension was not associated to every blocks",

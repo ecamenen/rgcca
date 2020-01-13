@@ -587,8 +587,10 @@ server <- function(input, output, session) {
     design <- function()
         plot_network2(rgcca_out)
 
-    plotBoot <- function()
+    plotBoot <- function(){
+        refresh <- c(input$names_block_x, id_block, input$blocks_names_custom_x)
         plot_bootstrap_2D(selected.var)
+    }
 
     ################################################ Analysis ################################################
 
@@ -707,11 +709,7 @@ server <- function(input, output, session) {
             bootstrap(rgcca_out, n_boot = input$boot),
             .GlobalEnv
         )
-        assign(
-            "selected.var", 
-            get_bootstrap(rgcca_out, boot, compx, id_block),
-            .GlobalEnv
-        )
+        assign("selected.var", NULL, .GlobalEnv)
         show(selector = "#navbar li a[data-value=Bootstrap]")
     }
 
@@ -968,6 +966,7 @@ server <- function(input, output, session) {
     cleanup_analysis_par <- function(){
         assign("analysis", NULL, .GlobalEnv)
         assign("boot", NULL, .GlobalEnv)
+        assign("selected.var", NULL, .GlobalEnv)
         hide(id = "run_boot")
         hide(selector = "#navbar li a[data-value=Bootstrap]")
         assign("crossval", NULL, .GlobalEnv)
@@ -985,7 +984,7 @@ server <- function(input, output, session) {
             show(id = "run_boot")
             toggle(id = "run_crossval", condition = input$supervised)
             toggle(id = "crossval", condition = input$supervised)
-
+            updateTabsetPanel(session, "navbar", selected = "Connection")
             # for (i in c('bootstrap_save', 'fingerprint_save', 'corcircle_save',
             # 'samples_save', 'ave_save')) setToggleSaveButton(i)
         }
@@ -1249,8 +1248,17 @@ server <- function(input, output, session) {
     output$bootstrapPlot <- renderPlotly({
 
         getDynamicVariables()
+        refresh <- c(input$names_block_x, id_block, input$blocks_names_custom_x)
 
         if (!is.null(analysis) & !is.null(boot)) {
+            
+            if (is.null(selected.var))
+                assign(
+                    "selected.var", 
+                    get_bootstrap(rgcca_out, boot, compx, id_block),
+                    .GlobalEnv
+                )
+
             observeEvent(input$bootstrap_save, {
                 save_plot("bootstrap.pdf", plotBoot())
                 msgSave()
