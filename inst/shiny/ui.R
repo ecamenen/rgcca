@@ -145,7 +145,7 @@ ui <- fluidPage(
                 actionButton(inputId = "run_analysis",
                     label = "Run analysis"),
                 sliderInput(
-                    inputId = "boot",
+                    inputId = "nboot",
                     label = "Number of boostraps",
                     min = 5,
                     max = 100,

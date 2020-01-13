@@ -514,7 +514,7 @@ server <- function(input, output, session) {
             input$response,
             input$names_block_x,
             input$names_block_y,
-            input$boot,
+            input$nboot,
             input$run_crossval,
             input$crossval,
             input$show_crossval,
@@ -706,7 +706,7 @@ server <- function(input, output, session) {
     getBoot <-  function(){
         assign(
             "boot",
-            bootstrap(rgcca_out, n_boot = input$boot),
+            bootstrap(rgcca_out, n_boot = input$nboot),
             .GlobalEnv
         )
         assign("selected.var", NULL, .GlobalEnv)
@@ -808,9 +808,6 @@ server <- function(input, output, session) {
 
     observeEvent(c(input$navbar, input$tabset), {
         toggle(
-            condition = (input$navbar == "Bootstrap"),
-               id = "boot")
-        toggle(
             condition = (input$navbar != "Bootstrap"),
                id = "compx_custom")
         toggle(
@@ -852,7 +849,7 @@ server <- function(input, output, session) {
         hide(selector = "#tabset li a[data-value=RGCCA]")
         hide(selector = "#navbar li a[data-value=Bootstrap]")
         hide(id = "run_boot")
-        hide(id = "boot")
+        hide(id = "nboot")
         hide("show_crossval")
         hide(id = "crossval")
         hide(id = "header")
@@ -968,11 +965,11 @@ server <- function(input, output, session) {
         assign("boot", NULL, .GlobalEnv)
         assign("selected.var", NULL, .GlobalEnv)
         hide(id = "run_boot")
+        hide(id = "nboot")
         hide(selector = "#navbar li a[data-value=Bootstrap]")
         assign("crossval", NULL, .GlobalEnv)
         hide(id = "run_crossval")
         hide(id = "crossval")
-        hide(id = "boot")
     }
 
     observeEvent(input$run_analysis, {
@@ -980,7 +977,7 @@ server <- function(input, output, session) {
             assign("analysis", setRGCCA(), .GlobalEnv)
 
             show(id = "navbar")
-            show(id = "boot")
+            show(id = "nboot")
             show(id = "run_boot")
             toggle(id = "run_crossval", condition = input$supervised)
             toggle(id = "crossval", condition = input$supervised)
