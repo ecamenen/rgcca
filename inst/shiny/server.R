@@ -515,6 +515,9 @@ server <- function(input, output, session) {
             input$names_block_x,
             input$names_block_y,
             input$nboot,
+            input$nperm,
+            input$perm,
+            input$run_perm,
             input$run_crossval,
             input$crossval,
             input$show_crossval,
@@ -590,6 +593,13 @@ server <- function(input, output, session) {
     plotBoot <- function(){
         refresh <- c(input$names_block_x, id_block, input$blocks_names_custom_x)
         plot_bootstrap_2D(selected.var)
+    }
+
+    viewPerm <- function(){
+        head(
+            order_df(cbind(perm$penalties, `Z-score` = perm$zstat), ncol(perm$penalties) + 1), 
+            n = nb_mark)
+         # colnames
     }
 
     ################################################ Analysis ################################################
@@ -685,13 +695,6 @@ server <- function(input, output, session) {
                 ),
                 .GlobalEnv)
 
-        # print(length(rgcca_out))
-        # 
-        # if (length(rgcca_out) == 1) {
-        #     assign("analysis", NULL, .GlobalEnv)
-        #     return(NULL)
-        # }
-
     }
 
     getCrossVal <-  function(){
@@ -701,6 +704,50 @@ server <- function(input, output, session) {
             .GlobalEnv
         )
         show("show_crossval")
+    }
+
+    getPerm <-  function(){
+        isolate({
+            if (length(grep("[SR]GCCA", analysis_type)) == 1 && !input$tau_opt)
+                tau <- getTau()
+        })
+
+        if (!is.null(input$supervised) && input$supervised)
+            response <- input$supervised
+        else
+            response <- NULL
+
+        if (input$perm == 1) {
+            p_c1 <- FALSE
+            p_ncomp <- TRUE
+        } else{
+            p_c1 <- TRUE
+            p_ncomp <- FALSE
+        }
+
+        assign("perm",
+               showWarn(
+                   rgcca_permutation(
+                        blocks_without_superb,
+                        p_c1 = p_c1,
+                        p_ncomp = p_ncomp,
+                        nperm = input$nperm,
+                        connection = connection,
+                        response = input$names_block_response,
+                        superblock = (!is.null(input$supervised) &&
+                            !is.null(input$superblock) && input$superblock),
+                        tau = tau,
+                        ncomp = input$nb_comp,
+                        scheme = input$scheme,
+                        scale = FALSE,
+                        init = input$init,
+                        bias = TRUE,
+                        type = analysis_type
+                    )
+                ),
+                .GlobalEnv)
+        
+        show(selector = "#navbar li a[data-value=Permutation]")
     }
 
     getBoot <-  function(){
@@ -828,7 +875,7 @@ server <- function(input, output, session) {
                id = "response")
         toggle(
             condition = (
-                !is.null(analysis) && !input$navbar %in% c("Connection", "AVE")
+                !is.null(analysis) && !input$navbar %in% c("Connection", "AVE", "Permutation")
             ),
             selector = "#tabset li a[data-value=Graphic]"
         )
@@ -836,7 +883,7 @@ server <- function(input, output, session) {
 
 
     observeEvent(input$navbar, {
-        if (!is.null(analysis) && input$navbar %in% c("Connection", "AVE"))
+        if (!is.null(analysis) && input$navbar %in% c("Connection", "AVE", "Permutation"))
             updateTabsetPanel(session, "tabset", selected = "RGCCA")
         else if (!is.null(analysis))
             updateTabsetPanel(session, "tabset", selected = "Graphic")
@@ -848,8 +895,12 @@ server <- function(input, output, session) {
 
         hide(selector = "#tabset li a[data-value=RGCCA]")
         hide(selector = "#navbar li a[data-value=Bootstrap]")
+        hide(selector = "#navbar li a[data-value=Permutation]")
         hide(id = "run_boot")
         hide(id = "nboot")
+        hide(id = "run_perm")
+        hide(id = "nperm")
+        hide(id = "perm")
         hide("show_crossval")
         hide(id = "crossval")
         hide(id = "header")
@@ -966,7 +1017,11 @@ server <- function(input, output, session) {
         assign("selected.var", NULL, .GlobalEnv)
         hide(id = "run_boot")
         hide(id = "nboot")
+        hide(id = "run_perm")
+        hide(id = "nperm")
+        hide(id = "perm")
         hide(selector = "#navbar li a[data-value=Bootstrap]")
+        hide(selector = "#navbar li a[data-value=Permutation]")
         assign("crossval", NULL, .GlobalEnv)
         hide(id = "run_crossval")
         hide(id = "crossval")
@@ -979,6 +1034,9 @@ server <- function(input, output, session) {
             show(id = "navbar")
             show(id = "nboot")
             show(id = "run_boot")
+            show(id = "run_perm")
+            show(id = "nperm")
+            show(id = "perm")
             toggle(id = "run_crossval", condition = input$supervised)
             toggle(id = "crossval", condition = input$supervised)
             updateTabsetPanel(session, "navbar", selected = "Connection")
@@ -1048,6 +1106,11 @@ server <- function(input, output, session) {
     observeEvent(input$run_boot, {
         if (blocksExists())
             getBoot()
+    })
+    
+    observeEvent(input$run_perm, {
+        if (blocksExists())
+            getPerm()
     })
 
     observeEvent(input$run_crossval, {
@@ -1261,6 +1324,21 @@ server <- function(input, output, session) {
                 msgSave()
             })
             ggplotly(plotBoot())
+        }
+
+    })
+
+    output$permutationPlot <- renderDataTable({
+
+        getDynamicVariables()
+
+        if (!is.null(analysis) & !is.null(perm)) {
+
+            # observeEvent(input$permutation_save, {
+            #     save("perm.tsv", viewPerm())
+            #     msgSave()
+            # })
+           viewPerm()
         }
 
     })

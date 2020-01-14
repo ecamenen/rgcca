@@ -15,7 +15,8 @@
 #'     politic = Russett[, 6:11] )
 #' rgcca_out = rgcca.analyze(blocks)
 #' boot = bootstrap(rgcca_out, 2, FALSE, n_cores = 1)
-#' get_bootstrap(rgcca_out, boot, n_cores = 1)
+#' get_bootstrap(rgcca_out, boot, i_block = 1, n_cores = 1)
+#' get_bootstrap(rgcca_out, boot, n_cores = 1, collapse = TRUE)
 #' @export
 get_bootstrap <- function(
     rgcca,
@@ -27,7 +28,7 @@ get_bootstrap <- function(
 
     if (n_cores == 0)
         n_cores <- 1
-    
+
     if (collapse && rgcca$superblock) {
         rgcca$a <- rgcca$a[-length(rgcca$a)]
         if (i_block > length(rgcca$a))
